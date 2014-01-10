@@ -174,7 +174,13 @@
 
 			<dependency>
 				<groupId>org.openflexo</groupId>
-				<artifactId>connie</artifactId>
+				<artifactId>flexoconnie</artifactId>
+				<version>${connie.version}</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.openflexo</groupId>
+				<artifactId>flexoutils</artifactId>
 				<version>${connie.version}</version>
 			</dependency>
 			
