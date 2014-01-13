@@ -43,11 +43,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.openflexo</groupId>
-			<artifactId>flexoconnie</artifactId>
+			<artifactId>connie-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.openflexo</groupId>
-			<artifactId>flexoconnie</artifactId>
+			<artifactId>connie-core</artifactId>
 			<classifier>resources</classifier>
 			<type>zip</type>
 		</dependency>
