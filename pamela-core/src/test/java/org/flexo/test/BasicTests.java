@@ -640,8 +640,13 @@ public class BasicTests extends AbstractPAMELATest {
 		TokenEdge edge1 = factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
 		assertTrue(process.isModified());// Here we verify the forward state
 		assertTrue(activityNode.isModified());
+
 		activityNode.removeFromIncomingEdges(edge1);
+
+		assertNull(edge1.getEndNode());
+
 		process.removeFromNodes(activityNode);
+
 		serializeObject(process);
 
 		assertFalse(process.isModified());// Here we verify that process has been marked as not-modified (by the serialization mechanism)

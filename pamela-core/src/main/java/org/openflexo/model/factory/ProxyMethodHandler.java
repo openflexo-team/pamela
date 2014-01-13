@@ -908,6 +908,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return;
 		}
 
+		scheduledSets.remove(property);
+
 		// System.out.println("Object " + getModelEntity().getImplementedInterface().getSimpleName() + " set "
 		// + property.getPropertyIdentifier() + " with " + value);
 
@@ -1017,8 +1019,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			if (property.isSerializable()) {
 				invokeSetModified(true);
 			}
-
-			scheduledSets.remove(property);
 
 		}
 	}
