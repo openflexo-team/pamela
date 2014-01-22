@@ -1,0 +1,52 @@
+ -----
+ Pré-requis pour la maintenance de l'archetype 
+ -----
+ L'équipe OpenFlexo
+ -----
+ -----
+
+
+Pré-requis
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* Moyens
+
+  * jdk 1.6 
+
+  * maven 3
+
+  * git ( optionnel : aller sur le site de github, à défaut)
+
+* Lectures
+
+  Pour en savoir plus sur l'usage des archetypes, voir les liens ci-dessous :
+  usage :
+
+  * {{http://books.sonatype.com/mvnref-book/reference/archetype-sect-using.html}}
+
+  * {{http://maven.apache.org/archetype/maven-archetype-plugin/usage.html}}
+
+  * {{http://maven.apache.org/guides/introduction/introduction-to-archetypes.html}}
+
+
+* Autres liens
+
+** Le concept d'archetype
+
+  * {{http://maven.apache.org/archetype/maven-archetype-plugin/}}
+
+** Quelques liens sur la création d'archetypes
+
+  * {{http://blog.soat.fr/2011/06/maven-pour-les-nuls-les-archetypes/?doing_wp_cron=1379014170.8262538909912109375000}}
+
+  * {{https://community.jboss.org/wiki/MavenArchetypeCreationGuidelines?_sscc=t}}
+
+** Gestion de configuration
+
+ * {{http://blog.sonatype.com/people/2009/09/maven-tips-and-tricks-using-github/}}
+
+** Exemple de documentation
+
+ * {{https://github.com/tbroyer/gwt-maven-archetypes/blob/master/README.md}}
+
+

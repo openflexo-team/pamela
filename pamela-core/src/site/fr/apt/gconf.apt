@@ -1,0 +1,37 @@
+ -----
+ Gestion de configuration de  l'archetype 
+ -----
+ L'équipe OpenFlexo
+ -----
+ -----
+
+TODO : a adapter. Verifier le contenu
+
+* Recuperer le code source
+
++---------------------------------------------------+
+  <<git clone git://github.com/agilebirds/openflexo.git 1.6>>
++---------------------------------------------------+
+
+* Incrementer la version
+
++---------------------------------------------------+
+editer le pom.xml 
++---------------------------------------------------+
+
+* Poser un tag
+
++---------------------------------------------------+
+git tag v1.0
++---------------------------------------------------+
+
+* Livrer le code source sur github
+
++---------------------------------------------------+
+git push
++---------------------------------------------------+
+
+Amelioration le process:
+
+  voir {{http://maven.apache.org/maven-release/maven-release-plugin/}}
+

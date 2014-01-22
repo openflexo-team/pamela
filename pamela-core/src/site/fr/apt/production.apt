@@ -1,0 +1,57 @@
+ -----
+ rPproduction de l'archetype 
+ -----
+ L'équipe OpenFlexo
+ -----
+ -----
+
+Comment produire l'archetype de technologyAdapter
+~~~~~~~~~~~~~
+
+  Respecter les pré-requis {{pre_requis.html}}
+
+  Voir Aussi
+
+  * {{http://maven.apache.org/archetype/maven-archetype-plugin/usage.html}}
+
+  * {{http://maven.apache.org/guides/introduction/introduction-to-archetypes.html}}
+
+
+On y va
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* tester l'archetype
+
++------------------------------------------------------------------------+
+  mvn verify
++------------------------------------------------------------------------+
+
+* fabriquer la documentation
+
++------------------------------------------------------------------------+
+  mvn site ; firefox  file://${PWD}/target/site/fr/index.html
++------------------------------------------------------------------------+
+
+* installer en local d'archetype
+
++------------------------------------------------------------------------+
+  mvn install
++------------------------------------------------------------------------+
+
+** publier l'archetype sur le dépot binaire
+
++------------------------------------------------------------------------+
+  mvn deploy
++------------------------------------------------------------------------+
+
+  Il faut les droits pour pouvoir publier, 
+  [TODO] : procedure de soumission officielle
+
+* En savoir plus sur ce qu'est un projet de développement d'archetype maven
+
+** les concepts
+
+  * {{http://maven.apache.org/guides/mini/guide-creating-archetypes.html}}
+
+  * {{http://books.sonatype.com/mvnref-book/reference/archetype-sect-intro.html}}
+

@@ -1,0 +1,121 @@
+ -----
+ L'archetype technologyAdapter 
+ -----
+ L'équipe OpenFlexo
+ -----
+ Date
+ -----
+
+Objectif
+~~~~~~~~~~~~~
+
+  Permettre de créer simplement et rapidement un environnement de développement de technologyAdapter. 
+
+Exemple d'utilisation
+~~~~~~~~~~~~~~~~~~~~~~~
+
+  pour générer un projet de développement de technologyAdapter pour openFlexo, procéder comme suit : 
+
++-----+
+
+  mvn archetype:generate \
+	-DarchetypeGroupId=org.openflexo \
+	-DarchetypeArtifactId=technologyadapters-archetype \
+	-DarchetypeVersion=1.1 
++-----+
+  nota : ajouter <<-DarchetypeCatalog=local>> pour utiliser un catalogue déployé localement (${HOME}/.m2/archetype-catalog.xml)
+
+
+
+  Il vous sera demander :
+
+  * le nom de l'artefact ( le nom de votre projet )
+
+  * sa version
+
+  puis valider les autres propositions
+
++-----+
+
+Define value for property 'artifactId': : <<csv>> 
+Define value for property 'version':  1.0-SNAPSHOT:
+Define value for property 'package':  org.openflexo.technologyadapter.csv: 
+Define value for property 'technologyPrefix':  ${artifactId.toUpperCase()}: : 
+[INFO] Using property: technologyadapterApiVersion = 1.0
+Confirm properties configuration:
+groupId: org.openflexo.demo
+artifactId: csv
+artifactId: csv
+version: 1.0-SNAPSHOT
+package: org.openflexo.technologyadapter.csv
+technologyExtension: ${artifactId.toLowerCase()}
+technologyPrefix: ${artifactId.toUpperCase()}
+technologyadapterApiVersion: 1.0
+Define value for property 'technologyExtension':  ${artifactId.toLowerCase()}: :
+Y: : 
+
++-----+
+ 
+  Vous obtiendrez ceci 
+
++-----+
+[INFO] ----------------------------------------------------------------------------
+[INFO] Using following parameters for creating project from Archetype: technologyadapters-archetype:1.1
+[INFO] ----------------------------------------------------------------------------
+[INFO] Parameter: groupId, Value: org.openflexo.demo
+[INFO] Parameter: artifactId, Value: csv
+[INFO] Parameter: version, Value: 1.0-SNAPSHOT
+[INFO] Parameter: package, Value: org.openflexo.technologyadapter.csv
+[INFO] Parameter: packageInPathFormat, Value: org/openflexo/technologyadapter/csv
+[INFO] Parameter: package, Value: org.openflexo.technologyadapter.csv
+[INFO] Parameter: version, Value: 1.0-SNAPSHOT
+[INFO] Parameter: groupId, Value: org.openflexo.demo
+15 sept. 2013 15:47:09 org.apache.velocity.runtime.log.JdkLogChute log
+INFO: FileResourceLoader : adding path '.'
+[INFO] Parameter: technologyExtension, Value: csv
+[INFO] Parameter: technologyadapterApiVersion, Value: 1.0
+[INFO] Parameter: technologyPrefix, Value: CSV
+[INFO] Parameter: artifactId, Value: csv
+[INFO] Parent element not overwritten in /home/gilles/DEV/tmp/csv/csvconnector/pom.xml
+[INFO] Parent element not overwritten in /home/gilles/DEV/tmp/csv/csvconnector-ui/pom.xml
+[INFO] project created from Archetype in dir: /home/gilles/DEV/tmp/csv
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 1:15.167s
+[INFO] Finished at: Sun Sep 15 15:47:09 CEST 2013
+[INFO] Final Memory: 10M/70M
+[INFO] ------------------------------------------------------------------------
++-----+
+
+  Pour connaitre la liste des fichiers générés, si vous êtes sous unix
+
++-----+
+
+  cd csv ( csv represente ici le nom de votre projet )
+  find . -type f
++-----+
++-----+
+  ./csv/csvconnector-ui/src/main/java/org/openflexo/technologyadapter/csv/gui/CSVIconLibrary.java
+  ./csv/csvconnector-ui/src/main/java/org/openflexo/technologyadapter/csv/controller/CSVAdapterController.java
+  ./csv/csvconnector-ui/src/main/resources/META-INF/services/org.openflexo.view.controller.TechnologyAdapterController
+  ./csv/csvconnector-ui/src/main/resources/Icons/csv-text_big.gif
+  ./csv/csvconnector-ui/src/main/resources/Icons/csv-text.gif
+  ./csv/csvconnector-ui/pom.xml
+  ./csv/csvconnector/src/main/java/org/openflexo/technologyadapter/csv/model/CSVModel.java
+  ./csv/csvconnector/src/main/java/org/openflexo/technologyadapter/csv/model/CSVMetaModel.java
+  ./csv/csvconnector/src/main/java/org/openflexo/technologyadapter/csv/CSVTechnologyAdapter.java
+  ./csv/csvconnector/src/main/java/org/openflexo/technologyadapter/csv/rm/CSVModelResource.java
+  ./csv/csvconnector/src/main/java/org/openflexo/technologyadapter/csv/rm/CSVModelResourceImpl.java
+  ./csv/csvconnector/src/main/java/org/openflexo/technologyadrapter/csv/CSVTechnologyContextManager.java
+  ./csv/csvconnector/src/main/resources/META-INF/services/org.openflexo.foundation.technologyadapter.TechnologyAdapter
+  ./csv/csvconnector/pom.xml
+  ./csv/pom.xml
+
++-----+
+
+Il vous reste à compiler ...
+
++-----+
+  mvn package
++-----+

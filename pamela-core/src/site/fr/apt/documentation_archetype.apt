@@ -1,0 +1,37 @@
+ -----
+ Documentation de l'archetype
+ -----
+ L'équipe OpenFlexo
+ -----
+
+Pour mettre a jour la documentation :
+
+  * voir {{http://maven.apache.org/plugins/maven-site-plugin/}}
+
+Pour ajouter une page :
+
+    * Editer src/site/site_fr.xml, et src/site/site.xml
+
+    * Ajouter un item dans la section menu
+
+    * Pour une nouvelle page en francais, 
+
+	* Copier l'une des page de src/site/fr/apt/*.apt et la nommer comme on le souhaite
+
+	* Mettre le contenu a jour ( le fichier .apt donnera un .html)
+            
+            [nota] : voir {{format.html}}
+
+Regénérer le site :
+
++--------------------------------------------------+
+ mvn site
++--------------------------------------------------+
+
+Déployer le site :
+
++--------------------------------------------------+
+ mvn site:deploy
++--------------------------------------------------+
+
+

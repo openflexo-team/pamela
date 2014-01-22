@@ -1,0 +1,20 @@
+ -----
+ TODO
+ -----
+ L'équipe OpenFlexo
+ -----
+
+Quelques idées d'amélioration du projet généré:
+
+  * Faire évoluer le modèle de projet pour :
+
+    * Fournir du test unitaire
+
+    * Fournir du test d'intégration
+
+    * Générer un canevas de documentation
+
+Quelques idées d'amélioration de l'archetype :
+
+    * Gerer l'aspect licence
+

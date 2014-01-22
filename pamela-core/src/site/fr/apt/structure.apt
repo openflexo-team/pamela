@@ -1,0 +1,93 @@
+ -----
+ Structure de l'archetype 
+ -----
+ L'équipe OpenFlexo
+ -----
+ -----
+
+
+Organisation des fichiers
+
+* Pour l'identification et le comportement du génrateur d'archetype
+
+** ./pom.xml
+
+  Il identifie :
+
+  * le projet de développement de l'archetype, 
+
+  * sa version, 
+
+** ./src/main/resources/META-INF/maven/archetype-metadata.xml
+
+  Il définit : 
+
+  * les <requiredProperty> : paramètres à fournir lors de l'utilisation de l'archetype
+
+  * Les modules maven a générer et leur organisation interne
+
+     * [nota] Si le fileSet contient l'option filtered="true", les <<${propertyName}>> seront remplacés par leur valeur.
+
+  Pour plus de détails, voir {{http://maven.apache.org/archetype/archetype-models/archetype-descriptor/archetype-descriptor.html}}
+
+** ./src/main/resources/archetype-resources
+
+  * Son contenu est utilisé comme modèle de projet. Velocity remplacera les paramètres issus de <<archetype-metadata.xml>> par leur valeur
+
+*** exemple
+
+   ./src/main/resources/archetype-resources/__rootArtifactId__connector-ui/src/main/java/controller/__prefix__AdapterController.java
+
+   * les __nom__ seront remplacés par le contenu de la propriété ${nom}
+
+   * dans le fichier, ${nom} sera remplacé par la valeur de la propriété
+
+* Pour le test 
+
+  Nous définissons ici des test d'intégration. ils seront exécutés via la commande 
+
++--------------------------+
+  mvn integration-test 
++--------------------------+
+ 
+  Elle fabrique l'archetype et le test comme un utilisateur le ferait
+  0n peut y définir différents projets de test (basic dans cet exemple ), avec des paramètres de génération et le résultat attendu
+
+** src/test/resources/projects/basic/
+
+  Il définit un cas d'utilisation du générateur de projet ( il peut en avoir d'autres )
+
+*** src/test/resources/projects/basic/archetype.properties  
+
+  Définit les paramètres d'exécution (requiredProperty) utilisés pour le test
+
+*** src/test/resources/projects/basic/goal.txt
+
+  Définit les cibles à fournir à maven pour le test  (ex : package pour produire après génération de l'archetype)
+
+*** src/test/resources/projects/basic/reference
+
+  Contenu attendu en ayant lancé une génération d'archetype avec les paramètre de src/test/resources/projects/basic/archetype.properties
+
+
+* Le catalogue
+
+** ${HOME}/.m2/archetype-catalog.xml
+
+  le catalogue indique les archetype disponibles dans un dépot binaire
+
+  On peut le generer avec la commande <<mvn archetype:crawl>>
+
+  C'est ce fichier qui devra être disponible sur le depot binaire d'openflexo, pour déclarer l'existence de l'archetype
+
+  Pour en savoir plus : 
+
+  * {{http://maven.apache.org/archetype/archetype-models/archetype-catalog/archetype-catalog.html}}
+
+  * {{http://maven.apache.org/archetype/maven-archetype-plugin/specification/archetype-catalog.html}}
+
+
+
+
+
+

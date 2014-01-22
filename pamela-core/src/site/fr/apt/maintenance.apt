@@ -1,0 +1,221 @@
+ -----
+ Maintenance de l'archetype 
+ -----
+ L'équipe OpenFlexo
+ -----
+ -----
+
+Phases de Développement du technologyadapter
+~~~~~~~~~~~~~
+
+   voir tutorial ici .... ( TODO )
+
+
+  Pré-requis
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* moyens
+
+  * jdk 1.6 
+
+  * maven 3
+
+* lectures
+
+  Pour en savoir plus sur l'usage des archetypes, voir les liens ci-dessous :
+  usage :
+
+  * {{http://books.sonatype.com/mvnref-book/reference/archetype-sect-using.html}}
+
+  * {{http://maven.apache.org/archetype/maven-archetype-plugin/usage.html}}
+
+  * {{http://maven.apache.org/guides/introduction/introduction-to-archetypes.html}}
+
+
+On y va
+~~~~~~~~~~~~~~~~~~~~~~~
+
+* tester l'archetype
+
++------------------------------------------------------------------------+
+  mvn verify
++------------------------------------------------------------------------+
+
+* installer en local d'archetype
+
++------------------------------------------------------------------------+
+  mvn install
++------------------------------------------------------------------------+
+
+** publier l'archetype sur le dépot binaire
+
++------------------------------------------------------------------------+
+  mvn deploy
++------------------------------------------------------------------------+
+
+  Il faut les droits pour pouvoir publier, 
+  [TODO] : procedure de soumission officielle
+
+* En savoir plus sur ce qu'est un projet de développement d'archetype maven
+
+** les concepts
+
+  * {{http://books.sonatype.com/mvnref-book/reference/archetype-sect-intro.html}}
+
+  * {{http://maven.apache.org/guides/mini/guide-creating-archetypes.html}}
+
+
+* Maintenance de l'archetype :
+
+** La gestion des versions
+
+  TODO
+
+** Recuperer le projet de developpement de la version courante
+
+  <<git clone git://github.com/agilebirds/openflexo.git 1.6>>
+
+  TODO pour l'archetype
+
+** Organisation des fichiers
+
+  Un archetype contient différents types d'information
+
+*** L'identification du projet archetype
+
+  <<./pom.xml>>
+
+  Il identifie :
+
+  * le projet de développment de l'archetype, 
+
+  * sa version, 
+
+  * le depot de référence du code source de l'archetype
+
+  * le depot de référence pour les utilisateurs de l'archetype 
+
+*** le modele de projet
+
+  Lors de la génération du projet maven correspondant à l'artefact, le contenu de C<./src/main/resources/> sera utiliser comme modèle de projet.  Cette arborescence est considérée comme un ensemble de fichiers interpretés par velocity :
+
+   * Les propriétés à renseigner obligatoirement à chaque usage ( paramètres de génération de l'archetype)
+
+   * Les modules maven générés et leur organisation interne
+
+     * Si le fileSet contient l'option filtered="true", les C<${propertyName}> seront remplacés par la valeur de la propriete C<propertyName> (au sens maven)
+
+     * Lors de la génération des fichiers, le fichier dont le nom contient __propertyName__suiteDuNomDuFichier.xxx seront renommés de telle sorte que __propertyName__ soit remplacé par la valeur de la propriete C<propertyName>
+
+
+**** le modele de projet
+
+***** exemple
+
+   ./src/main/resources/archetype-resources/__rootArtifactId__connector-ui/src/main/java/controller/__prefix__AdapterController.java
+
+*** Les parametrages de l'usage et du comportement de la génération de l'archetype
+
+  Il est définit dans ./src/main/resources/META-INF/maven/archetype-metadata.xml
+
+*** Les tests d'integration
+
+	les fichiers utilisés lors de la commande C<mvn test-integration>, sont organisé comme suit,  
+	avec comme exemple, une generation d'un projet nommé "basic" 
+
+**** Il y a une partie parametrage
+
+	* ./src/test/resources/projects/basic/archetype.properties : les valeurs de parametres de generation
+
+	* ./src/test/resources/projects/basic/goal.txt		 : les cibles maven a déclencher
+
+
+**** le code que l'on voudrait voir généré avec les parametres fournis plus haut 
+
+	dans [[./src/test/resources/projects/basic/reference]]
+
+
+*** Mise a jour du modele de projet
+
+  les modeles de fichiers sont situés dans le répertoire ...
+  Ils sont au format velocity
+
+*** Ajout/modification de parametres
+
+*** tests d'intégration
+
+
++------------------------------------------------------------------------+
+  mvn test-integration>
++------------------------------------------------------------------------+
+
+**** jeux de référence pour comparaison 
+
+  * repertoire
+
+  * goals
+
+  * parametres
+
+**** Comparaison à une référence
+
+**** test comme utilisateur finale 
+
+** comment il a été créé
+
+** livraison d'une nouvelle version
+
+*** livraison du code source
+
+*** publication
+
+**** mise a disposition sur le serveur
+
+**** mise a jour du catalogue
+
+  <<http://books.sonatype.com/mvnref-book/reference/archetype-sect-publishing.html>>
+
+* Le catalogue
+
+  On peut le generer avec la commande C<mvn archetype:crawl>, le fichier est alors disponible dans ${HOME}/.m2/archetype-catalog.xml
+  C'est ce fichier qui devra est disponible sur le depot binaire d'openflexo, pour declarer l'existence de l'archetype
+
+  * <<http://maven.apache.org/archetype/archetype-models/archetype-catalog/archetype-catalog.html>>
+
+  * <<http://maven.apache.org/archetype/maven-archetype-plugin/specification/archetype-catalog.html>>
+
+* Deploiement pour usage
+
+** En local
+
++------------------------------------------------------------------------+
+  mvn install
++------------------------------------------------------------------------+
+
+** Sur le dépot d'openflexo
+
++------------------------------------------------------------------------+
+  mvn deploy
++------------------------------------------------------------------------+
+
+** SEE ALSO
+
+*** le concept d'archetype
+
+*** Quelques liens sur la création d'archetypes
+
+  * <<http://maven.apache.org/archetype/maven-archetype-plugin/>>
+
+  * <<http://blog.soat.fr/2011/06/maven-pour-les-nuls-les-archetypes/?doing_wp_cron=1379014170.8262538909912109375000>>
+
+  * <<https://community.jboss.org/wiki/MavenArchetypeCreationGuidelines?_sscc=t>>
+
+*** Gestion de configuration
+
+ * <<http://blog.sonatype.com/people/2009/09/maven-tips-and-tricks-using-github/>>
+
+*** exemple de documentation
+
+ * <<https://github.com/tbroyer/gwt-maven-archetypes/blob/master/README.md>>
+
+

@@ -1,0 +1,67 @@
+ -----
+ Test de l'archetype 
+ -----
+ L'équipe OpenFlexo
+ -----
+ -----
+
+Comment verifier le bon fonctionnement de l'archetype
+~~~~~~~~~~~~~
+
+* Les tests d'integration
+
+** les fichiers à manipuler
+
+	les fichiers utilisés lors de la commande C<mvn test-integration>, sont organisés comme suit,  
+	avec comme exemple, une generation d'un projet nommé "basic" 
+
+*** Il y a une partie parametrage
+
+	* ./src/test/resources/projects/basic/archetype.properties : les valeurs de parametres de generation
+
+		exemple
+
++------------------------------------------------------------------------+
+package=org.openflexo.technologyadapter.csv
+version=1.6-SNAPSHOT
+groupId=org.openflexo.technologyadapter
+artifactId=csv
+technologyExtension=csv
+technologyPrefix=CSV
+technologyadapterApiVersion=1.0
++------------------------------------------------------------------------+
+
+
+	* ./src/test/resources/projects/basic/goal.txt		 : les cibles maven a déclencher
+
+		exemple
+
++------------------------------------------------------------------------+
+package
++------------------------------------------------------------------------+
+
+*** et le code que l'on voudrait voir généré avec les parametres fournis plus haut 
+
+	dans [[./src/test/resources/projects/basic/reference]]
+
+
+** les tests d'intégration
+
++------------------------------------------------------------------------+
+  mvn test-integration>
++------------------------------------------------------------------------+
+
+*** comparer les fichiers en ecart
+
++------------------------------------------------------------------------+
+	diff -r --brief	target/test-classes/projects/basic/project/csv  target/test-classes/projects/basic/reference  | awk '{ print "gvimdiff --nofork " $3 " " $5"\n " ;}'  | tee diffs.txt ; chmod u+x diffs.txt ; ./diffs.txt
++------------------------------------------------------------------------+
+
+*** liste  des fichiers différents
+
++------------------------------------------------------------------------+
+	cd target/test-classes/projects/basic ; \
+	cd project/csv; find . 2>&1 | sort | tee /tmp/found ; \
+	cd ../../reference; find . 2>&1 | sort  | tee  /tmp/ref ; \
+	gvimdiff --nofork /tmp/found  /tmp/ref; 
++------------------------------------------------------------------------+
