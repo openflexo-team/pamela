@@ -16,6 +16,13 @@ public class DeserializationFinalizer {
 	private final org.openflexo.model.annotations.DeserializationFinalizer finalizer;
 	private final Method deserializationFinalizerMethod;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param finalizer
+	 * @param deserializationFinalizerMethod
+	 * @throws ModelDefinitionException
+	 */
 	public DeserializationFinalizer(org.openflexo.model.annotations.DeserializationFinalizer finalizer,
 			Method deserializationFinalizerMethod) throws ModelDefinitionException {
 		this.finalizer = finalizer;
