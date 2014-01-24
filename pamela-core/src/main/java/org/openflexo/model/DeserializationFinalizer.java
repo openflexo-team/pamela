@@ -29,6 +29,11 @@ public class DeserializationFinalizer {
 		this.deserializationFinalizerMethod = deserializationFinalizerMethod;
 	}
 
+	/**
+	 * Return deserialization method
+	 * 
+	 * @return
+	 */
 	public Method getDeserializationFinalizerMethod() {
 		return deserializationFinalizerMethod;
 	}
