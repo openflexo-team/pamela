@@ -229,7 +229,8 @@ class XMLSerializer {
 									e);
 						}
 					} else {
-						throw new ModelDefinitionException("No XML element for " + modelEntity.getImplementedInterface());
+						throw new ModelDefinitionException("No XML element for " + modelEntity.getImplementedInterface() + " modelEntity="
+								+ modelEntity);
 					}
 				} finally {
 					handler.setSerializing(false);
