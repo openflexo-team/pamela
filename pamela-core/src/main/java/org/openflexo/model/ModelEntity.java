@@ -129,6 +129,7 @@ public class ModelEntity<I> {
 	private final Map<Class<I>, Set<Method>> delegateImplementations;
 
 	ModelEntity(@Nonnull Class<I> implementedInterface) throws ModelDefinitionException {
+
 		this.implementedInterface = implementedInterface;
 		declaredModelProperties = new HashMap<String, ModelProperty<I>>();
 		properties = new HashMap<String, ModelProperty<? super I>>();
@@ -171,7 +172,10 @@ public class ModelEntity<I> {
 		// We scan already all the declared properties but we do not resolve their type. We do not resolve inherited properties either.
 		for (Method m : getImplementedInterface().getDeclaredMethods()) {
 			String propertyIdentifier = getPropertyIdentifier(m);
-			if (propertyIdentifier == null || !declaredModelProperties.containsKey(propertyIdentifier)) {
+			// Sylvain: i commented following condition, as if a Pamela method overrides an interface where parent method
+			// was not annotated, property was ignored. But i dont't understand the reason of this condition
+			// Guillaume, could you please check this ?
+			if (propertyIdentifier == null /*|| !declaredModelProperties.containsKey(propertyIdentifier)*/) {
 				List<Method> overridenMethods = ReflectionUtils.getOverridenMethods(m);
 				for (Method override : overridenMethods) {
 					propertyIdentifier = getPropertyIdentifier(override);
@@ -180,6 +184,7 @@ public class ModelEntity<I> {
 					}
 				}
 			}
+
 			if (propertyIdentifier != null && !declaredModelProperties.containsKey(propertyIdentifier)) {
 				// The next line creates the property
 				ModelProperty<I> property = ModelProperty.getModelProperty(propertyIdentifier, this);
@@ -230,6 +235,7 @@ public class ModelEntity<I> {
 				}
 			}
 		}
+
 	}
 
 	private String getPropertyIdentifier(Method m) {
