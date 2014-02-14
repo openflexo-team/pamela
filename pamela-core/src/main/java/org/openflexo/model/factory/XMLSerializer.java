@@ -186,6 +186,8 @@ class XMLSerializer {
 											returned.setAttribute(p.getXMLTag(), value);
 										}
 									} catch (InvalidDataException e) {
+										System.err.println("Cannot serialize " + oValue + " for property " + p);
+										e.printStackTrace();
 										throw new ModelExecutionException(e);
 									}
 								}
