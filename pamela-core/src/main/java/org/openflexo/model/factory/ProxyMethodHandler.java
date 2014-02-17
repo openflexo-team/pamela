@@ -60,11 +60,11 @@ import com.google.common.collect.Collections2;
 
 public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListener {
 
-	private static final String DELETED = "deleted";
-	private static final String UNDELETED = "undeleted";
-	private static final String MODIFIED = "modified";
-	private static final String DESERIALIZING = "deserializing";
-	private static final String SERIALIZING = "serializing";
+	public static final String DELETED = "deleted";
+	public static final String UNDELETED = "undeleted";
+	public static final String MODIFIED = "modified";
+	public static final String DESERIALIZING = "deserializing";
+	public static final String SERIALIZING = "serializing";
 
 	private I object;
 
@@ -263,8 +263,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		if (proceed != null) {
 			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
+			boolean callSetModifiedAtTheEnd = false;
 			if (property != null) {
 				if (PamelaUtils.methodIsEquivalentTo(method, property.getSetterMethod())) {
+					// We have found a concrete implementation of that method as a setter call
+					// We will invoke it, but also notify UndoManager, and call setModified() after setter invoking
 					// System.out.println("DETECTS SET with " + proceed + " insteadof " + method);
 					Object oldValue = invokeGetter(property);
 					if (getModelFactory().getUndoManager() != null) {
@@ -273,24 +276,43 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 									new SetCommand<I>(getObject(), getModelEntity(), property, oldValue, args[0], getModelFactory()));
 						}
 					}
+					if (property.isSerializable()) {
+						callSetModifiedAtTheEnd = true;
+					}
 				}
 				if (PamelaUtils.methodIsEquivalentTo(method, property.getAdderMethod())) {
+					// We have found a concrete implementation of that method as a adder call
+					// We will invoke it, but also notify UndoManager, and call setModified() after adder invoking
 					// System.out.println("DETECTS ADD with " + proceed + " insteadof " + method);
 					if (getModelFactory().getUndoManager() != null) {
 						getModelFactory().getUndoManager().addEdit(
 								new AddCommand<I>(getObject(), getModelEntity(), property, args[0], getModelFactory()));
 					}
+					if (property.isSerializable()) {
+						callSetModifiedAtTheEnd = true;
+					}
 				}
 				if (PamelaUtils.methodIsEquivalentTo(method, property.getRemoverMethod())) {
+					// We have found a concrete implementation of that method as a remover call
+					// We will invoke it, but also notify UndoManager, and call setModified() after remover invoking
 					// System.out.println("DETECTS REMOVE with " + proceed + " insteadof " + method);
 					if (getModelFactory().getUndoManager() != null) {
 						getModelFactory().getUndoManager().addEdit(
 								new RemoveCommand<I>(getObject(), getModelEntity(), property, args[0], getModelFactory()));
 					}
+					if (property.isSerializable()) {
+						callSetModifiedAtTheEnd = true;
+					}
 				}
 			}
 			try {
-				return proceed.invoke(self, args);
+				// Now we invoke the found concrete implementatioon
+				Object returned = proceed.invoke(self, args);
+				// Then we call setModified() if required
+				if (callSetModifiedAtTheEnd) {
+					invokeSetModified(true);
+				}
+				return returned;
 			} catch (InvocationTargetException e) {
 				e.printStackTrace();
 				throw new ModelExecutionException(e.getCause());
@@ -2076,6 +2098,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	}
 
 	private void internallyInvokeSetModified(boolean modified) throws ModelDefinitionException {
+
 		if (modified) {
 			if (!isDeserializing() && !isSerializing()) {
 				boolean old = this.modified;
