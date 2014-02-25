@@ -2,6 +2,7 @@ package org.openflexo.model;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -224,7 +225,26 @@ public class ModelEntity<I> {
 				if (getImplementedInterface().isAssignableFrom(c)) {
 					Class<I> candidateImplementation = (Class<I>) c;
 					// System.out.println("Found implementation " + candidateImplementation + " for " + getImplementedInterface());
-					Set<Method> implementedMethods = new HashSet<Method>();
+					Set<Method> implementedMethods = new HashSet<Method>() {
+						// We override here the add method to avoid to have duplicated method declaration with different return types
+						@Override
+						public boolean add(Method m) {
+							for (Method m2 : this) {
+								if (PamelaUtils.methodIsEquivalentTo(m, m2)) {
+									if (TypeUtils.isTypeAssignableFrom(m.getGenericReturnType(), m2.getGenericReturnType())) {
+										// m2 is the most specialized method, we can skip the adding of m
+										return false;
+									} else if (TypeUtils.isTypeAssignableFrom(m2.getGenericReturnType(), m.getGenericReturnType())) {
+										// m is the most specialized method
+										// We remove the previously defined (but less generic) m2, and add more generic m method
+										remove(m2);
+										return super.add(m);
+									}
+								}
+							}
+							return super.add(m);
+						}
+					};
 					for (Method m : candidateImplementation.getDeclaredMethods()) {
 						implementedMethods.add(m);
 					}
