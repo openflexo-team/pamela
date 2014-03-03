@@ -374,7 +374,15 @@ public class ModelFactory {
 
 	public <I> ProxyMethodHandler<I> getHandler(I object) {
 		if (object instanceof ProxyObject) {
-			return (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
+			
+			// Vincent: Check this, handler can be of DelegateImplementation Type( in the case of Edition actions containers)
+			// ???
+			/*if(((ProxyObject) object).getHandler() instanceof DelegateImplementation){
+				return ((DelegateImplementation<I>) ((ProxyObject) object).getHandler()).getMasterMethodHandler();
+			}*/
+			if(((ProxyObject) object).getHandler() instanceof ProxyMethodHandler){
+				return (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
+			}
 		}
 		return null;
 	}
