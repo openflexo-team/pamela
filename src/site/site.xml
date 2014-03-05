@@ -4,7 +4,7 @@
   xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
   <bannerLeft>
     <name>Openflexo</name>
-    <src>images/openflexo2.png</src>
+    <src>${organization.logo}</src>
     <href>http://openflexo.org/</href>
   </bannerLeft>
   <bannerRight>
