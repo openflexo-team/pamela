@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.openflexo.model.converter.DataBindingConverter;
+import org.openflexo.model.converter.ResourceLocationConverter;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.factory.ModelFactory;
 
@@ -51,6 +52,7 @@ public class StringConverterLibrary {
 		addConverter(new FontConverter());
 		addConverter(new NumberConverter());
 		addConverter(new DataBindingConverter());
+		addConverter(new ResourceLocationConverter());
 	}
 
 	public Map<Class<?>, Converter<?>> getConverters() {
