@@ -6,24 +6,24 @@ import java.util.logging.Level;
 
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.rm.Resource;
+import org.openflexo.rm.CompositeResourceLocatorImpl;
 import org.openflexo.toolbox.FileUtils;
-import org.openflexo.toolbox.ResourceLocation;
-import org.openflexo.toolbox.ResourceLocator;
 
-public class ResourceLocationConverter extends Converter<ResourceLocation> {
+public class ResourceLocationConverter extends Converter<Resource> {
 
 	private static final java.util.logging.Logger logger = org.openflexo.logging.FlexoLogger.getLogger(ResourceLocationConverter.class
 			.getPackage().getName());
-	private static final ResourceLocator rl = ResourceLocator.getResourceLocator();
+	private static final CompositeResourceLocatorImpl rl = CompositeResourceLocatorImpl.getResourceLocator();
 
 
 	public ResourceLocationConverter() {
-		super(ResourceLocation.class);
+		super(Resource.class);
 	}
 
 	@Override
-	public ResourceLocation convertFromString(String value, ModelFactory factory) {
-		ResourceLocation resourceloc = rl.locateResource(value);
+	public Resource convertFromString(String value, ModelFactory factory) {
+		Resource resourceloc = rl.locateResource(value);
 		if (resourceloc == null) {
 			logger.warning("Cannot find Resource: " + value );
 		}
@@ -34,7 +34,7 @@ public class ResourceLocationConverter extends Converter<ResourceLocation> {
 	}
 
 	@Override
-	public String convertToString(ResourceLocation value) {
-		return value.getInitialPath();
+	public String convertToString(Resource value) {
+		return value.getRelativePath();
 	}
 }
