@@ -69,5 +69,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<description>Modelling framework core component.</description>
 </project>
 
