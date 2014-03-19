@@ -1,23 +1,38 @@
  -----
- Title Here
+PAMELA CORE
  -----
- Author Here
+ Authors Here
  -----
- Date Here
+06/03/2014
  -----
-
-Maven Site for your project
-
- Congratulations! If you are looking at this page then you have successfully generated a
- template site employing the site archetype and you have run:
-
-
-Test d'ajout d'une image
-
-[images/openflexo2.png]
   
 +-----+
 
-mvn site
+Description
+
+${project.description}
+
+* Sub-section title
+
+** Sub-sub-section title
+
+*** Sub-sub-sub-section title
+
+**** Sub-sub-sub-sub-section title
+
+      * List item 1.
+
+      * List item 2.
+
+        Paragraph contained in list item 2.
+
+            * Sub-list item 1.
+
+            * Sub-list item 2.
+
+      * List item 3.
+        Force end of list:
+
+      []
 
 +-----+

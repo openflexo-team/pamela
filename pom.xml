@@ -13,6 +13,7 @@
 	<packaging>pom</packaging>
 	<properties>
 		<connie.version>1.0-SNAPSHOT</connie.version>
+		<project.logo>https://media.openflexo.org/images/pamela_logo.png</project.logo>
 	</properties>
 	<scm>
 		<connection>scm:git:ssh://git@github.com:openflexo-team/pamela.git</connection>

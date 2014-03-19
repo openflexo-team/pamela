@@ -499,7 +499,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			}
 
 		}
-		System.err.println("Cannot handle method " + method);
+		System.err.println("Cannot handle method " + method + " for " + getObject().getClass());
 		return null;
 	}
 
