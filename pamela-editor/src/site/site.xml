@@ -17,11 +17,11 @@
     <version>1.2</version>
   </skin>
   <body>
-    <menu name="Pamela Core">
+    <menu name="Pamela Editor">
       <item name="Description" href="index.html" />
       <item name="Contribute" href="faq.html" />
       <item name="FAQ" href="faq.html" />
-       <item name="Openflexo wiki page" href="https://openflexo.org/tiki/Pamela" />
+      <item name="Openflexo wiki page" href="https://openflexo.org/tiki/Pamela" />
     </menu>	
     <menu ref="parent" />
     <menu ref="modules" />
