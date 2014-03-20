@@ -696,9 +696,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			throw new ModelExecutionException(e);
 		} catch (InvocationTargetException e) {
 			throw new ModelExecutionException(e);
-		} catch (NullPointerException e) {
-			e.printStackTrace();
-			return null;
 		}
 	}
 
