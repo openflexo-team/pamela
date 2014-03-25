@@ -98,9 +98,6 @@ public class StringEncoder {
 		Converter<?> returned;
 		Class<?> candidate = objectType;
 		//do {
-			if(objectType.getName().equals("org.openflexo.fge.geom.FGEPoint")){
-				System.out.println("test");
-			}
 			//returned = convertersMap.get(candidate);
 			returned = TypeUtils.objectForClass(candidate, convertersMap,false);
 			/*if (candidate.equals(Object.class)) {
