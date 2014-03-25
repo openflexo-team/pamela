@@ -64,13 +64,13 @@ class XMLSerializer {
 		return modelFactory.getStringEncoder();
 	}
 
-	public Document serializeDocument(Object object, OutputStream out) throws IOException, IllegalArgumentException,
-			IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+	public Document serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus) throws IOException,
+			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Document builtDocument = new Document();
 		id = 0;
 		objectReferences = new HashMap<Object, ObjectReference>();
 		alreadySerialized = new HashMap<Object, Object>();
-		Element rootElement = serializeElement(object, null);
+		Element rootElement = serializeElement(object, null, resetModifiedStatus);
 		postProcess(rootElement);
 		builtDocument.setRootElement(rootElement);
 		Format prettyFormat = Format.getPrettyFormat();
@@ -102,8 +102,8 @@ class XMLSerializer {
 		return String.valueOf(id++);
 	}
 
-	private <I> Element serializeElement(Object object, XMLElement context) throws IllegalArgumentException, IllegalAccessException,
-			InvocationTargetException, ModelDefinitionException {
+	private <I> Element serializeElement(Object object, XMLElement context, boolean resetModifiedStatus) throws IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Element returned;
 		if (object instanceof ProxyObject) {
 			ProxyMethodHandler<I> handler = (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
@@ -156,7 +156,7 @@ class XMLSerializer {
 			if (reference == null) {
 				// First time i see this object
 				try {
-					handler.setSerializing(true);
+					handler.setSerializing(true, resetModifiedStatus);
 
 					// Put this object in alreadySerialized objects
 					reference = generateReference(object);
@@ -197,7 +197,7 @@ class XMLSerializer {
 								case SINGLE:
 									Object oValue = handler.invokeGetter(p);
 									if (oValue != null) {
-										Element propertyElement = serializeElement(oValue, propertyXMLElement);
+										Element propertyElement = serializeElement(oValue, propertyXMLElement, resetModifiedStatus);
 										returned.addContent(propertyElement);
 									}
 									break;
@@ -205,7 +205,7 @@ class XMLSerializer {
 									List<?> values = (List<?>) handler.invokeGetter(p);
 									for (Object o : values) {
 										if (o != null) {
-											Element propertyElement2 = serializeElement(o, propertyXMLElement);
+											Element propertyElement2 = serializeElement(o, propertyXMLElement, resetModifiedStatus);
 											returned.addContent(propertyElement2);
 										}
 									}
@@ -235,7 +235,7 @@ class XMLSerializer {
 								+ modelEntity);
 					}
 				} finally {
-					handler.setSerializing(false);
+					handler.setSerializing(false, resetModifiedStatus);
 				}
 			} else {
 				// This object was already serialized somewhere, only put an idref

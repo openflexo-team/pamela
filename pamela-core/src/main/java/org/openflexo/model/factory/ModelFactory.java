@@ -374,13 +374,13 @@ public class ModelFactory {
 
 	public <I> ProxyMethodHandler<I> getHandler(I object) {
 		if (object instanceof ProxyObject) {
-			
+
 			// Vincent: Check this, handler can be of DelegateImplementation Type( in the case of Edition actions containers)
 			// ???
 			/*if(((ProxyObject) object).getHandler() instanceof DelegateImplementation){
 				return ((DelegateImplementation<I>) ((ProxyObject) object).getHandler()).getMasterMethodHandler();
 			}*/
-			if(((ProxyObject) object).getHandler() instanceof ProxyMethodHandler){
+			if (((ProxyObject) object).getHandler() instanceof ProxyMethodHandler) {
 				return (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
 			}
 		}
@@ -660,7 +660,7 @@ public class ModelFactory {
 	public String stringRepresentation(Object object) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
-			serialize(object, baos, SerializationPolicy.PERMISSIVE);
+			serialize(object, baos, SerializationPolicy.PERMISSIVE, false);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -670,13 +670,13 @@ public class ModelFactory {
 
 	public void serialize(Object object, OutputStream os) throws IOException, IllegalArgumentException, IllegalAccessException,
 			InvocationTargetException, ModelDefinitionException {
-		serialize(object, os, SerializationPolicy.PERMISSIVE);
+		serialize(object, os, SerializationPolicy.PERMISSIVE, true);
 	}
 
-	public void serialize(Object object, OutputStream os, SerializationPolicy policy) throws IOException, IllegalArgumentException,
-			IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+	public void serialize(Object object, OutputStream os, SerializationPolicy policy, boolean resetModifiedStatus) throws IOException,
+			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		XMLSerializer serializer = new XMLSerializer(this, policy);
-		serializer.serializeDocument(object, os);
+		serializer.serializeDocument(object, os, resetModifiedStatus);
 	}
 
 	public Object deserialize(InputStream is) throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
