@@ -2064,11 +2064,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return serializing;
 	}
 
-	public void setSerializing(boolean serializing) throws ModelDefinitionException {
+	public void setSerializing(boolean serializing, boolean resetModifiedStatus) throws ModelDefinitionException {
 		if (this.serializing != serializing) {
 			this.serializing = serializing;
 			firePropertyChange(SERIALIZING, !serializing, serializing);
-			if (!serializing) {
+			if (resetModifiedStatus && !serializing) {
 				internallyInvokeSetModified(false);
 			}
 		}

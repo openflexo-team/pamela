@@ -58,7 +58,7 @@ public class SerializationTests extends AbstractPAMELATest {
 		FileOutputStream fos = null;
 		try {
 			fos = new FileOutputStream(file);
-			factory.serialize(process, fos, SerializationPolicy.RESTRICTIVE);
+			factory.serialize(process, fos, SerializationPolicy.RESTRICTIVE, true);
 			Assert.fail("Restrictive serialization should not allow the serialization of a " + MyNode.class.getName());
 		} catch (RestrictiveSerializationException e) {
 			// Yes this is what we wanted
@@ -69,7 +69,7 @@ public class SerializationTests extends AbstractPAMELATest {
 		}
 		try {
 			fos = new FileOutputStream(file);
-			factory.serialize(process, fos, SerializationPolicy.EXTENSIVE);
+			factory.serialize(process, fos, SerializationPolicy.EXTENSIVE, true);
 		} catch (RestrictiveSerializationException e) {
 			Assert.fail("Extensive serialization should allow the serialization of a " + MyNode.class.getName());
 		} catch (Exception e) {
@@ -109,7 +109,7 @@ public class SerializationTests extends AbstractPAMELATest {
 		// stuffs remain serialized)
 		try {
 			fos = new FileOutputStream(file);
-			factory.serialize(process, fos, SerializationPolicy.EXTENSIVE);
+			factory.serialize(process, fos, SerializationPolicy.EXTENSIVE, true);
 		} catch (RestrictiveSerializationException e) {
 			Assert.fail("Extensive serialization should allow the serialization of a " + MyNode.class.getName());
 		} catch (Exception e) {

@@ -50,31 +50,31 @@ public class DeserializationTests {
 
 		Assert.assertNotNull(factory.getModelContext().getModelEntity(Node.class));
 
-		Node rootNode = (Node) factory.newInstance(Node.class);
+		Node rootNode = factory.newInstance(Node.class);
 		rootNode.setName("Root");
-		Node childNode1 = (Node) factory.newInstance(Node.class);
+		Node childNode1 = factory.newInstance(Node.class);
 		childNode1.setName("Node1");
 		rootNode.addToNodes(childNode1);
-		Node childNode2 = (Node) factory.newInstance(Node.class);
+		Node childNode2 = factory.newInstance(Node.class);
 		childNode2.setName("Node2");
 		rootNode.addToNodes(childNode2);
-		Node childNode3 = (Node) factory.newInstance(Node.class);
+		Node childNode3 = factory.newInstance(Node.class);
 		childNode3.setName("Node3");
 		rootNode.addToNodes(childNode3);
-		Node childNode21 = (Node) factory.newInstance(Node.class);
+		Node childNode21 = factory.newInstance(Node.class);
 		childNode21.setName("Node21");
 		childNode2.addToNodes(childNode21);
-		Node childNode22 = (Node) factory.newInstance(Node.class);
+		Node childNode22 = factory.newInstance(Node.class);
 		childNode22.setName("Node22");
 		childNode2.addToNodes(childNode22);
-		Node childNode23 = (Node) factory.newInstance(Node.class);
+		Node childNode23 = factory.newInstance(Node.class);
 		childNode23.setName("Node23");
 		childNode2.addToNodes(childNode23);
 
 		FileOutputStream fos = null;
 		try {
 			fos = new FileOutputStream(file);
-			factory.serialize(rootNode, fos, SerializationPolicy.EXTENSIVE);
+			factory.serialize(rootNode, fos, SerializationPolicy.EXTENSIVE, true);
 		} catch (Exception e) {
 			Assert.fail(e.getMessage());
 		} finally {
