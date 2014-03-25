@@ -6,6 +6,7 @@ package org.openflexo.model;
 import java.util.Hashtable;
 import java.util.Map;
 
+import org.openflexo.antar.binding.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.factory.ModelFactory;
@@ -96,14 +97,15 @@ public class StringEncoder {
 	public static <T> Converter<T> converterForClass(Class<T> objectType, Map<Class<?>, Converter<?>> convertersMap) {
 		Converter<?> returned;
 		Class<?> candidate = objectType;
-		do {
-			returned = convertersMap.get(candidate);
-			if (candidate.equals(Object.class)) {
+		//do {
+			//returned = convertersMap.get(candidate);
+			returned = TypeUtils.objectForClass(candidate, convertersMap,false);
+			/*if (candidate.equals(Object.class)) {
 				candidate = null;
 			} else {
 				candidate = candidate.getSuperclass();
-			}
-		} while (returned == null && candidate != null);
+			}*/
+		//} while (returned == null && candidate != null);
 		return (Converter<T>) returned;
 	}
 
