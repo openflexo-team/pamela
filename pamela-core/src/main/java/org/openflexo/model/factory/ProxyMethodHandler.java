@@ -1584,7 +1584,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		ProxyMethodHandler<?> clonedValueHandler = getModelFactory().getHandler(objectToCloneOrReference);
 		returned = clonedValueHandler.performClone(clonedObjects);
-		System.out.println("CLONING " + objectToCloneOrReference + " clone is " + returned);
+		//System.out.println("CLONING " + objectToCloneOrReference + " clone is " + returned);
 		return returned;
 	}
 
