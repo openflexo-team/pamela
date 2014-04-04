@@ -322,8 +322,12 @@ public class ModelFactory {
 
 	public <I> void setImplementingClassForInterface(Class<? extends I> implementingClass, Class<I> implementedInterface)
 			throws ModelDefinitionException {
-		PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
-		proxyFactory.setSuperclass(implementingClass);
+		try {
+			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
+			proxyFactory.setSuperclass(implementingClass);
+		} catch (ModelExecutionException e) {
+			// OK, we won't add the implementation since the interface is not declared
+		}
 	}
 
 	<I> void setImplementingClassForInterface(Class<? extends I> implementingClass, Class<I> implementedInterface, boolean useExtended)
