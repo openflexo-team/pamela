@@ -33,8 +33,18 @@ import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.undo.CreateCommand;
-import org.openflexo.model.undo.UndoManager;
 
+/**
+ * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
+ * 
+ * This class should be considered stateless, regarding to the state of handled instances.<br>
+ * 
+ * Note that a {@link ModelFactory} might refer to an {@link EditingContext}. When so, new instances are automatically registered in this
+ * {@link EditingContext}.
+ * 
+ * @author sylvain
+ * 
+ */
 public class ModelFactory {
 
 	private Class<?> defaultModelClass = Object.class;
@@ -47,7 +57,7 @@ public class ModelFactory {
 
 	private ModelContext extendedContext;
 
-	private UndoManager undoManager;
+	private EditingContext editingContext;
 
 	public Map<Class, PAMELAProxyFactory> getProxyFactories() {
 		return proxyFactories;
@@ -125,7 +135,7 @@ public class ModelFactory {
 				throw new InstantiationException(modelEntity + " is declared as an abstract entity, cannot instantiate it");
 			}
 			locked = true;
-			ProxyMethodHandler<I> handler = new ProxyMethodHandler<I>(this);
+			ProxyMethodHandler<I> handler = new ProxyMethodHandler<I>(this, getEditingContext());
 			I returned = (I) create(new Class<?>[0], new Object[0], handler);
 			handler.setObject(returned);
 			if (args == null) {
@@ -174,20 +184,6 @@ public class ModelFactory {
 		stringEncoder = new StringEncoder(this);
 	}
 
-	/**
-	 * Creates and register an UndoManager tracking edits on this ModelFactory
-	 * 
-	 * @return
-	 */
-	public UndoManager createUndoManager() {
-		undoManager = new UndoManager();
-		return undoManager;
-	}
-
-	public UndoManager getUndoManager() {
-		return undoManager;
-	}
-
 	public ModelContext getModelContext() {
 		return modelContext;
 	}
@@ -212,8 +208,11 @@ public class ModelFactory {
 		try {
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
 			I returned = proxyFactory.newInstance(args);
-			if (getUndoManager() != null) {
-				getUndoManager().addEdit(new CreateCommand<I>(returned, proxyFactory.getModelEntity(), this));
+			if (getEditingContext() != null) {
+				getEditingContext().register(returned);
+				if (getEditingContext().getUndoManager() != null) {
+					getEditingContext().getUndoManager().addEdit(new CreateCommand<I>(returned, proxyFactory.getModelEntity(), this));
+				}
 			}
 			return returned;
 		} catch (IllegalArgumentException e) {
@@ -245,8 +244,11 @@ public class ModelFactory {
 		try {
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true, useExtended);
 			I returned = proxyFactory.newInstance(args);
-			if (getUndoManager() != null) {
-				getUndoManager().addEdit(new CreateCommand<I>(returned, proxyFactory.getModelEntity(), this));
+			if (getEditingContext() != null) {
+				getEditingContext().register(returned);
+				if (getEditingContext().getUndoManager() != null) {
+					getEditingContext().getUndoManager().addEdit(new CreateCommand<I>(returned, proxyFactory.getModelEntity(), this));
+				}
 			}
 			return returned;
 		} catch (IllegalArgumentException e) {
@@ -731,4 +733,24 @@ public class ModelFactory {
 	 */
 	public <I> void objectHasBeenDeserialized(I newlyCreatedObject, Class<I> implementedInterface) {
 	}
+
+	/**
+	 * Return {@link EditingContext} associated with this factory.
+	 * 
+	 * @return
+	 */
+	public EditingContext getEditingContext() {
+		return editingContext;
+	}
+
+	/**
+	 * Sets {@link EditingContext} associated with this factory.<br>
+	 * When not null, new instances created with this factory are automatically registered in this EditingContext
+	 * 
+	 * @param editingContext
+	 */
+	public void setEditingContext(EditingContext editingContext) {
+		this.editingContext = editingContext;
+	}
+
 }

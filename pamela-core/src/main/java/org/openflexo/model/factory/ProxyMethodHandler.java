@@ -52,6 +52,7 @@ import org.openflexo.model.undo.CreateCommand;
 import org.openflexo.model.undo.DeleteCommand;
 import org.openflexo.model.undo.RemoveCommand;
 import org.openflexo.model.undo.SetCommand;
+import org.openflexo.model.undo.UndoManager;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 import com.google.common.base.Defaults;
@@ -119,7 +120,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	private static Method OBJECT_FOR_KEY;
 	private static Method SET_OBJECT_FOR_KEY;
 	private static Method GET_TYPE_FOR_KEY;
+
 	private final PAMELAProxyFactory<I> pamelaProxyFactory;
+	private final EditingContext editingContext;
 
 	static {
 		try {
@@ -170,8 +173,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	public ProxyMethodHandler(PAMELAProxyFactory<I> pamelaProxyFactory) throws ModelDefinitionException {
+	public ProxyMethodHandler(PAMELAProxyFactory<I> pamelaProxyFactory, EditingContext editingContext) throws ModelDefinitionException {
 		this.pamelaProxyFactory = pamelaProxyFactory;
+		this.editingContext = editingContext;
 		values = new HashMap<String, Object>(getModelEntity().getPropertiesSize(), 1.0f);
 		initialized = !getModelEntity().hasInitializers();
 		initDelegateImplementations();
@@ -213,6 +217,17 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	public void setObject(I object) {
 		this.object = object;
+	}
+
+	public UndoManager getUndoManager() {
+		if (getEditingContext() != null) {
+			return getEditingContext().getUndoManager();
+		}
+		return null;
+	}
+
+	public EditingContext getEditingContext() {
+		return editingContext;
 	}
 
 	public ModelFactory getModelFactory() {
@@ -270,9 +285,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					// We will invoke it, but also notify UndoManager, and call setModified() after setter invoking
 					// System.out.println("DETECTS SET with " + proceed + " insteadof " + method);
 					Object oldValue = invokeGetter(property);
-					if (getModelFactory().getUndoManager() != null) {
+					if (getUndoManager() != null) {
 						if (oldValue != args[0]) {
-							getModelFactory().getUndoManager().addEdit(
+							getUndoManager().addEdit(
 									new SetCommand<I>(getObject(), getModelEntity(), property, oldValue, args[0], getModelFactory()));
 						}
 					}
@@ -284,9 +299,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					// We have found a concrete implementation of that method as a adder call
 					// We will invoke it, but also notify UndoManager, and call setModified() after adder invoking
 					// System.out.println("DETECTS ADD with " + proceed + " insteadof " + method);
-					if (getModelFactory().getUndoManager() != null) {
-						getModelFactory().getUndoManager().addEdit(
-								new AddCommand<I>(getObject(), getModelEntity(), property, args[0], getModelFactory()));
+					if (getUndoManager() != null) {
+						getUndoManager().addEdit(new AddCommand<I>(getObject(), getModelEntity(), property, args[0], getModelFactory()));
 					}
 					if (property.isSerializable()) {
 						callSetModifiedAtTheEnd = true;
@@ -296,9 +310,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					// We have found a concrete implementation of that method as a remover call
 					// We will invoke it, but also notify UndoManager, and call setModified() after remover invoking
 					// System.out.println("DETECTS REMOVE with " + proceed + " insteadof " + method);
-					if (getModelFactory().getUndoManager() != null) {
-						getModelFactory().getUndoManager().addEdit(
-								new RemoveCommand<I>(getObject(), getModelEntity(), property, args[0], getModelFactory()));
+					if (getUndoManager() != null) {
+						getUndoManager().addEdit(new RemoveCommand<I>(getObject(), getModelEntity(), property, args[0], getModelFactory()));
 					}
 					if (property.isSerializable()) {
 						callSetModifiedAtTheEnd = true;
@@ -580,8 +593,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return false;
 		}
 
-		if (trackAtomicEdit && getModelFactory().getUndoManager() != null) {
-			getModelFactory().getUndoManager().addEdit(new DeleteCommand<I>(getObject(), getModelEntity(), getModelFactory()));
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new DeleteCommand<I>(getObject(), getModelEntity(), getModelFactory()));
 		}
 
 		deleting = true;
@@ -638,8 +651,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return false;
 		}
 
-		if (trackAtomicEdit && getModelFactory().getUndoManager() != null) {
-			getModelFactory().getUndoManager().addEdit(new CreateCommand<I>(getObject(), getModelEntity(), getModelFactory()));
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new CreateCommand<I>(getObject(), getModelEntity(), getModelFactory()));
 		}
 
 		undeleting = true;
@@ -894,10 +907,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	private void internallyInvokeSetter(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
 		Object oldValue = invokeGetter(property);
-		if (trackAtomicEdit && getModelFactory().getUndoManager() != null) {
+		if (trackAtomicEdit && getUndoManager() != null) {
 			if (oldValue != value) {
-				getModelFactory().getUndoManager().addEdit(
-						new SetCommand<I>(getObject(), getModelEntity(), property, oldValue, value, getModelFactory()));
+				getUndoManager().addEdit(new SetCommand<I>(getObject(), getModelEntity(), property, oldValue, value, getModelFactory()));
 			}
 		}
 		switch (property.getCardinality()) {
@@ -1111,9 +1123,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	private void internallyInvokeAdder(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
 		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
-		if (trackAtomicEdit && getModelFactory().getUndoManager() != null) {
-			getModelFactory().getUndoManager()
-					.addEdit(new AddCommand<I>(getObject(), getModelEntity(), property, value, getModelFactory()));
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new AddCommand<I>(getObject(), getModelEntity(), property, value, getModelFactory()));
 		}
 		switch (property.getCardinality()) {
 		case SINGLE:
@@ -1177,9 +1188,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	private void internallyInvokeRemover(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
 		// System.out.println("Invoke REMOVER "+property.getPropertyIdentifier());
-		if (trackAtomicEdit && getModelFactory().getUndoManager() != null) {
-			getModelFactory().getUndoManager().addEdit(
-					new RemoveCommand<I>(getObject(), getModelEntity(), property, value, getModelFactory()));
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new RemoveCommand<I>(getObject(), getModelEntity(), property, value, getModelFactory()));
 		}
 		switch (property.getCardinality()) {
 		case SINGLE:
@@ -1584,7 +1594,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		ProxyMethodHandler<?> clonedValueHandler = getModelFactory().getHandler(objectToCloneOrReference);
 		returned = clonedValueHandler.performClone(clonedObjects);
-		//System.out.println("CLONING " + objectToCloneOrReference + " clone is " + returned);
+		// System.out.println("CLONING " + objectToCloneOrReference + " clone is " + returned);
 		return returned;
 	}
 
