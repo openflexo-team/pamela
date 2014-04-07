@@ -44,6 +44,10 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
 public class UndoManager extends javax.swing.undo.UndoManager implements HasPropertyChangeSupport {
 
 	public static final String ENABLED = "enabled";
+	public static final String START_RECORDING = "startRecording";
+	public static final String STOP_RECORDING = "stopRecording";
+	public static final String UNDONE = "undone";
+	public static final String REDONE = "redone";
 
 	private CompoundEdit currentEdition = null;
 	private boolean undoInProgress = false;
@@ -69,13 +73,13 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			return null;
 		}
 		if (currentEdition != null) {
-			(new Exception("UndoManager exception: already recording")).printStackTrace();
+			(new Exception("UndoManager exception: already recording " + currentEdition.getPresentationName())).printStackTrace();
 			stopRecording(currentEdition);
 		}
 		currentEdition = makeCompoundEdit(presentationName);
 		addEdit(currentEdition);
 
-		getPropertyChangeSupport().firePropertyChange("StartRecording", null, currentEdition);
+		getPropertyChangeSupport().firePropertyChange(START_RECORDING, null, currentEdition);
 
 		return currentEdition;
 	}
@@ -109,7 +113,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		// System.out.println(currentEdition.describe());
 		currentEdition = null;
 
-		getPropertyChangeSupport().firePropertyChange("StopRecording", null, edit);
+		getPropertyChangeSupport().firePropertyChange(STOP_RECORDING, null, edit);
 
 		return currentEdition;
 	}
@@ -190,6 +194,9 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	@Override
 	public synchronized boolean addEdit(UndoableEdit anEdit) {
+
+		// System.out.println("UndoManager: RECEIVED " + anEdit);
+
 		if (!enabled) {
 			return false;
 		}
@@ -213,7 +220,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 				System.out.println("!!!!!!!!!! PAMELA edit received outside official recording. Create a default one !!!");
 				startRecording("<Unidentified recording>");
 			}
-			// System.out.println("[PAMELA] Received: " + anEdit.getPresentationName());
+			// System.out.println("[PAMELA] Register in UndoManager: " + anEdit.getPresentationName());
 			currentEdition.addEdit(anEdit);
 			return true;
 		} else if (anEdit instanceof CompoundEdit) {
@@ -277,7 +284,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			undoInProgress = true;
 			super.undo();
 			undoInProgress = false;
-			getPropertyChangeSupport().firePropertyChange("undone", null, this);
+			getPropertyChangeSupport().firePropertyChange(UNDONE, null, this);
 			// System.out.println("END UNDO ");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -310,7 +317,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			redoInProgress = true;
 			super.redo();
 			redoInProgress = false;
-			getPropertyChangeSupport().firePropertyChange("redone", null, this);
+			getPropertyChangeSupport().firePropertyChange(REDONE, null, this);
 			// System.out.println("END REDO ");
 		} catch (Exception e) {
 			e.printStackTrace();
