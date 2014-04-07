@@ -43,11 +43,15 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
 @SuppressWarnings("serial")
 public class UndoManager extends javax.swing.undo.UndoManager implements HasPropertyChangeSupport {
 
+	public static final String ENABLED = "enabled";
+
 	private CompoundEdit currentEdition = null;
 	private boolean undoInProgress = false;
 	private boolean redoInProgress = false;
 
-	private PropertyChangeSupport pcSupport;
+	private final PropertyChangeSupport pcSupport;
+
+	private boolean enabled = true;
 
 	public UndoManager() {
 		pcSupport = new PropertyChangeSupport(this);
@@ -61,16 +65,23 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 * @return the newly created {@link CompoundEdit}
 	 */
 	public synchronized CompoundEdit startRecording(String presentationName) {
+		if (!enabled) {
+			return null;
+		}
 		if (currentEdition != null) {
 			(new Exception("UndoManager exception: already recording")).printStackTrace();
 			stopRecording(currentEdition);
 		}
-		currentEdition = new CompoundEdit(presentationName);
+		currentEdition = makeCompoundEdit(presentationName);
 		addEdit(currentEdition);
 
 		getPropertyChangeSupport().firePropertyChange("StartRecording", null, currentEdition);
 
 		return currentEdition;
+	}
+
+	protected CompoundEdit makeCompoundEdit(String presentationName) {
+		return new CompoundEdit(presentationName);
 	}
 
 	/**
@@ -81,6 +92,9 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 * @return
 	 */
 	public synchronized CompoundEdit stopRecording(CompoundEdit edit) {
+		if (!enabled) {
+			return null;
+		}
 		if (currentEdition == null) {
 			(new Exception("UndoManager exception: was not recording")).printStackTrace();
 			return null;
@@ -119,6 +133,9 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	@Override
 	public synchronized boolean canUndo() {
+		if (!enabled) {
+			return false;
+		}
 		if (currentEdition != null) {
 			return false;
 		}
@@ -138,6 +155,9 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 * @see #editToBeUndone
 	 */
 	public synchronized boolean canUndoIfStoppingCurrentEdition() {
+		if (!enabled) {
+			return false;
+		}
 		if (undoInProgress || redoInProgress) {
 			return false;
 		}
@@ -153,6 +173,9 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	@Override
 	public synchronized boolean canRedo() {
+		if (!enabled) {
+			return false;
+		}
 		if (currentEdition != null) {
 			return false;
 		}
@@ -167,6 +190,9 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	@Override
 	public synchronized boolean addEdit(UndoableEdit anEdit) {
+		if (!enabled) {
+			return false;
+		}
 		if (anEdit instanceof AtomicEdit) {
 			if (undoInProgress) {
 				// System.out.println("Ignoring " + anEdit.getPresentationName() + " because UNDO in progress");
@@ -241,6 +267,9 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	@Override
 	public synchronized void undo() throws CannotUndoException {
+		if (!enabled) {
+			return;
+		}
 		try {
 			// System.out.println("Will UNDO " + editToBeUndone().getPresentationName());
 			// System.out.println(editToBeUndone().describe());
@@ -271,6 +300,9 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	@Override
 	public synchronized void redo() throws CannotUndoException {
+		if (!enabled) {
+			return;
+		}
 		try {
 			// System.out.println("Will REDO " + editToBeRedone().getPresentationName());
 			// System.out.println(editToBeUndone().describe());
@@ -318,6 +350,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		return null;
 	}
 
+	@Override
 	public PropertyChangeSupport getPropertyChangeSupport() {
 		return pcSupport;
 	};
@@ -352,4 +385,22 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	public boolean isRedoInProgress() {
 		return redoInProgress;
 	}
+
+	public int getUndoLevel() {
+		return getLimit();
+	}
+
+	public void setUndoLevel(int undoLevel) {
+		setLimit(undoLevel);
+	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+		getPropertyChangeSupport().firePropertyChange(ENABLED, !enabled, enabled);
+	}
+
 }
