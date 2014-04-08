@@ -48,6 +48,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	public static final String STOP_RECORDING = "stopRecording";
 	public static final String UNDONE = "undone";
 	public static final String REDONE = "redone";
+	public static final String UNIDENTIFIED_RECORDING = "<Unidentified recording>";
 
 	private CompoundEdit currentEdition = null;
 	private boolean undoInProgress = false;
@@ -200,25 +201,34 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		if (!enabled) {
 			return false;
 		}
+
 		if (anEdit instanceof AtomicEdit) {
+
+			// If UNDO is in progress, ignore it
 			if (undoInProgress) {
 				// System.out.println("Ignoring " + anEdit.getPresentationName() + " because UNDO in progress");
 				anEdit.die();
 				return false;
 			}
+			// Ignore it as well when REDO in progress
 			if (redoInProgress) {
 				// System.out.println("Ignoring " + anEdit.getPresentationName() + " because REDO in progress");
 				anEdit.die();
 				return false;
 			}
+			// If edit is not significant, don't go further
 			if (!anEdit.isSignificant()) {
 				anEdit.die();
 				return false;
 			}
+			// If somebody has decided that this edit should be ignored, we should check it now
+			if (isIgnorable(anEdit)) {
+				return false;
+			}
 			// This is an atomic edit, therefore, i should agglomerate it in current edition
 			if (currentEdition == null) {
-				System.out.println("!!!!!!!!!! PAMELA edit received outside official recording. Create a default one !!!");
-				startRecording("<Unidentified recording>");
+				System.err.println("PAMELA edit received outside official recording. Create a default one !!!");
+				startRecording(UNIDENTIFIED_RECORDING);
 			}
 			// System.out.println("[PAMELA] Register in UndoManager: " + anEdit.getPresentationName());
 			currentEdition.addEdit(anEdit);
@@ -237,6 +247,18 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			System.out.println("???? Unexpected Edit " + anEdit);
 			return false;
 		}
+	}
+
+	/**
+	 * This should be used as a hook to intercept some edit that we dont't want to be caught during capture of UNDO edits<br>
+	 * This method should be overriden when required.<br>
+	 * Default implementation return false
+	 * 
+	 * @param edit
+	 * @return
+	 */
+	public boolean isIgnorable(UndoableEdit edit) {
+		return false;
 	}
 
 	/**

@@ -17,11 +17,16 @@ import org.openflexo.model.factory.ModelFactory;
  */
 public class DeleteCommand<I> extends AtomicEdit<I> {
 
-	private Object deletedObject;
+	private I deletedObject;
 
 	public DeleteCommand(I deletedObject, ModelEntity<I> modelEntity, ModelFactory modelFactory) {
 		super(modelEntity, modelFactory);
 		this.deletedObject = deletedObject;
+	}
+
+	@Override
+	public I getObject() {
+		return deletedObject;
 	}
 
 	@Override

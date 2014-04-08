@@ -32,6 +32,8 @@ public abstract class AtomicEdit<I> implements UndoableEdit {
 		return modelEntity;
 	}
 
+	public abstract I getObject();
+
 	@Override
 	public final boolean addEdit(UndoableEdit anEdit) {
 		// Atomic edits are not aggregable
