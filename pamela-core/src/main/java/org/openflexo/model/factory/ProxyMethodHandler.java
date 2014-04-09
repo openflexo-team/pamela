@@ -1877,6 +1877,47 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	}
 
 	/**
+	 * Return boolean indicating if supplied clipboard is valid for pasting in object monitored by this method handler<br>
+	 * 
+	 * @param clipboard
+	 * @return
+	 */
+	protected boolean isPastable(Clipboard clipboard) {
+
+		if (clipboard.getTypes().length == 0) {
+			// No contents
+			return false;
+		}
+
+		for (Class<?> type : clipboard.getTypes()) {
+			Collection<ModelProperty<? super I>> propertiesAssignableFrom = getModelEntity().getPropertiesAssignableFrom(type);
+			Collection<ModelProperty<? super I>> pastingPointProperties = Collections2.filter(propertiesAssignableFrom,
+					new Predicate<ModelProperty<?>>() {
+						@Override
+						public boolean apply(ModelProperty<?> arg0) {
+							// System.out.println("Property " + arg0);
+							// System.out.println("Add PP=" + arg0.getAddPastingPoint());
+							// System.out.println("Set PP=" + arg0.getSetPastingPoint());
+							return arg0.getAddPastingPoint() != null || arg0.getSetPastingPoint() != null;
+						}
+					});
+			if (pastingPointProperties.size() == 0) {
+				// no properties are compatible for pasting type
+				System.out.println("No property declared as pasting point found for " + type + " in " + getModelEntity());
+				return false;
+			} else if (pastingPointProperties.size() > 1) {
+				// Ambiguous pasting operations: several properties are compatible for pasting type
+				System.out.println("Ambiguous pasting operations: several properties declared as pasting point found for " + type + " in "
+						+ getModelEntity());
+				System.out.println("Found: " + pastingPointProperties);
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Paste supplied clipboard in object monitored by this method handler<br>
 	 * Return pasted objects (a single object for a single contents clipboard, and a list of objects for a multiple contents)
 	 * 
@@ -1888,7 +1929,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 */
 	protected Object paste(Clipboard clipboard) throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
 
-		System.out.println("PASTING in " + getObject());
+		//System.out.println("PASTING in " + getObject());
 
 		List<Object> returned = null;
 
@@ -1899,7 +1940,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		boolean somethingWasPasted = false;
 		for (Class<?> type : clipboard.getTypes()) {
 
-			System.out.println("pasting as " + type);
+			//System.out.println("pasting as " + type);
 
 			Collection<ModelProperty<? super I>> propertiesAssignableFrom = getModelEntity().getPropertiesAssignableFrom(type);
 			Collection<ModelProperty<? super I>> pastingPointProperties = Collections2.filter(propertiesAssignableFrom,
@@ -1913,6 +1954,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						}
 					});
 			if (pastingPointProperties.size() == 0) {
+				throw new ClipboardOperationException("Pasting operation: no property is compatible with pasting type " + type);
 				// System.out.println("modelEntity=" + getModelEntity());
 				// System.out.println("clipboard type=" + type);
 				// System.out.println("propertiesAssignableFrom=" + propertiesAssignableFrom);
@@ -1923,7 +1965,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						+ type);
 			} else {
 				ModelProperty<? super I> pastingProperty = pastingPointProperties.iterator().next();
-				System.out.println("Paste for property " + pastingProperty);
+				//System.out.println("Paste for property " + pastingProperty);
 				Object pastedContents = paste(clipboard, pastingProperty);
 				if (clipboard.isSingleObject()) {
 					clipboard.consume();

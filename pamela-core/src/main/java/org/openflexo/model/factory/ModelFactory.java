@@ -597,7 +597,29 @@ public class ModelFactory {
 	}
 
 	public Clipboard cut(Object... objects) throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
-		return null;
+		Clipboard returned = new Clipboard(this, objects);
+		for (Object o : objects) {
+			if (o instanceof DeletableProxyObject) {
+				((DeletableProxyObject) o).delete(objects);
+			}
+		}
+		return returned;
+	}
+
+	/**
+	 * Return boolean indicating if supplied clipboard is valid for pasting in object monitored by this method handler<br>
+	 * 
+	 * @param clipboard
+	 * @param context
+	 * @return
+	 */
+	public boolean isPastable(Clipboard clipboard, Object context) {
+		if (!isProxyObject(context)) {
+			throw new ClipboardOperationException("Cannot paste here: context is not valid");
+		}
+
+		return getHandler(context).isPastable(clipboard);
+
 	}
 
 	/**

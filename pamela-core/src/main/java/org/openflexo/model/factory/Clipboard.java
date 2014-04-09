@@ -8,15 +8,19 @@ import org.openflexo.model.exceptions.ModelExecutionException;
 
 public class Clipboard {
 
-	private ModelFactory modelFactory;
-	private Object[] originalContents;
+	private final ModelFactory modelFactory;
+	private final Object[] originalContents;
 	private Object contents;
-	private boolean isSingleObject;
+	private final boolean isSingleObject;
+
+	private Object copyContext;
 
 	protected Clipboard(ModelFactory modelFactory, Object... objects) throws ModelExecutionException, ModelDefinitionException,
 			CloneNotSupportedException {
 		this.modelFactory = modelFactory;
+
 		this.originalContents = objects;
+
 		if (objects == null || objects.length == 0) {
 			new ClipboardOperationException("Cannot build an empty Clipboard");
 		}
@@ -24,6 +28,12 @@ public class Clipboard {
 		// TODO: This should rather be done when pasting instead of cloning immediately
 		if (isSingleObject) {
 			Object object = objects[0];
+
+			if (modelFactory.getHandler(object) == null) {
+				throw new ModelExecutionException("Object has no handler in supplied ModelFactory, object=" + object + " modelFactory="
+						+ modelFactory);
+			}
+
 			contents = modelFactory.getHandler(object).cloneObject(objects);
 		} else {
 			contents = modelFactory.getHandler(objects[0]).cloneObjects(objects);
@@ -87,6 +97,10 @@ public class Clipboard {
 		StringBuffer returned = new StringBuffer();
 		returned.append("*************** Clipboard ****************\n");
 		returned.append("Single object: " + isSingleObject() + "\n");
+		returned.append("Original contents:\n");
+		for (Object o : originalContents) {
+			returned.append(" > " + o + "\n");
+		}
 		if (isSingleObject()) {
 			returned.append("------------------- " + contents + " -------------------\n");
 			List<Object> embeddedList = modelFactory.getEmbeddedObjects(contents, EmbeddingType.CLOSURE);
@@ -120,4 +134,13 @@ public class Clipboard {
 			contents = modelFactory.getHandler(((List) contents).get(0)).cloneObjects(((List) contents).toArray());
 		}
 	}
+
+	public Object getCopyContext() {
+		return copyContext;
+	}
+
+	public void setCopyContext(Object copyContext) {
+		this.copyContext = copyContext;
+	}
+
 }
