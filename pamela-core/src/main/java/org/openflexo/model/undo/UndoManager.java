@@ -228,6 +228,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			// This is an atomic edit, therefore, i should agglomerate it in current edition
 			if (currentEdition == null) {
 				System.err.println("PAMELA edit received outside official recording. Create a default one !!!");
+				Thread.dumpStack();
 				startRecording(UNIDENTIFIED_RECORDING);
 			}
 			// System.out.println("[PAMELA] Register in UndoManager: " + anEdit.getPresentationName());
