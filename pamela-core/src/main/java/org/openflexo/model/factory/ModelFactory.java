@@ -613,7 +613,7 @@ public class ModelFactory {
 	 * @param context
 	 * @return
 	 */
-	public boolean isPastable(Clipboard clipboard, Object context) {
+	public boolean isPastable(Clipboard clipboard, Object context) throws ClipboardOperationException {
 		if (!isProxyObject(context)) {
 			throw new ClipboardOperationException("Cannot paste here: context is not valid");
 		}
