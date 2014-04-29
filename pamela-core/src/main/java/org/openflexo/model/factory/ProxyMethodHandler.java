@@ -1679,7 +1679,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				}
 
 				clonedObjects.put((CloneableProxyObject) getObject(), returned);
-				//System.out.println("Registering " + returned + " as clone of " + getObject());
+				// System.out.println("Registering " + returned + " as clone of " + getObject());
 
 			} finally {
 				clonedObjectHandler.createdByCloning = false;
@@ -2079,11 +2079,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					List<Object> returned = new ArrayList<Object>();
 					for (Object o : clipboard.getMultipleContents()) {
 						if (TypeUtils.isTypeAssignableFrom(modelProperty.getType(), o.getClass())) {
-							System.out.println("PASTE: add " + o + " to " + getObject() + " with " + modelProperty);
+							// System.out.println("PASTE: add " + o + " to " + getObject() + " with " + modelProperty);
 							invokeAdder(modelProperty, o);
 							returned.add(o);
 						} else {
-							System.out.println("PASTE: cannot add " + o + " to " + getObject() + " with " + modelProperty);
+							// System.out.println("PASTE: cannot add " + o + " to " + getObject() + " with " + modelProperty);
 						}
 					}
 					return returned;
