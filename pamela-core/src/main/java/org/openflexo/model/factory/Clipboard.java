@@ -1,9 +1,7 @@
 package org.openflexo.model.factory;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
@@ -40,6 +38,22 @@ public class Clipboard {
 		} else {
 			contents = modelFactory.getHandler(objects[0]).cloneObjects(objects);
 		}
+	}
+
+	public Object getCopiedObject(Object originalObject) {
+		if (isSingleObject()) {
+			if (originalObject == originalContents[0]) {
+				return getSingleContents();
+			} else {
+				return null;
+			}
+		}
+		for (int index = 0; index < originalContents.length; index++) {
+			if (originalContents[index] == originalObject) {
+				return getMultipleContents().get(index);
+			}
+		}
+		return null;
 	}
 
 	public ModelFactory getModelFactory() {
@@ -143,16 +157,6 @@ public class Clipboard {
 
 	public void setCopyContext(Object copyContext) {
 		this.copyContext = copyContext;
-	}
-
-	private final Map<String, String> pasteProperties = new HashMap<String, String>();
-
-	public String getPasteProperty(String key) {
-		return pasteProperties.get(key);
-	}
-
-	public void setPasteProperty(String key, String value) {
-		pasteProperties.put(key, value);
 	}
 
 }
