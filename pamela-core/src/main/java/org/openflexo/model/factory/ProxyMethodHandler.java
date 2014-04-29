@@ -27,7 +27,11 @@ import javassist.util.proxy.ProxyObject;
 
 import javax.annotation.Nonnull;
 
+import org.openflexo.antar.binding.BindingEvaluator;
 import org.openflexo.antar.binding.TypeUtils;
+import org.openflexo.antar.expr.NullReferenceException;
+import org.openflexo.antar.expr.TypeMismatchException;
+import org.openflexo.kvc.InvalidKeyValuePropertyException;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
@@ -1744,12 +1748,22 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						// clonedObjectHandler.internallyInvokeSetter(p, referenceValue);
 						break;
 					case FACTORY:
-						if (p.getStrategyTypeFactory().equals("deriveName()")) {
-							// TODO: just to test
-							// TODO: implement this properly!
-							// System.out.println("TODO: implement this (FACTORY whine cloning)");
-							// Object factoredValue = ((FlexoModelObject)getObject()).deriveName();
-							// clonedObjectHandler.internallyInvokeSetter(p,factoredValue);
+						// We have here to invoke custom code (encoded in getStrategyTypeFactory())
+						try {
+							Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(), getObject());
+							clonedObjectHandler.invokeSetter(p, computedValue);
+						} catch (InvalidKeyValuePropertyException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (TypeMismatchException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (NullReferenceException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (InvocationTargetException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
 						break;
 					case IGNORE:
@@ -1778,7 +1792,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 									clonedValue = null;
 								}
 								if (clonedValue != null) {
-									clonedObjectHandler.internallyInvokeAdder(p, clonedValue, true);
+									clonedObjectHandler.invokeAdder(p, clonedValue);
 								}
 							}
 							break;
@@ -1787,7 +1801,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							if (referenceValue == null) {
 								referenceValue = value;
 							}
-							clonedObjectHandler.internallyInvokeAdder(p, referenceValue, true);
+							clonedObjectHandler.invokeAdder(p, referenceValue);
 							break;
 						case FACTORY:
 							// TODO Not implemented
@@ -1929,7 +1943,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 */
 	protected Object paste(Clipboard clipboard) throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
 
-		//System.out.println("PASTING in " + getObject());
+		// System.out.println("PASTING in " + getObject());
 
 		List<Object> returned = null;
 
@@ -1940,7 +1954,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		boolean somethingWasPasted = false;
 		for (Class<?> type : clipboard.getTypes()) {
 
-			//System.out.println("pasting as " + type);
+			// System.out.println("pasting as " + type);
 
 			Collection<ModelProperty<? super I>> propertiesAssignableFrom = getModelEntity().getPropertiesAssignableFrom(type);
 			Collection<ModelProperty<? super I>> pastingPointProperties = Collections2.filter(propertiesAssignableFrom,
@@ -1965,7 +1979,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						+ type);
 			} else {
 				ModelProperty<? super I> pastingProperty = pastingPointProperties.iterator().next();
-				//System.out.println("Paste for property " + pastingProperty);
+				// System.out.println("Paste for property " + pastingProperty);
 				Object pastedContents = paste(clipboard, pastingProperty);
 				if (clipboard.isSingleObject()) {
 					clipboard.consume();
