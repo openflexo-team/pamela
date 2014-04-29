@@ -636,7 +636,7 @@ public class ModelFactory {
 	public Object paste(Clipboard clipboard, Object context) throws ModelExecutionException, ModelDefinitionException,
 			CloneNotSupportedException {
 		if (!isProxyObject(context)) {
-			throw new ClipboardOperationException("Cannot paste here: context is not valid");
+			throw new ClipboardOperationException("Cannot paste here: context is not valid: " + context);
 		}
 
 		return getHandler(context).paste(clipboard);
