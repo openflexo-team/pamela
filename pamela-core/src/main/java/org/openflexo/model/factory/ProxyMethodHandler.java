@@ -1618,8 +1618,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			clonedObjectHandler.createdByCloning = true;
 			clonedObjectHandler.initialized = true;
 			try {
-				clonedObjects.put((CloneableProxyObject) getObject(), returned);
-				// System.out.println("Registering " + returned + " as clone of " + getObject());
 
 				Iterator<ModelProperty<? super I>> properties = getModelEntity().getProperties();
 				while (properties.hasNext()) {
@@ -1636,9 +1634,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 									Object clonedValue = appendToClonedObjects(clonedObjects, (CloneableProxyObject) singleValue);
 									// System.out.println("Cloned " + clonedValue + " for " + p);
 								}
+							} else {
+								clonedObjectHandler.invokeSetter(p, singleValue);
 							}
 							break;
 						case REFERENCE:
+							clonedObjectHandler.invokeSetter(p, singleValue);
 							break;
 						case FACTORY:
 							break;
@@ -1657,9 +1658,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 									} else {
 										appendToClonedObjects(clonedObjects, (CloneableProxyObject) value);
 									}
+								} else {
+									clonedObjectHandler.invokeAdder(p, value);
 								}
 								break;
 							case REFERENCE:
+								clonedObjectHandler.invokeAdder(p, value);
 								break;
 							case FACTORY:
 								break;
@@ -1673,6 +1677,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					}
 
 				}
+
+				clonedObjects.put((CloneableProxyObject) getObject(), returned);
+				//System.out.println("Registering " + returned + " as clone of " + getObject());
+
 			} finally {
 				clonedObjectHandler.createdByCloning = false;
 			}
@@ -1773,6 +1781,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				case LIST:
 					List<?> values = (List<?>) invokeGetter(p);
 					List<?> valuesToClone = new ArrayList<Object>(values);
+					/*System.out.println("Cloning of property " + p);
+					System.out.println("Values to clone are: ");
+					for (Object value : valuesToClone) {
+						System.out.println("* " + value);
+					}*/
 					for (Object value : valuesToClone) {
 						switch (p.getCloningStrategy()) {
 						case CLONE:
