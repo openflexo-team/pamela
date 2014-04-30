@@ -1649,7 +1649,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						break;
 					case LIST:
 						List values = (List) invokeGetter(p);
-						for (Object value : values) {
+						List values2 = new ArrayList(values);
+						for (Object value : values2) {
 							switch (p.getCloningStrategy()) {
 							case CLONE:
 								if (ModelEntity.isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
