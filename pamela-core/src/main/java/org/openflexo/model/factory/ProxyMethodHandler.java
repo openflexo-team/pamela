@@ -1910,7 +1910,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * @param clipboard
 	 * @return
 	 */
-	protected boolean isPastable(Clipboard clipboard) {
+	public static <I> boolean isPastable(Clipboard clipboard, ModelEntity<I> modelEntity) {
 
 		if (clipboard.getTypes().length == 0) {
 			// No contents
@@ -1918,7 +1918,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 
 		for (Class<?> type : clipboard.getTypes()) {
-			Collection<ModelProperty<? super I>> propertiesAssignableFrom = getModelEntity().getPropertiesAssignableFrom(type);
+			Collection<ModelProperty<? super I>> propertiesAssignableFrom = modelEntity.getPropertiesAssignableFrom(type);
 			Collection<ModelProperty<? super I>> pastingPointProperties = Collections2.filter(propertiesAssignableFrom,
 					new Predicate<ModelProperty<?>>() {
 						@Override
@@ -1931,18 +1931,29 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					});
 			if (pastingPointProperties.size() == 0) {
 				// no properties are compatible for pasting type
-				System.out.println("No property declared as pasting point found for " + type + " in " + getModelEntity());
+				System.out.println("No property declared as pasting point found for " + type + " in " + modelEntity);
 				return false;
 			} else if (pastingPointProperties.size() > 1) {
 				// Ambiguous pasting operations: several properties are compatible for pasting type
 				System.out.println("Ambiguous pasting operations: several properties declared as pasting point found for " + type + " in "
-						+ getModelEntity());
+						+ modelEntity);
 				System.out.println("Found: " + pastingPointProperties);
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	/**
+	 * Return boolean indicating if supplied clipboard is valid for pasting in object monitored by this method handler<br>
+	 * 
+	 * @param clipboard
+	 * @return
+	 */
+	protected boolean isPastable(Clipboard clipboard) {
+
+		return isPastable(clipboard, getModelEntity());
 	}
 
 	/**
