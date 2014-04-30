@@ -1,6 +1,8 @@
 package org.flexo.model;
 
 import org.flexo.model.impl.EdgeImpl;
+import org.openflexo.model.annotations.CloningStrategy;
+import org.openflexo.model.annotations.CloningStrategy.StrategyType;
 import org.openflexo.model.annotations.Getter;
 import org.openflexo.model.annotations.ImplementationClass;
 import org.openflexo.model.annotations.Initializer;
@@ -31,6 +33,7 @@ public interface Edge extends WKFObject {
 
 	@Getter(value = START_NODE, inverse = AbstractNode.OUTGOING_EDGES)
 	@XMLElement(context = "Start")
+	@CloningStrategy(StrategyType.IGNORE)
 	public AbstractNode getStartNode();
 
 	@Setter(START_NODE)
@@ -38,6 +41,7 @@ public interface Edge extends WKFObject {
 
 	@Getter(value = END_NODE, inverse = AbstractNode.INCOMING_EDGES)
 	@XMLElement(context = "End")
+	@CloningStrategy(StrategyType.IGNORE)
 	public AbstractNode getEndNode();
 
 	@Setter(END_NODE)
