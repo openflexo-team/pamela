@@ -27,6 +27,7 @@ import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.exceptions.RestrictiveSerializationException;
+import org.openflexo.toolbox.StringUtils;
 
 class XMLSerializer {
 
@@ -257,9 +258,13 @@ class XMLSerializer {
 			return returned;
 		} else if (getStringEncoder().isConvertable(object.getClass())) {
 			try {
-				returned = new Element(context.xmlTag(), context.namespace());
-				returned.setText(getStringEncoder().toString(object));
-				return returned;
+				if (StringUtils.isNotEmpty(context.xmlTag())) {
+					returned = new Element(context.xmlTag(), context.namespace());
+					returned.setText(getStringEncoder().toString(object));
+					return returned;
+				} else {
+					throw new ModelDefinitionException("No XML tag defined for " + context + " while serializing " + object);
+				}
 			} catch (InvalidDataException e) {
 				throw new ModelDefinitionException(
 						"Hu hoh, really don't know how you got into this state: your object is string convertable but conversion could not be performed",
