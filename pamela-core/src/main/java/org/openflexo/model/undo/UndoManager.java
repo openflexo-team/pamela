@@ -74,7 +74,8 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			return null;
 		}
 		if (currentEdition != null) {
-			(new Exception("UndoManager exception: already recording " + currentEdition.getPresentationName())).printStackTrace();
+			System.err.println("[PLEASE TRACK ME] : UndoManager exception: already recording " + currentEdition.getPresentationName());
+			// (new Exception("UndoManager exception: already recording " + currentEdition.getPresentationName())).printStackTrace();
 			stopRecording(currentEdition);
 		}
 		currentEdition = makeCompoundEdit(presentationName);
@@ -227,8 +228,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			}
 			// This is an atomic edit, therefore, i should agglomerate it in current edition
 			if (currentEdition == null) {
-				System.err.println("PAMELA edit received outside official recording. Create a default one !!!");
-				Thread.dumpStack();
+				System.err.println("[PLEASE TRACK ME] : PAMELA edit received outside official recording. Create a default one !!!");
 				startRecording(UNIDENTIFIED_RECORDING);
 			}
 			// System.out.println("[PAMELA] Register in UndoManager: " + anEdit.getPresentationName());
