@@ -1,11 +1,13 @@
 package org.flexo.test;
 
+import org.flexo.model.AbstractNode;
 import org.flexo.model.EndNode;
 import org.flexo.model.FlexoProcess;
 import org.flexo.model.StartNode;
 import org.flexo.model.TestModelObject;
 import org.flexo.model.TokenEdge;
 import org.flexo.model.WKFObject;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openflexo.model.AbstractPAMELATest;
@@ -14,6 +16,11 @@ import org.openflexo.model.factory.EditingContextImpl;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.undo.CompoundEdit;
 import org.openflexo.model.undo.UndoManager;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 /**
  * Class of test to check if the undo/redo behavior is correct.
@@ -41,9 +48,9 @@ public class UndoRedoTests extends AbstractPAMELATest {
         final CompoundEdit initial = undoManager.startRecording("initial");
 
         final StartNode node1 = factory.newInstance(StartNode.class);
-        node1.init();
+        node1.init("0", defaultValue);
         final StartNode node2 = factory.newInstance(StartNode.class);
-        node2.init();
+        node2.init("1", defaultValue);
         undoManager.stopRecording(initial);
 
         // simple set
@@ -116,19 +123,19 @@ public class UndoRedoTests extends AbstractPAMELATest {
         final CompoundEdit initial = undoManager.startRecording("initial");
 
         final FlexoProcess process = factory.newInstance(FlexoProcess.class);
-        process.init();
+        process.init("root");
 
         final StartNode node1 = factory.newInstance(StartNode.class);
-        node1.init();
+        node1.init("1", "node1");
 
         final EndNode node2 = factory.newInstance(EndNode.class);
-        node2.init();
+        node2.init("2", "node2");
 
         final TokenEdge edge1 = factory.newInstance(TokenEdge.class);
-        edge1.init();
+        edge1.init("3");
 
         final TokenEdge edge2 = factory.newInstance(TokenEdge.class);
-        edge2.init();
+        edge2.init("4");
 
         undoManager.stopRecording(initial);
 
@@ -178,17 +185,17 @@ public class UndoRedoTests extends AbstractPAMELATest {
     }
 
     @Test
-    public void testMultipleUndoRedo() {
+    public void testMultipleUndoRedo() throws Exception {
         final CompoundEdit initial = undoManager.startRecording("initial");
         final FlexoProcess process = factory.newInstance(FlexoProcess.class);
-        process.init();
+        process.init("root");
 
         final int step = 3;
         final int count = step * 10;
         final StartNode[] nodes = new StartNode[count];
         for (int i = 0; i < nodes.length; i++) {
             final StartNode node = factory.newInstance(StartNode.class);
-            node.init("node" + i);
+            node.init("node"+i, "node" + i);
             nodes[i] = node;
         }
         undoManager.stopRecording(initial);
@@ -238,10 +245,10 @@ public class UndoRedoTests extends AbstractPAMELATest {
     }
 
     @Test
-    public void testCreateDeleteUndoRedo() {
+    public void testAddUndoRedo() throws Exception {
         final CompoundEdit initial = undoManager.startRecording("initial");
         final FlexoProcess process = factory.newInstance(FlexoProcess.class);
-        process.init();
+        process.init("root");
         undoManager.stopRecording(initial);
 
         assertEquals(0, process.getNodes().size());
@@ -250,10 +257,10 @@ public class UndoRedoTests extends AbstractPAMELATest {
         final int step = 3;
         final int count = step * 10;
         for (int i = 0; i < count; i += step) {
-            final CompoundEdit edit = undoManager.startRecording("testCreateDeleteUndoRedo" + i / step);
+            final CompoundEdit edit = undoManager.startRecording("testAddUndoRedo" + i / step);
             for (int j = 0; j < step; j++) {
                 final StartNode node = factory.newInstance(StartNode.class);
-                node.init("node" + i);
+                node.init("node" + i, "node" + i);
                 process.addToNodes(node);
             }
             undoManager.stopRecording(edit);
@@ -284,6 +291,66 @@ public class UndoRedoTests extends AbstractPAMELATest {
         for (int i = 0; i < count; i += step) {
             undoManager.undo();
             assertEquals(count - i - step, process.getNodes().size());
+        }
+
+        // undo initial
+        undoManager.undo();
+        assertEquals(false, undoManager.canUndo());
+        assertEquals(true, undoManager.canRedo());
+    }
+
+    @Test
+    public void testRemoveUndoRedo() {
+        final CompoundEdit initial = undoManager.startRecording("initial");
+        final FlexoProcess process = factory.newInstance(FlexoProcess.class);
+        process.init();
+
+        // creates nodes
+        final int step = 3;
+        final int count = step * 10;
+        for (int i = 0; i < count; i += 1) {
+            final StartNode node = factory.newInstance(StartNode.class);
+            node.init("node" + i);
+            process.addToNodes(node);
+        }
+        assertEquals(count, process.getNodes().size());
+        undoManager.stopRecording(initial);
+
+        // deletes nodes by step size
+        for (int i = 0; i < count; i += step) {
+            final CompoundEdit edit = undoManager.startRecording("testRemoveUndoRedo" + i / step);
+            for (int j = 0; j < step; j++) {
+                AbstractNode node = process.getNodeNamed("node"+(i+j));
+                process.removeFromNodes(node);
+            }
+            undoManager.stopRecording(edit);
+        }
+        assertEquals(0, process.getNodes().size());
+
+        assertEquals(true, undoManager.canUndo());
+        assertEquals(false, undoManager.canRedo());
+
+        // tests several time undo all, redo all.
+        for (int k = 0; k < 5; k += 1) {
+            // undo all one by one
+            for (int i = 0; i < count; i += step) {
+                undoManager.undo();
+                assertEquals(i + step, process.getNodes().size());
+            }
+
+            assertEquals(true, undoManager.canRedo());
+
+            // redo all one by one
+            for (int i = 0; i < count; i += step) {
+                undoManager.redo();
+                assertEquals(count - i - step, process.getNodes().size());
+            }
+        }
+
+        // undo all one by one (again)
+        for (int i = 0; i < count; i += step) {
+            undoManager.undo();
+            assertEquals(i + step, process.getNodes().size());
         }
 
         // undo initial
