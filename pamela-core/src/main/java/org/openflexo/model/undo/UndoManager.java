@@ -13,17 +13,17 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * A PAMELA {@link UndoManager} tracks and record PAMELA atomic edits into aggregates named compound edit.<br>
  * It provides a way to undo or redo the appropriate edits.<br>
  * 
- * To instanciate and enable an {@link UndoManager}, use the {@link ModelFactory#createUndoManager()} method.<br>
+ * To instantiate and enable an {@link UndoManager}, use the {@link ModelFactory#createUndoManager()} method.<br>
  * 
  * {@link UndoManager} internally manages a list of {@link CompoundEdit}, which are aggregates of PAMELA atomic events ({@link AtomicEdit}).<br>
  * You should use {{@link #startRecording(String)} and {{@link #stopRecording(CompoundEdit)} methods to semantically control undo/redo
  * sequences.<br>
  * 
  * The {@link UndoManager} is automatically tracking all PAMELA atomic events (see {@link AtomicEdit}). If an {@link AtomicEdit} is received
- * outside a declared recording edit, then a new edition (a {@link CompoundEdit}) is automatically instantiated. No inconsisency should be
+ * outside a declared recording edit, then a new edition (a {@link CompoundEdit}) is automatically instantiated. No inconsistency should be
  * raised because of unregistered edits.<br>
  * 
- * {@link UndoManager}> maintains an ordered list of edits and the index of the next edit in that list. The index of the next edit is either
+ * {@link UndoManager} maintains an ordered list of edits and the index of the next edit in that list. The index of the next edit is either
  * the size of the current list of edits, or if {@link UndoManager#undo()} has been invoked it corresponds to the index of the last
  * significant edit that was undone. When {@link UndoManager#undo()} is invoked all edits from the index of the next edit to the last
  * significant edit are undone, in reverse order. <br>
@@ -352,8 +352,6 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 
 	/**
 	 * Return current edition
-	 * 
-	 * @return
 	 */
 	public CompoundEdit getCurrentEdition() {
 		return currentEdition;
@@ -399,18 +397,14 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	}
 
 	/**
-	 * Return boolean indicating if undo is currently beeing processed
-	 * 
-	 * @return
+	 * Return boolean indicating if undo is currently being processed
 	 */
 	public boolean isUndoInProgress() {
 		return undoInProgress;
 	}
 
 	/**
-	 * Return boolean indicating if redo is currently beeing processed
-	 * 
-	 * @return
+	 * Return boolean indicating if redo is currently being processed
 	 */
 	public boolean isRedoInProgress() {
 		return redoInProgress;

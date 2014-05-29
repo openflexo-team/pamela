@@ -1,3 +1,23 @@
+/*
+ * (c) Copyright 2012-2014 Openflexo
+ *
+ * This file is part of OpenFlexo.
+ *
+ * OpenFlexo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OpenFlexo is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OpenFlexo. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package org.openflexo.model.io;
 
 import java.io.IOException;
@@ -31,6 +51,7 @@ import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.factory.PAMELAConstants;
 import org.openflexo.model.factory.ProxyMethodHandler;
 import org.openflexo.model.factory.SerializationPolicy;
+import org.openflexo.toolbox.StringUtils;
 
 public class XMLSerializer {
 
@@ -261,9 +282,13 @@ public class XMLSerializer {
 			return returned;
 		} else if (getStringEncoder().isConvertable(object.getClass())) {
 			try {
-				returned = new Element(context.xmlTag(), context.namespace());
-				returned.setText(getStringEncoder().toString(object));
-				return returned;
+				if (StringUtils.isNotEmpty(context.xmlTag())) {
+					returned = new Element(context.xmlTag(), context.namespace());
+					returned.setText(getStringEncoder().toString(object));
+					return returned;
+				} else {
+					throw new ModelDefinitionException("No XML tag defined for " + context + " while serializing " + object);
+				}
 			} catch (InvalidDataException e) {
 				throw new ModelDefinitionException(
 						"Hu hoh, really don't know how you got into this state: your object is string convertable but conversion could not be performed",
