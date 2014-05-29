@@ -1612,7 +1612,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		beingCloned = true;
 		Object returned = null;
 		try {
-			returned = getModelFactory()._newInstance(getModelEntity().getImplementedInterface(), true);
+			returned = getModelFactory().newInstance(getModelEntity().getImplementedInterface(), true);
 			// System.out.println("Perform clone " + getModelEntity());
 			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(returned);
 			clonedObjectHandler.createdByCloning = true;

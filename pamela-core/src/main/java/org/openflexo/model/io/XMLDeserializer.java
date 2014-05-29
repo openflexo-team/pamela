@@ -195,7 +195,7 @@ public class XMLDeserializer {
 					e.printStackTrace();
 				}
 			}
-			returned = modelFactory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
+			returned = modelFactory.newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
 			initializeDeserialization(returned, modelEntity);
 		}
 

@@ -43,6 +43,7 @@ import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
 import org.jdom2.JDOMException;
+import org.openflexo.IFactory;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContextLibrary;
 import org.openflexo.model.ModelEntity;
@@ -69,7 +70,7 @@ import org.openflexo.model.undo.CreateCommand;
  * @author sylvain
  * 
  */
-public class ModelFactory {
+public class ModelFactory implements IFactory {
 
 	private Class<?> defaultModelClass = Object.class;
 	private Class<? extends List> listImplementationClass = Vector.class;
@@ -260,7 +261,7 @@ public class ModelFactory {
 		}
 	}
 
-	public <I> I _newInstance(Class<I> implementedInterface, boolean useExtended) {
+	public <I> I newInstance(Class<I> implementedInterface, boolean useExtended) {
 		return _newInstance(implementedInterface, useExtended, (Object[]) null);
 	}
 
