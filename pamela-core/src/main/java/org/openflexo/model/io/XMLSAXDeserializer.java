@@ -1,4 +1,24 @@
-package org.openflexo.model.factory;
+/*
+ * (c) Copyright 2012-2014 Openflexo
+ *
+ * This file is part of OpenFlexo.
+ *
+ * OpenFlexo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OpenFlexo is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OpenFlexo. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+package org.openflexo.model.io;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,12 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom2.Attribute;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.filter.ElementFilter;
-import org.jdom2.input.SAXBuilder;
 import org.openflexo.model.ModelContext.ModelPropertyXMLTag;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
@@ -25,8 +39,12 @@ import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.exceptions.RestrictiveDeserializationException;
+import org.openflexo.model.factory.DeserializationPolicy;
+import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.model.factory.PAMELAConstants;
+import org.openflexo.model.factory.ProxyMethodHandler;
 
-class XMLDeserializer {
+class XMLSAXDeserializer {
 
 	public static final String ID = "id";
 	public static final String ID_REF = "idref";
@@ -61,11 +79,11 @@ class XMLDeserializer {
 	private final List<ProxyMethodHandler<?>> deserializingHandlers;
 	private final DeserializationPolicy policy;
 
-	public XMLDeserializer(ModelFactory factory) {
+	public XMLSAXDeserializer(ModelFactory factory) {
 		this(factory, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public XMLDeserializer(ModelFactory factory, DeserializationPolicy policy) {
+	public XMLSAXDeserializer(ModelFactory factory, DeserializationPolicy policy) {
 		this.modelFactory = factory;
 		this.policy = policy;
 		alreadyDeserializedMap = new HashMap<Object, Object>();
@@ -318,6 +336,7 @@ class XMLDeserializer {
 	}
 
 	protected Document parseXMLData(InputStream xmlStream) throws IOException, JDOMException {
+		
 		SAXBuilder parser = new SAXBuilder();
 		Document reply = parser.build(xmlStream);
 		makeIndex(reply);

@@ -1,4 +1,26 @@
+/*
+ * (c) Copyright 2012-2014 Openflexo
+ *
+ * This file is part of OpenFlexo.
+ *
+ * OpenFlexo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OpenFlexo is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OpenFlexo. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+
 package org.openflexo.model.factory;
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -32,6 +54,8 @@ import org.openflexo.model.annotations.PastingPoint;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
+import org.openflexo.model.io.XMLDeserializer;
+import org.openflexo.model.io.XMLSerializer;
 import org.openflexo.model.undo.CreateCommand;
 
 /**
@@ -188,7 +212,7 @@ public class ModelFactory {
 		return modelContext;
 	}
 
-	ModelContext getExtendedContext() {
+	public ModelContext getExtendedContext() {
 		return extendedContext != null ? extendedContext : modelContext;
 	}
 
@@ -236,7 +260,7 @@ public class ModelFactory {
 		}
 	}
 
-	<I> I _newInstance(Class<I> implementedInterface, boolean useExtended) {
+	public <I> I _newInstance(Class<I> implementedInterface, boolean useExtended) {
 		return _newInstance(implementedInterface, useExtended, (Object[]) null);
 	}
 
@@ -332,7 +356,7 @@ public class ModelFactory {
 		}
 	}
 
-	<I> void setImplementingClassForInterface(Class<? extends I> implementingClass, Class<I> implementedInterface, boolean useExtended)
+	public <I> void setImplementingClassForInterface(Class<? extends I> implementingClass, Class<I> implementedInterface, boolean useExtended)
 			throws ModelDefinitionException {
 		PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true, useExtended);
 		if (proxyFactory != null) {
@@ -393,7 +417,7 @@ public class ModelFactory {
 		return null;
 	}
 
-	<I> ModelEntity<I> importClass(Class<I> klass) throws ModelDefinitionException {
+	public <I> ModelEntity<I> importClass(Class<I> klass) throws ModelDefinitionException {
 		ModelEntity<I> modelEntity = modelContext.getModelEntity(klass);
 		if (modelEntity == null) {
 			extendedContext = new ModelContext(klass, getExtendedContext());
