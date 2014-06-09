@@ -827,8 +827,7 @@ public class ModelFactory implements IObjectGraphFactory {
     }
 
     /* @Override */
-    public Type getTypeFromURI(String uri) {
-        // TODO : this is not a URI yet, but a node name
+    public final Type getTypeFromURI(String uri) {
         return (Type) getModelContext().getModelEntity(uri);
     }
 
