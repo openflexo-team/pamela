@@ -1,3 +1,24 @@
+/*
+ * (c) Copyright 2013-2014 Openflexo
+ *
+ * This file is part of OpenFlexo.
+ *
+ * OpenFlexo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OpenFlexo is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OpenFlexo. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+
 package org.openflexo.model;
 
 import java.lang.reflect.Field;
@@ -33,6 +54,7 @@ import org.openflexo.model.annotations.XMLElement;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.exceptions.PropertyClashException;
+import org.openflexo.antar.Type;
 
 /**
  * This class represents an instance of the {@link org.openflexo.model.annotations.ModelEntity} annotation declared on an interface.
@@ -41,7 +63,7 @@ import org.openflexo.model.exceptions.PropertyClashException;
  * 
  * @param <I>
  */
-public class ModelEntity<I> {
+public class ModelEntity<I> extends Type {
 
 	/**
 	 * The implemented interface corresponding to this model entity
@@ -131,6 +153,8 @@ public class ModelEntity<I> {
 
 	ModelEntity(@Nonnull Class<I> implementedInterface) throws ModelDefinitionException {
 
+		super(implementedInterface.getName());
+		
 		this.implementedInterface = implementedInterface;
 		declaredModelProperties = new HashMap<String, ModelProperty<I>>();
 		properties = new HashMap<String, ModelProperty<? super I>>();
