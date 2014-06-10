@@ -1659,9 +1659,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 									} else {
 										appendToClonedObjects(clonedObjects, (CloneableProxyObject) value);
 									}
-								} else {
+								} // SGU: removed this code i think it's wrong
+								/*else {
 									clonedObjectHandler.invokeAdder(p, value);
-								}
+									}*/
 								break;
 							case REFERENCE:
 								clonedObjectHandler.invokeAdder(p, value);
