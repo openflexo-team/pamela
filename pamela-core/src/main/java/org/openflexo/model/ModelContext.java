@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.openflexo.model.exceptions.ModelDefinitionException;
+import org.openflexo.model.factory.ModelFactory;
 
 public class ModelContext {
 
@@ -51,7 +52,7 @@ public class ModelContext {
 
 	private Map<Class, ModelEntity> modelEntities;
 	private Map<String, ModelEntity> modelEntitiesByXmlTag;
-	private Map<ModelEntity, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
+	private final Map<ModelEntity, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
 	private final Class<?> baseClass;
 
 	public ModelContext(@Nonnull Class<?> baseClass) throws ModelDefinitionException {
@@ -146,7 +147,22 @@ public class ModelContext {
 		return modelEntities.get(implementedInterface);
 	}
 
-	public <I> ModelPropertyXMLTag<I> getPropertyForXMLTag(ModelEntity<I> entity, String xmlTag) throws ModelDefinitionException {
+	/**
+	 * Return the appropriate {@link ModelPropertyXMLTag} matching searched XML Tag, supplied as parameter (xmlTag).<br>
+	 * Note that required parameters include the entity which gives the context where such XML tag is to be looked-up, and the
+	 * {@link ModelFactory} to use.<br>
+	 * TODO: Also note that this implementation is not safe when using multiple factories, because caching is performed whithout taking
+	 * modelFactory under account.
+	 * 
+	 * @param entity
+	 * @param modelFactory
+	 * @param xmlTag
+	 * @return
+	 * @throws ModelDefinitionException
+	 */
+	public <I> ModelPropertyXMLTag<I> getPropertyForXMLTag(ModelEntity<I> entity, ModelFactory modelFactory, String xmlTag)
+			throws ModelDefinitionException {
+
 		Map<String, ModelPropertyXMLTag<?>> tags = modelPropertiesByXmlTag.get(entity);
 		if (tags == null) {
 			modelPropertiesByXmlTag.put(entity, tags = new HashMap<String, ModelContext.ModelPropertyXMLTag<?>>());
@@ -165,7 +181,9 @@ public class ModelContext {
 										+ " defines a context which leads to an XMLElement name clash with " + accessible);
 							}
 						}
-					} else if (StringConverterLibrary.getInstance().hasConverter(property.getType())) {
+						// Fixed issue while commenting following line and replacing it by a call to model-factory specific StringEncoder
+						// } else if (StringConverterLibrary.getInstance().hasConverter(property.getType())) {
+					} else if (modelFactory.getStringEncoder().isConvertable(property.getType())) {
 						ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<I>(property);
 						ModelPropertyXMLTag<?> put = tags.put(tag.getTag(), tag);
 						if (put != null) {
