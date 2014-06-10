@@ -212,7 +212,8 @@ class XMLDeserializer {
 
 		}
 		for (Element child : node.getChildren()) {
-			ModelPropertyXMLTag<I> modelPropertyXMLTag = modelFactory.getModelContext().getPropertyForXMLTag(modelEntity, child.getName());
+			ModelPropertyXMLTag<I> modelPropertyXMLTag = modelFactory.getModelContext().getPropertyForXMLTag(modelEntity, modelFactory,
+					child.getName());
 			ModelProperty<? super I> property = null;
 			ModelEntity<?> entity = null;
 			if (modelPropertyXMLTag != null) {
