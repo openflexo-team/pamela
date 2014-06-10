@@ -1,3 +1,23 @@
+/*
+ * (c) Copyright 2012-2014 Openflexo
+ *
+ * This file is part of Openflexo Software Infrastructure.
+ *
+ * OpenFlexo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OpenFlexo is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OpenFlexo. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 package org.openflexo.model.factory;
 
 import java.io.ByteArrayOutputStream;
@@ -7,6 +27,7 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,6 +42,7 @@ import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
 import org.jdom2.JDOMException;
+import org.openflexo.IObjectGraphFactory;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContextLibrary;
 import org.openflexo.model.ModelEntity;
@@ -32,6 +54,8 @@ import org.openflexo.model.annotations.PastingPoint;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
+import org.openflexo.model.io.XMLDeserializer;
+import org.openflexo.model.io.XMLSerializer;
 import org.openflexo.model.undo.CreateCommand;
 
 /**
@@ -45,7 +69,7 @@ import org.openflexo.model.undo.CreateCommand;
  * @author sylvain
  * 
  */
-public class ModelFactory {
+public class ModelFactory implements IObjectGraphFactory {
 
 	private Class<?> defaultModelClass = Object.class;
 	private Class<? extends List> listImplementationClass = Vector.class;
@@ -188,7 +212,7 @@ public class ModelFactory {
 		return modelContext;
 	}
 
-	ModelContext getExtendedContext() {
+	public ModelContext getExtendedContext() {
 		return extendedContext != null ? extendedContext : modelContext;
 	}
 
@@ -236,11 +260,11 @@ public class ModelFactory {
 		}
 	}
 
-	<I> I _newInstance(Class<I> implementedInterface, boolean useExtended) {
+	public <I> I newInstance(Class<I> implementedInterface, boolean useExtended) {
 		return _newInstance(implementedInterface, useExtended, (Object[]) null);
 	}
 
-	<I> I _newInstance(Class<I> implementedInterface, boolean useExtended, Object... args) {
+	public <I> I _newInstance(Class<I> implementedInterface, boolean useExtended, Object... args) {
 		try {
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true, useExtended);
 			I returned = proxyFactory.newInstance(args);
@@ -328,12 +352,13 @@ public class ModelFactory {
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
 			proxyFactory.setSuperclass(implementingClass);
 		} catch (ModelExecutionException e) {
-			// OK, we won't add the implementation since the interface is not declared
+			// OK, we won't add the implementation since the interface is not
+			// declared
 		}
 	}
 
-	<I> void setImplementingClassForInterface(Class<? extends I> implementingClass, Class<I> implementedInterface, boolean useExtended)
-			throws ModelDefinitionException {
+	public <I> void setImplementingClassForInterface(Class<? extends I> implementingClass, Class<I> implementedInterface,
+			boolean useExtended) throws ModelDefinitionException {
 		PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true, useExtended);
 		if (proxyFactory != null) {
 			proxyFactory.setSuperclass(implementingClass);
@@ -381,7 +406,8 @@ public class ModelFactory {
 	public <I> ProxyMethodHandler<I> getHandler(I object) {
 		if (object instanceof ProxyObject) {
 
-			// Vincent: Check this, handler can be of DelegateImplementation Type( in the case of Edition actions containers)
+			// Vincent: Check this, handler can be of DelegateImplementation
+			// Type( in the case of Edition actions containers)
 			// ???
 			/*if(((ProxyObject) object).getHandler() instanceof DelegateImplementation){
 				return ((DelegateImplementation<I>) ((ProxyObject) object).getHandler()).getMasterMethodHandler();
@@ -393,7 +419,7 @@ public class ModelFactory {
 		return null;
 	}
 
-	<I> ModelEntity<I> importClass(Class<I> klass) throws ModelDefinitionException {
+	public <I> ModelEntity<I> importClass(Class<I> klass) throws ModelDefinitionException {
 		ModelEntity<I> modelEntity = modelContext.getModelEntity(klass);
 		if (modelEntity == null) {
 			extendedContext = new ModelContext(klass, getExtendedContext());
@@ -473,7 +499,8 @@ public class ModelFactory {
 					}
 				}
 				if (allOthersArePresent && !returned.contains(((ConditionalPresence) o).object)) {
-					// Closure is fine and object is not already present, add object
+					// Closure is fine and object is not already present, add
+					// object
 					returned.set(i, ((ConditionalPresence) o).object);
 				} else {
 					// Discard object
@@ -707,7 +734,8 @@ public class ModelFactory {
 		serializer.serializeDocument(object, os, resetModifiedStatus);
 	}
 
-	public Object deserialize(InputStream is) throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
+	@Override
+	public Object deserialize(InputStream is) throws Exception, IOException {
 		return deserialize(is, DeserializationPolicy.PERMISSIVE);
 	}
 
@@ -717,7 +745,8 @@ public class ModelFactory {
 		return deserializer.deserializeDocument(is);
 	}
 
-	public Object deserialize(String input) throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
+	@Override
+	public Object deserialize(String input) throws Exception, IOException {
 		return deserialize(input, DeserializationPolicy.PERMISSIVE);
 	}
 
@@ -773,6 +802,66 @@ public class ModelFactory {
 	 */
 	public void setEditingContext(EditingContext editingContext) {
 		this.editingContext = editingContext;
+	}
+
+	/* @Override */
+	@Override
+	public final Type getTypeFromURI(String uri) {
+		return (Type) getModelContext().getModelEntity(uri);
+	}
+
+	@Override
+	public void setContext(Object objectGraph) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void resetContext() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void addToRootNodes(Object anObject) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void setContextProperty(String propertyName, Object value) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Object getInstanceOf(Type aType, String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean objectHasAttributeNamed(Object object, String attrName) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void addAttributeValueForObject(Object object, String attrName, Object value) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void addChildToObject(Object child, Object container) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Type getAttributeType(Object currentContainer, String localName) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

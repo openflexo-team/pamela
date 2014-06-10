@@ -1,4 +1,4 @@
-package org.openflexo.model.factory;
+package org.openflexo.model.io;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,8 +25,12 @@ import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.exceptions.RestrictiveDeserializationException;
+import org.openflexo.model.factory.DeserializationPolicy;
+import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.model.factory.PAMELAConstants;
+import org.openflexo.model.factory.ProxyMethodHandler;
 
-class XMLDeserializer {
+public class XMLDeserializer {
 
 	public static final String ID = "id";
 	public static final String ID_REF = "idref";

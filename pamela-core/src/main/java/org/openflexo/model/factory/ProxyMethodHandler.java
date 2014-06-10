@@ -900,7 +900,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	void invokeSetterForDeserialization(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
+	public void invokeSetterForDeserialization(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
 		if (property.getSetterMethod() != null) {
 			invokeSetter(property, value);
 		} else {
@@ -1116,7 +1116,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		throw new UnsupportedOperationException("Setter for MAP: not implemented yet");
 	}
 
-	void invokeAdderForDeserialization(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
+	public void invokeAdderForDeserialization(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
 		if (property.getAdderMethod() != null) {
 			invokeAdder(property, value);
 		} else {
@@ -1612,7 +1612,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		beingCloned = true;
 		Object returned = null;
 		try {
-			returned = getModelFactory()._newInstance(getModelEntity().getImplementedInterface(), true);
+			returned = getModelFactory().newInstance(getModelEntity().getImplementedInterface(), true);
 			// System.out.println("Perform clone " + getModelEntity());
 			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(returned);
 			clonedObjectHandler.createdByCloning = true;
