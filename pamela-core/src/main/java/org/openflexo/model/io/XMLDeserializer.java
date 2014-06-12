@@ -1,23 +1,3 @@
-/*
- * (c) Copyright 2012-2014 Openflexo
- *
- * This file is part of OpenFlexo.
- *
- * OpenFlexo is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OpenFlexo is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OpenFlexo. If not, see <http://www.gnu.org/licenses/>.
- *
- */
-
 package org.openflexo.model.io;
 
 import java.io.IOException;
@@ -49,7 +29,6 @@ import org.openflexo.model.factory.DeserializationPolicy;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.factory.PAMELAConstants;
 import org.openflexo.model.factory.ProxyMethodHandler;
-import org.openflexo.model.io.XMLSerializer;
 
 public class XMLDeserializer {
 
@@ -195,7 +174,7 @@ public class XMLDeserializer {
 					e.printStackTrace();
 				}
 			}
-			returned = modelFactory.newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
+			returned = modelFactory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
 			initializeDeserialization(returned, modelEntity);
 		}
 
@@ -237,7 +216,8 @@ public class XMLDeserializer {
 
 		}
 		for (Element child : node.getChildren()) {
-			ModelPropertyXMLTag<I> modelPropertyXMLTag = modelFactory.getModelContext().getPropertyForXMLTag(modelEntity, child.getName());
+			ModelPropertyXMLTag<I> modelPropertyXMLTag = modelFactory.getModelContext().getPropertyForXMLTag(modelEntity, modelFactory,
+					child.getName());
 			ModelProperty<? super I> property = null;
 			ModelEntity<?> entity = null;
 			if (modelPropertyXMLTag != null) {
