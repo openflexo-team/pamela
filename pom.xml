@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.openflexo</groupId>
 		<artifactId>openflexo-component</artifactId>
-        <version>0.1-SNAPSHOT</version>
+        <version>0.1</version>
 	</parent>
 	<version>1.0-SNAPSHOT</version>
 	<modelVersion>4.0.0</modelVersion>
@@ -12,7 +12,7 @@
 	<name>Pamela</name>
 	<packaging>pom</packaging>
 	<properties>
-		<connie.version>1.0-SNAPSHOT</connie.version>
+		<connie.version>1.0</connie.version>
 		<pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>
 	</properties>
 	<scm>
