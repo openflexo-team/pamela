@@ -16,7 +16,7 @@
 		<pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>
 	</properties>
 	<scm>
-		<connection>scm:git:ssh://git@github.com:openflexo-team/pamela.git</connection>
+		<connection>scm:git:ssh://git@github.com/openflexo-team/pamela.git</connection>
 		<url>https://github.com/openflexo-team/pamela</url>
 	</scm>
 	<modules>
