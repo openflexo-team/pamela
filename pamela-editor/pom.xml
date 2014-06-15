@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.openflexo</groupId>
 		<artifactId>pamela</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
 	</parent>
 	<artifactId>pamela-editor</artifactId>
 	<name>Pamela-editor</name>
