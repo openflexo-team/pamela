@@ -609,8 +609,10 @@ public class ModelFactory implements IObjectGraphFactory {
 				break;
 			case LIST:
 				List<?> values = (List<?>) handler.invokeGetter(p);
-				for (Object o : values) {
-					appendEmbedded(p, father, list, o, embeddingType);
+				if (values != null) {
+					for (Object o : values) {
+						appendEmbedded(p, father, list, o, embeddingType);
+					}
 				}
 				break;
 			default:
