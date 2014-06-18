@@ -1,6 +1,7 @@
 package org.openflexo.model.undo;
 
 import java.beans.PropertyChangeSupport;
+import java.util.List;
 
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -117,6 +118,8 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 
 		getPropertyChangeSupport().firePropertyChange(STOP_RECORDING, null, edit);
 
+		fireAddEdit(edit);
+
 		return currentEdition;
 	}
 
@@ -140,15 +143,22 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	@Override
 	public synchronized boolean canUndo() {
 		if (!enabled) {
+			System.out.println("1 - Cannot undo because not enabled");
 			return false;
 		}
 		if (currentEdition != null) {
+			System.out.println("2 - Cannot undo because currentEdition != null");
 			return false;
 		}
 		if (undoInProgress || redoInProgress) {
+			System.out.println("3 - Cannot undo because undoInProgress or redoInProgress");
 			return false;
 		}
-		return super.canUndo();
+		boolean returned = super.canUndo();
+		if (!returned) {
+			System.out.println("4 - Cannot undo because of super implementation");
+		}
+		return returned;
 	}
 
 	/**
@@ -162,12 +172,18 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	public synchronized boolean canUndoIfStoppingCurrentEdition() {
 		if (!enabled) {
+			System.out.println("2.1 - Cannot undo because not enabled");
 			return false;
 		}
 		if (undoInProgress || redoInProgress) {
+			System.out.println("2.3 - Cannot undo because undoInProgress or redoInProgress");
 			return false;
 		}
-		return super.canUndo();
+		boolean returned = super.canUndo();
+		if (!returned) {
+			System.out.println("2.4 - Cannot undo because of super implementation");
+		}
+		return returned;
 	}
 
 	/**
@@ -243,11 +259,17 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 				(new Exception("UndoManager exception: received CompoundEdit while REDO in progress")).printStackTrace();
 				return false;
 			}
-			return super.addEdit(anEdit);
+			boolean returned = super.addEdit(anEdit);
+			fireAddEdit(anEdit);
+			return returned;
 		} else {
 			System.out.println("???? Unexpected Edit " + anEdit);
 			return false;
 		}
+	}
+
+	protected void fireAddEdit(UndoableEdit anEdit) {
+		getPropertyChangeSupport().firePropertyChange("edits", null, anEdit);
 	}
 
 	/**
@@ -307,7 +329,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			undoInProgress = true;
 			super.undo();
 			undoInProgress = false;
-			getPropertyChangeSupport().firePropertyChange(UNDONE, null, this);
+			fireUndo();
 			// System.out.println("END UNDO ");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -315,6 +337,10 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			discardAllEdits();
 			throw new CannotUndoException();
 		}
+	}
+
+	protected void fireUndo() {
+		getPropertyChangeSupport().firePropertyChange(UNDONE, null, this);
 	}
 
 	/**
@@ -340,7 +366,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			redoInProgress = true;
 			super.redo();
 			redoInProgress = false;
-			getPropertyChangeSupport().firePropertyChange(REDONE, null, this);
+			fireRedo();
 			// System.out.println("END REDO ");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -350,6 +376,10 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		}
 	}
 
+	protected void fireRedo() {
+		getPropertyChangeSupport().firePropertyChange(REDONE, null, this);
+	}
+
 	/**
 	 * Return current edition
 	 */
@@ -357,8 +387,13 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		return currentEdition;
 	}
 
+	public List<UndoableEdit> getEdits() {
+		return edits;
+	}
+
 	// Debug
 	public void debug() {
+		System.out.println("Debugging UNDO manager");
 		if (currentEdition != null) {
 			System.out.println("UndoManager, currently recording " + currentEdition.getPresentationName());
 		} else {
@@ -381,7 +416,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	@Override
 	public PropertyChangeSupport getPropertyChangeSupport() {
 		return pcSupport;
-	};
+	}
 
 	/**
 	 * Returns a description of the undoable form of this edit.

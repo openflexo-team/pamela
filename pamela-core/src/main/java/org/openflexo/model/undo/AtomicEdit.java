@@ -66,4 +66,6 @@ public abstract class AtomicEdit<I> implements UndoableEdit {
 	public String toString() {
 		return getPresentationName();
 	}
+
+	public abstract String getType();
 }

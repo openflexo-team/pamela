@@ -65,4 +65,9 @@ public class DeleteCommand<I> extends AtomicEdit<I> {
 		return "DELETE " + deletedObject;
 	}
 
+	@Override
+	public String getType() {
+		return "DELETE";
+	}
+
 }

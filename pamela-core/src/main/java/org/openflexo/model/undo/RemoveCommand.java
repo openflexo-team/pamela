@@ -35,6 +35,14 @@ public class RemoveCommand<I> extends AtomicEdit<I> {
 		return updatedObject;
 	}
 
+	public ModelProperty<? super I> getModelProperty() {
+		return modelProperty;
+	}
+
+	public Object getRemovedValue() {
+		return removedValue;
+	}
+
 	@Override
 	public void undo() throws CannotUndoException {
 		getModelFactory().getHandler(updatedObject).invokeAdder(modelProperty, removedValue);
@@ -70,7 +78,13 @@ public class RemoveCommand<I> extends AtomicEdit<I> {
 
 	@Override
 	public String getPresentationName() {
-		return "REMOVE " + updatedObject + " property=" + modelProperty.getPropertyIdentifier() + " removedValue=" + removedValue;
+		return "REMOVE " + updatedObject + " property=" + (modelProperty != null ? modelProperty.getPropertyIdentifier() : null)
+				+ " removedValue=" + removedValue;
+	}
+
+	@Override
+	public String getType() {
+		return "REMOVE";
 	}
 
 }

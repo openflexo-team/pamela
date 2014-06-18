@@ -42,6 +42,14 @@ public class SetCommand<I> extends AtomicEdit<I> {
 		return modelProperty;
 	}
 
+	public Object getOldValue() {
+		return oldValue;
+	}
+
+	public Object getNewValue() {
+		return newValue;
+	}
+
 	@Override
 	public void undo() throws CannotUndoException {
 		getModelFactory().getHandler(updatedObject).invokeSetter(modelProperty, oldValue);
@@ -95,8 +103,13 @@ public class SetCommand<I> extends AtomicEdit<I> {
 
 	@Override
 	public String getPresentationName() {
-		return "SET " + updatedObject + " property=" + modelProperty.getPropertyIdentifier() + " oldValue=" + oldValue + " newValue="
-				+ newValue;
+		return "SET " + updatedObject + " property=" + (modelProperty != null ? modelProperty.getPropertyIdentifier() : null)
+				+ " oldValue=" + oldValue + " newValue=" + newValue;
+	}
+
+	@Override
+	public String getType() {
+		return "SET";
 	}
 
 }

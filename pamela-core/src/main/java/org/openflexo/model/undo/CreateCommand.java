@@ -65,4 +65,9 @@ public class CreateCommand<I> extends AtomicEdit<I> {
 		return "CREATE " + createdObject;
 	}
 
+	@Override
+	public String getType() {
+		return "CREATE";
+	}
+
 }
