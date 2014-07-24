@@ -228,10 +228,13 @@ public class XMLSerializer {
 									break;
 								case LIST:
 									List<?> values = (List<?>) handler.invokeGetter(p);
-									for (Object o : values) {
-										if (o != null) {
-											Element propertyElement2 = serializeElement(o, propertyXMLElement, resetModifiedStatus);
-											returned.addContent(propertyElement2);
+									// NPE if list not initialized
+									if (values !=null){
+										for (Object o : values) {
+											if (o != null) {
+												Element propertyElement2 = serializeElement(o, propertyXMLElement, resetModifiedStatus);
+												returned.addContent(propertyElement2);
+											}
 										}
 									}
 									break;
