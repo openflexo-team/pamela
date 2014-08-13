@@ -808,8 +808,8 @@ public class ModelFactory implements IObjectGraphFactory {
 
 	/* @Override */
 	@Override
-	public final Type getTypeFromURI(String uri) {
-		return (Type) getModelContext().getModelEntity(uri);
+	public final Type getTypeForObject(String typeURI, Object container, String objectName) {
+		return (Type) getModelContext().getModelEntity(typeURI);
 	}
 
 	@Override
