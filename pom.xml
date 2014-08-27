@@ -33,9 +33,20 @@
 			</resource>
 			<resource>
 				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
 				<includes>
-					<include>**/*</include>
+					<include>**/pamela.properties</include>
 				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>**/pamela.properties</exclude>
+				</excludes>
+				<!--  <includes>
+					<include>**/*</include>
+				</includes>-->
 			</resource>
 		</resources>
 		<pluginManagement>
