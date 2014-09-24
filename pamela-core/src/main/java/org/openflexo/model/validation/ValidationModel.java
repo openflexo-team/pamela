@@ -1,0 +1,252 @@
+/*
+ * (c) Copyright 2012-2014 Openflexo
+ * (c) Copyright 2010-2011 AgileBirds
+ *
+ * This file is part of OpenFlexo.
+ *
+ * OpenFlexo is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OpenFlexo is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OpenFlexo. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+package org.openflexo.model.validation;
+
+import java.beans.PropertyChangeSupport;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.logging.Logger;
+
+import org.openflexo.antar.binding.TypeUtils;
+import org.openflexo.model.ModelContext;
+import org.openflexo.model.ModelEntity;
+import org.openflexo.model.annotations.DefineValidationRule;
+import org.openflexo.model.exceptions.ModelDefinitionException;
+import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.toolbox.HasPropertyChangeSupport;
+
+/**
+ * Used to store and manage a set of {@link ValidationRule} associated to some types<br>
+ * {@link ValidationRule} discovering is based on PAMELA models annotated with {@link DefineValidationRule} annotations
+ * 
+ * @author sguerin
+ * 
+ */
+@SuppressWarnings("serial")
+public abstract class ValidationModel implements HasPropertyChangeSupport {
+
+	private static final Logger logger = Logger.getLogger(ValidationModel.class.getPackage().getName());
+
+	public static final String DELETED_PROPERTY = "deleted";
+
+	private final Map<Class<?>, ValidationRuleSet<?>> ruleSets;
+
+	private ModelFactory validationModelFactory;
+
+	private final PropertyChangeSupport pcSupport;
+
+	public ValidationModel(ModelContext modelContext) {
+		super();
+
+		pcSupport = new PropertyChangeSupport(this);
+
+		ruleSets = new HashMap<Class<?>, ValidationRuleSet<?>>();
+
+		try {
+			searchAndRegisterValidationRules(modelContext);
+		} catch (ModelDefinitionException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public PropertyChangeSupport getPropertyChangeSupport() {
+		return pcSupport;
+	}
+
+	@Override
+	public String getDeletedProperty() {
+		return DELETED_PROPERTY;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void searchAndRegisterValidationRules(ModelContext modelContext) throws ModelDefinitionException {
+
+		validationModelFactory = new ModelFactory(modelContext);
+
+		Iterator<ModelEntity> it = modelContext.getEntities();
+
+		while (it.hasNext()) {
+			ModelEntity e = it.next();
+			// System.out.println("assertTrue(validationModel.getValidationModelFactory().getModelContext().getModelEntity("
+			// + e.getImplementedInterface().toString().substring(10) + ".class) != null);");
+			Class i = e.getImplementedInterface();
+			ruleSets.put(i, new ValidationRuleSet<Validable>(i));
+		}
+
+		// Now manage inheritance
+		it = modelContext.getEntities();
+		while (it.hasNext()) {
+			ModelEntity e = it.next();
+			// System.out.println("assertTrue(validationModel.getValidationModelFactory().getModelContext().getModelEntity("
+			// + e.getImplementedInterface().toString().substring(10) + ".class) != null);");
+			Class i = e.getImplementedInterface();
+			manageInheritanceFor(i, ruleSets.get(i));
+		}
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private void manageInheritanceFor(Class<?> cl, ValidationRuleSet<?> originRuleSet) {
+		for (Class<?> superInterface : cl.getInterfaces()) {
+			if (ruleSets.get(superInterface) != null && originRuleSet.getDeclaredType() != superInterface) {
+				// System.out.println("Found " + originRuleSet.getDeclaredType() + " inherits from " + superInterface);
+				originRuleSet.addParentRuleSet((ValidationRuleSet) ruleSets.get(superInterface));
+
+			} else {
+				manageInheritanceFor(superInterface, originRuleSet);
+			}
+		}
+	}
+
+	public ModelFactory getValidationModelFactory() {
+		return validationModelFactory;
+	}
+
+	/**
+	 * Validates supplied {@link Validable}<br>
+	 * Found issues are appened in a newly created ValidationReport.<br>
+	 * Supplied validation model is used to perform this validation.
+	 * 
+	 * @param validable
+	 * @param validationModel
+	 * @return the ValidationReport, object on which found issues are appened
+	 */
+	public ValidationReport validate(Validable object) {
+
+		return new ValidationReport(this, object);
+	}
+
+	/**
+	 * Validate supplied Validable object by returning boolean indicating if validation throw errors (warnings are not considered as invalid
+	 * model).
+	 * 
+	 * @param object
+	 * @return
+	 */
+	public boolean isValid(Validable object) {
+		return validate(object).getErrorsCount() == 0;
+	}
+
+	public <V extends Validable> ValidationRuleSet<? super V> getRuleSet(V validable) {
+		return (ValidationRuleSet<? super V>) getRuleSet(validable.getClass());
+	}
+
+	public <V extends Validable> ValidationRuleSet<? super V> getRuleSet(Class<V> validableClass) {
+		return (ValidationRuleSet<? super V>) TypeUtils.objectForClass(validableClass, ruleSets, false);
+	}
+
+	/**
+	 * Return a boolean indicating if validation of supplied object must be notified
+	 * 
+	 * @param next
+	 * @return a boolean
+	 */
+	protected abstract boolean shouldNotifyValidation(Validable next);
+
+	/**
+	 * Return a boolean indicating if validation of each rule must be notified
+	 * 
+	 * @param next
+	 * @return a boolean
+	 */
+	protected boolean shouldNotifyValidationRules() {
+		return false;
+	}
+
+	public abstract boolean fixAutomaticallyIfOneFixProposal();
+
+	private List<Class<?>> sortedClasses;
+
+	public List<Class<?>> getSortedClasses() {
+		if (sortedClasses == null) {
+			sortedClasses = new ArrayList<Class<?>>();
+			sortedClasses.addAll(ruleSets.keySet());
+			Collections.sort(sortedClasses, new ClassComparator());
+		}
+		return sortedClasses;
+	}
+
+	private ValidationRuleFilter _filter = null;
+
+	public void update(ValidationRuleFilter filter) {
+		_filter = filter;
+	}
+
+	/**
+	 * Implements
+	 * 
+	 * @see javax.swing.ListModel#getSize()
+	 */
+	/*@Override
+	public int getSize() {
+		return ruleSets.size();
+	}*/
+
+	/**
+	 * Implements
+	 * 
+	 * @see javax.swing.ListModel#getElementAt(int)
+	 */
+	/*@Override
+	public ValidationRuleSet<?> getElementAt(int index) {
+		if (index >= 0 && index < getSortedClasses().size()) {
+			return ruleSets.get(getSortedClasses().get(index));
+		}
+		return null;
+	}*/
+
+	private class ClassComparator implements Comparator<Class> {
+		private final Collator collator;
+
+		ClassComparator() {
+			collator = Collator.getInstance();
+		}
+
+		@Override
+		public int compare(Class o1, Class o2) {
+			String className1 = null;
+			String className2 = null;
+			StringTokenizer st1 = new StringTokenizer(o1.getName(), ".");
+			while (st1.hasMoreTokens()) {
+				className1 = st1.nextToken();
+			}
+			StringTokenizer st2 = new StringTokenizer(o2.getName(), ".");
+			while (st2.hasMoreTokens()) {
+				className2 = st2.nextToken();
+			}
+			if (className1 != null && className2 != null) {
+				return collator.compare(className1, className2);
+			}
+			return 0;
+		}
+
+	}
+
+	public abstract String localizedForKey(String key);
+
+}
