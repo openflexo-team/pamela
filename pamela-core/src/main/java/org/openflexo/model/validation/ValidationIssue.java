@@ -159,4 +159,7 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 		}
 	}
 
+	public boolean isProblemIssue() {
+		return false;
+	}
 }

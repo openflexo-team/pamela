@@ -20,6 +20,7 @@
  */
 package org.openflexo.model.validation;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -47,6 +48,10 @@ public class ValidationError<R extends ValidationRule<R, V>, V extends Validable
 		super(rule, anObject, aMessage, fixProposals);
 	}
 
+	public ValidationError(R rule, V anObject, String aMessage, FixProposal<R, V>... fixProposals) {
+		super(rule, anObject, aMessage, Arrays.asList(fixProposals));
+	}
+
 	public ValidationError(R rule, V anObject, String aMessage, String aDetailedMessage) {
 		super(rule, anObject, aMessage, aDetailedMessage);
 	}
@@ -57,6 +62,10 @@ public class ValidationError<R extends ValidationRule<R, V>, V extends Validable
 
 	public ValidationError(R rule, V anObject, String aMessage, String aDetailedMessage, List<FixProposal<R, V>> fixProposals) {
 		super(rule, anObject, aMessage, aDetailedMessage, fixProposals);
+	}
+
+	public ValidationError(R rule, V anObject, String aMessage, String aDetailedMessage, FixProposal<R, V>... fixProposals) {
+		super(rule, anObject, aMessage, aDetailedMessage, Arrays.asList(fixProposals));
 	}
 
 	@Override

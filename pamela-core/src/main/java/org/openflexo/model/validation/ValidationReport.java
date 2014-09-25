@@ -198,7 +198,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				logger.fine("Applying rule " + rule.getRuleName());
 			}
 
-			// System.out.println("--> Applying rule " + rule.getLocalizedName() + " for " + validable);
+			// System.out.println("--> Applying rule " + rule.getRuleName() + " for " + validable);
 
 			if (getValidationModel().shouldNotifyValidationRules()) {
 				getPropertyChangeSupport().firePropertyChange(VALIDATE_WITH_RULE, null, rule);

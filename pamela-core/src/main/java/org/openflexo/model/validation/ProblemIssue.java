@@ -159,4 +159,10 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 			}
 		}
 	}
+
+	@Override
+	public boolean isProblemIssue() {
+		return true;
+	}
+
 }
