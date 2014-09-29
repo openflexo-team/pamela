@@ -20,7 +20,10 @@
  */
 package org.openflexo.model.validation;
 
+import java.beans.PropertyChangeSupport;
 import java.util.logging.Logger;
+
+import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
  * Represent a validation rule<br>
@@ -29,7 +32,9 @@ import java.util.logging.Logger;
  * @author sylvain
  * 
  */
-public abstract class ValidationRule<R extends ValidationRule<R, V>, V extends Validable> {
+public abstract class ValidationRule<R extends ValidationRule<R, V>, V extends Validable> implements HasPropertyChangeSupport {
+
+	public static final String DELETED_PROPERTY = "deleted";
 
 	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(ValidationRule.class.getPackage().getName());
@@ -44,11 +49,24 @@ public abstract class ValidationRule<R extends ValidationRule<R, V>, V extends V
 
 	private String _typeName;
 
+	private final PropertyChangeSupport pcSupport;
+
 	public ValidationRule(Class<? super V> objectType, String ruleName) {
 		super();
 		this.ruleName = ruleName;
 		ruleDescription = ruleName + "_description";
 		_objectType = objectType;
+		pcSupport = new PropertyChangeSupport(this);
+	}
+
+	@Override
+	public PropertyChangeSupport getPropertyChangeSupport() {
+		return pcSupport;
+	}
+
+	@Override
+	public String getDeletedProperty() {
+		return DELETED_PROPERTY;
 	}
 
 	public String getRuleName() {
@@ -85,6 +103,13 @@ public abstract class ValidationRule<R extends ValidationRule<R, V>, V extends V
 	}
 
 	public void setIsEnabled(boolean v) {
-		isEnabled = v;
+		if (v != isEnabled) {
+
+			System.out.println(">>>>>>> setIsEnabled for " + this + " with " + v);
+			Thread.dumpStack();
+
+			isEnabled = v;
+			getPropertyChangeSupport().firePropertyChange("isEnabled", !isEnabled, isEnabled);
+		}
 	}
 }

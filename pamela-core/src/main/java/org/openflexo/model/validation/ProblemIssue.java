@@ -86,6 +86,16 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 		return fixProposals;
 	}
 
+	public <FP extends FixProposal<R, V>> List<FP> getFixProposals(Class<? extends FP> fixProposalClass) {
+		List<FP> returned = new ArrayList<FP>();
+		for (FixProposal<R, V> fixProposal : getFixProposals()) {
+			if (fixProposalClass.isAssignableFrom(fixProposal.getClass())) {
+				returned.add((FP) fixProposal);
+			}
+		}
+		return returned;
+	}
+
 	public void addToFixProposals(FixProposal<R, V> proposal) {
 		fixProposals.add(proposal);
 		proposal.setProblemIssue(this);
@@ -132,30 +142,37 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 
 	@Override
 	public void revalidateAfterFixing() {
-		Collection<ValidationIssue<?, ?>> allIssuesToRemove = getValidationReport().issuesRegarding(getObject());
-		for (Validable relatedValidable : getRelatedValidableObjects()) {
-			allIssuesToRemove.addAll(getValidationReport().issuesRegarding(relatedValidable));
+		ValidationReport validationReport = getValidationReport();
+
+		if (validationReport == null) {
+			return;
 		}
-		Collection<Validable> allEmbeddedValidableObjects = getValidationReport().retrieveAllEmbeddedValidableObjects(getObject());
+
+		Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getObject());
+		for (Validable relatedValidable : getRelatedValidableObjects()) {
+			allIssuesToRemove.addAll(validationReport.issuesRegarding(relatedValidable));
+		}
+		Collection<Validable> allEmbeddedValidableObjects = validationReport.retrieveAllEmbeddedValidableObjects(getObject());
 		if (allEmbeddedValidableObjects != null) {
 			for (Validable embeddedValidable : allEmbeddedValidableObjects) {
-				allIssuesToRemove.addAll(getValidationReport().issuesRegarding(embeddedValidable));
+				allIssuesToRemove.addAll(validationReport.issuesRegarding(embeddedValidable));
 			}
 		}
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("Remove related issues");
 		}
-		for (ValidationIssue<?, ?> issue : allIssuesToRemove) {
-			getValidationReport().removeFromValidationIssues(issue);
+
+		for (ValidationIssue<?, ?> issue : new ArrayList<ValidationIssue<?, ?>>(allIssuesToRemove)) {
+			validationReport.removeFromValidationIssues(issue);
 		}
 
 		if (!getObject().isDeleted()) {
-			getValidationReport().revalidate(getObject());
+			validationReport.revalidate(getObject());
 		}
 
 		for (Validable relatedValidable : getRelatedValidableObjects()) {
 			if (!relatedValidable.isDeleted()) {
-				getValidationReport().revalidate(relatedValidable);
+				validationReport.revalidate(relatedValidable);
 			}
 		}
 	}

@@ -128,6 +128,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			ReportMode old = this.mode;
 			this.mode = mode;
 			getPropertyChangeSupport().firePropertyChange(REPORT_MODE_PROPERTY, old, mode);
+			getPropertyChangeSupport().firePropertyChange("filteredIssues", null, getFilteredIssues());
 		}
 	}
 
@@ -398,6 +399,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 					infoIssuesMap.put(issue.getObject(), l);
 				}
 				l.add((InformationIssue<?, ?>) issue);
+				getPropertyChangeSupport().firePropertyChange("infosCount", getInfosCount() - 1, getInfosCount());
 			}
 			if (issue instanceof ValidationWarning) {
 				warnings.add((ValidationWarning<?, ?>) issue);
@@ -407,6 +409,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 					warningsMap.put(issue.getObject(), l);
 				}
 				l.add((ValidationWarning<?, ?>) issue);
+				getPropertyChangeSupport().firePropertyChange("warningsCount", getWarningsCount() - 1, getWarningsCount());
 			}
 			if (issue instanceof ValidationError) {
 				errors.add((ValidationError<?, ?>) issue);
@@ -416,7 +419,12 @@ public class ValidationReport implements HasPropertyChangeSupport {
 					errorsMap.put(issue.getObject(), l);
 				}
 				l.add((ValidationError<?, ?>) issue);
+				getPropertyChangeSupport().firePropertyChange("errorsCount", getErrorsCount() - 1, getErrorsCount());
 			}
+			getPropertyChangeSupport().firePropertyChange("issuesCount", getIssuesCount() - 1, getIssuesCount());
+			getPropertyChangeSupport().firePropertyChange("allIssues", null, getAllIssues());
+			getPropertyChangeSupport().firePropertyChange("filteredIssues", null, getFilteredIssues());
+
 		}
 	}
 
@@ -434,6 +442,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				if (l != null) {
 					l.remove(issue);
 				}
+				getPropertyChangeSupport().firePropertyChange("infosCount", getInfosCount() + 1, getInfosCount());
 			}
 			if (issue instanceof ValidationWarning) {
 				warnings.remove(issue);
@@ -441,6 +450,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				if (l != null) {
 					l.remove(issue);
 				}
+				getPropertyChangeSupport().firePropertyChange("warningsCount", getWarningsCount() + 1, getWarningsCount());
 			}
 			if (issue instanceof ValidationError) {
 				errors.remove(issue);
@@ -448,7 +458,11 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				if (l != null) {
 					l.remove(issue);
 				}
+				getPropertyChangeSupport().firePropertyChange("errorsCount", getErrorsCount() + 1, getErrorsCount());
 			}
+			getPropertyChangeSupport().firePropertyChange("issuesCount", getIssuesCount() + 1, getIssuesCount());
+			getPropertyChangeSupport().firePropertyChange("allIssues", null, getAllIssues());
+			getPropertyChangeSupport().firePropertyChange("filteredIssues", null, getFilteredIssues());
 		}
 	}
 
@@ -475,6 +489,20 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		if (errorsList != null && errorsList.size() > 0) {
 			returned.add(errorsList);
 		}
+		return returned;
+	}
+
+	// TODO: perf issues
+	public List<ValidationIssue<?, ?>> issuesRegarding(ValidationRule<?, ?> rule) {
+
+		List<ValidationIssue<?, ?>> returned = new ArrayList<ValidationIssue<?, ?>>();
+
+		for (ValidationIssue<?, ?> issue : getAllIssues()) {
+			if (issue.getCause() == rule) {
+				returned.add(issue);
+			}
+		}
+
 		return returned;
 	}
 

@@ -160,6 +160,16 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		return (ValidationRuleSet<? super V>) TypeUtils.objectForClass(validableClass, ruleSets, false);
 	}
 
+	public ValidationRuleSet<?> getGenericRuleSet(Class<?> validableClass) {
+		if (validableClass == null) {
+			return null;
+		}
+		if (Validable.class.isAssignableFrom(validableClass)) {
+			return getRuleSet((Class<? extends Validable>) validableClass);
+		}
+		return null;
+	}
+
 	/**
 	 * Return a boolean indicating if validation of supplied object must be notified
 	 * 

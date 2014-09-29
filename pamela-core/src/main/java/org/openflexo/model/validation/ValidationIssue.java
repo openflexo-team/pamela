@@ -143,19 +143,25 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 	}
 
 	public void revalidateAfterFixing() {
-		Collection<ValidationIssue<?, ?>> allIssuesToRemove = getValidationReport().issuesRegarding(getObject());
-		Collection<Validable> allEmbeddedValidableObjects = getValidationReport().retrieveAllEmbeddedValidableObjects(getObject());
+		ValidationReport validationReport = getValidationReport();
+
+		if (validationReport == null) {
+			return;
+		}
+
+		Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getObject());
+		Collection<Validable> allEmbeddedValidableObjects = validationReport.retrieveAllEmbeddedValidableObjects(getObject());
 		if (allEmbeddedValidableObjects != null) {
 			for (Validable embeddedValidable : allEmbeddedValidableObjects) {
-				allIssuesToRemove.addAll(getValidationReport().issuesRegarding(embeddedValidable));
+				allIssuesToRemove.addAll(validationReport.issuesRegarding(embeddedValidable));
 			}
 		}
 		for (ValidationIssue<?, ?> issue : allIssuesToRemove) {
-			getValidationReport().removeFromValidationIssues(issue);
+			validationReport.removeFromValidationIssues(issue);
 		}
 
 		if (!getObject().isDeleted()) {
-			getValidationReport().revalidate(getObject());
+			validationReport.revalidate(getObject());
 		}
 	}
 
