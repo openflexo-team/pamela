@@ -158,13 +158,13 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			}
 		}
 
-		getPropertyChangeSupport().firePropertyChange(VALIDATION_START, rootObject, validationStepToNotify);
+		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_START, rootObject, validationStepToNotify);
 
 		// Perform the validation
 		for (Enumeration<Validable> en = objectsToValidate.elements(); en.hasMoreElements();) {
 			Validable next = en.nextElement();
 			if (validationModel.shouldNotifyValidation(next)) {
-				getPropertyChangeSupport().firePropertyChange(VALIDATION_OBJECT, null, next);
+				getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_OBJECT, null, next);
 			}
 
 			if (!next.isDeleted()) {
@@ -174,7 +174,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		}
 
 		// Notify validation is finished
-		getPropertyChangeSupport().firePropertyChange(VALIDATION_END, null, rootObject);
+		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_END, null, rootObject);
 
 		return returned;
 
@@ -190,7 +190,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		}
 
 		if (getValidationModel().shouldNotifyValidationRules()) {
-			getPropertyChangeSupport().firePropertyChange(OBJECT_VALIDATION_START, 0, ruleSet.getRulesCount());
+			getValidationModel().getPropertyChangeSupport().firePropertyChange(OBJECT_VALIDATION_START, 0, ruleSet.getRulesCount());
 		}
 
 		for (int i = 0; i < ruleSet.getRulesCount(); i++) {
@@ -202,7 +202,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			// System.out.println("--> Applying rule " + rule.getRuleName() + " for " + validable);
 
 			if (getValidationModel().shouldNotifyValidationRules()) {
-				getPropertyChangeSupport().firePropertyChange(VALIDATE_WITH_RULE, null, rule);
+				getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATE_WITH_RULE, null, rule);
 			}
 
 			ValidationIssue<?, ?> issue = performRuleValidation((ValidationRule) rule, validable);

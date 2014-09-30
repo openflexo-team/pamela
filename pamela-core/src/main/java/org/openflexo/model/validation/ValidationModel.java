@@ -55,8 +55,9 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 	public static final String DELETED_PROPERTY = "deleted";
 
 	private final Map<Class<?>, ValidationRuleSet<?>> ruleSets;
-
 	private ModelFactory validationModelFactory;
+	private List<Class<?>> sortedClasses;
+	private ValidationRuleFilter ruleFilter = null;
 
 	private final PropertyChangeSupport pcSupport;
 
@@ -190,8 +191,6 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 	public abstract boolean fixAutomaticallyIfOneFixProposal();
 
-	private List<Class<?>> sortedClasses;
-
 	public List<Class<?>> getSortedClasses() {
 		if (sortedClasses == null) {
 			sortedClasses = new ArrayList<Class<?>>();
@@ -201,34 +200,21 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		return sortedClasses;
 	}
 
-	private ValidationRuleFilter _filter = null;
-
-	public void update(ValidationRuleFilter filter) {
-		_filter = filter;
+	public ValidationRuleFilter getRuleFilter() {
+		return ruleFilter;
 	}
 
-	/**
-	 * Implements
-	 * 
-	 * @see javax.swing.ListModel#getSize()
-	 */
-	/*@Override
-	public int getSize() {
-		return ruleSets.size();
-	}*/
-
-	/**
-	 * Implements
-	 * 
-	 * @see javax.swing.ListModel#getElementAt(int)
-	 */
-	/*@Override
-	public ValidationRuleSet<?> getElementAt(int index) {
-		if (index >= 0 && index < getSortedClasses().size()) {
-			return ruleSets.get(getSortedClasses().get(index));
+	public void setRuleFilter(ValidationRuleFilter ruleFilter) {
+		if (this.ruleFilter != ruleFilter) {
+			this.ruleFilter = ruleFilter;
+			for (Class<?> c : getSortedClasses()) {
+				ValidationRuleSet<?> ruleSet = getRuleSet((Class<? extends Validable>) c);
+				for (ValidationRule<?, ?> rule : ruleSet.getDeclaredRules()) {
+					rule.setIsEnabled(ruleFilter != null ? ruleFilter.accept(rule) : true);
+				}
+			}
 		}
-		return null;
-	}*/
+	}
 
 	private class ClassComparator implements Comparator<Class> {
 		private final Collator collator;

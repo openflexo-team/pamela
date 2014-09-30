@@ -104,10 +104,6 @@ public abstract class ValidationRule<R extends ValidationRule<R, V>, V extends V
 
 	public void setIsEnabled(boolean v) {
 		if (v != isEnabled) {
-
-			System.out.println(">>>>>>> setIsEnabled for " + this + " with " + v);
-			Thread.dumpStack();
-
 			isEnabled = v;
 			getPropertyChangeSupport().firePropertyChange("isEnabled", !isEnabled, isEnabled);
 		}
