@@ -60,8 +60,8 @@ public abstract class FixProposal<R extends ValidationRule<R, V>, V extends Vali
 		this.message = message;
 	}
 
-	public V getObject() {
-		return getProblemIssue().getObject();
+	public V getValidable() {
+		return getProblemIssue().getValidable();
 	}
 
 	public void apply() {

@@ -71,7 +71,7 @@ public class ValidationError<R extends ValidationRule<R, V>, V extends Validable
 	@Override
 	public String toString() {
 		return "VALIDATION / ERROR:   " + getMessage() + (getDetailedMessage() != null ? " details: " + getDetailedMessage() : "")
-				+ " OBJECT=" + getObject();
+				+ " OBJECT=" + getValidable();
 	}
 
 }

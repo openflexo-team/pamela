@@ -246,7 +246,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 								logger.info("Fixing automatically...");
 							}
 							((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).apply(false);
-							addToValidationIssues(new InformationIssue<R, V>(containedIssue.getObject(), "fixed_automatically:" + " "
+							addToValidationIssues(new InformationIssue<R, V>(containedIssue.getValidable(), "fixed_automatically:" + " "
 									+ containedIssue.getMessage() + " : "
 									+ ((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).getMessage()));
 						}
@@ -388,30 +388,30 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			allIssues.add(issue);
 			if (issue instanceof InformationIssue) {
 				infoIssues.add((InformationIssue<?, ?>) issue);
-				List<InformationIssue<?, ?>> l = infoIssuesMap.get(issue.getObject());
+				List<InformationIssue<?, ?>> l = infoIssuesMap.get(issue.getValidable());
 				if (l == null) {
 					l = new ArrayList<InformationIssue<?, ?>>();
-					infoIssuesMap.put(issue.getObject(), l);
+					infoIssuesMap.put(issue.getValidable(), l);
 				}
 				l.add((InformationIssue<?, ?>) issue);
 				getPropertyChangeSupport().firePropertyChange("infosCount", getInfosCount() - 1, getInfosCount());
 			}
 			if (issue instanceof ValidationWarning) {
 				warnings.add((ValidationWarning<?, ?>) issue);
-				List<ValidationWarning<?, ?>> l = warningsMap.get(issue.getObject());
+				List<ValidationWarning<?, ?>> l = warningsMap.get(issue.getValidable());
 				if (l == null) {
 					l = new ArrayList<ValidationWarning<?, ?>>();
-					warningsMap.put(issue.getObject(), l);
+					warningsMap.put(issue.getValidable(), l);
 				}
 				l.add((ValidationWarning<?, ?>) issue);
 				getPropertyChangeSupport().firePropertyChange("warningsCount", getWarningsCount() - 1, getWarningsCount());
 			}
 			if (issue instanceof ValidationError) {
 				errors.add((ValidationError<?, ?>) issue);
-				List<ValidationError<?, ?>> l = errorsMap.get(issue.getObject());
+				List<ValidationError<?, ?>> l = errorsMap.get(issue.getValidable());
 				if (l == null) {
 					l = new ArrayList<ValidationError<?, ?>>();
-					errorsMap.put(issue.getObject(), l);
+					errorsMap.put(issue.getValidable(), l);
 				}
 				l.add((ValidationError<?, ?>) issue);
 				getPropertyChangeSupport().firePropertyChange("errorsCount", getErrorsCount() - 1, getErrorsCount());
@@ -433,7 +433,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			allIssues.remove(issue);
 			if (issue instanceof InformationIssue) {
 				infoIssues.remove(issue);
-				List<InformationIssue<?, ?>> l = infoIssuesMap.get(issue.getObject());
+				List<InformationIssue<?, ?>> l = infoIssuesMap.get(issue.getValidable());
 				if (l != null) {
 					l.remove(issue);
 				}
@@ -441,7 +441,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			}
 			if (issue instanceof ValidationWarning) {
 				warnings.remove(issue);
-				List<ValidationWarning<?, ?>> l = warningsMap.get(issue.getObject());
+				List<ValidationWarning<?, ?>> l = warningsMap.get(issue.getValidable());
 				if (l != null) {
 					l.remove(issue);
 				}
@@ -449,7 +449,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			}
 			if (issue instanceof ValidationError) {
 				errors.remove(issue);
-				List<ValidationError<?, ?>> l = errorsMap.get(issue.getObject());
+				List<ValidationError<?, ?>> l = errorsMap.get(issue.getValidable());
 				if (l != null) {
 					l.remove(issue);
 				}

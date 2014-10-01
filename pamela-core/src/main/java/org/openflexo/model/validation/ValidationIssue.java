@@ -43,7 +43,7 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(ValidationIssue.class.getPackage().getName());
 
-	private final V object;
+	private final V validable;
 	private String message;
 	private final String detailedMessage;
 	private ValidationReport validationReport;
@@ -56,12 +56,12 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 	}*/
 
 	public ValidationIssue(V anObject, String aMessage, String aDetailedMessage) {
-		object = anObject;
+		validable = anObject;
 		message = aMessage;
 		detailedMessage = aDetailedMessage;
 		pcSupport = new PropertyChangeSupport(this);
-		if (object instanceof HasPropertyChangeSupport) {
-			((HasPropertyChangeSupport) object).getPropertyChangeSupport().addPropertyChangeListener(this);
+		if (validable instanceof HasPropertyChangeSupport) {
+			((HasPropertyChangeSupport) validable).getPropertyChangeSupport().addPropertyChangeListener(this);
 		}
 	}
 
@@ -82,8 +82,8 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 		this.message = message;
 	}
 
-	public V getObject() {
-		return object;
+	public V getValidable() {
+		return validable;
 	}
 
 	public void setValidationReport(ValidationReport report) {
@@ -98,7 +98,7 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 
 	public String getTypeName() {
 		if (_typeName == null) {
-			StringTokenizer st = new StringTokenizer(getObject().getClass().getName(), ".");
+			StringTokenizer st = new StringTokenizer(getValidable().getClass().getName(), ".");
 			while (st.hasMoreTokens()) {
 				_typeName = st.nextToken();
 			}
@@ -120,16 +120,16 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 
-		if (evt.getSource() == object) {
-			if (object.isDeleted()) {
+		if (evt.getSource() == validable) {
+			if (validable.isDeleted()) {
 				delete();
 			}
 		}
 	}
 
 	public void delete() {
-		if (object instanceof HasPropertyChangeSupport) {
-			((HasPropertyChangeSupport) object).getPropertyChangeSupport().removePropertyChangeListener(this);
+		if (validable instanceof HasPropertyChangeSupport) {
+			((HasPropertyChangeSupport) validable).getPropertyChangeSupport().removePropertyChangeListener(this);
 		}
 		validationReport.removeFromValidationIssues(this);
 		if (getPropertyChangeSupport() != null) {
@@ -149,8 +149,8 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 			return;
 		}
 
-		Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getObject());
-		Collection<Validable> allEmbeddedValidableObjects = validationReport.retrieveAllEmbeddedValidableObjects(getObject());
+		Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getValidable());
+		Collection<Validable> allEmbeddedValidableObjects = validationReport.retrieveAllEmbeddedValidableObjects(getValidable());
 		if (allEmbeddedValidableObjects != null) {
 			for (Validable embeddedValidable : allEmbeddedValidableObjects) {
 				allIssuesToRemove.addAll(validationReport.issuesRegarding(embeddedValidable));
@@ -160,8 +160,8 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 			validationReport.removeFromValidationIssues(issue);
 		}
 
-		if (!getObject().isDeleted()) {
-			validationReport.revalidate(getObject());
+		if (!getValidable().isDeleted()) {
+			validationReport.revalidate(getValidable());
 		}
 	}
 

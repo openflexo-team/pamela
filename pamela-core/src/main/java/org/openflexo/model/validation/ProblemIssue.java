@@ -148,11 +148,11 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 			return;
 		}
 
-		Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getObject());
+		Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getValidable());
 		for (Validable relatedValidable : getRelatedValidableObjects()) {
 			allIssuesToRemove.addAll(validationReport.issuesRegarding(relatedValidable));
 		}
-		Collection<Validable> allEmbeddedValidableObjects = validationReport.retrieveAllEmbeddedValidableObjects(getObject());
+		Collection<Validable> allEmbeddedValidableObjects = validationReport.retrieveAllEmbeddedValidableObjects(getValidable());
 		if (allEmbeddedValidableObjects != null) {
 			for (Validable embeddedValidable : allEmbeddedValidableObjects) {
 				allIssuesToRemove.addAll(validationReport.issuesRegarding(embeddedValidable));
@@ -166,8 +166,8 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 			validationReport.removeFromValidationIssues(issue);
 		}
 
-		if (!getObject().isDeleted()) {
-			validationReport.revalidate(getObject());
+		if (!getValidable().isDeleted()) {
+			validationReport.revalidate(getValidable());
 		}
 
 		for (Validable relatedValidable : getRelatedValidableObjects()) {

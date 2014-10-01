@@ -243,11 +243,66 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 	}
 
-	public abstract String localizedRuleName(ValidationRule<?, ?> validationRule);
+	public abstract String localizedInContext(String key, Object context);
 
-	public abstract String localizedRuleDescription(ValidationRule<?, ?> validationRule);
+	public final String localizedRuleName(ValidationRule<?, ?> validationRule) {
+		if (validationRule == null) {
+			return null;
+		}
+		return localizedInContext(validationRule.getRuleName(), validationRule);
+	}
 
-	public abstract String localizedIssueMessage(ValidationIssue<?, ?> issue);
+	public final String localizedRuleDescription(ValidationRule<?, ?> validationRule) {
+		if (validationRule == null) {
+			return null;
+		}
+		return localizedInContext(validationRule.getRuleDescription(), validationRule);
+	}
 
-	public abstract String localizedFixProposal(FixProposal<?, ?> proposal);
+	public final String localizedIssueMessage(ValidationIssue<?, ?> issue) {
+		if (issue == null) {
+			return null;
+		}
+		return localizedInContext(issue.getMessage(), issue);
+	}
+
+	public final String localizedFixProposal(FixProposal<?, ?> proposal) {
+		if (proposal == null) {
+			return null;
+		}
+		return localizedInContext(proposal.getMessage(), proposal);
+	}
+
+	public static String asBindingExpression(String localized) {
+		if (localized.contains("($")) {
+			int startIndex = localized.indexOf("($");
+			int p = 1;
+			int endIndex = -1;
+			for (int i = startIndex + 2; i < localized.length(); i++) {
+				if (localized.charAt(i) == '(') {
+					p++;
+				} else if (localized.charAt(i) == ')') {
+					p--;
+				}
+				if (p == 0) {
+					endIndex = i;
+					break;
+				}
+			}
+
+			return '"' + localized.substring(0, startIndex) + "\"+" + localized.substring(startIndex + 2, endIndex) + "+\""
+					+ localized.substring(endIndex + 1) + '"';
+		}
+		return localized;
+	}
+
+	public static void main(String[] args) {
+		test("coucou");
+		test("coucou ($coucou)");
+		test("coucou ($coucou) coucou2");
+	}
+
+	private static void test(String s) {
+		System.out.println("for s=[" + s + "] get [" + asBindingExpression(s) + "]");
+	}
 }
