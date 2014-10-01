@@ -243,6 +243,11 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 	}
 
-	public abstract String localizedForKey(String key);
+	public abstract String localizedRuleName(ValidationRule<?, ?> validationRule);
 
+	public abstract String localizedRuleDescription(ValidationRule<?, ?> validationRule);
+
+	public abstract String localizedIssueMessage(ValidationIssue<?, ?> issue);
+
+	public abstract String localizedFixProposal(FixProposal<?, ?> proposal);
 }

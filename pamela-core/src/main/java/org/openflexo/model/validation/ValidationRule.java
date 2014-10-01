@@ -83,14 +83,6 @@ public abstract class ValidationRule<R extends ValidationRule<R, V>, V extends V
 		return _objectType;
 	}
 
-	public String getNameKey() {
-		return ruleName;
-	}
-
-	public String getDescriptionKey() {
-		return ruleDescription;
-	}
-
 	public String getTypeName() {
 		if (_typeName == null) {
 			_typeName = _objectType.getSimpleName();

@@ -236,9 +236,8 @@ public class ValidationReport implements HasPropertyChangeSupport {
 						logger.info("Fixing automatically...");
 					}
 					((ProblemIssue<R, V>) issue).getFixProposals().get(0).apply(false);
-					addToValidationIssues(new InformationIssue<R, V>(next, localizedForKey("fixed_automatically:") + " "
-							+ localizedForKey(issue.getMessage()) + " : "
-							+ localizedForKey((((ProblemIssue<R, V>) issue).getFixProposals()).get(0).getMessage())));
+					addToValidationIssues(new InformationIssue<R, V>(next, "fixed_automatically:" + " " + issue.getMessage() + " : "
+							+ (((ProblemIssue<R, V>) issue).getFixProposals()).get(0).getMessage()));
 				} else if (issue instanceof CompoundIssue) {
 					for (ValidationIssue<R, V> containedIssue : ((CompoundIssue<R, V>) issue).getContainedIssues()) {
 						if (containedIssue instanceof ProblemIssue && ((ProblemIssue) containedIssue).getFixProposals().size() == 1) {
@@ -247,13 +246,9 @@ public class ValidationReport implements HasPropertyChangeSupport {
 								logger.info("Fixing automatically...");
 							}
 							((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).apply(false);
-							addToValidationIssues(new InformationIssue<R, V>(containedIssue.getObject(),
-									localizedForKey("fixed_automatically:")
-											+ " "
-											+ localizedForKey(containedIssue.getMessage())
-											+ " : "
-											+ localizedForKey(((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0)
-													.getLocalizedMessage())));
+							addToValidationIssues(new InformationIssue<R, V>(containedIssue.getObject(), "fixed_automatically:" + " "
+									+ containedIssue.getMessage() + " : "
+									+ ((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).getMessage()));
 						}
 					}
 				}
@@ -520,10 +515,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		}
 	}
 
-	public String localizedForKey(String key) {
+	/*public String localizedForKey(String key) {
 		if (validationModel != null) {
 			return validationModel.localizedForKey(key);
 		}
 		return key;
-	}
+	}*/
 }

@@ -48,13 +48,13 @@ public abstract class FixProposal<R extends ValidationRule<R, V>, V extends Vali
 		return message;
 	}
 
-	public String getLocalizedMessage() {
+	/*public String getLocalizedMessage() {
 
 		if (localizedMessage == null && getProblemIssue() != null && getProblemIssue().getValidationReport() != null && getObject() != null) {
 			localizedMessage = getProblemIssue().getValidationReport().localizedForKey(getMessage());
 		}
 		return localizedMessage;
-	}
+	}*/
 
 	public void setMessage(String message) {
 		this.message = message;
