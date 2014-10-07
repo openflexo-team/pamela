@@ -39,7 +39,7 @@ public class CompoundIssue<R extends ValidationRule<R, V>, V extends Validable> 
 	private Vector<ValidationIssue<R, V>> _containedIssues;
 
 	public CompoundIssue(V anObject) {
-		super(anObject, null, null);
+		super(anObject, null);
 		_containedIssues = new Vector<ValidationIssue<R, V>>();
 	}
 

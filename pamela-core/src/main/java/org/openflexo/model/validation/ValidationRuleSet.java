@@ -139,7 +139,7 @@ public class ValidationRuleSet<V extends Validable> implements HasPropertyChange
 		return returned;
 	}
 
-	public boolean containsRuleClass(Class<? extends ValidationRule<?, ?>> ruleClass) {
+	public boolean containsRuleClass(Class<? extends ValidationRule/*<?, ?>*/> ruleClass) {
 		for (int i = 0; i < getRulesCount(); i++) {
 			if (getRuleAt(i).getClass().equals(ruleClass)) {
 				return true;

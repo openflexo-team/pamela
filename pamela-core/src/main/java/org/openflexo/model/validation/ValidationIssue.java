@@ -45,20 +45,14 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 
 	private final V validable;
 	private String message;
-	private final String detailedMessage;
 	private ValidationReport validationReport;
 	private R cause;
 
 	private final PropertyChangeSupport pcSupport;
 
-	/*public ValidationIssue(V anObject, String aMessage) {
-		this(anObject, aMessage, null);
-	}*/
-
-	public ValidationIssue(V anObject, String aMessage, String aDetailedMessage) {
+	public ValidationIssue(V anObject, String aMessage) {
 		validable = anObject;
 		message = aMessage;
-		detailedMessage = aDetailedMessage;
 		pcSupport = new PropertyChangeSupport(this);
 		if (validable instanceof HasPropertyChangeSupport) {
 			((HasPropertyChangeSupport) validable).getPropertyChangeSupport().addPropertyChangeListener(this);
@@ -72,10 +66,6 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 
 	public String getMessage() {
 		return message;
-	}
-
-	public String getDetailedMessage() {
-		return detailedMessage;
 	}
 
 	public void setMessage(String message) {
@@ -167,5 +157,18 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 
 	public boolean isProblemIssue() {
 		return false;
+	}
+
+	/**
+	 * Return detailed informations for this issue<br>
+	 * Default behaviour is to return rule's description
+	 * 
+	 * @return
+	 */
+	public String getDetailedInformations() {
+		if (getCause() != null) {
+			return getCause().getRuleDescription();
+		}
+		return null;
 	}
 }

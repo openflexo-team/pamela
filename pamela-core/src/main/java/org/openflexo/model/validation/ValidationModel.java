@@ -266,6 +266,13 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		return localizedInContext(issue.getMessage(), issue);
 	}
 
+	public final String localizedIssueDetailedInformations(ValidationIssue<?, ?> issue) {
+		if (issue == null) {
+			return null;
+		}
+		return localizedInContext(issue.getDetailedInformations(), issue);
+	}
+
 	public final String localizedFixProposal(FixProposal<?, ?> proposal) {
 		if (proposal == null) {
 			return null;
@@ -274,7 +281,9 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 	}
 
 	public static String asBindingExpression(String localized) {
-		if (localized.contains("($")) {
+		boolean someReplacementsWerePerformed = false;
+		while (localized.contains("($")) {
+			someReplacementsWerePerformed = true;
 			int startIndex = localized.indexOf("($");
 			int p = 1;
 			int endIndex = -1;
@@ -290,8 +299,11 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 				}
 			}
 
-			return '"' + localized.substring(0, startIndex) + "\"+" + localized.substring(startIndex + 2, endIndex) + "+\""
-					+ localized.substring(endIndex + 1) + '"';
+			localized = localized.substring(0, startIndex) + "\"+" + localized.substring(startIndex + 2, endIndex) + "+\""
+					+ localized.substring(endIndex + 1);
+		}
+		if (someReplacementsWerePerformed) {
+			localized = '"' + localized + '"';
 		}
 		return localized;
 	}
@@ -300,6 +312,9 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		test("coucou");
 		test("coucou ($coucou)");
 		test("coucou ($coucou) coucou2");
+		test("coucou ($coucou)");
+
+		test("binding_'($binding.bindingName)'_is_not_valid: ($binding)");
 	}
 
 	private static void test(String s) {

@@ -34,11 +34,7 @@ public class InformationIssue<R extends ValidationRule<R, V>, V extends Validabl
 	private static final Logger logger = Logger.getLogger(InformationIssue.class.getPackage().getName());
 
 	public InformationIssue(V anObject, String aMessage) {
-		super(anObject, aMessage, null);
-	}
-
-	public InformationIssue(V anObject, String aMessage, String aDetailedMessage) {
-		super(anObject, aMessage, aDetailedMessage);
+		super(anObject, aMessage);
 	}
 
 	@Override

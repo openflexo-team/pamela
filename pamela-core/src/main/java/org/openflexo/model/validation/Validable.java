@@ -24,7 +24,7 @@ import java.util.Collection;
 
 /**
  * Implemented by an object on which validation is available<br>
- * This API is really minimal since only embedding support is required to iterable over a collection of {@link Validable} objects
+ * This API is really minimal since only embedding support is required to iterate over a collection of {@link Validable} objects
  * 
  * @author sylvain
  * 

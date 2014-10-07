@@ -48,33 +48,21 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 	private List<Validable> relatedValidableObjects;
 
 	public ProblemIssue(R rule, V anObject, String aMessage) {
-		this(rule, anObject, aMessage, (String) null);
-	}
-
-	public ProblemIssue(R rule, V anObject, String aMessage, String aDetailedMessage) {
-		super(anObject, aMessage, aDetailedMessage);
+		super(anObject, aMessage);
 		validationRule = rule;
 		fixProposals = new ArrayList<FixProposal<R, V>>();
 		relatedValidableObjects = new ArrayList<Validable>();
 	}
 
 	public ProblemIssue(R rule, V anObject, String aMessage, FixProposal<R, V> proposal) {
-		this(rule, anObject, aMessage, null, proposal);
-	}
-
-	public ProblemIssue(R rule, V anObject, String aMessage, List<FixProposal<R, V>> fixProposals) {
-		this(rule, anObject, aMessage, null, fixProposals);
-	}
-
-	public ProblemIssue(R rule, V anObject, String aMessage, String aDetailedMessage, FixProposal<R, V> proposal) {
-		this(rule, anObject, aMessage, aDetailedMessage);
+		this(rule, anObject, aMessage);
 		if (proposal != null) {
 			addToFixProposals(proposal);
 		}
 	}
 
-	public ProblemIssue(R rule, V anObject, String aMessage, String aDetailedMessage, List<FixProposal<R, V>> fixProposals) {
-		this(rule, anObject, aMessage, aDetailedMessage);
+	public ProblemIssue(R rule, V anObject, String aMessage, List<FixProposal<R, V>> fixProposals) {
+		this(rule, anObject, aMessage);
 		if (fixProposals != null) {
 			for (FixProposal<R, V> fp : fixProposals) {
 				addToFixProposals(fp);

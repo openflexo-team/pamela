@@ -52,26 +52,9 @@ public class ValidationError<R extends ValidationRule<R, V>, V extends Validable
 		super(rule, anObject, aMessage, Arrays.asList(fixProposals));
 	}
 
-	public ValidationError(R rule, V anObject, String aMessage, String aDetailedMessage) {
-		super(rule, anObject, aMessage, aDetailedMessage);
-	}
-
-	public ValidationError(R rule, V anObject, String aMessage, String aDetailedMessage, FixProposal<R, V> proposal) {
-		super(rule, anObject, aMessage, aDetailedMessage, proposal);
-	}
-
-	public ValidationError(R rule, V anObject, String aMessage, String aDetailedMessage, List<FixProposal<R, V>> fixProposals) {
-		super(rule, anObject, aMessage, aDetailedMessage, fixProposals);
-	}
-
-	public ValidationError(R rule, V anObject, String aMessage, String aDetailedMessage, FixProposal<R, V>... fixProposals) {
-		super(rule, anObject, aMessage, aDetailedMessage, Arrays.asList(fixProposals));
-	}
-
 	@Override
 	public String toString() {
-		return "VALIDATION / ERROR:   " + getMessage() + (getDetailedMessage() != null ? " details: " + getDetailedMessage() : "")
-				+ " OBJECT=" + getValidable();
+		return "VALIDATION / ERROR:   " + getMessage() + " OBJECT=" + getValidable();
 	}
 
 }

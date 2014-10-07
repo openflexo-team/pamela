@@ -51,25 +51,9 @@ public class ValidationWarning<R extends ValidationRule<R, V>, V extends Validab
 		super(rule, anObject, aMessage, Arrays.asList(fixProposals));
 	}
 
-	public ValidationWarning(R rule, V anObject, String aMessage, String aDetailedMessage) {
-		super(rule, anObject, aMessage, aDetailedMessage);
-	}
-
-	public ValidationWarning(R rule, V anObject, String aMessage, String aDetailedMessage, FixProposal<R, V> proposal) {
-		super(rule, anObject, aMessage, aDetailedMessage, proposal);
-	}
-
-	public ValidationWarning(R rule, V anObject, String aMessage, String aDetailedMessage, List<FixProposal<R, V>> fixProposals) {
-		super(rule, anObject, aMessage, aDetailedMessage, fixProposals);
-	}
-
-	public ValidationWarning(R rule, V anObject, String aMessage, String aDetailedMessage, FixProposal<R, V>... fixProposals) {
-		super(rule, anObject, aMessage, aDetailedMessage, Arrays.asList(fixProposals));
-	}
-
 	@Override
 	public String toString() {
-		return "VALIDATION / WARNING:   " + getMessage() + (getDetailedMessage() != null ? " details: " + getDetailedMessage() : "");
+		return "VALIDATION / WARNING:   " + getMessage() + " OBJECT=" + getValidable();
 	}
 
 }
