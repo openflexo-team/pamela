@@ -143,20 +143,20 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	@Override
 	public synchronized boolean canUndo() {
 		if (!enabled) {
-			System.out.println("1 - Cannot undo because not enabled");
+			// System.out.println("1 - Cannot undo because not enabled");
 			return false;
 		}
 		if (currentEdition != null) {
-			System.out.println("2 - Cannot undo because currentEdition != null");
+			// System.out.println("2 - Cannot undo because currentEdition != null");
 			return false;
 		}
 		if (undoInProgress || redoInProgress) {
-			System.out.println("3 - Cannot undo because undoInProgress or redoInProgress");
+			// System.out.println("3 - Cannot undo because undoInProgress or redoInProgress");
 			return false;
 		}
 		boolean returned = super.canUndo();
 		if (!returned) {
-			System.out.println("4 - Cannot undo because of super implementation");
+			// System.out.println("4 - Cannot undo because of super implementation");
 		}
 		return returned;
 	}
@@ -172,16 +172,16 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	public synchronized boolean canUndoIfStoppingCurrentEdition() {
 		if (!enabled) {
-			System.out.println("2.1 - Cannot undo because not enabled");
+			// System.out.println("2.1 - Cannot undo because not enabled");
 			return false;
 		}
 		if (undoInProgress || redoInProgress) {
-			System.out.println("2.3 - Cannot undo because undoInProgress or redoInProgress");
+			// System.out.println("2.3 - Cannot undo because undoInProgress or redoInProgress");
 			return false;
 		}
 		boolean returned = super.canUndo();
 		if (!returned) {
-			System.out.println("2.4 - Cannot undo because of super implementation");
+			// System.out.println("2.4 - Cannot undo because of super implementation");
 		}
 		return returned;
 	}
