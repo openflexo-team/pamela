@@ -238,7 +238,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return pamelaProxyFactory.getModelFactory();
 	}
 
-	public ModelEntity<I> getModelEntity() {
+	final public ModelEntity<I> getModelEntity() {
 		return pamelaProxyFactory.getModelEntity();
 	}
 

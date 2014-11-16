@@ -23,7 +23,6 @@ package org.openflexo.model;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +35,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import org.openflexo.antar.Type;
 import org.openflexo.antar.binding.ReflectionUtils;
 import org.openflexo.antar.binding.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
@@ -54,7 +54,6 @@ import org.openflexo.model.annotations.XMLElement;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.exceptions.PropertyClashException;
-import org.openflexo.antar.Type;
 
 /**
  * This class represents an instance of the {@link org.openflexo.model.annotations.ModelEntity} annotation declared on an interface.
@@ -691,7 +690,7 @@ public class ModelEntity<I> extends Type {
 		return false;
 	}
 
-	public Class<I> getImplementedInterface() {
+	final public Class<I> getImplementedInterface() {
 		return implementedInterface;
 	}
 

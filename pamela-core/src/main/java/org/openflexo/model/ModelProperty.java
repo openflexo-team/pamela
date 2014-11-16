@@ -31,28 +31,28 @@ import org.openflexo.model.factory.PAMELAConstants;
 public class ModelProperty<I> {
 
 	/* Model property identification */
-	private ModelEntity<I> modelEntity;
-	private String propertyIdentifier;
+	private final ModelEntity<I> modelEntity;
+	private final String propertyIdentifier;
 
 	/* Model property static definition */
-	private Getter getter;
-	private Setter setter;
-	private Adder adder;
-	private Remover remover;
-	private XMLAttribute xmlAttribute;
-	private XMLElement xmlElement;
-	private ReturnedValue returnedValue;
-	private Embedded embedded;
-	private ComplexEmbedded complexEmbedded;
-	private CloningStrategy cloningStrategy;
+	private final Getter getter;
+	private final Setter setter;
+	private final Adder adder;
+	private final Remover remover;
+	private final XMLAttribute xmlAttribute;
+	private final XMLElement xmlElement;
+	private final ReturnedValue returnedValue;
+	private final Embedded embedded;
+	private final ComplexEmbedded complexEmbedded;
+	private final CloningStrategy cloningStrategy;
 
 	private PastingPoint setPastingPoint;
 	private PastingPoint addPastingPoint;
 
-	private Method getterMethod;
-	private Method setterMethod;
-	private Method adderMethod;
-	private Method removerMethod;
+	private final Method getterMethod;
+	private final Method setterMethod;
+	private final Method adderMethod;
+	private final Method removerMethod;
 
 	private Cardinality cardinality;
 
@@ -746,7 +746,7 @@ public class ModelProperty<I> {
 				adderMethod, removerMethod);
 	}
 
-	public ModelEntity<I> getModelEntity() {
+	final public ModelEntity<I> getModelEntity() {
 		return modelEntity;
 	}
 
@@ -842,7 +842,7 @@ public class ModelProperty<I> {
 		return false;
 	}
 
-	public Cardinality getCardinality() {
+	final public Cardinality getCardinality() {
 		if (cardinality == null && getGetter() != null) {
 			cardinality = getGetter().cardinality();
 		}
