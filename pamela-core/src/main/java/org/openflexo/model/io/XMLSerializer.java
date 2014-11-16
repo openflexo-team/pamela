@@ -173,7 +173,7 @@ public class XMLSerializer {
 			String elementName = contextString + xmlTag;
 			String namespace = null;
 			if (xmlElement != null) {
-				namespace = xmlElement.namespace() != XMLElement.NO_NAME_SPACE ? xmlElement.namespace() : null;
+				namespace = !(xmlElement.namespace().equals(XMLElement.NO_NAME_SPACE)) ? xmlElement.namespace() : null;
 			}
 
 			// Is this object already serialized ?
