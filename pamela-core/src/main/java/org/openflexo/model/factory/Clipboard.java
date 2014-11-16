@@ -22,7 +22,7 @@ public class Clipboard {
 		this.originalContents = objects;
 
 		if (objects == null || objects.length == 0) {
-			new ClipboardOperationException("Cannot build an empty Clipboard");
+			throw new ClipboardOperationException("Cannot build an empty Clipboard");
 		}
 		isSingleObject = objects.length == 1;
 		// TODO: This should rather be done when pasting instead of cloning immediately
