@@ -83,7 +83,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	protected ReportMode mode = ReportMode.ALL;
 
 	@SuppressWarnings("unchecked")
-	protected ValidationReport(ValidationModel validationModel, Validable rootObject) {
+	protected ValidationReport(ValidationModel validationModel, Validable rootObject) throws InterruptedException {
 		super();
 
 		pcSupport = new PropertyChangeSupport(this);
@@ -132,7 +132,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		}
 	}
 
-	private List<ValidationIssue<?, ?>> performDeepValidation(Validable rootObject) {
+	private List<ValidationIssue<?, ?>> performDeepValidation(Validable rootObject) throws InterruptedException {
 
 		List<ValidationIssue<?, ?>> returned = new ArrayList<ValidationIssue<?, ?>>();
 
@@ -170,6 +170,9 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			if (!next.isDeleted()) {
 				returned.addAll(performValidation(next));
 			}
+
+			// Following allows task to be cancelled by throwing an InterruptedException
+			Thread.sleep(1);
 
 		}
 

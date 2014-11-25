@@ -136,8 +136,9 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 	 * @param validable
 	 * @param validationModel
 	 * @return the ValidationReport, object on which found issues are appened
+	 * @throws InterruptedException
 	 */
-	public ValidationReport validate(Validable object) {
+	public ValidationReport validate(Validable object) throws InterruptedException {
 
 		return new ValidationReport(this, object);
 	}
@@ -150,7 +151,12 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 	 * @return
 	 */
 	public boolean isValid(Validable object) {
-		return validate(object).getErrorsCount() == 0;
+		try {
+			return validate(object).getErrorsCount() == 0;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	public <V extends Validable> ValidationRuleSet<? super V> getRuleSet(V validable) {
