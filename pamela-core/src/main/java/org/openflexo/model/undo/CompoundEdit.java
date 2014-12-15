@@ -48,11 +48,13 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	/**
 	 * Sends <code>undo</code> to all contained <code>AtomicEdit</code> in the reverse of the order in which they were added.
 	 */
+	@Override
 	public void undo() throws CannotUndoException {
 		super.undo();
+		//System.out.println("UNDO " + getPresentationName());
 		int i = edits.size();
 		while (i-- > 0) {
-			AtomicEdit<?> e = (AtomicEdit<?>) edits.elementAt(i);
+			AtomicEdit<?> e = edits.elementAt(i);
 			// System.out.println("> UNDO AtomicEdit " + e.getPresentationName());
 			e.undo();
 		}
@@ -61,11 +63,12 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	/**
 	 * Sends <code>redo</code> to all contained <code>AtomicEdit</code>s in the order in which they were added.
 	 */
+	@Override
 	public void redo() throws CannotRedoException {
 		super.redo();
 		Enumeration<AtomicEdit<?>> cursor = edits.elements();
 		while (cursor.hasMoreElements()) {
-			AtomicEdit<?> e = ((AtomicEdit<?>) cursor.nextElement());
+			AtomicEdit<?> e = (cursor.nextElement());
 			// System.out.println("> REDO AtomicEdit " + e.getPresentationName());
 			e.redo();
 		}
@@ -77,7 +80,7 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	protected AtomicEdit<?> lastEdit() {
 		int count = edits.size();
 		if (count > 0)
-			return (AtomicEdit<?>) edits.elementAt(count - 1);
+			return edits.elementAt(count - 1);
 		else
 			return null;
 	}
@@ -85,10 +88,11 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	/**
 	 * Sends <code>die</code> to each subedit, in the reverse of the order that they were added.
 	 */
+	@Override
 	public void die() {
 		int size = edits.size();
 		for (int i = size - 1; i >= 0; i--) {
-			AtomicEdit<?> e = (AtomicEdit<?>) edits.elementAt(i);
+			AtomicEdit<?> e = edits.elementAt(i);
 			// System.out.println("CompoundEdit(" + i + "): Discarding " +
 			// e.getUndoPresentationName());
 			e.die();
@@ -108,6 +112,7 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	 *            the edit to be added
 	 * @return true if the edit is <code>inProgress</code>; otherwise returns false
 	 */
+	@Override
 	public boolean addEdit(UndoableEdit anEdit) {
 		if (anEdit instanceof AtomicEdit) {
 			if (!inProgress) {
@@ -159,6 +164,7 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	 * 
 	 * @see #isInProgress
 	 */
+	@Override
 	public boolean canUndo() {
 		return !isInProgress() && super.canUndo();
 	}
@@ -168,6 +174,7 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	 * 
 	 * @see #isInProgress
 	 */
+	@Override
 	public boolean canRedo() {
 		return !isInProgress() && super.canRedo();
 	}
@@ -185,6 +192,7 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	/**
 	 * Returns true if any of the <code>AtomicEdit</code>s in <code>edits</code> do. Returns false if they all return false.
 	 */
+	@Override
 	public boolean isSignificant() {
 		Enumeration<AtomicEdit<?>> cursor = edits.elements();
 		while (cursor.hasMoreElements()) {
@@ -198,8 +206,13 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	/**
 	 * Returns <code>getPresentationName</code>
 	 */
+	@Override
 	public String getPresentationName() {
 		return presentationName;
+	}
+
+	public void setPresentationName(String presentationName) {
+		this.presentationName = presentationName;
 	}
 
 	@Override
@@ -217,6 +230,7 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	 * 
 	 * @return a String representation of this object
 	 */
+	@Override
 	public String toString() {
 		return getPresentationName() + " inProgress: " + inProgress + " edits: " + edits;
 	}

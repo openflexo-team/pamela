@@ -63,6 +63,42 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		pcSupport = new PropertyChangeSupport(this);
 	}
 
+	private static final String ANTICIPATED_RECORDING = "AnticipatedRecording";
+	private static boolean allowsAnticipatedRecording = false;
+	private static CompoundEdit anticipatedRecording;
+
+	/**
+	 * Called to start registering a CompoundEdit in advance (when some edition actions occurs outside an "official" recording)<br>
+	 * but need to be aggregated in the next edition action
+	 * 
+	 * @return
+	 */
+	private synchronized CompoundEdit startAsAnticipatedRecording() {
+		if (!isBeeingRecording()) {
+			anticipatedRecording = startRecording(ANTICIPATED_RECORDING);
+			getPropertyChangeSupport().firePropertyChange(ENABLED, null, currentEdition);
+
+		}
+		return null;
+	}
+
+	/**
+	 * This method should be called whenever some edit might be triggered outside of an official edition action, but if those edits<br>
+	 * should be aggregated in the next edition action.<br>
+	 * Calling this method enable this scheme. Next received edits will be stored temporarily in this anticipated recording, which will be
+	 * turned into next official edition action.
+	 */
+	public synchronized void enableAnticipatedRecording() {
+		allowsAnticipatedRecording = true;
+	}
+
+	/**
+	 * Disable 'anticipated' recording, see above
+	 */
+	public synchronized void disableAsynchronousRecording() {
+		allowsAnticipatedRecording = false;
+	}
+
 	/**
 	 * Start a new labelled edit tracking<br>
 	 * All PAMELA atomic events that will be received from now will be aggregated into newly created {@link CompoundEdit}
@@ -74,13 +110,23 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		if (!enabled) {
 			return null;
 		}
-		if (currentEdition != null) {
-			System.err.println("[PLEASE TRACK ME] : UndoManager exception: already recording " + currentEdition.getPresentationName());
-			// (new Exception("UndoManager exception: already recording " + currentEdition.getPresentationName())).printStackTrace();
-			stopRecording(currentEdition);
+
+		if (currentEdition != null && currentEdition == anticipatedRecording) {
+			currentEdition.setPresentationName(presentationName);
+			anticipatedRecording = null;
 		}
-		currentEdition = makeCompoundEdit(presentationName);
-		addEdit(currentEdition);
+
+		else {
+
+			if (currentEdition != null) {
+				System.err.println("[PLEASE TRACK ME] : UndoManager exception: already recording " + currentEdition.getPresentationName());
+				// (new Exception("UndoManager exception: already recording " + currentEdition.getPresentationName())).printStackTrace();
+				stopRecording(currentEdition);
+			}
+			currentEdition = makeCompoundEdit(presentationName);
+			addEdit(currentEdition);
+
+		}
 
 		getPropertyChangeSupport().firePropertyChange(START_RECORDING, null, currentEdition);
 
@@ -99,6 +145,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 * @return
 	 */
 	public synchronized CompoundEdit stopRecording(CompoundEdit edit) {
+
 		if (!enabled) {
 			return null;
 		}
@@ -112,7 +159,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 
 		currentEdition.end();
 		// Thread.dumpStack();
-		System.out.println("----------------> Stop recording " + currentEdition.getPresentationName());
+		// System.out.println("----------------> Stop recording " + currentEdition.getPresentationName());
 		// System.out.println(currentEdition.describe());
 		currentEdition = null;
 
@@ -134,6 +181,15 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	}
 
 	/**
+	 * Return flag indicating if {@link UndoManager} is currently recording in anticipated mode
+	 * 
+	 * @return
+	 */
+	public synchronized boolean isAnticipatedRecording() {
+		return (currentEdition != null && currentEdition == anticipatedRecording);
+	}
+
+	/**
 	 * Returns true if edits may be undone.
 	 * 
 	 * @return true if there are edits to be undone
@@ -143,21 +199,29 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	@Override
 	public synchronized boolean canUndo() {
 		if (!enabled) {
-			// System.out.println("1 - Cannot undo because not enabled");
+			//System.out.println("1 - Cannot undo because not enabled");
 			return false;
 		}
-		if (currentEdition != null) {
-			// System.out.println("2 - Cannot undo because currentEdition != null");
+
+		if (isBeeingRecording() && !isAnticipatedRecording()) {
+			//System.out.println("2 - Cannot undo because currentEdition = " + currentEdition + " asynchronousRecording="
+			//		+ anticipatedRecording);
 			return false;
 		}
 		if (undoInProgress || redoInProgress) {
-			// System.out.println("3 - Cannot undo because undoInProgress or redoInProgress");
+			//System.out.println("3 - Cannot undo because undoInProgress or redoInProgress");
 			return false;
 		}
+
+		if (isAnticipatedRecording()) {
+			return true;
+		}
+
 		boolean returned = super.canUndo();
 		if (!returned) {
-			// System.out.println("4 - Cannot undo because of super implementation");
-		}
+			//System.out.println("4 - Cannot undo because of super implementation");
+			//debug();
+		} 
 		return returned;
 	}
 
@@ -244,8 +308,12 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			}
 			// This is an atomic edit, therefore, i should agglomerate it in current edition
 			if (currentEdition == null) {
-				System.err.println("[PLEASE TRACK ME] : PAMELA edit received outside official recording. Create a default one !!!");
-				startRecording(UNIDENTIFIED_RECORDING);
+				if (allowsAnticipatedRecording) {
+					startAsAnticipatedRecording();
+				} else {
+					System.err.println("[PLEASE TRACK ME] : PAMELA edit received outside official recording. Create a default one !!!");
+					startRecording(UNIDENTIFIED_RECORDING);
+				}
 			}
 			// System.out.println("[PAMELA] Register in UndoManager: " + anEdit.getPresentationName());
 			currentEdition.addEdit(anEdit);
@@ -292,6 +360,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	@Override
 	public CompoundEdit editToBeUndone() {
+
 		return (CompoundEdit) super.editToBeUndone();
 	}
 
@@ -319,9 +388,18 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	@Override
 	public synchronized void undo() throws CannotUndoException {
+
 		if (!enabled) {
 			return;
 		}
+
+		if (isAnticipatedRecording()) {
+			stopRecording(anticipatedRecording);
+			undoInProgress = true;
+			super.undo();
+			undoInProgress = false;
+		}
+
 		try {
 			// System.out.println("Will UNDO " + editToBeUndone().getPresentationName());
 			// System.out.println(editToBeUndone().describe());
@@ -366,6 +444,14 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			redoInProgress = true;
 			super.redo();
 			redoInProgress = false;
+
+			if (editToBeRedone() == anticipatedRecording) {
+				redoInProgress = true;
+				super.redo();
+				redoInProgress = false;
+				// TODO: it should be nice to also "un-stop" anticipated recording which was stopped because of undo requiring
+			}
+
 			fireRedo();
 			// System.out.println("END REDO ");
 		} catch (Exception e) {
@@ -425,6 +511,19 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	 */
 	@Override
 	public synchronized String getUndoPresentationName() {
+
+		if (isAnticipatedRecording()) {
+			int i = edits.size();
+			while (i > 0) {
+				UndoableEdit edit = edits.elementAt(--i);
+				if (edit.isSignificant() && edit != anticipatedRecording) {
+					return edit.getUndoPresentationName();
+				}
+			}
+
+			return null;
+		}
+
 		if (currentEdition != null) {
 			return currentEdition.getPresentationName();
 		}
