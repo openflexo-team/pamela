@@ -11,7 +11,7 @@
 	<name>Pamela</name>
 	<packaging>pom</packaging>
 	<properties>
-		<connie.version>1.1-RC1</connie.version>
+		<connie.version>1.1-SNAPSHOT</connie.version>
 		<pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>
 	</properties>
 	<scm>
