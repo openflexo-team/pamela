@@ -95,7 +95,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 	/**
 	 * Disable 'anticipated' recording, see above
 	 */
-	public synchronized void disableAsynchronousRecording() {
+	public synchronized void disableAnticipatedRecording() {
 		allowsAnticipatedRecording = false;
 	}
 
