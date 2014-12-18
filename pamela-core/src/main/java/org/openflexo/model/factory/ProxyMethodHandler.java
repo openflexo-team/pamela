@@ -136,7 +136,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			PERFORM_SUPER_REMOVER = AccessibleProxyObject.class.getMethod("performSuperRemover", String.class, Object.class);
 			PERFORM_SUPER_DELETER = DeletableProxyObject.class.getMethod("performSuperDelete", Array.newInstance(Object.class, 0)
 					.getClass());
-			PERFORM_SUPER_UNDELETER = DeletableProxyObject.class.getMethod("performSuperUndelete");
+			PERFORM_SUPER_UNDELETER = DeletableProxyObject.class.getMethod("performSuperUndelete", Boolean.TYPE);
 			PERFORM_SUPER_FINDER = AccessibleProxyObject.class.getMethod("performSuperFinder", String.class, Object.class);
 			PERFORM_SUPER_GETTER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperGetter", String.class, Class.class);
 			PERFORM_SUPER_SETTER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperSetter", String.class, Object.class,
@@ -156,7 +156,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			SET_MODIFIED = AccessibleProxyObject.class.getMethod("setModified", boolean.class);
 			PERFORM_SUPER_SET_MODIFIED = AccessibleProxyObject.class.getMethod("performSuperSetModified", boolean.class);
 			DELETE_OBJECT = DeletableProxyObject.class.getMethod("delete", Array.newInstance(Object.class, 0).getClass());
-			UNDELETE_OBJECT = DeletableProxyObject.class.getMethod("undelete");
+			UNDELETE_OBJECT = DeletableProxyObject.class.getMethod("undelete", Boolean.TYPE);
 			GET_PROPERTY_CHANGE_SUPPORT = HasPropertyChangeSupport.class.getMethod("getPropertyChangeSupport");
 			GET_DELETED_PROPERTY = HasPropertyChangeSupport.class.getMethod("getDeletedProperty");
 			TO_STRING = Object.class.getMethod("toString");
@@ -409,7 +409,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			internallyInvokeRemover(e.getModelProperty((String) args[0]), args[1], false);
 			return null;
 		} else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_DELETER_ENTITY)) {
-			return internallyInvokeDeleter(false);
+			return internallyInvokeDeleter(true);
 		} else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_FINDER_ENTITY)) {
 			Class<?> class1 = (Class<?>) args[2];
 			ModelEntity<? super I> e = getModelEntityFromArg(class1);
@@ -460,9 +460,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		} else if (PamelaUtils.methodIsEquivalentTo(method, DELETE_OBJECT)) {
 			return internallyInvokeDeleter(true, args);
 		} else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_UNDELETER)) {
-			return internallyInvokeUndeleter(false);
+			return internallyInvokeUndeleter((Boolean) args[0], false);
 		} else if (PamelaUtils.methodIsEquivalentTo(method, UNDELETE_OBJECT)) {
-			return internallyInvokeUndeleter(true);
+			return internallyInvokeUndeleter((Boolean) args[0], true);
 		} else if (PamelaUtils.methodIsEquivalentTo(method, CLONE_OBJECT_WITH_CONTEXT)) {
 			return cloneObject(args);
 		} else if (PamelaUtils.methodIsEquivalentTo(method, HAS_KEY)) {
@@ -544,8 +544,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	private @Nonnull
-	ModelEntity<? super I> getModelEntityFromArg(Class<?> class1) throws ModelDefinitionException {
+	private @Nonnull ModelEntity<? super I> getModelEntityFromArg(Class<?> class1) throws ModelDefinitionException {
 		ModelEntity<?> e = getModelContext().getModelEntity(class1);
 		if (e == null) {
 			throw new NoSuchEntityException(class1);
@@ -597,10 +596,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return false;
 		}
 
-		if (trackAtomicEdit && getUndoManager() != null) {
-			getUndoManager().addEdit(new DeleteCommand<I>(getObject(), getModelEntity(), getModelFactory()));
-		}
-
 		deleting = true;
 		if (context == null) {
 			context = new Object[] { getObject() };
@@ -618,11 +613,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				objects.toArray(new Object[objects.size()]));
 		objects.addAll(embeddedObjects);
 		context = objects.toArray(new Object[objects.size()]);
-		for (Object object : embeddedObjects) {
-			if (object instanceof DeletableProxyObject) {
-				((DeletableProxyObject) object).delete(context);
-			}
-		}
+
 		// We iterate on all properties conform to PAMELA meta-model
 		Iterator<ModelProperty<? super I>> i = modelEntity.getProperties();
 		while (i.hasNext()) {
@@ -640,8 +631,29 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				} else {
 					internallyInvokeSetter(property, null, true);
 				}
+				if ((oldValue instanceof DeletableProxyObject) && embeddedObjects.contains(oldValue)) {
+					// By the way, this object was embedded, delete it
+					((DeletableProxyObject) oldValue).delete(context);
+					embeddedObjects.remove(oldValue);
+				}
 			}
 		}
+
+		// Are there still embedded objects not deleted ???
+		for (Object object : embeddedObjects) {
+			if (object instanceof DeletableProxyObject) {
+				DeletableProxyObject objectToDelete = (DeletableProxyObject) object;
+				if (!objectToDelete.isDeleted()) {
+					objectToDelete.delete(context);
+					System.err.println("This is weird: this object was embedded but not deleted: " + objectToDelete);
+				}
+			}
+		}
+
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new DeleteCommand<I>(getObject(), getModelEntity(), getModelFactory()));
+		}
+
 		deleted = true;
 		deleting = false;
 		getPropertyChangeSuppport().firePropertyChange(DELETED, false, true);
@@ -649,34 +661,37 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return deleted;
 	}
 
-	private boolean internallyInvokeUndeleter(boolean trackAtomicEdit) throws ModelDefinitionException {
+	private boolean internallyInvokeUndeleter(boolean restoreProperties, boolean trackAtomicEdit) throws ModelDefinitionException {
 
 		if (!deleted || deleting) {
 			return false;
 		}
 
+		undeleting = true;
+
 		if (trackAtomicEdit && getUndoManager() != null) {
 			getUndoManager().addEdit(new CreateCommand<I>(getObject(), getModelEntity(), getModelFactory()));
 		}
 
-		undeleting = true;
-
-		ModelEntity<I> modelEntity = getModelEntity();
-		Iterator<ModelProperty<? super I>> i = modelEntity.getProperties();
-		while (i.hasNext()) {
-			ModelProperty<? super I> property = i.next();
-			if (property.getType().isPrimitive()) {
-				// No need to restore for primitives
-				// Do nothing
-			} else {
-				// Otherwise nullify using setter
-				if (property.getSetterMethod() != null) {
-					invokeSetter(property, oldValues.get(property.getPropertyIdentifier()));
+		if (restoreProperties) {
+			ModelEntity<I> modelEntity = getModelEntity();
+			Iterator<ModelProperty<? super I>> i = modelEntity.getProperties();
+			while (i.hasNext()) {
+				ModelProperty<? super I> property = i.next();
+				if (property.getType().isPrimitive()) {
+					// No need to restore for primitives
+					// Do nothing
 				} else {
-					internallyInvokeSetter(property, oldValues.get(property.getPropertyIdentifier()), true);
+					// Otherwise nullify using setter
+					if (property.getSetterMethod() != null) {
+						invokeSetter(property, oldValues.get(property.getPropertyIdentifier()));
+					} else {
+						internallyInvokeSetter(property, oldValues.get(property.getPropertyIdentifier()), true);
+					}
 				}
 			}
 		}
+
 		deleted = false;
 		undeleting = false;
 		getPropertyChangeSuppport().firePropertyChange(UNDELETED, false, true);
@@ -760,10 +775,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	public void invokeUndeleter() {
+	public void invokeUndeleter(boolean restoreProperties) {
 		// TODO manage with deleter
 		if (getObject() instanceof DeletableProxyObject) {
-			((DeletableProxyObject) getObject()).undelete();
+			((DeletableProxyObject) getObject()).undelete(restoreProperties);
 		}
 	}
 
@@ -1061,7 +1076,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	private void firePropertyChange(String propertyIdentifier, Object oldValue, Object value) {
 		if (getObject() instanceof HasPropertyChangeSupport && !deleting) {
-			((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport().firePropertyChange(propertyIdentifier, oldValue, value);
+			if (((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport() != null) {
+				((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport().firePropertyChange(propertyIdentifier, oldValue, value);
+			}
 		}
 	}
 
