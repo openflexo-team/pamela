@@ -41,7 +41,9 @@ public class CreateCommand<I> extends AtomicEdit<I> {
 
 	@Override
 	public void redo() throws CannotRedoException {
-		getModelFactory().getHandler(createdObject).invokeUndeleter();
+		// Tricky area
+		// We have here to restore the properties
+		getModelFactory().getHandler(createdObject).invokeUndeleter(true);
 	}
 
 	@Override

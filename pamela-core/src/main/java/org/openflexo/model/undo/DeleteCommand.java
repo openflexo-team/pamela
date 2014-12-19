@@ -31,7 +31,7 @@ public class DeleteCommand<I> extends AtomicEdit<I> {
 
 	@Override
 	public void undo() throws CannotUndoException {
-		getModelFactory().getHandler(deletedObject).invokeUndeleter();
+		getModelFactory().getHandler(deletedObject).invokeUndeleter(false);
 	}
 
 	@Override

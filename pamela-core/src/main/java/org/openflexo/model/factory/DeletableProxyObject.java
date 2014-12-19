@@ -43,7 +43,7 @@ public interface DeletableProxyObject {
 	 * @see DeletableProxyObject#delete()
 	 * @see DeletableProxyObject#isDeleted()
 	 */
-	public boolean performSuperUndelete();
+	public boolean performSuperUndelete(boolean restoreProperties);
 
 	/**
 	 * Invokes the delete method as defined by the model entity associated with the class <code>modelEntityInterface</code>
@@ -98,7 +98,7 @@ public interface DeletableProxyObject {
 	 * @see Embedded#deletionConditions()
 	 * @see ComplexEmbedded#deletionConditions()
 	 */
-	public boolean undelete();
+	public boolean undelete(boolean restoreProperties);
 
 	/**
 	 * Returns whether this object has been deleted or not.
