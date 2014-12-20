@@ -1777,7 +1777,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					case FACTORY:
 						// We have here to invoke custom code (encoded in getStrategyTypeFactory())
 						try {
-							Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(), getObject());
+							Object computedValue = BindingEvaluator
+									.evaluateBinding(p.getStrategyTypeFactory(), clonedObject /*getObject()*/);
 							clonedObjectHandler.invokeSetter(p, computedValue);
 						} catch (InvalidKeyValuePropertyException e1) {
 							// TODO Auto-generated catch block
