@@ -1718,8 +1718,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			ModelDefinitionException {
 		Object clonedObject = clonedObjects.get(getObject());
 
-		// System.out.println("Finalizing clone for " + getObject() + " clone is " + clonedObject);
-
 		ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(clonedObject);
 		clonedObjectHandler.createdByCloning = true;
 		try {
@@ -1747,14 +1745,16 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							clonedObjectHandler.invokeSetter(p, clonedValue);
 							// clonedObjectHandler.internallyInvokeSetter(p, clonedValue);
 						} else if (ModelEntity.isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
-							// boolean debug = false;
-							/*if (p.getPropertyIdentifier().equals("shapeSpecification")) {
-								System.out.println("Tiens, pour shapeSpecification, je l'ai");
+							//boolean debug = false;
+							/*if (p.getPropertyIdentifier().equals("startShape")) {
+								System.out.println("Tiens, pour startShape, singleValue=" + singleValue);
 								debug = true;
 							}*/
 							Object clonedValue = clonedObjects.get(singleValue);
 							/*if (debug) {
 								System.out.println("clonedValue=" + clonedValue + " singleValue=" + singleValue);
+								System.out.println("context=" + context);
+								System.out.println("isPartOfContext=" + isPartOfContext(singleValue, EmbeddingType.CLOSURE, context));
 							}*/
 							if (!isPartOfContext(singleValue, EmbeddingType.CLOSURE, context)) {
 								clonedValue = null;
@@ -1866,6 +1866,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 
 		for (Object o : context) {
+			// Very important: we first have to check if the value is contained in context
+			if (aValue == o) {
+				return true;
+			}
 			if (getModelFactory().isEmbedddedIn(o, aValue, embeddingType, context)) {
 				return true;
 			}
