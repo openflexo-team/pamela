@@ -6,10 +6,19 @@ import java.util.List;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 
+/**
+ * Represent the clipbord of a PAMELA model<br>
+ * 
+ * This is the serialization of objects beeing pasted or cut.<br>
+ * <code>originalContents</code> are the copied contents, in their original context<br>
+ * <code>lastReferenceContents</code> are the last reference contents, in multiple paste context (if you copy, then paste and paste again)<br>
+ * Note that for the first copy operation, originalContents are the referenceContents
+ */
 public class Clipboard {
 
 	private final ModelFactory modelFactory;
 	private final Object[] originalContents;
+	private Object[] lastReferenceContents;
 	private Object contents;
 	private final boolean isSingleObject;
 
@@ -20,6 +29,7 @@ public class Clipboard {
 		this.modelFactory = modelFactory;
 
 		this.originalContents = objects;
+		this.lastReferenceContents = objects;
 
 		if (objects == null || objects.length == 0) {
 			throw new ClipboardOperationException("Cannot build an empty Clipboard");
@@ -40,16 +50,22 @@ public class Clipboard {
 		}
 	}
 
-	public Object getCopiedObject(Object originalObject) {
+	/**
+	 * Return the copied object corresponding to the last reference object
+	 * 
+	 * @param lastReferenceObject
+	 * @return
+	 */
+	public Object getCopiedObject(Object lastReferenceObject) {
 		if (isSingleObject()) {
-			if (originalObject == originalContents[0]) {
+			if (lastReferenceObject == lastReferenceContents[0]) {
 				return getSingleContents();
 			} else {
 				return null;
 			}
 		}
-		for (int index = 0; index < originalContents.length; index++) {
-			if (originalContents[index] == originalObject) {
+		for (int index = 0; index < lastReferenceContents.length; index++) {
+			if (lastReferenceContents[index] == lastReferenceObject) {
 				return getMultipleContents().get(index);
 			}
 		}
@@ -62,6 +78,10 @@ public class Clipboard {
 
 	public Object[] getOriginalContents() {
 		return originalContents;
+	}
+
+	public Object[] getLastReferenceContents() {
+		return lastReferenceContents;
 	}
 
 	public boolean doesOriginalContentsContains(Object o) {
@@ -110,8 +130,12 @@ public class Clipboard {
 	}
 
 	public String debug() {
+		return debug("Clipboard");
+	}
+
+	public String debug(String clipboardName) {
 		StringBuffer returned = new StringBuffer();
-		returned.append("*************** Clipboard ****************\n");
+		returned.append("*************** " + clipboardName + " ****************\n");
 		returned.append("Single object: " + isSingleObject() + "\n");
 		returned.append("Original contents:\n");
 		for (Object o : originalContents) {
@@ -137,7 +161,8 @@ public class Clipboard {
 	}
 
 	/**
-	 * Called when clipboard has been used somewhere. Copy again contents for a future use
+	 * Called when clipboard has been used somewhere. Copy again contents for a future use<br>
+	 * lastReferenceContents are set to the actual value of contents (which has just been used)
 	 * 
 	 * @throws ModelExecutionException
 	 * @throws ModelDefinitionException
@@ -145,8 +170,14 @@ public class Clipboard {
 	 */
 	public void consume() throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
 		if (isSingleObject) {
+			lastReferenceContents = new Object[1];
+			lastReferenceContents[0] = contents;
 			contents = modelFactory.getHandler(contents).cloneObject(contents);
 		} else {
+			lastReferenceContents = new Object[((List) contents).size()];
+			for (int i = 0; i < ((List) contents).size(); i++) {
+				lastReferenceContents[i] = ((List) contents).get(i);
+			}
 			contents = modelFactory.getHandler(((List) contents).get(0)).cloneObjects(((List) contents).toArray());
 		}
 	}
