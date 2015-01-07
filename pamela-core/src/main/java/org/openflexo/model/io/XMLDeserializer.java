@@ -372,7 +372,14 @@ public class XMLDeserializer {
 		modelFactory.objectIsBeeingDeserialized(object, modelEntity.getImplementedInterface());
 		try {
 			if (modelEntity.getDeserializationInitializer() != null) {
-				modelEntity.getDeserializationInitializer().getDeserializationInitializerMethod().invoke(object, new Object[0]);
+				if (modelEntity.getDeserializationInitializer().getDeserializationInitializerMethod().getParameterTypes().length == 0) {
+					modelEntity.getDeserializationInitializer().getDeserializationInitializerMethod().invoke(object, new Object[0]);
+				} else if (modelEntity.getDeserializationInitializer().getDeserializationInitializerMethod().getParameterTypes().length == 1) {
+					modelEntity.getDeserializationInitializer().getDeserializationInitializerMethod().invoke(object, modelFactory);
+				} else {
+					System.err.println("Wrong number of argument for deserialization initializer "
+							+ modelEntity.getDeserializationInitializer().getDeserializationInitializerMethod());
+				}
 			}
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
