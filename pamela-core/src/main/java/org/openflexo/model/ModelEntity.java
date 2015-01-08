@@ -18,7 +18,6 @@
  *
  */
 
-
 package org.openflexo.model;
 
 import java.lang.reflect.Field;
@@ -51,9 +50,17 @@ import org.openflexo.model.annotations.Remover;
 import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.StringConverter;
 import org.openflexo.model.annotations.XMLElement;
+import org.openflexo.model.exceptions.MissingImplementationException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.exceptions.PropertyClashException;
+import org.openflexo.model.factory.AccessibleProxyObject;
+import org.openflexo.model.factory.CloneableProxyObject;
+import org.openflexo.model.factory.DeletableProxyObject;
+import org.openflexo.model.factory.KeyValueCoding;
+import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.model.factory.ProxyMethodHandler;
+import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
  * This class represents an instance of the {@link org.openflexo.model.annotations.ModelEntity} annotation declared on an interface.
@@ -153,7 +160,7 @@ public class ModelEntity<I> extends Type {
 	ModelEntity(@Nonnull Class<I> implementedInterface) throws ModelDefinitionException {
 
 		super(implementedInterface.getName());
-		
+
 		this.implementedInterface = implementedInterface;
 		declaredModelProperties = new HashMap<String, ModelProperty<I>>();
 		properties = new HashMap<String, ModelProperty<? super I>>();
@@ -925,6 +932,128 @@ public class ModelEntity<I> extends Type {
 	public Finder getFinder(String string) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/**
+	 * Check that this entity with supplied factory contains all required implementation<br>
+	 * If entity is abstract simply return
+	 * 
+	 * @throws MissingImplementationException
+	 *             when an implementation was not found
+	 */
+	public void checkMethodImplementations(ModelFactory factory) throws ModelDefinitionException, MissingImplementationException {
+		if (isAbstract()) {
+			return;
+		}
+		for (Method method : getImplementedInterface().getMethods()) {
+			boolean foundImplementation = false;
+			ModelProperty<?> property = getPropertyForMethod(method);
+			if (property != null) {
+				foundImplementation = true;
+			} else {
+				// This has not been recognized as a property
+				if (HasPropertyChangeSupport.class.isAssignableFrom(getImplementedInterface())) {
+					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_PROPERTY_CHANGE_SUPPORT)) {
+						if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_PROPERTY_CHANGE_SUPPORT)) {
+							foundImplementation = true;
+						}
+					}
+				}
+				if (AccessibleProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_GETTER)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SETTER)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_ADDER)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_REMOVER)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_GETTER_ENTITY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SETTER_ENTITY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_ADDER_ENTITY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_REMOVER_ENTITY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER_ENTITY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER_ENTITY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_SERIALIZING)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DESERIALIZING)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_MODIFIED)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.SET_MODIFIED)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SET_MODIFIED)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DESTROY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.EQUALS_OBJECT)) {
+						foundImplementation = true;
+					}
+				}
+				if (CloneableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.CLONE_OBJECT)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.CLONE_OBJECT_WITH_CONTEXT)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_BEING_CLONED)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_CREATED_BY_CLONING)) {
+						foundImplementation = true;
+					}
+				}
+				if (DeletableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DELETED)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_DELETED_PROPERTY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DELETE_OBJECT)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_UNDELETER)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UNDELETE_OBJECT)) {
+						foundImplementation = true;
+					}
+				}
+				if (DeletableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DELETED)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_DELETED_PROPERTY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DELETE_OBJECT)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_UNDELETER)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UNDELETE_OBJECT)) {
+						foundImplementation = true;
+					}
+				}
+				if (KeyValueCoding.class.isAssignableFrom(getImplementedInterface())) {
+					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.HAS_KEY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.OBJECT_FOR_KEY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.SET_OBJECT_FOR_KEY)
+							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_TYPE_FOR_KEY)) {
+						foundImplementation = true;
+					}
+				}
+
+				// Look up in base implementation class
+				if (!foundImplementation) {
+					Class implementingClassForInterface = factory.getImplementingClassForInterface(getImplementedInterface());
+					if (implementingClassForInterface != null) {
+						try {
+							if (implementingClassForInterface.getMethod(method.getName(), method.getParameterTypes()) != null) {
+								foundImplementation = true;
+							}
+						} catch (SecurityException e) {
+						} catch (NoSuchMethodException e) {
+						}
+					}
+				}
+
+				// Look up in delegate implementation class
+				if (!foundImplementation) {
+					if (getDelegateImplementations().size() > 0) {
+						for (Class<? super I> delegateImplementationClass : getDelegateImplementations().keySet()) {
+							try {
+								if (delegateImplementationClass.getMethod(method.getName(), method.getParameterTypes()) != null) {
+									foundImplementation = true;
+								}
+							} catch (SecurityException e) {
+							} catch (NoSuchMethodException e) {
+							}
+						}
+					}
+				}
+			}
+
+			if (!foundImplementation) {
+				throw new MissingImplementationException(this, method, factory);
+			}
+
+		}
 	}
 
 	public static boolean isModelEntity(Class<?> type) {

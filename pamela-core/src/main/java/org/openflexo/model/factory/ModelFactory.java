@@ -52,6 +52,7 @@ import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.StringEncoder;
 import org.openflexo.model.annotations.PastingPoint;
 import org.openflexo.model.exceptions.InvalidDataException;
+import org.openflexo.model.exceptions.MissingImplementationException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.io.XMLDeserializer;
@@ -355,6 +356,14 @@ public class ModelFactory implements IObjectGraphFactory {
 			// OK, we won't add the implementation since the interface is not
 			// declared
 		}
+	}
+
+	public <I> Class<? extends I> getImplementingClassForInterface(Class<I> implementedInterface) throws ModelDefinitionException {
+		PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
+		if (proxyFactory != null) {
+			return proxyFactory.getSuperclass();
+		}
+		return null;
 	}
 
 	public <I> void setImplementingClassForInterface(Class<? extends I> implementingClass, Class<I> implementedInterface,
@@ -864,6 +873,21 @@ public class ModelFactory implements IObjectGraphFactory {
 	public Type getAttributeType(Object currentContainer, String localName) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/**
+	 * Check that this factory contains all required implementation for all non-abstract entities
+	 * 
+	 * @throws MissingImplementationException
+	 *             when an implementation was not found
+	 */
+	public void checkMethodImplementations() throws ModelDefinitionException, MissingImplementationException {
+		ModelContext modelContext = getModelContext();
+		for (Iterator<ModelEntity> it = modelContext.getEntities(); it.hasNext();) {
+			ModelEntity e = it.next();
+			e.checkMethodImplementations(this);
+		}
+
 	}
 
 }
