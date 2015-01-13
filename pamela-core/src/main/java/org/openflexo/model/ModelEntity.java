@@ -22,6 +22,7 @@ package org.openflexo.model;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,7 +66,7 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
 /**
  * This class represents an instance of the {@link org.openflexo.model.annotations.ModelEntity} annotation declared on an interface.
  * 
- * @author Guillaume
+ * @author guillaume, sylvain
  * 
  * @param <I>
  */
@@ -942,118 +943,154 @@ public class ModelEntity<I> extends Type {
 	 *             when an implementation was not found
 	 */
 	public void checkMethodImplementations(ModelFactory factory) throws ModelDefinitionException, MissingImplementationException {
+		// Abstract entities are allowed not to provide all implementations
 		if (isAbstract()) {
 			return;
 		}
 		for (Method method : getImplementedInterface().getMethods()) {
-			boolean foundImplementation = false;
-			ModelProperty<?> property = getPropertyForMethod(method);
-			if (property != null) {
-				foundImplementation = true;
-			} else {
-				// This has not been recognized as a property
-				if (HasPropertyChangeSupport.class.isAssignableFrom(getImplementedInterface())) {
-					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_PROPERTY_CHANGE_SUPPORT)) {
-						if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_PROPERTY_CHANGE_SUPPORT)) {
-							foundImplementation = true;
-						}
-					}
-				}
-				if (AccessibleProxyObject.class.isAssignableFrom(getImplementedInterface())) {
-					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_GETTER)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SETTER)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_ADDER)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_REMOVER)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_GETTER_ENTITY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SETTER_ENTITY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_ADDER_ENTITY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_REMOVER_ENTITY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER_ENTITY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER_ENTITY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_SERIALIZING)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DESERIALIZING)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_MODIFIED)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.SET_MODIFIED)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SET_MODIFIED)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DESTROY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.EQUALS_OBJECT)) {
-						foundImplementation = true;
-					}
-				}
-				if (CloneableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
-					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.CLONE_OBJECT)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.CLONE_OBJECT_WITH_CONTEXT)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_BEING_CLONED)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_CREATED_BY_CLONING)) {
-						foundImplementation = true;
-					}
-				}
-				if (DeletableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
-					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DELETED)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_DELETED_PROPERTY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DELETE_OBJECT)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_UNDELETER)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UNDELETE_OBJECT)) {
-						foundImplementation = true;
-					}
-				}
-				if (DeletableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
-					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DELETED)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_DELETED_PROPERTY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DELETE_OBJECT)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_UNDELETER)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UNDELETE_OBJECT)) {
-						foundImplementation = true;
-					}
-				}
-				if (KeyValueCoding.class.isAssignableFrom(getImplementedInterface())) {
-					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.HAS_KEY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.OBJECT_FOR_KEY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.SET_OBJECT_FOR_KEY)
-							|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_TYPE_FOR_KEY)) {
-						foundImplementation = true;
-					}
-				}
-
-				// Look up in base implementation class
-				if (!foundImplementation) {
-					Class implementingClassForInterface = factory.getImplementingClassForInterface(getImplementedInterface());
-					if (implementingClassForInterface != null) {
-						try {
-							if (implementingClassForInterface.getMethod(method.getName(), method.getParameterTypes()) != null) {
-								foundImplementation = true;
-							}
-						} catch (SecurityException e) {
-						} catch (NoSuchMethodException e) {
-						}
-					}
-				}
-
-				// Look up in delegate implementation class
-				if (!foundImplementation) {
-					if (getDelegateImplementations().size() > 0) {
-						for (Class<? super I> delegateImplementationClass : getDelegateImplementations().keySet()) {
-							try {
-								if (delegateImplementationClass.getMethod(method.getName(), method.getParameterTypes()) != null) {
-									foundImplementation = true;
-								}
-							} catch (SecurityException e) {
-							} catch (NoSuchMethodException e) {
-							}
-						}
-					}
-				}
-			}
-
-			if (!foundImplementation) {
+			if (!checkMethodImplementation(method, factory)) {
+				System.err.println("NOT FOUND: " + method + " in " + getImplementedInterface());
 				throw new MissingImplementationException(this, method, factory);
 			}
-
 		}
+	}
+
+	/**
+	 * Check that this entity provides an implementation for supplied method, given a {@link ModelFactory}
+	 * 
+	 * @return true if an implementation was found
+	 * @throws ModelDefinitionException
+	 */
+	private boolean checkMethodImplementation(Method method, ModelFactory factory) throws ModelDefinitionException {
+		// Abstract entities are allowed not to provide all implementations
+		ModelProperty<?> property = getPropertyForMethod(method);
+		if (property != null) {
+			return true;
+		} else {
+
+			if (method.getAnnotation(Finder.class) != null) {
+				return true;
+			}
+
+			// This has not been recognized as a property
+			if (HasPropertyChangeSupport.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_PROPERTY_CHANGE_SUPPORT)) {
+					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_PROPERTY_CHANGE_SUPPORT)) {
+						return true;
+					}
+				}
+			}
+			if (AccessibleProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_GETTER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SETTER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_ADDER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_REMOVER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_GETTER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SETTER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_ADDER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_REMOVER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_SERIALIZING)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DESERIALIZING)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_MODIFIED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.SET_MODIFIED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SET_MODIFIED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DESTROY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.EQUALS_OBJECT)) {
+					return true;
+				}
+			}
+			if (CloneableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.CLONE_OBJECT)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.CLONE_OBJECT_WITH_CONTEXT)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_BEING_CLONED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_CREATED_BY_CLONING)) {
+					return true;
+				}
+			}
+			if (DeletableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DELETED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_DELETED_PROPERTY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DELETE_OBJECT)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_UNDELETER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UNDELETE_OBJECT)) {
+					return true;
+				}
+			}
+			if (DeletableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DELETED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_DELETED_PROPERTY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DELETE_OBJECT)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_UNDELETER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UNDELETE_OBJECT)) {
+					return true;
+				}
+			}
+			if (KeyValueCoding.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.HAS_KEY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.OBJECT_FOR_KEY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.SET_OBJECT_FOR_KEY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_TYPE_FOR_KEY)) {
+					return true;
+				}
+			}
+
+			// Look up in base implementation class
+			Class implementingClassForInterface = factory.getImplementingClassForInterface(getImplementedInterface());
+			if (implementingClassForInterface != null) {
+				try {
+					Method m = implementingClassForInterface.getMethod(method.getName(), method.getParameterTypes());
+					if (m != null && !Modifier.isAbstract(m.getModifiers())) {
+						// We have found a non-abtract method which implements searched API method
+						return true;
+					}
+				} catch (SecurityException e) {
+				} catch (NoSuchMethodException e) {
+				}
+			}
+		}
+
+		// Look up in delegate implementation class
+		return checkMethodImplementationInDelegateImplementations(method, factory);
+	}
+
+	/**
+	 * Check that this entity provides an implementation for supplied method, given a {@link ModelFactory}
+	 * 
+	 * @return true if an implementation was found
+	 * @throws ModelDefinitionException
+	 */
+	private boolean checkMethodImplementationInDelegateImplementations(Method method, ModelFactory factory) throws ModelDefinitionException {
+		// Look up in delegate implementation class
+		if (getDelegateImplementations().size() > 0) {
+			for (Class<? super I> delegateImplementationClass : getDelegateImplementations().keySet()) {
+				try {
+					Method m = delegateImplementationClass.getMethod(method.getName(), method.getParameterTypes());
+					if (m != null && !Modifier.isAbstract(m.getModifiers())) {
+						// We have found a non-abtract method which implements searched API method
+						return true;
+					}
+				} catch (SecurityException e) {
+				} catch (NoSuchMethodException e) {
+				}
+			}
+		}
+		// May be in parent entitities ?
+		if (getDirectSuperEntities() != null) {
+			for (ModelEntity<? super I> parentEntity : getDirectSuperEntities()) {
+				if (parentEntity.checkMethodImplementationInDelegateImplementations(method, factory)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+
 	}
 
 	public static boolean isModelEntity(Class<?> type) {
