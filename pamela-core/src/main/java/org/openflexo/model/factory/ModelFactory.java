@@ -179,7 +179,13 @@ public class ModelFactory implements IObjectGraphFactory {
 				}
 				ModelInitializer initializerForArgs = modelEntity.getInitializerForArgs(types);
 				if (initializerForArgs != null) {
-					initializerForArgs.getInitializingMethod().invoke(returned, args);
+					handler.initializing = true;
+					try {
+						initializerForArgs.getInitializingMethod().invoke(returned, args);
+					} finally {
+						handler.initializing = false;
+						handler.initialized = true;
+					}
 				} else {
 					if (args.length > 0) {
 						StringBuilder sb = new StringBuilder();

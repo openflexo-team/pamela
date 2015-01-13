@@ -46,6 +46,7 @@ import org.openflexo.model.annotations.Implementation;
 import org.openflexo.model.annotations.ImplementationClass;
 import org.openflexo.model.annotations.Import;
 import org.openflexo.model.annotations.Imports;
+import org.openflexo.model.annotations.Initializer;
 import org.openflexo.model.annotations.Modify;
 import org.openflexo.model.annotations.Remover;
 import org.openflexo.model.annotations.Setter;
@@ -969,6 +970,10 @@ public class ModelEntity<I> extends Type {
 		} else {
 
 			if (method.getAnnotation(Finder.class) != null) {
+				return true;
+			}
+
+			if (method.getAnnotation(Initializer.class) != null) {
 				return true;
 			}
 

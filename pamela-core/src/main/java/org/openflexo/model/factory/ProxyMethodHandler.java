@@ -80,14 +80,14 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	private boolean deleted = false;
 	private boolean deleting = false;
 	private boolean undeleting = false;
-	private boolean initialized = false;
+	protected boolean initialized = false;
 	private boolean serializing = false;
 	private boolean deserializing = false;
 	private boolean createdByCloning = false;
 	private boolean beingCloned = false;
 	private boolean modified = false;
 	private PropertyChangeSupport propertyChangeSupport;
-	private boolean initializing;
+	protected boolean initializing;
 
 	public static Method PERFORM_SUPER_GETTER;
 	public static Method PERFORM_SUPER_SETTER;
