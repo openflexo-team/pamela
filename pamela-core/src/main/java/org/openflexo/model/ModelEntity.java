@@ -365,7 +365,7 @@ public class ModelEntity<I> extends Type {
 				for (Class<? super I> implClass : parentEntity.delegateImplementations.keySet()) {
 					for (Method m : parentEntity.delegateImplementations.get(implClass)) {
 						for (Method m2 : implementedMethods) {
-							if (PamelaUtils.methodIsEquivalentTo(m, m2)) {
+							if (PamelaUtils.methodIsEquivalentTo(m, m2) && !isToBeExcludedFromImplementationClashChecking(m)) {
 								// We are in the case of implementation clash
 								// We must now check if this clash was property handled
 								boolean localImplementationWasFound = false;
@@ -394,6 +394,19 @@ public class ModelEntity<I> extends Type {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Hook used to prevent multiple inheritance clash in JACOCO context
+	 * 
+	 * @param m
+	 * @return
+	 */
+	private boolean isToBeExcludedFromImplementationClashChecking(Method m) {
+		if (m.getName().contains("jacocoInit")) {
+			return true;
+		}
+		return false;
 	}
 
 	void mergeProperties() throws ModelDefinitionException {
