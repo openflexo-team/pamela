@@ -55,9 +55,9 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import org.openflexo.antar.Type;
-import org.openflexo.antar.binding.ReflectionUtils;
-import org.openflexo.antar.binding.TypeUtils;
+import org.openflexo.connie.binding.ReflectionUtils;
+import org.openflexo.connie.cg.Type;
+import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.annotations.Adder;
 import org.openflexo.model.annotations.Finder;

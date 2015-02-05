@@ -66,10 +66,10 @@ import javassist.util.proxy.ProxyObject;
 
 import javax.annotation.Nonnull;
 
-import org.openflexo.antar.binding.BindingEvaluator;
-import org.openflexo.antar.binding.TypeUtils;
-import org.openflexo.antar.expr.NullReferenceException;
-import org.openflexo.antar.expr.TypeMismatchException;
+import org.openflexo.connie.BindingEvaluator;
+import org.openflexo.connie.exception.NullReferenceException;
+import org.openflexo.connie.exception.TypeMismatchException;
+import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.kvc.InvalidKeyValuePropertyException;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelEntity;

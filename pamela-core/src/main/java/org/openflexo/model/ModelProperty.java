@@ -44,8 +44,8 @@ import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.List;
 
-import org.openflexo.antar.binding.ReflectionUtils;
-import org.openflexo.antar.binding.TypeUtils;
+import org.openflexo.connie.binding.ReflectionUtils;
+import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.annotations.Adder;
 import org.openflexo.model.annotations.CloningStrategy;

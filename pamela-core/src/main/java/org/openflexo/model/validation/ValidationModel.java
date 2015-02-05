@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
-import org.openflexo.antar.binding.TypeUtils;
+import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.annotations.DefineValidationRule;

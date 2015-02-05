@@ -38,7 +38,7 @@
 
 package org.openflexo.model.converter;
 
-import org.openflexo.antar.binding.DataBinding;
+import org.openflexo.connie.DataBinding;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.factory.ModelFactory;
