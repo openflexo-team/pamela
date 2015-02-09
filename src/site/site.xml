@@ -21,9 +21,9 @@
 
   <body>
     <links>
-      <item name="Maven 2" href="http://maven.apache.org/maven2/"/>
+      <item name="Openflexo" href="http://www.openflexo.org"/>
     </links>
-    <menu name="Usage">
+   <!--  <menu name="Usage">
       <item name="Usage simple" href="usage.html" />
       <item name="FAQ" href="http://maven.apache.org/archetype/maven-archetype-plugin/specification/specification.html"/>
     </menu>	
@@ -40,11 +40,11 @@
       <item name="gconf" 		href="gconf.html" />
       <item name="liens" 		href="liens.html" />
       <item name="TODO" 		href="todo.html" />
-    </menu>	
+    </menu>	-->
 
-    <menu ref="parent" />
+    <!--  <menu ref="parent" /> -->
     <menu ref="modules" />
     <menu ref="reports" />
-    <menu ref="plugins" />
+    <!--  <menu ref="plugins" /> -->
   </body>
 </project>
