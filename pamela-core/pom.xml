@@ -4,10 +4,12 @@
 	<parent>
 		<groupId>org.openflexo</groupId>
 		<artifactId>pamela</artifactId>
-        <version>1.2-SNAPSHOT</version>
+       		<version>1.2-SNAPSHOT</version>
 	</parent>
 	<artifactId>pamela-core</artifactId>
 	<name>Pamela-core</name>
+
+	<description>Modelling framework core component.</description>
 	<build>
 		<plugins>
 			<plugin>
@@ -61,6 +63,5 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	<description>Modelling framework core component.</description>
 </project>
 
