@@ -47,8 +47,8 @@ Contents of this package
 
   PAMELA project contains two separate components (defined here as modules):
   
-  * {{{./pamela-core/index.html}Pamela-core component}}, which contains the Pamela core library itself
+  * {{./pamela-core/index.html}Pamela-core component}}, which contains the Pamela core library itself
   
-  * {{{./pamela-editor/index.html}Pamela-editor component}} which contains a graphical editor for PAMELA models
+  * {{./pamela-editor/index.html}Pamela-editor component}} which contains a graphical editor for PAMELA models
     
   
