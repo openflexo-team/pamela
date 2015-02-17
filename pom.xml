@@ -19,6 +19,7 @@
         <url>https://github.com/openflexo-team/pamela</url>
         <tag>1.2</tag>
     </scm>
+
     <modules>
         <module>pamela-core</module>
         <module>pamela-editor</module>
@@ -55,9 +56,6 @@
                 <excludes>
                     <exclude>**/pamela.properties</exclude>
                 </excludes>
-                <!--  <includes>
-					<include>**/*</include>
-				</includes>-->
             </resource>
         </resources>
         <pluginManagement>
@@ -99,6 +97,19 @@
             </plugin>
         </plugins>
     </build>
+    <!-- ************
+   	This component 
+      -->
+    <dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+    </dependencies>
+    <!-- ************
+   	dependency Management
+      -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -116,34 +127,6 @@
                 <groupId>org.openflexo</groupId>
                 <artifactId>connie-core</artifactId>
                 <version>${connie.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.openflexo</groupId>
-                <artifactId>connie-core</artifactId>
-                <version>${connie.version}</version>
-                <classifier>tests</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.openflexo</groupId>
-                <artifactId>pamela-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.openflexo</groupId>
-                <artifactId>pamela-core</artifactId>
-                <version>${project.version}</version>
-                <classifier>tests</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.openflexo</groupId>
-                <artifactId>pamela-editor</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.openflexo</groupId>
-                <artifactId>pamela-editor</artifactId>
-                <version>${project.version}</version>
-                <classifier>tests</classifier>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
