@@ -20,6 +20,11 @@
         <tag>1.2</tag>
     </scm>
 
+      <issueManagement>
+            <system>JIRA</system>
+            <url>https://bugs.openflexo.org/browse/pamela/</url>
+      </issueManagement>
+
     <modules>
         <module>pamela-core</module>
         <module>pamela-editor</module>
@@ -98,16 +103,6 @@
         </plugins>
     </build>
     <!-- ************
-   	This component 
-      -->
-    <dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-    </dependencies>
-    <!-- ************
    	dependency Management
       -->
     <dependencyManagement>
@@ -120,8 +115,8 @@
             <dependency>
                 <groupId>org.openflexo</groupId>
                 <artifactId>flexoutils</artifactId>
+		<classifier>tests</classifier>
                 <version>${connie.version}</version>
-                <classifier>tests</classifier>
             </dependency>
             <dependency>
                 <groupId>org.openflexo</groupId>
@@ -133,11 +128,12 @@
                 <artifactId>javassist</artifactId>
                 <version>3.18.0-GA</version>
             </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.10</version>
-            </dependency>
+   	   <dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+			<version>${junit.version}</version>
+	    </dependency>
         </dependencies>
     </dependencyManagement>
     <!-- ************
