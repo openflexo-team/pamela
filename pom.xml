@@ -30,7 +30,8 @@
 	Properties
       -->
     <properties>
-        <connie.version>1.2-SNAPSHOT</connie.version>
+        <connie.version>1.2-SNAPSHOT</connie.version>	
+        <javassist.version>3.18.0-GA</javassist.version>
 	<changes.componentfilter>AND component=*</changes.componentfilter>
         <pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>
     </properties>
@@ -138,10 +139,20 @@
                 <artifactId>connie-core</artifactId>
                 <version>${connie.version}</version>
             </dependency>
+	     <dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${guava.version}</version>
+	     </dependency>
+	    <dependency>
+				<groupId>com.google.code.findbugs</groupId>
+				<artifactId>jsr305</artifactId>
+				<version>${jsr305.version}</version>
+	     </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.18.0-GA</version>
+                <version>${javassist.version}</version>
             </dependency>
 	</dependencies>
     </dependencyManagement>
