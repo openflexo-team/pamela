@@ -8,6 +8,9 @@
 	</parent>
 	<artifactId>pamela-editor</artifactId>
 	<name>Pamela-editor</name>
+   <properties>
+		<changes.componentfilter>AND component=pamela-editor</changes.componentfilter>
+   </properties>
 	<build>
 		<plugins>
 			<plugin>

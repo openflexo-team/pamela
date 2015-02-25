@@ -9,6 +9,9 @@
 	<artifactId>pamela-core</artifactId>
 	<name>Pamela-core</name>
 
+  	<properties>
+		<changes.componentfilter>AND component=pamela-core</changes.componentfilter>
+   	</properties>
 	<description>Modelling framework core component.</description>
 	<build>
 		<plugins>
