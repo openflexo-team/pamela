@@ -142,13 +142,7 @@
                 <artifactId>javassist</artifactId>
                 <version>3.18.0-GA</version>
             </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <scope>test</scope>
-                <version>${junit.version}</version>
-            </dependency>
-        </dependencies>
+	</dependencies>
     </dependencyManagement>
     <!-- ************
    Specific profiles used to differentiate between snapshot release and release-candidates and official-releases

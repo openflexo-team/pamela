@@ -40,11 +40,6 @@
 			<artifactId>javassist</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.openflexo</groupId>
 			<artifactId>flexoutils</artifactId>
 			<classifier>tests</classifier>
