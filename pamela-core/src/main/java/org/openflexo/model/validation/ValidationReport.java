@@ -343,7 +343,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	}
 
 	private void appendAllEmbeddedValidableObjects(Validable o, Collection<Validable> c) {
-		if (o != null) {
+		if (o != null && !c.contains(o)) {
 			c.add(o);
 			Collection<? extends Validable> embeddedObjects = o.getEmbeddedValidableObjects();
 			if (embeddedObjects != null) {
