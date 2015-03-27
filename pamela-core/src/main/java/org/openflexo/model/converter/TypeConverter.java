@@ -60,9 +60,9 @@ public class TypeConverter extends Converter<Type> {
 	@Override
 	public Type convertFromString(String value, ModelFactory factory) throws InvalidDataException {
 
-		if (value.indexOf("(") > -1) {
-			String baseClassName = value.substring(0, value.indexOf("("));
-			String configuration = value.substring(value.indexOf("(") + 1, value.length() - 1);
+		if (value.indexOf("<") > -1) {
+			String baseClassName = value.substring(0, value.indexOf("<"));
+			String configuration = value.substring(value.indexOf("<") + 1, value.length() - 1);
 			Class<? extends CustomType> customTypeClass;
 			try {
 				customTypeClass = (Class<? extends CustomType>) Class.forName(baseClassName);
@@ -149,7 +149,7 @@ public class TypeConverter extends Converter<Type> {
 	public String convertToString(Type value) {
 
 		if (value instanceof CustomType) {
-			return value.getClass().getName() + "(" + ((CustomType) value).getSerializationRepresentation() + ")";
+			return value.getClass().getName() + "<" + ((CustomType) value).getSerializationRepresentation() + ">";
 		} else {
 			return TypeUtils.fullQualifiedRepresentation(value);
 		}
