@@ -40,7 +40,6 @@ package org.openflexo.model.converter;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,8 +52,13 @@ import org.openflexo.model.factory.ModelFactory;
 
 public class TypeConverter extends Converter<Type> {
 
-	public TypeConverter() {
+	private final Map<Class<? extends CustomType>, CustomTypeFactory<?>> factories;
+
+	private final List<CustomType> deserializedTypes = new ArrayList<CustomType>();
+
+	public TypeConverter(Map<Class<? extends CustomType>, CustomTypeFactory<?>> factories) {
 		super(Type.class);
+		this.factories = factories;
 	}
 
 	@Override
@@ -154,15 +158,6 @@ public class TypeConverter extends Converter<Type> {
 			return TypeUtils.fullQualifiedRepresentation(value);
 		}
 	}
-
-	private final Map<Class<?>, CustomTypeFactory<?>> factories = new HashMap<Class<?>, CustomTypeFactory<?>>();
-
-	public <T extends CustomType> void registerTypeClass(Class<T> typeClass, CustomTypeFactory<T> factory) {
-		// System.out.println("registering " + typeClass + " with " + factory);
-		factories.put(typeClass, factory);
-	}
-
-	private final List<CustomType> deserializedTypes = new ArrayList<CustomType>();
 
 	public void startDeserializing() {
 		deserializedTypes.clear();
