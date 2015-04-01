@@ -369,6 +369,18 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				}
 				return returned;
 			} catch (InvocationTargetException e) {
+				// An exception has been thrown
+				// There are two cases here:
+				// - this exception was expected (part of business model)
+				// - this exception is really unexpected
+				// To see it, we iterate on all exceptions that are declared as throwable, and throw target exception when matching
+				for (Class<?> exceptionType : proceed.getExceptionTypes()) {
+					if (exceptionType.isAssignableFrom(e.getTargetException().getClass())) {
+						throw e.getTargetException();
+					}
+				}
+				// If we come here, this means that this exception was unexpected
+				// In this case, we wrap this exception in a ModelExecutionException and we throw it
 				e.printStackTrace();
 				throw new ModelExecutionException(e.getCause());
 			}
