@@ -642,6 +642,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 */
 	private boolean internallyInvokeDeleter(boolean trackAtomicEdit, Object... context) throws ModelDefinitionException {
 
+		//System.out.println("Called internallyInvokeDeleter() for " + getObject());
+
 		if (deleted || deleting) {
 			return false;
 		}
@@ -706,6 +708,18 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		deleted = true;
 		deleting = false;
+
+		//System.out.println("DONE internallyInvokeDeleter() for " + getObject());
+
+		// Notify object
+		if (getObject() instanceof HasPropertyChangeSupport) {
+			HasPropertyChangeSupport object = (HasPropertyChangeSupport) getObject();
+			object.getPropertyChangeSupport().firePropertyChange(object.getDeletedProperty(), false, true);
+		}
+
+		// Also notify using core PropertyChangeSupport
+		
+		// TODO: maybe we have to check that is is not the same PropertyChangeSupport ???
 		getPropertyChangeSuppport().firePropertyChange(DELETED, false, true);
 		propertyChangeSupport = null;
 		return deleted;
