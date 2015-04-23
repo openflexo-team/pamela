@@ -39,7 +39,12 @@
 package org.openflexo.model.converter;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import org.openflexo.connie.type.CustomType;
+import org.openflexo.connie.type.CustomTypeFactory;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.exceptions.InvalidDataException;
@@ -47,17 +52,124 @@ import org.openflexo.model.factory.ModelFactory;
 
 public class TypeConverter extends Converter<Type> {
 
-	public TypeConverter() {
+	private final Map<Class<? extends CustomType>, CustomTypeFactory<?>> factories;
+
+	private final List<CustomType> deserializedTypes = new ArrayList<CustomType>();
+
+	public TypeConverter(Map<Class<? extends CustomType>, CustomTypeFactory<?>> factories) {
 		super(Type.class);
+		this.factories = factories;
 	}
 
 	@Override
 	public Type convertFromString(String value, ModelFactory factory) throws InvalidDataException {
-		return Object.class;
+
+		if (value.indexOf("<") > -1) {
+			String baseClassName = value.substring(0, value.indexOf("<"));
+			String configuration = value.substring(value.indexOf("<") + 1, value.length() - 1);
+			Class<? extends CustomType> customTypeClass;
+			try {
+				customTypeClass = (Class<? extends CustomType>) Class.forName(baseClassName);
+			} catch (ClassNotFoundException e) {
+				// Warns about the exception
+				throw new InvalidDataException("Supplied value represents a type not found: " + value);
+			}
+
+			System.out.println("Found " + customTypeClass);
+
+			CustomTypeFactory<?> customTypeFactory = factories.get(customTypeClass);
+
+			if (customTypeFactory == null) {
+				throw new InvalidDataException("Supplied value represents a type with no known factory:" + customTypeClass);
+			}
+
+			CustomType returned = customTypeFactory.makeCustomType(configuration);
+
+			deserializedTypes.add(returned);
+
+			return returned;
+
+			/*try {
+				Constructor<?> noArgConstructor = customTypeClass.getConstructor();
+				returned = (CustomType) noArgConstructor.newInstance();
+			} catch (NoSuchMethodException e) {
+				System.out.println("Pas de constructeur sans argument");
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			}
+
+			try {
+				if (customTypeClass.getConstructors().length > 0) {
+					Constructor<?> constructorWithArgs = customTypeClass.getConstructors()[0];
+					Object[] args = new Object[constructorWithArgs.getGenericParameterTypes().length];
+					for (int i = 0; i < args.length; i++) {
+						args[i] = null;
+					}
+					returned = (CustomType) constructorWithArgs.newInstance(args);
+				} else {
+					System.out.println("Pas de constructeurs");
+				}
+			} catch (SecurityException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			}*/
+
+			/*System.out.println("return " + returned);
+
+			if (returned != null) {
+				System.out.println("set config " + configuration);
+				returned.setSerializedConfiguration(configuration, factory);
+			}
+
+			return null;*/
+		}
+
+		else {
+			try {
+				return Class.forName(value);
+			} catch (ClassNotFoundException e) {
+				// Warns about the exception
+				throw new InvalidDataException("Supplied value represents a type not found: " + value);
+			}
+		}
 	}
 
 	@Override
 	public String convertToString(Type value) {
-		return TypeUtils.fullQualifiedRepresentation(value);
+
+		if (value instanceof CustomType) {
+			return value.getClass().getName() + "<" + ((CustomType) value).getSerializationRepresentation() + ">";
+		} else {
+			return TypeUtils.fullQualifiedRepresentation(value);
+		}
+	}
+
+	public void startDeserializing() {
+		deserializedTypes.clear();
+	}
+
+	public void stopDeserializing() {
+		// We iterate on all type that have been deserialized and try to resolve types that are not fully resolved
+		for (CustomType t : deserializedTypes) {
+			if (!t.isResolved()) {
+				CustomTypeFactory<?> customTypeFactory = factories.get(t.getClass());
+				t.resolve(customTypeFactory);
+			}
+		}
 	}
 }

@@ -369,6 +369,18 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				}
 				return returned;
 			} catch (InvocationTargetException e) {
+				// An exception has been thrown
+				// There are two cases here:
+				// - this exception was expected (part of business model)
+				// - this exception is really unexpected
+				// To see it, we iterate on all exceptions that are declared as throwable, and throw target exception when matching
+				for (Class<?> exceptionType : proceed.getExceptionTypes()) {
+					if (exceptionType.isAssignableFrom(e.getTargetException().getClass())) {
+						throw e.getTargetException();
+					}
+				}
+				// If we come here, this means that this exception was unexpected
+				// In this case, we wrap this exception in a ModelExecutionException and we throw it
 				e.printStackTrace();
 				throw new ModelExecutionException(e.getCause());
 			}
@@ -630,6 +642,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 */
 	private boolean internallyInvokeDeleter(boolean trackAtomicEdit, Object... context) throws ModelDefinitionException {
 
+		//System.out.println("Called internallyInvokeDeleter() for " + getObject());
+
 		if (deleted || deleting) {
 			return false;
 		}
@@ -694,6 +708,18 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		deleted = true;
 		deleting = false;
+
+		//System.out.println("DONE internallyInvokeDeleter() for " + getObject());
+
+		// Notify object
+		if (getObject() instanceof HasPropertyChangeSupport) {
+			HasPropertyChangeSupport object = (HasPropertyChangeSupport) getObject();
+			object.getPropertyChangeSupport().firePropertyChange(object.getDeletedProperty(), false, true);
+		}
+
+		// Also notify using core PropertyChangeSupport
+		
+		// TODO: maybe we have to check that is is not the same PropertyChangeSupport ???
 		getPropertyChangeSuppport().firePropertyChange(DELETED, false, true);
 		propertyChangeSupport = null;
 		return deleted;
