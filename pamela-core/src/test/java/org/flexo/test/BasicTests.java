@@ -739,7 +739,7 @@ public class BasicTests extends AbstractPAMELATest {
 
 		if (o instanceof List) {
 			StringBuffer returned = new StringBuffer();
-			for (Object o2 : (List) o) {
+			for (Object o2 : (List<Object>) o) {
 				returned.append(debug(o2));
 			}
 			return returned.toString();

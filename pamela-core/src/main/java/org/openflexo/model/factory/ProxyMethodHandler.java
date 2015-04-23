@@ -361,7 +361,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				}
 			}
 			try {
-				// Now we invoke the found concrete implementatioon
+				// Now we invoke the found concrete implementation
 				Object returned = proceed.invoke(self, args);
 				// Then we call setModified() if required
 				if (callSetModifiedAtTheEnd) {
