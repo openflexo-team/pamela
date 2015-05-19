@@ -17,15 +17,21 @@
     <version>1.2</version>
   </skin>
   <body>
-    <menu name="Pamela Core">
-      <item name="Description" href="index.html" />
-      <item name="Contribute" href="faq.html" />
-      <item name="FAQ" href="faq.html" />
-       <item name="Openflexo wiki page" href="https://openflexo.org/tiki/Pamela" />
-    </menu>	
+     <links>
+      <item name="Openflexo" href="http://www.openflexo.org"/>
+    </links>
+
+    <menu name="Pamela core">
+      <item name="Home" 		href="index.html" />
+      <item name="Getting started"    	href="GettingStarted.html" />
+      <item name="FAQ" 			href="faq.html"/>
+      <item name="Javadoc"    	href="./apidocs/index.html" />
+    </menu>
+
     <menu ref="parent" />
-    <menu ref="modules" />
+
     <menu ref="reports" />
-    <menu ref="plugins" />
+
   </body>
+
 </project>

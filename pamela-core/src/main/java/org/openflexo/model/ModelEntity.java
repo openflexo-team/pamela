@@ -1,21 +1,40 @@
-/*
- * (c) Copyright 2013-2014 Openflexo
+/**
+ * 
+ * Copyright (c) 2013-2015, Openflexo
+ * Copyright (c) 2011-2012, AgileBirds
+ * 
+ * This file is part of Pamela-core, a component of the software infrastructure 
+ * developed at Openflexo.
+ * 
+ * 
+ * Openflexo is dual-licensed under the European Union Public License (EUPL, either 
+ * version 1.1 of the License, or any later version ), which is available at 
+ * https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+ * and the GNU General Public License (GPL, either version 3 of the License, or any 
+ * later version), which is available at http://www.gnu.org/licenses/gpl.html .
+ * 
+ * You can redistribute it and/or modify under the terms of either of these licenses
+ * 
+ * If you choose to redistribute it and/or modify under the terms of the GNU GPL, you
+ * must include the following additional permission.
  *
- * This file is part of OpenFlexo.
+ *          Additional permission under GNU GPL version 3 section 7
  *
- * OpenFlexo is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *          If you modify this Program, or any covered work, by linking or 
+ *          combining it with software containing parts covered by the terms 
+ *          of EPL 1.0, the licensors of this Program grant you additional permission
+ *          to convey the resulting work. * 
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY 
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+ * PARTICULAR PURPOSE. 
  *
- * OpenFlexo is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OpenFlexo. If not, see <http://www.gnu.org/licenses/>.
- *
+ * See http://www.openflexo.org/license.html for details.
+ * 
+ * 
+ * Please contact Openflexo (openflexo-contacts@openflexo.org)
+ * or visit www.openflexo.org if you need additional information.
+ * 
  */
 
 
@@ -23,6 +42,7 @@ package org.openflexo.model;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,9 +55,9 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import org.openflexo.antar.Type;
-import org.openflexo.antar.binding.ReflectionUtils;
-import org.openflexo.antar.binding.TypeUtils;
+import org.openflexo.connie.binding.ReflectionUtils;
+import org.openflexo.connie.cg.Type;
+import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.annotations.Adder;
 import org.openflexo.model.annotations.Finder;
@@ -46,19 +66,28 @@ import org.openflexo.model.annotations.Implementation;
 import org.openflexo.model.annotations.ImplementationClass;
 import org.openflexo.model.annotations.Import;
 import org.openflexo.model.annotations.Imports;
+import org.openflexo.model.annotations.Initializer;
 import org.openflexo.model.annotations.Modify;
 import org.openflexo.model.annotations.Remover;
 import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.StringConverter;
 import org.openflexo.model.annotations.XMLElement;
+import org.openflexo.model.exceptions.MissingImplementationException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.exceptions.PropertyClashException;
+import org.openflexo.model.factory.AccessibleProxyObject;
+import org.openflexo.model.factory.CloneableProxyObject;
+import org.openflexo.model.factory.DeletableProxyObject;
+import org.openflexo.model.factory.KeyValueCoding;
+import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.model.factory.ProxyMethodHandler;
+import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
  * This class represents an instance of the {@link org.openflexo.model.annotations.ModelEntity} annotation declared on an interface.
  * 
- * @author Guillaume
+ * @author guillaume, sylvain
  * 
  * @param <I>
  */
@@ -153,7 +182,7 @@ public class ModelEntity<I> extends Type {
 	ModelEntity(@Nonnull Class<I> implementedInterface) throws ModelDefinitionException {
 
 		super(implementedInterface.getName());
-		
+
 		this.implementedInterface = implementedInterface;
 		declaredModelProperties = new HashMap<String, ModelProperty<I>>();
 		properties = new HashMap<String, ModelProperty<? super I>>();
@@ -356,7 +385,7 @@ public class ModelEntity<I> extends Type {
 				for (Class<? super I> implClass : parentEntity.delegateImplementations.keySet()) {
 					for (Method m : parentEntity.delegateImplementations.get(implClass)) {
 						for (Method m2 : implementedMethods) {
-							if (PamelaUtils.methodIsEquivalentTo(m, m2)) {
+							if (PamelaUtils.methodIsEquivalentTo(m, m2) && !isToBeExcludedFromImplementationClashChecking(m)) {
 								// We are in the case of implementation clash
 								// We must now check if this clash was property handled
 								boolean localImplementationWasFound = false;
@@ -385,6 +414,19 @@ public class ModelEntity<I> extends Type {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Hook used to prevent multiple inheritance clash in JACOCO context
+	 * 
+	 * @param m
+	 * @return
+	 */
+	private boolean isToBeExcludedFromImplementationClashChecking(Method m) {
+		if (m.getName().contains("jacocoInit")) {
+			return true;
+		}
+		return false;
 	}
 
 	void mergeProperties() throws ModelDefinitionException {
@@ -925,6 +967,168 @@ public class ModelEntity<I> extends Type {
 	public Finder getFinder(String string) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/**
+	 * Check that this entity with supplied factory contains all required implementation<br>
+	 * If entity is abstract simply return
+	 * 
+	 * @throws MissingImplementationException
+	 *             when an implementation was not found
+	 */
+	public void checkMethodImplementations(ModelFactory factory) throws ModelDefinitionException, MissingImplementationException {
+		// Abstract entities are allowed not to provide all implementations
+		if (isAbstract()) {
+			return;
+		}
+		for (Method method : getImplementedInterface().getMethods()) {
+			if (!checkMethodImplementation(method, factory)) {
+				System.err.println("NOT FOUND: " + method + " in " + getImplementedInterface());
+				throw new MissingImplementationException(this, method, factory);
+			}
+		}
+	}
+
+	/**
+	 * Check that this entity provides an implementation for supplied method, given a {@link ModelFactory}
+	 * 
+	 * @return true if an implementation was found
+	 * @throws ModelDefinitionException
+	 */
+	private boolean checkMethodImplementation(Method method, ModelFactory factory) throws ModelDefinitionException {
+		// Abstract entities are allowed not to provide all implementations
+		ModelProperty<?> property = getPropertyForMethod(method);
+		if (property != null) {
+			return true;
+		} else {
+
+			if (method.getAnnotation(Finder.class) != null) {
+				return true;
+			}
+
+			if (method.getAnnotation(Initializer.class) != null) {
+				return true;
+			}
+
+			// This has not been recognized as a property
+			if (HasPropertyChangeSupport.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_PROPERTY_CHANGE_SUPPORT)) {
+					if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_PROPERTY_CHANGE_SUPPORT)) {
+						return true;
+					}
+				}
+			}
+			if (AccessibleProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_GETTER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SETTER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_ADDER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_REMOVER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_GETTER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SETTER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_ADDER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_REMOVER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER_ENTITY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_SERIALIZING)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DESERIALIZING)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_MODIFIED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.SET_MODIFIED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SET_MODIFIED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DESTROY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.EQUALS_OBJECT)) {
+					return true;
+				}
+			}
+			if (CloneableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.CLONE_OBJECT)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.CLONE_OBJECT_WITH_CONTEXT)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_BEING_CLONED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_CREATED_BY_CLONING)) {
+					return true;
+				}
+			}
+			if (DeletableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DELETED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_DELETED_PROPERTY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DELETE_OBJECT)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_UNDELETER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UNDELETE_OBJECT)) {
+					return true;
+				}
+			}
+			if (DeletableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DELETED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_DELETED_PROPERTY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DELETE_OBJECT)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_UNDELETER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UNDELETE_OBJECT)) {
+					return true;
+				}
+			}
+			if (KeyValueCoding.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.HAS_KEY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.OBJECT_FOR_KEY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.SET_OBJECT_FOR_KEY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_TYPE_FOR_KEY)) {
+					return true;
+				}
+			}
+
+			// Look up in base implementation class
+			Class implementingClassForInterface = factory.getImplementingClassForInterface(getImplementedInterface());
+			if (implementingClassForInterface != null) {
+				try {
+					Method m = implementingClassForInterface.getMethod(method.getName(), method.getParameterTypes());
+					if (m != null && !Modifier.isAbstract(m.getModifiers())) {
+						// We have found a non-abtract method which implements searched API method
+						return true;
+					}
+				} catch (SecurityException e) {
+				} catch (NoSuchMethodException e) {
+				}
+			}
+		}
+
+		// Look up in delegate implementation class
+		return checkMethodImplementationInDelegateImplementations(method, factory);
+	}
+
+	/**
+	 * Check that this entity provides an implementation for supplied method, given a {@link ModelFactory}
+	 * 
+	 * @return true if an implementation was found
+	 * @throws ModelDefinitionException
+	 */
+	private boolean checkMethodImplementationInDelegateImplementations(Method method, ModelFactory factory) throws ModelDefinitionException {
+		// Look up in delegate implementation class
+		if (getDelegateImplementations().size() > 0) {
+			for (Class<? super I> delegateImplementationClass : getDelegateImplementations().keySet()) {
+				try {
+					Method m = delegateImplementationClass.getMethod(method.getName(), method.getParameterTypes());
+					if (m != null && !Modifier.isAbstract(m.getModifiers())) {
+						// We have found a non-abtract method which implements searched API method
+						return true;
+					}
+				} catch (SecurityException e) {
+				} catch (NoSuchMethodException e) {
+				}
+			}
+		}
+		// May be in parent entitities ?
+		if (getDirectSuperEntities() != null) {
+			for (ModelEntity<? super I> parentEntity : getDirectSuperEntities()) {
+				if (parentEntity.checkMethodImplementationInDelegateImplementations(method, factory)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+
 	}
 
 	public static boolean isModelEntity(Class<?> type) {

@@ -3,21 +3,21 @@
 	<parent>
 		<groupId>org.openflexo</groupId>
 		<artifactId>openflexo-component</artifactId>
-        <version>0.2</version>
+        <version>0.3</version>
 	</parent>
-	<version>1.1-SNAPSHOT</version>
+	<version>1.2-SNAPSHOT</version>
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>pamela</artifactId>
 	<name>Pamela</name>
 	<packaging>pom</packaging>
 	<properties>
-		<connie.version>1.1</connie.version>
+		<connie.version>1.2</connie.version>
 		<pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>
 	</properties>
 	<scm>
 		<connection>scm:git:ssh://git@github.com/openflexo-team/pamela.git</connection>
 		<url>https://github.com/openflexo-team/pamela</url>
-	  <tag>1.1</tag>
+	  <tag>1.2</tag>
   </scm>
 	<modules>
 		<module>pamela-core</module>

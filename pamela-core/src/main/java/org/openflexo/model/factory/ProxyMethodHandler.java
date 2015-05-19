@@ -1,6 +1,45 @@
 /**
  * 
  */
+/**
+ * 
+ * Copyright (c) 2013-2015, Openflexo
+ * Copyright (c) 2011-2012, AgileBirds
+ * 
+ * This file is part of Pamela-core, a component of the software infrastructure 
+ * developed at Openflexo.
+ * 
+ * 
+ * Openflexo is dual-licensed under the European Union Public License (EUPL, either 
+ * version 1.1 of the License, or any later version ), which is available at 
+ * https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+ * and the GNU General Public License (GPL, either version 3 of the License, or any 
+ * later version), which is available at http://www.gnu.org/licenses/gpl.html .
+ * 
+ * You can redistribute it and/or modify under the terms of either of these licenses
+ * 
+ * If you choose to redistribute it and/or modify under the terms of the GNU GPL, you
+ * must include the following additional permission.
+ *
+ *          Additional permission under GNU GPL version 3 section 7
+ *
+ *          If you modify this Program, or any covered work, by linking or 
+ *          combining it with software containing parts covered by the terms 
+ *          of EPL 1.0, the licensors of this Program grant you additional permission
+ *          to convey the resulting work. * 
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY 
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+ * PARTICULAR PURPOSE. 
+ *
+ * See http://www.openflexo.org/license.html for details.
+ * 
+ * 
+ * Please contact Openflexo (openflexo-contacts@openflexo.org)
+ * or visit www.openflexo.org if you need additional information.
+ * 
+ */
+
 package org.openflexo.model.factory;
 
 import java.beans.PropertyChangeEvent;
@@ -27,10 +66,10 @@ import javassist.util.proxy.ProxyObject;
 
 import javax.annotation.Nonnull;
 
-import org.openflexo.antar.binding.BindingEvaluator;
-import org.openflexo.antar.binding.TypeUtils;
-import org.openflexo.antar.expr.NullReferenceException;
-import org.openflexo.antar.expr.TypeMismatchException;
+import org.openflexo.connie.BindingEvaluator;
+import org.openflexo.connie.exception.NullReferenceException;
+import org.openflexo.connie.exception.TypeMismatchException;
+import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.kvc.InvalidKeyValuePropertyException;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelEntity;
@@ -80,50 +119,49 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	private boolean deleted = false;
 	private boolean deleting = false;
 	private boolean undeleting = false;
-	private boolean initialized = false;
+	protected boolean initialized = false;
 	private boolean serializing = false;
 	private boolean deserializing = false;
 	private boolean createdByCloning = false;
 	private boolean beingCloned = false;
 	private boolean modified = false;
 	private PropertyChangeSupport propertyChangeSupport;
-	private boolean initializing;
+	protected boolean initializing;
 
-	private static Method PERFORM_SUPER_GETTER;
-	private static Method PERFORM_SUPER_SETTER;
-	private static Method PERFORM_SUPER_ADDER;
-	private static Method PERFORM_SUPER_REMOVER;
-	private static Method PERFORM_SUPER_DELETER;
-	private static Method PERFORM_SUPER_UNDELETER;
-	private static Method PERFORM_SUPER_FINDER;
-	private static Method PERFORM_SUPER_GETTER_ENTITY;
-	private static Method PERFORM_SUPER_SETTER_ENTITY;
-	private static Method PERFORM_SUPER_ADDER_ENTITY;
-	private static Method PERFORM_SUPER_REMOVER_ENTITY;
-	private static Method PERFORM_SUPER_DELETER_ENTITY;
-	private static Method PERFORM_SUPER_FINDER_ENTITY;
-	private static Method PERFORM_SUPER_SET_MODIFIED;
-	private static Method IS_MODIFIED;
-	private static Method SET_MODIFIED;
-	private static Method IS_SERIALIZING;
-	private static Method IS_DESERIALIZING;
-	private static Method TO_STRING;
-	private static Method GET_PROPERTY_CHANGE_SUPPORT;
-	private static Method GET_DELETED_PROPERTY;
-	private static Method CLONE_OBJECT;
-	private static Method CLONE_OBJECT_WITH_CONTEXT;
-	private static Method IS_CREATED_BY_CLONING;
-	private static Method IS_BEING_CLONED;
-	private static Method DELETE_OBJECT;
-	// private static Method DELETE_OBJECT_WITH_CONTEXT;
-	private static Method UNDELETE_OBJECT;
-	private static Method IS_DELETED;
-	private static Method EQUALS_OBJECT;
-	private static Method DESTROY;
-	private static Method HAS_KEY;
-	private static Method OBJECT_FOR_KEY;
-	private static Method SET_OBJECT_FOR_KEY;
-	private static Method GET_TYPE_FOR_KEY;
+	public static Method PERFORM_SUPER_GETTER;
+	public static Method PERFORM_SUPER_SETTER;
+	public static Method PERFORM_SUPER_ADDER;
+	public static Method PERFORM_SUPER_REMOVER;
+	public static Method PERFORM_SUPER_DELETER;
+	public static Method PERFORM_SUPER_UNDELETER;
+	public static Method PERFORM_SUPER_FINDER;
+	public static Method PERFORM_SUPER_GETTER_ENTITY;
+	public static Method PERFORM_SUPER_SETTER_ENTITY;
+	public static Method PERFORM_SUPER_ADDER_ENTITY;
+	public static Method PERFORM_SUPER_REMOVER_ENTITY;
+	public static Method PERFORM_SUPER_DELETER_ENTITY;
+	public static Method PERFORM_SUPER_FINDER_ENTITY;
+	public static Method PERFORM_SUPER_SET_MODIFIED;
+	public static Method IS_MODIFIED;
+	public static Method SET_MODIFIED;
+	public static Method IS_SERIALIZING;
+	public static Method IS_DESERIALIZING;
+	public static Method TO_STRING;
+	public static Method GET_PROPERTY_CHANGE_SUPPORT;
+	public static Method GET_DELETED_PROPERTY;
+	public static Method CLONE_OBJECT;
+	public static Method CLONE_OBJECT_WITH_CONTEXT;
+	public static Method IS_CREATED_BY_CLONING;
+	public static Method IS_BEING_CLONED;
+	public static Method DELETE_OBJECT;
+	public static Method UNDELETE_OBJECT;
+	public static Method IS_DELETED;
+	public static Method EQUALS_OBJECT;
+	public static Method DESTROY;
+	public static Method HAS_KEY;
+	public static Method OBJECT_FOR_KEY;
+	public static Method SET_OBJECT_FOR_KEY;
+	public static Method GET_TYPE_FOR_KEY;
 
 	private final PAMELAProxyFactory<I> pamelaProxyFactory;
 	private final EditingContext editingContext;
@@ -323,7 +361,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				}
 			}
 			try {
-				// Now we invoke the found concrete implementatioon
+				// Now we invoke the found concrete implementation
 				Object returned = proceed.invoke(self, args);
 				// Then we call setModified() if required
 				if (callSetModifiedAtTheEnd) {
@@ -331,6 +369,18 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				}
 				return returned;
 			} catch (InvocationTargetException e) {
+				// An exception has been thrown
+				// There are two cases here:
+				// - this exception was expected (part of business model)
+				// - this exception is really unexpected
+				// To see it, we iterate on all exceptions that are declared as throwable, and throw target exception when matching
+				for (Class<?> exceptionType : proceed.getExceptionTypes()) {
+					if (exceptionType.isAssignableFrom(e.getTargetException().getClass())) {
+						throw e.getTargetException();
+					}
+				}
+				// If we come here, this means that this exception was unexpected
+				// In this case, we wrap this exception in a ModelExecutionException and we throw it
 				e.printStackTrace();
 				throw new ModelExecutionException(e.getCause());
 			}
@@ -592,6 +642,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 */
 	private boolean internallyInvokeDeleter(boolean trackAtomicEdit, Object... context) throws ModelDefinitionException {
 
+		//System.out.println("Called internallyInvokeDeleter() for " + getObject());
+
 		if (deleted || deleting) {
 			return false;
 		}
@@ -656,6 +708,18 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		deleted = true;
 		deleting = false;
+
+		//System.out.println("DONE internallyInvokeDeleter() for " + getObject());
+
+		// Notify object
+		if (getObject() instanceof HasPropertyChangeSupport) {
+			HasPropertyChangeSupport object = (HasPropertyChangeSupport) getObject();
+			object.getPropertyChangeSupport().firePropertyChange(object.getDeletedProperty(), false, true);
+		}
+
+		// Also notify using core PropertyChangeSupport
+		
+		// TODO: maybe we have to check that is is not the same PropertyChangeSupport ???
 		getPropertyChangeSuppport().firePropertyChange(DELETED, false, true);
 		propertyChangeSupport = null;
 		return deleted;
@@ -1745,7 +1809,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							clonedObjectHandler.invokeSetter(p, clonedValue);
 							// clonedObjectHandler.internallyInvokeSetter(p, clonedValue);
 						} else if (ModelEntity.isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
-							//boolean debug = false;
+							// boolean debug = false;
 							/*if (p.getPropertyIdentifier().equals("startShape")) {
 								System.out.println("Tiens, pour startShape, singleValue=" + singleValue);
 								debug = true;
