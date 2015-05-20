@@ -38,16 +38,6 @@
 	    <sitedeploy.dir>/home/www/sites/pamela</sitedeploy.dir>
     </properties>
     <!-- ************
-	tools Config Dependency
-      -->
-    <dependencies>
-        <dependency>
-            <groupId>org.openflexo</groupId>
-            <artifactId>tools-configuration</artifactId>
-            <version>${toolsconfig.version}</version>
-        </dependency>
-    </dependencies>
-    <!-- ************
    Build Configuration
    -->
     <build>
