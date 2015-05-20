@@ -36,16 +36,6 @@
         <pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>
     </properties>
     <!-- ************
-	tools Config Dependency
-      -->
-    <dependencies>
-        <dependency>
-            <groupId>org.openflexo</groupId>
-            <artifactId>tools-configuration</artifactId>
-            <version>${toolsconfig.version}</version>
-        </dependency>
-    </dependencies>
-    <!-- ************
    Build Configuration
    -->
     <build>
