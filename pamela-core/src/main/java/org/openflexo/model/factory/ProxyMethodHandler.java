@@ -131,6 +131,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	public static Method PERFORM_SUPER_GETTER;
 	public static Method PERFORM_SUPER_SETTER;
 	public static Method PERFORM_SUPER_ADDER;
+	public static Method PERFORM_SUPER_ADDER_AT_INDEX;
 	public static Method PERFORM_SUPER_REMOVER;
 	public static Method PERFORM_SUPER_DELETER;
 	public static Method PERFORM_SUPER_UNDELETER;
@@ -171,6 +172,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			PERFORM_SUPER_GETTER = AccessibleProxyObject.class.getMethod("performSuperGetter", String.class);
 			PERFORM_SUPER_SETTER = AccessibleProxyObject.class.getMethod("performSuperSetter", String.class, Object.class);
 			PERFORM_SUPER_ADDER = AccessibleProxyObject.class.getMethod("performSuperAdder", String.class, Object.class);
+			PERFORM_SUPER_ADDER_AT_INDEX = AccessibleProxyObject.class.getMethod("performSuperAdder", String.class, Object.class,
+					Integer.TYPE);
 			PERFORM_SUPER_REMOVER = AccessibleProxyObject.class.getMethod("performSuperRemover", String.class, Object.class);
 			PERFORM_SUPER_DELETER = DeletableProxyObject.class.getMethod("performSuperDelete", Array.newInstance(Object.class, 0)
 					.getClass());
@@ -437,6 +440,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		} else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_ADDER)) {
 			internallyInvokeAdder(getModelEntity().getModelProperty((String) args[0]), args[1], false);
 			return null;
+		} else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_ADDER_AT_INDEX)) {
+			internallyInvokeAdderAtIndex(getModelEntity().getModelProperty((String) args[0]), args[1], (int) args[2], false);
+			return null;
 		} else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_REMOVER)) {
 			internallyInvokeRemover(getModelEntity().getModelProperty((String) args[0]), args[1], false);
 			return null;
@@ -642,7 +648,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 */
 	private boolean internallyInvokeDeleter(boolean trackAtomicEdit, Object... context) throws ModelDefinitionException {
 
-		//System.out.println("Called internallyInvokeDeleter() for " + getObject());
+		// System.out.println("Called internallyInvokeDeleter() for " + getObject());
 
 		if (deleted || deleting) {
 			return false;
@@ -709,7 +715,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		deleted = true;
 		deleting = false;
 
-		//System.out.println("DONE internallyInvokeDeleter() for " + getObject());
+		// System.out.println("DONE internallyInvokeDeleter() for " + getObject());
 
 		// Notify object
 		if (getObject() instanceof HasPropertyChangeSupport) {
@@ -718,7 +724,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 
 		// Also notify using core PropertyChangeSupport
-		
+
 		// TODO: maybe we have to check that is is not the same PropertyChangeSupport ???
 		getPropertyChangeSuppport().firePropertyChange(DELETED, false, true);
 		propertyChangeSupport = null;
@@ -1215,7 +1221,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		case SINGLE:
 			throw new ModelExecutionException("Cannot invoke ADDER on " + property.getPropertyIdentifier() + ": Invalid cardinality SINGLE");
 		case LIST:
-			invokeAdderForListCardinality(property, value);
+			invokeAdderForListCardinality(property, value, -1);
 			break;
 		case MAP:
 			invokeAdderForMapCardinality(property, value);
@@ -1225,14 +1231,38 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	private void invokeAdderForListCardinality(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
+	private void internallyInvokeAdderAtIndex(ModelProperty<? super I> property, Object value, int index, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new AddCommand<I>(getObject(), getModelEntity(), property, value, index, getModelFactory()));
+		}
+		switch (property.getCardinality()) {
+		case SINGLE:
+			throw new ModelExecutionException("Cannot invoke ADDER on " + property.getPropertyIdentifier() + ": Invalid cardinality SINGLE");
+		case LIST:
+			invokeAdderForListCardinality(property, value, index);
+			break;
+		case MAP:
+			invokeAdderForMapCardinality(property, value);
+			break;
+		default:
+			throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
+		}
+	}
+
+	private void invokeAdderForListCardinality(ModelProperty<? super I> property, Object value, int index) throws ModelDefinitionException {
 		if (property.getAdder() == null && !isDeserializing() && !initializing && !createdByCloning && !deleting && !undeleting) {
 			throw new ModelExecutionException("Adder is not defined for property " + property);
 		}
 		List list = (List) invokeGetter(property);
 
 		if (!list.contains(value)) {
-			list.add(value);
+			if (index == -1) {
+				list.add(value);
+			} else {
+				list.add(index, value);
+			}
 			firePropertyChange(property.getPropertyIdentifier(), null, value);
 			// Handle inverse property for new value
 			if (property.hasInverseProperty() && value != null) {
