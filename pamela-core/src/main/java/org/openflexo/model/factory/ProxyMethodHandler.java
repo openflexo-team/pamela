@@ -1754,6 +1754,25 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							break;
 						case FACTORY:
 							break;
+						case CUSTOM_CLONE:
+							// We have here to invoke custom code (encoded in getStrategyTypeFactory())
+							try {
+								Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(), getObject());
+								clonedObjectHandler.invokeSetter(p, computedValue);
+							} catch (InvalidKeyValuePropertyException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							} catch (TypeMismatchException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							} catch (NullReferenceException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							} catch (InvocationTargetException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+							break;
 						case IGNORE:
 							break;
 						}
@@ -1866,6 +1885,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							referenceValue = singleValue;
 						}
 						clonedObjectHandler.invokeSetter(p, referenceValue);
+						// clonedObjectHandler.internallyInvokeSetter(p, referenceValue);
+						break;
+					case CUSTOM_CLONE:
+						System.out.println("Hop, la valeur c'est " + singleValue);
+						clonedObjectHandler.invokeSetter(p, singleValue);
 						// clonedObjectHandler.internallyInvokeSetter(p, referenceValue);
 						break;
 					case FACTORY:
