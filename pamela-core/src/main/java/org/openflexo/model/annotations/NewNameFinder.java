@@ -45,7 +45,7 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface NewNameFinder {
 
-	public String collection();
+	String collection();
 
-	public String attribute();
+	String attribute();
 }

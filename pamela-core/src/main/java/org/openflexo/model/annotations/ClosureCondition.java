@@ -48,6 +48,6 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface ClosureCondition {
 
-	public String value();
+    String value();
 
 }

@@ -64,5 +64,5 @@ public @interface NotEmptyChecker {
 	 * 
 	 * @return
 	 */
-	public String value();
+    String value();
 }

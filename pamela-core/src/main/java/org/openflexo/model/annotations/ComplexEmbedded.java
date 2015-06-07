@@ -47,7 +47,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)
 public @interface ComplexEmbedded {
-	public ClosureCondition[] closureConditions() default {};
+	ClosureCondition[] closureConditions() default {};
 
-	public DeletionCondition[] deletionConditions() default {};
+	DeletionCondition[] deletionConditions() default {};
 }

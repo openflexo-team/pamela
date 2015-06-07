@@ -48,13 +48,13 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface CloningStrategy {
 
-	public static enum StrategyType {
-		CLONE, REFERENCE, IGNORE, FACTORY, CUSTOM_CLONE;
-	}
+	enum StrategyType {
+		CLONE, REFERENCE, IGNORE, FACTORY, CUSTOM_CLONE
+    }
 
-	public static final String UNDEFINED = "";
+	String UNDEFINED = "";
 
-	public StrategyType value() default StrategyType.CLONE;
+	StrategyType value() default StrategyType.CLONE;
 
-	public String factory() default UNDEFINED;
+	String factory() default UNDEFINED;
 }

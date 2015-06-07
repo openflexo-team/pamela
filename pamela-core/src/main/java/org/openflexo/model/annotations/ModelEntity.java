@@ -39,13 +39,13 @@
 
 package org.openflexo.model.annotations;
 
+import org.openflexo.model.exceptions.ModelExecutionException;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.openflexo.model.exceptions.ModelExecutionException;
 
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
@@ -64,14 +64,14 @@ public @interface ModelEntity {
 	 * @author Guillaume
 	 * 
 	 */
-	public static enum InitPolicy {
+    enum InitPolicy {
 
-		NONE, WARN_IF_NOT_INVOKED, REQUIRED;
-	}
+		NONE, WARN_IF_NOT_INVOKED, REQUIRED
+    }
 
-	public boolean isAbstract() default false;
+	boolean isAbstract() default false;
 
-	public boolean inheritInitializers() default false;
+	boolean inheritInitializers() default false;
 
-	public InitPolicy initPolicy() default InitPolicy.REQUIRED;
+	InitPolicy initPolicy() default InitPolicy.REQUIRED;
 }

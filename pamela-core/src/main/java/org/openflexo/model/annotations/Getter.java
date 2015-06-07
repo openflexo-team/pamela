@@ -39,14 +39,15 @@
 
 package org.openflexo.model.annotations;
 
+import org.openflexo.model.StringConverterLibrary.Converter;
+import org.openflexo.model.StringEncoder;
+import org.openflexo.model.factory.ModelFactory;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.openflexo.model.StringEncoder;
-import org.openflexo.model.factory.ModelFactory;
 
 /**
  * Annotation for a getter
@@ -58,25 +59,25 @@ import org.openflexo.model.factory.ModelFactory;
 @Target(value = ElementType.METHOD)
 public @interface Getter {
 
-	public static enum Cardinality {
+	enum Cardinality {
 		SINGLE, LIST, MAP;
 	}
 
-	public static final String UNDEFINED = "";
+	String UNDEFINED = "";
 
 	/**
 	 * The property identifier of this getter
 	 * 
 	 * @return the property identifier of this getter
 	 */
-	public String value();
+	String value();
 
 	/**
 	 * The cardinality of this getter
 	 * 
 	 * @return the cardinality of the getter
 	 */
-	public Cardinality cardinality() default Cardinality.SINGLE;
+	Cardinality cardinality() default Cardinality.SINGLE;
 
 	/**
 	 * The inverse property identifier of this getter. Depending on the cardinality of this property and its inverse, this property will be
@@ -84,14 +85,14 @@ public @interface Getter {
 	 * 
 	 * @return
 	 */
-	public String inverse() default UNDEFINED;
+	String inverse() default UNDEFINED;
 
 	/**
 	 * A string convertable value that is set by default on the property identified by this getter
 	 * 
 	 * @return the string converted default value.
 	 */
-	public String defaultValue() default UNDEFINED;
+	String defaultValue() default UNDEFINED;
 
 	/**
 	 * Indicates that the type returned by this getter can be converted to a string using a {@link Converter}. Upon
@@ -102,7 +103,7 @@ public @interface Getter {
 	 * 
 	 * @return true if the type returned by this getter can be converted to a string.
 	 */
-	public boolean isStringConvertable() default false;
+	boolean isStringConvertable() default false;
 
 	/**
 	 * Indicates that the type returned by this getter should not be included in the model. This flag allows to manipulate types that are
@@ -110,9 +111,9 @@ public @interface Getter {
 	 * 
 	 * @return true if PAMELA should not import the type of the property identified by this getter.
 	 */
-	public boolean ignoreType() default false;
+	boolean ignoreType() default false;
 
-	public static class GetterImpl implements Getter {
+	class GetterImpl implements Getter {
 		private final String value;
 		private final Cardinality cardinality;
 		private final String inverse;

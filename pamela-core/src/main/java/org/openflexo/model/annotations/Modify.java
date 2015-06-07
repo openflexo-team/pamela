@@ -56,7 +56,7 @@ public @interface Modify {
 	 * 
 	 * @return the name of the property on which the flag modified should also be turned to true.
 	 */
-	public String forward();
+    String forward();
 
 	/**
 	 * Wheter this entity should watch the "modified" state of the value of the property defined by {@link Modify#forward()} and resynch
@@ -64,5 +64,5 @@ public @interface Modify {
 	 * 
 	 * @return true if this model entity "modified" state should be synch with the property defined by the {@link Modify#forward()}.
 	 */
-	public boolean synchWithForward() default true;
+    boolean synchWithForward() default true;
 }
