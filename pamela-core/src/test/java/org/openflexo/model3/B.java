@@ -45,7 +45,7 @@ import org.openflexo.model.annotations.ModelEntity;
 public interface B extends A {
 
 	@Implementation
-	public static abstract class BImpl implements B {
+	abstract class BImpl implements B {
 		@Override
 		public String getFoo() {
 			return "foo in class B";
