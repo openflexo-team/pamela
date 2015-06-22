@@ -10,12 +10,12 @@ import org.openflexo.model.annotations.Parameter;
  *
  */
 @ModelEntity
-public interface DeleteContent extends ChangeContent {
+public interface DeleteChange extends Change {
 
     String DELETED_OBJECT = "deletedObject";
 
     @Initializer
-    DeleteContent construtor(
+    DeleteChange constructor(
             @Parameter(DELETED_OBJECT) String deletedObject
     );
 

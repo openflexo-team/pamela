@@ -6,18 +6,19 @@ import org.openflexo.model.annotations.ModelEntity;
 import org.openflexo.model.annotations.Parameter;
 
 /**
- * Model for a AddCommand.
+ * Model for a SetCommand.
  */
 @ModelEntity
-public interface RemoveContent extends ChangeContent {
+public interface SetChange extends Change {
 
-    String REMOVED_VALUE = "removedValue";
+    String NEW_VALUE = "newValue";
 
     @Initializer
-    RemoveContent construtor(
+    SetChange constructor(
             @Parameter(UPDATED_OBJECT) String updatedObject,
             @Parameter(MODEL_PROPERTY) String modelProperty,
-            @Parameter(REMOVED_VALUE) String addedValue
+            @Parameter(OLD_VALUE) ObjectDescription oldValue,
+            @Parameter(NEW_VALUE) ObjectDescription newValue
     );
 
     @Getter(UPDATED_OBJECT)
@@ -26,7 +27,10 @@ public interface RemoveContent extends ChangeContent {
     @Getter(MODEL_PROPERTY)
     String getModelProperty();
 
-    @Getter(REMOVED_VALUE)
-    String getRemovedValue();
+    @Getter(OLD_VALUE)
+    ObjectDescription getOldValue();
+
+    @Getter(NEW_VALUE)
+    ObjectDescription getNewValue();
 
 }

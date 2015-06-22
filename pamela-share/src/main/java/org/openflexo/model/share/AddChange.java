@@ -9,24 +9,17 @@ import org.openflexo.model.annotations.Parameter;
  * Model for a AddCommand.
  */
 @ModelEntity
-public interface AddContent extends ChangeContent {
+public interface AddChange extends Change {
 
     String ADDED_VALUE = "addedValue";
     String INDEX = "index";
 
     @Initializer
-    AddContent construtor(
+    AddChange constructor(
             @Parameter(UPDATED_OBJECT) String updatedObject,
             @Parameter(MODEL_PROPERTY) String modelProperty,
             @Parameter(ADDED_VALUE) String addedValue,
-            @Parameter(INDEX) int index
-    );
-
-    @Initializer
-    AddContent construtor(
-            @Parameter(UPDATED_OBJECT) String updatedObject,
-            @Parameter(MODEL_PROPERTY) String modelProperty,
-            @Parameter(ADDED_VALUE) String addedValue
+            @Parameter(INDEX) Integer index
     );
 
     @Getter(UPDATED_OBJECT)

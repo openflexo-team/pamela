@@ -9,12 +9,12 @@ import org.openflexo.model.annotations.Parameter;
  * Model for a CreateCommand.
  */
 @ModelEntity()
-public interface CreateContent extends ChangeContent {
+public interface CreateChange extends Change {
 
     String CREATED_OBJECT = "createdObject";
 
     @Initializer
-    CreateContent construtor(
+    CreateChange constructor(
             @Parameter(CREATED_OBJECT) String createdObject
     );
 

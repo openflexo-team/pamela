@@ -17,7 +17,7 @@ public class Tests  {
         ModelContext modelContext = new ModelContext(Message.class);
         ModelFactory factory = new ModelFactory(modelContext);
 
-        final EditingContext editingContext = new SharedEditingContext();
+        final EditingContext editingContext = new SharedEditingContext("charlie:model1", modelContext);
         factory.setEditingContext(editingContext);
         UndoManager undoManager = editingContext.getUndoManager();
         System.out.println(undoManager);
@@ -32,7 +32,5 @@ public class Tests  {
         m1.addReply(m2);
 
         undoManager.stopRecording(test1);
-
-
     }
 }
