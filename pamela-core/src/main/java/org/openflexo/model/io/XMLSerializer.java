@@ -72,13 +72,21 @@ import org.openflexo.model.factory.ProxyMethodHandler;
 import org.openflexo.model.factory.SerializationPolicy;
 import org.openflexo.toolbox.StringUtils;
 
-public class XMLSerializer {
+public class XMLSerializer implements ModelSerializer {
 
 	public static final String ID = "id";
 	public static final String ID_REF = "idref";
 
 	// Keys are objects and values are ObjectReference
 	private Map<Object, ObjectReference> objectReferences;
+
+	/**
+	 * Fixes the serialization policy
+	 */
+	@Override
+	public void setSerializationPolicy(SerializationPolicy policy) {
+		this.policy = policy;
+	}
 
 	/**
 	 * Stores already serialized objects where key is the serialized object and value is a
@@ -93,7 +101,7 @@ public class XMLSerializer {
 
 	private int id = 0;
 	private final ModelFactory modelFactory;
-	private final SerializationPolicy policy;
+	private SerializationPolicy policy;
 
 	public XMLSerializer(ModelFactory modelFactory) {
 		this(modelFactory, SerializationPolicy.PERMISSIVE);
@@ -108,8 +116,9 @@ public class XMLSerializer {
 		return modelFactory.getStringEncoder();
 	}
 
-	public Document serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus) throws IOException,
-			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+	@Override
+	public void serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus) throws IOException,
+	IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Document builtDocument = new Document();
 		id = 0;
 		objectReferences = new HashMap<Object, ObjectReference>();
@@ -126,7 +135,6 @@ public class XMLSerializer {
 			e.printStackTrace();
 		}
 		out.flush();
-		return builtDocument;
 	}
 
 	public String buildXMLOutput(Document doc) {
@@ -147,7 +155,7 @@ public class XMLSerializer {
 	}
 
 	private <I> Element serializeElement(Object object, XMLElement context, boolean resetModifiedStatus) throws IllegalArgumentException,
-			IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+	IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Element returned;
 		if (object instanceof ProxyObject) {
 			ProxyMethodHandler<I> handler = (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
@@ -159,33 +167,33 @@ public class XMLSerializer {
 			if (modelFactory.getModelContext().getModelEntity(implementedInterface) == null) {
 				serializeModelEntityName = true;
 				switch (policy) {
-				case EXTENSIVE:
-					List<ModelEntity<?>> upperEntities = modelFactory.getModelContext().getUpperEntities(object);
-					if (upperEntities.size() == 0) {
-						throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
-								+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
-					} else if (upperEntities.size() > 1) {
-						throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
-								+ ". More than one entities are known in this model mapping.");
-					}
-					ModelEntity e = upperEntities.get(0);
-					xmlTag = e.getXMLTag();
-					modelEntity = ModelContextLibrary.getModelContext(implementedInterface).getModelEntity(implementedInterface);
-					break;
-				case PERMISSIVE:
-					upperEntities = modelFactory.getModelContext().getUpperEntities(object);
-					if (upperEntities.size() == 0) {
-						throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
-								+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
-					} else if (upperEntities.size() > 1) {
-						throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
-								+ ". More than one entities are known in this model mapping.");
-					}
-					modelEntity = (ModelEntity<I>) upperEntities.get(0);
-					break;
-				case RESTRICTIVE:
-					throw new RestrictiveSerializationException("Entity of type " + implementedInterface.getName()
-							+ " cannot be serialized in this model context");
+					case EXTENSIVE:
+						List<ModelEntity<?>> upperEntities = modelFactory.getModelContext().getUpperEntities(object);
+						if (upperEntities.size() == 0) {
+							throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
+									+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
+						} else if (upperEntities.size() > 1) {
+							throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
+									+ ". More than one entities are known in this model mapping.");
+						}
+						ModelEntity e = upperEntities.get(0);
+						xmlTag = e.getXMLTag();
+						modelEntity = ModelContextLibrary.getModelContext(implementedInterface).getModelEntity(implementedInterface);
+						break;
+					case PERMISSIVE:
+						upperEntities = modelFactory.getModelContext().getUpperEntities(object);
+						if (upperEntities.size() == 0) {
+							throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
+									+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
+						} else if (upperEntities.size() > 1) {
+							throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
+									+ ". More than one entities are known in this model mapping.");
+						}
+						modelEntity = (ModelEntity<I>) upperEntities.get(0);
+						break;
+					case RESTRICTIVE:
+						throw new RestrictiveSerializationException("Entity of type " + implementedInterface.getName()
+								+ " cannot be serialized in this model context");
 				}
 			}
 			String contextString = context != null ? context.context() : "";
@@ -238,29 +246,29 @@ public class XMLSerializer {
 							} else if (p.getXMLElement() != null) {
 								XMLElement propertyXMLElement = p.getXMLElement();
 								switch (p.getCardinality()) {
-								case SINGLE:
-									Object oValue = handler.invokeGetter(p);
-									if (oValue != null) {
-										Element propertyElement = serializeElement(oValue, propertyXMLElement, resetModifiedStatus);
-										returned.addContent(propertyElement);
-									}
-									break;
-								case LIST:
-									List<?> values = (List<?>) handler.invokeGetter(p);
-									// NPE if list not initialized
-									if (values !=null){
-										for (Object o : values) {
-											if (o != null) {
-												Element propertyElement2 = serializeElement(o, propertyXMLElement, resetModifiedStatus);
-												returned.addContent(propertyElement2);
+									case SINGLE:
+										Object oValue = handler.invokeGetter(p);
+										if (oValue != null) {
+											Element propertyElement = serializeElement(oValue, propertyXMLElement, resetModifiedStatus);
+											returned.addContent(propertyElement);
+										}
+										break;
+									case LIST:
+										List<?> values = (List<?>) handler.invokeGetter(p);
+										// NPE if list not initialized
+										if (values !=null){
+											for (Object o : values) {
+												if (o != null) {
+													Element propertyElement2 = serializeElement(o, propertyXMLElement, resetModifiedStatus);
+													returned.addContent(propertyElement2);
+												}
 											}
 										}
-									}
-									break;
-								case MAP:
-									throw new UnsupportedOperationException("Cannot serialize maps for now");
-								default:
-									break;
+										break;
+									case MAP:
+										throw new UnsupportedOperationException("Cannot serialize maps for now");
+									default:
+										break;
 								}
 							}
 						}

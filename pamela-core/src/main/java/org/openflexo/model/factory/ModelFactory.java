@@ -75,7 +75,9 @@ import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.MissingImplementationException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
-import org.openflexo.model.io.XMLDeserializer;
+import org.openflexo.model.io.ModelDeserializer;
+import org.openflexo.model.io.JDOMXMLDeserializer;
+import org.openflexo.model.io.ModelSerializer;
 import org.openflexo.model.io.XMLSerializer;
 import org.openflexo.model.undo.CreateCommand;
 
@@ -90,6 +92,7 @@ import org.openflexo.model.undo.CreateCommand;
  * @author sylvain
  * 
  */
+
 public class ModelFactory implements IObjectGraphFactory {
 
 	private Class<?> defaultModelClass = Object.class;
@@ -103,6 +106,9 @@ public class ModelFactory implements IObjectGraphFactory {
 	private ModelContext extendedContext;
 
 	private EditingContext editingContext;
+
+	private ModelSerializer modelSerializer;
+	private ModelDeserializer modelDeserializer;
 
 	public Map<Class, PAMELAProxyFactory> getProxyFactories() {
 		return proxyFactories;
@@ -175,7 +181,7 @@ public class ModelFactory implements IObjectGraphFactory {
 		}
 
 		public I newInstance(Object... args) throws IllegalArgumentException, NoSuchMethodException, InstantiationException,
-				IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+		IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 			if (modelEntity.isAbstract()) {
 				throw new InstantiationException(modelEntity + " is declared as an abstract entity, cannot instantiate it");
 			}
@@ -573,14 +579,14 @@ public class ModelFactory implements IObjectGraphFactory {
 
 		boolean append = false;
 		switch (embeddingType) {
-		case CLOSURE:
-			append = p.getEmbedded() != null && p.getEmbedded().closureConditions().length == 0 || p.getComplexEmbedded() != null
-					&& p.getComplexEmbedded().closureConditions().length == 0;
-			break;
-		case DELETION:
-			append = p.getEmbedded() != null && p.getEmbedded().deletionConditions().length == 0 || p.getComplexEmbedded() != null
-					&& p.getComplexEmbedded().deletionConditions().length == 0;
-			break;
+			case CLOSURE:
+				append = p.getEmbedded() != null && p.getEmbedded().closureConditions().length == 0 || p.getComplexEmbedded() != null
+				&& p.getComplexEmbedded().closureConditions().length == 0;
+				break;
+			case DELETION:
+				append = p.getEmbedded() != null && p.getEmbedded().deletionConditions().length == 0 || p.getComplexEmbedded() != null
+				&& p.getComplexEmbedded().deletionConditions().length == 0;
+				break;
 		}
 
 		if (append) {
@@ -594,26 +600,26 @@ public class ModelFactory implements IObjectGraphFactory {
 			List<Object> requiredPresence = new ArrayList<Object>();
 			if (p.getEmbedded() != null) {
 				switch (embeddingType) {
-				case CLOSURE:
-					for (String c : p.getEmbedded().closureConditions()) {
-						ModelEntity closureConditionEntity = getModelEntityForInstance(child);
-						ModelProperty closureConditionProperty = closureConditionEntity.getModelProperty(c);
-						Object closureConditionRequiredObject = getHandler(child).invokeGetter(closureConditionProperty);
-						if (closureConditionRequiredObject != null) {
-							requiredPresence.add(closureConditionRequiredObject);
+					case CLOSURE:
+						for (String c : p.getEmbedded().closureConditions()) {
+							ModelEntity closureConditionEntity = getModelEntityForInstance(child);
+							ModelProperty closureConditionProperty = closureConditionEntity.getModelProperty(c);
+							Object closureConditionRequiredObject = getHandler(child).invokeGetter(closureConditionProperty);
+							if (closureConditionRequiredObject != null) {
+								requiredPresence.add(closureConditionRequiredObject);
+							}
 						}
-					}
-					break;
-				case DELETION:
-					for (String c : p.getEmbedded().deletionConditions()) {
-						ModelEntity deletionConditionEntity = getModelEntityForInstance(child);
-						ModelProperty deletionConditionProperty = deletionConditionEntity.getModelProperty(c);
-						Object deletionConditionRequiredObject = getHandler(child).invokeGetter(deletionConditionProperty);
-						if (deletionConditionRequiredObject != null) {
-							requiredPresence.add(deletionConditionRequiredObject);
+						break;
+					case DELETION:
+						for (String c : p.getEmbedded().deletionConditions()) {
+							ModelEntity deletionConditionEntity = getModelEntityForInstance(child);
+							ModelProperty deletionConditionProperty = deletionConditionEntity.getModelProperty(c);
+							Object deletionConditionRequiredObject = getHandler(child).invokeGetter(deletionConditionProperty);
+							if (deletionConditionRequiredObject != null) {
+								requiredPresence.add(deletionConditionRequiredObject);
+							}
 						}
-					}
-					break;
+						break;
 				}
 				if (requiredPresence.size() > 0) {
 					ConditionalPresence conditionalPresence = new ConditionalPresence(child, requiredPresence);
@@ -638,20 +644,20 @@ public class ModelFactory implements IObjectGraphFactory {
 		while (properties.hasNext()) {
 			ModelProperty<?> p = properties.next();
 			switch (p.getCardinality()) {
-			case SINGLE:
-				Object oValue = handler.invokeGetter(p);
-				appendEmbedded(p, father, list, oValue, embeddingType);
-				break;
-			case LIST:
-				List<?> values = (List<?>) handler.invokeGetter(p);
-				if (values != null) {
-					for (Object o : values) {
-						appendEmbedded(p, father, list, o, embeddingType);
+				case SINGLE:
+					Object oValue = handler.invokeGetter(p);
+					appendEmbedded(p, father, list, oValue, embeddingType);
+					break;
+				case LIST:
+					List<?> values = (List<?>) handler.invokeGetter(p);
+					if (values != null) {
+						for (Object o : values) {
+							appendEmbedded(p, father, list, o, embeddingType);
+						}
 					}
-				}
-				break;
-			default:
-				break;
+					break;
+				default:
+					break;
 			}
 		}
 	}
@@ -698,7 +704,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	 * @throws CloneNotSupportedException
 	 */
 	public Object paste(Clipboard clipboard, Object context) throws ModelExecutionException, ModelDefinitionException,
-			CloneNotSupportedException {
+	CloneNotSupportedException {
 		if (!isProxyObject(context)) {
 			throw new ClipboardOperationException("Cannot paste here: context is not valid: " + context);
 		}
@@ -719,7 +725,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	 * @throws CloneNotSupportedException
 	 */
 	public Object paste(Clipboard clipboard, ModelProperty<?> modelProperty, Object context) throws ModelExecutionException,
-			ModelDefinitionException, CloneNotSupportedException {
+	ModelDefinitionException, CloneNotSupportedException {
 		if (!isProxyObject(context)) {
 			throw new ClipboardOperationException("Cannot paste here: context is not valid");
 		}
@@ -760,15 +766,41 @@ public class ModelFactory implements IObjectGraphFactory {
 		return baos.toString();
 	}
 
+	public ModelSerializer getModelSerializer() {
+		if (modelSerializer == null){
+			// Default to standard XMLSerialization
+			modelSerializer = new XMLSerializer(this);
+		}
+		return modelSerializer;
+	}
+
+	public void setModelSerializer(ModelSerializer modelSerializer) {
+		this.modelSerializer = modelSerializer;
+	}
+
+
 	public void serialize(Object object, OutputStream os) throws IOException, IllegalArgumentException, IllegalAccessException,
-			InvocationTargetException, ModelDefinitionException {
+	InvocationTargetException, ModelDefinitionException {
 		serialize(object, os, SerializationPolicy.PERMISSIVE, true);
 	}
 
 	public void serialize(Object object, OutputStream os, SerializationPolicy policy, boolean resetModifiedStatus) throws IOException,
-			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
-		XMLSerializer serializer = new XMLSerializer(this, policy);
-		serializer.serializeDocument(object, os, resetModifiedStatus);
+	IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+		getModelSerializer().setSerializationPolicy(policy);
+		getModelSerializer().serializeDocument(object, os, resetModifiedStatus);
+	}
+
+
+	public ModelDeserializer getModelDeserializer() {
+		if (modelDeserializer == null){
+			// default to XMLDeserializer
+			modelDeserializer = new JDOMXMLDeserializer(this);
+		}
+		return modelDeserializer;
+	}
+
+	public void setModelDeserializer(ModelDeserializer modelDeserializer) {
+		this.modelDeserializer = modelDeserializer;
 	}
 
 	@Override
@@ -777,9 +809,15 @@ public class ModelFactory implements IObjectGraphFactory {
 	}
 
 	public Object deserialize(InputStream is, DeserializationPolicy policy) throws IOException, JDOMException, InvalidDataException,
-			ModelDefinitionException {
-		XMLDeserializer deserializer = new XMLDeserializer(this, policy);
-		return deserializer.deserializeDocument(is);
+	ModelDefinitionException {
+		ModelDeserializer md = getModelDeserializer();
+		if (md != null){
+			md.setDeserializationPolicy(policy);
+			return md.deserializeDocument(is);
+		}
+		else {
+			throw new InvalidDataException ("ERROR: No Deserializer set!");
+		}
 	}
 
 	@Override
@@ -787,10 +825,16 @@ public class ModelFactory implements IObjectGraphFactory {
 		return deserialize(input, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public Object deserialize(String input, DeserializationPolicy policy) throws IOException, JDOMException, InvalidDataException,
-			ModelDefinitionException {
-		XMLDeserializer deserializer = new XMLDeserializer(this, policy);
-		return deserializer.deserializeDocument(input);
+	public Object deserialize(String input, DeserializationPolicy policy) throws IOException,  InvalidDataException,
+	ModelDefinitionException {
+		ModelDeserializer md = getModelDeserializer();
+		if (md != null){
+			md.setDeserializationPolicy(policy);
+			return md.deserializeDocument(input);
+		}
+		else {
+			throw new InvalidDataException ("ERROR: No Deserializer set!");
+		}
 	}
 
 	/**
