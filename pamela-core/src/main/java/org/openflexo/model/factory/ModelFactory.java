@@ -55,9 +55,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
+
 import org.openflexo.IObjectGraphFactory;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContextLibrary;
@@ -67,12 +65,19 @@ import org.openflexo.model.ModelProperty;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.StringEncoder;
 import org.openflexo.model.annotations.PastingPoint;
+import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.MissingImplementationException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
-import org.openflexo.model.io.XMLSaxDeserializer;
+import org.openflexo.model.io.JDOMXMLDeserializer;
+import org.openflexo.model.io.ModelDeserializer;
+import org.openflexo.model.io.ModelSerializer;
 import org.openflexo.model.io.XMLSerializer;
 import org.openflexo.model.undo.CreateCommand;
+
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
 
 /**
  * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
@@ -85,6 +90,7 @@ import org.openflexo.model.undo.CreateCommand;
  * @author sylvain
  * 
  */
+
 public class ModelFactory implements IObjectGraphFactory {
 
 	private Class<?> defaultModelClass = Object.class;
@@ -98,6 +104,9 @@ public class ModelFactory implements IObjectGraphFactory {
 	private ModelContext extendedContext;
 
 	private EditingContext editingContext;
+
+	private ModelSerializer modelSerializer;
+	private ModelDeserializer modelDeserializer;
 
 	public Map<Class, PAMELAProxyFactory> getProxyFactories() {
 		return proxyFactories;
@@ -171,7 +180,7 @@ public class ModelFactory implements IObjectGraphFactory {
 		}
 
 		public I newInstance(Object... args) throws IllegalArgumentException, NoSuchMethodException, InstantiationException,
-				IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+		IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 			if (modelEntity.isAbstract()) {
 				throw new InstantiationException(modelEntity + " is declared as an abstract entity, cannot instantiate it");
 			}
@@ -768,15 +777,43 @@ public class ModelFactory implements IObjectGraphFactory {
 		return baos.toString();
 	}
 
-	public void serialize(Object object, OutputStream os)
-			throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+
+	public ModelSerializer getModelSerializer() {
+		if (modelSerializer == null){
+			// Default to standard XMLSerialization
+			modelSerializer = new XMLSerializer(this);
+		}
+		return modelSerializer;
+	}
+
+	public void setModelSerializer(ModelSerializer modelSerializer) {
+		this.modelSerializer = modelSerializer;
+	}
+
+
+	public void serialize(Object object, OutputStream os) throws IOException, IllegalArgumentException, IllegalAccessException,
+	InvocationTargetException, ModelDefinitionException {
 		serialize(object, os, SerializationPolicy.PERMISSIVE, true);
 	}
 
-	public void serialize(Object object, OutputStream os, SerializationPolicy policy, boolean resetModifiedStatus)
-			throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
-		XMLSerializer serializer = new XMLSerializer(this, policy);
-		serializer.serializeDocument(object, os, resetModifiedStatus);
+
+	public void serialize(Object object, OutputStream os, SerializationPolicy policy, boolean resetModifiedStatus) throws IOException,
+	IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+		getModelSerializer().setSerializationPolicy(policy);
+		getModelSerializer().serializeDocument(object, os, resetModifiedStatus);
+	}
+
+
+	public ModelDeserializer getModelDeserializer() {
+		if (modelDeserializer == null){
+			// default to XMLDeserializer
+			modelDeserializer = new JDOMXMLDeserializer(this);
+		}
+		return modelDeserializer;
+	}
+
+	public void setModelDeserializer(ModelDeserializer modelDeserializer) {
+		this.modelDeserializer = modelDeserializer;
 	}
 
 	@Override
@@ -784,9 +821,16 @@ public class ModelFactory implements IObjectGraphFactory {
 		return deserialize(is, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public Object deserialize(InputStream is, DeserializationPolicy policy) throws Exception {
-		XMLSaxDeserializer deserializer = new XMLSaxDeserializer(this, policy);
-		return deserializer.deserializeDocument(is);
+	public Object deserialize(InputStream is, DeserializationPolicy policy) throws IOException, InvalidDataException,
+	ModelDefinitionException {
+		ModelDeserializer md = getModelDeserializer();
+		if (md != null){
+			md.setDeserializationPolicy(policy);
+			return md.deserializeDocument(is);
+		}
+		else {
+			throw new InvalidDataException ("ERROR: No Deserializer set!");
+		}
 	}
 
 	@Override
@@ -794,9 +838,17 @@ public class ModelFactory implements IObjectGraphFactory {
 		return deserialize(input, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public Object deserialize(String input, DeserializationPolicy policy) throws Exception {
-		XMLSaxDeserializer deserializer = new XMLSaxDeserializer(this, policy);
-		return deserializer.deserializeDocument(input);
+
+	public Object deserialize(String input, DeserializationPolicy policy) throws IOException,  InvalidDataException,
+	ModelDefinitionException {
+		ModelDeserializer md = getModelDeserializer();
+		if (md != null){
+			md.setDeserializationPolicy(policy);
+			return md.deserializeDocument(input);
+		}
+		else {
+			throw new InvalidDataException ("ERROR: No Deserializer set!");
+		}
 	}
 
 	/**

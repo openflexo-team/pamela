@@ -71,13 +71,21 @@ import org.openflexo.toolbox.StringUtils;
 
 import javassist.util.proxy.ProxyObject;
 
-public class XMLSerializer {
+public class XMLSerializer implements ModelSerializer {
 
 	public static final String ID = "id";
 	public static final String ID_REF = "idref";
 
 	// Keys are objects and values are ObjectReference
 	private Map<Object, ObjectReference> objectReferences;
+
+	/**
+	 * Fixes the serialization policy
+	 */
+	@Override
+	public void setSerializationPolicy(SerializationPolicy policy) {
+		this.policy = policy;
+	}
 
 	/**
 	 * Stores already serialized objects where key is the serialized object and value is a
@@ -92,7 +100,7 @@ public class XMLSerializer {
 
 	private int id = 0;
 	private final ModelFactory modelFactory;
-	private final SerializationPolicy policy;
+	private SerializationPolicy policy;
 
 	public XMLSerializer(ModelFactory modelFactory) {
 		this(modelFactory, SerializationPolicy.PERMISSIVE);
@@ -107,7 +115,9 @@ public class XMLSerializer {
 		return modelFactory.getStringEncoder();
 	}
 
-	public Document serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus)
+
+	@Override
+	public void serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus)
 			throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Document builtDocument = new Document();
 		id = 0;
@@ -125,7 +135,6 @@ public class XMLSerializer {
 			e.printStackTrace();
 		}
 		out.flush();
-		return builtDocument;
 	}
 
 	public String buildXMLOutput(Document doc) {
