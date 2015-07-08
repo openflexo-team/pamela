@@ -41,10 +41,8 @@ package org.openflexo.model.io;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.jdom2.Attribute;
@@ -56,7 +54,6 @@ import org.jdom2.input.SAXBuilder;
 import org.openflexo.model.ModelContext.ModelPropertyXMLTag;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
-import org.openflexo.model.StringEncoder;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
@@ -68,13 +65,7 @@ import org.openflexo.model.factory.ProxyMethodHandler;
 
 public class JDOMXMLDeserializer extends AbstractModelDeserializer implements ModelDeserializer {
 
-	public static final String ID = "id";
-	public static final String ID_REF = "idref";
-	public static final String CLASS_NAME = "className";
-
 	private Map<String, Element> index;
-
-	private final List<ProxyMethodHandler<?>> deserializingHandlers;
 
 	public JDOMXMLDeserializer(ModelFactory factory) {
 		this(factory, DeserializationPolicy.PERMISSIVE);
@@ -83,11 +74,6 @@ public class JDOMXMLDeserializer extends AbstractModelDeserializer implements Mo
 	public JDOMXMLDeserializer(ModelFactory factory, DeserializationPolicy policy) {
 		super(factory);
 		this.policy = policy;
-		deserializingHandlers = new ArrayList<ProxyMethodHandler<?>>();
-	}
-
-	private StringEncoder getStringEncoder() {
-		return modelFactory.getStringEncoder();
 	}
 
 	@Override

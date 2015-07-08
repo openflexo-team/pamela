@@ -44,10 +44,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openflexo.model.ModelEntity;
+import org.openflexo.model.ModelProperty;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
+import org.openflexo.model.exceptions.RestrictiveDeserializationException;
 import org.openflexo.model.factory.DeserializationPolicy;
 import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.model.factory.ProxyMethodHandler;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
@@ -77,6 +80,7 @@ public class JSonModelDeserializer extends AbstractModelDeserializer implements 
 
 		ModelEntity<I> modelEntity = null;
 		String currentName = null;
+		DeserializedObject<I> currentObject = null;
 		I returned = null;
 
 		// Verify that we start with an Object
@@ -92,20 +96,34 @@ public class JSonModelDeserializer extends AbstractModelDeserializer implements 
 						case END_OBJECT:
 							// end of an object
 							System.out.println("End of an object named: " + currentName + " having (" + properties.toString() + ")");
+							if (deserializedObjectStack.size() > 0) {
+								deserializedObjectStack.remove(currentObject);
+							}
+							if (deserializedObjectStack.size() > 0) {
+								currentObject = deserializedObjectStack.get(deserializedObjectStack.size() - 1);
+							}
+							else {
+								currentObject = null;
+							}
 							properties.clear();
 							modelEntity = null;
 							currentName = null;
+							System.out.println("Current Object: " + currentObject);
+
 							break;
 
 						case START_OBJECT:
 							// start of an object, looking for relative ModelEntity
-							System.out.println(" Nouvel Objet: " + currentName);
+							System.out.println("\n\n Nouvel Objet: " + currentName);
+							if (deserializedObjectStack.size() > 0) {
+								System.out.println("Current Object: " + deserializedObjectStack.get(deserializedObjectStack.size() - 1));
+							}
+							else {
+								System.out.println("No Parent Object");
+							}
 							modelEntity = (ModelEntity<I>) modelFactory.getModelContext().getModelEntity(currentName);
 
 							Class<I> entityClass = modelEntity.getImplementedInterface();
-
-							returned = modelFactory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
-							initializeDeserialization(returned, modelEntity);
 
 							if (modelEntity != null) {
 								System.out.println("Found Entity named: " + modelEntity.getTypeName());
@@ -113,6 +131,14 @@ public class JSonModelDeserializer extends AbstractModelDeserializer implements 
 							else {
 								throw new ModelDefinitionException("Unknown model entity: " + currentName);
 							}
+
+							returned = modelFactory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
+							initializeDeserialization(returned, modelEntity);
+							currentObject = new DeserializedObject<I>(returned, modelEntity);
+							alreadyDeserialized.add(currentObject);
+							deserializedObjectStack.add(currentObject);
+							System.out.println("Created: " + currentObject);
+
 							break;
 
 						case FIELD_NAME:
@@ -122,8 +148,47 @@ public class JSonModelDeserializer extends AbstractModelDeserializer implements 
 						case VALUE_STRING:
 							if (modelEntity != null) {
 								// this is a property
-								System.out.println(" Nouvel Propriété: " + currentName + " -- " + jp.getText());
-								properties.put(jp.getCurrentName(), jp.getText());
+								// System.out.println(" Nouvel Propriété: " + currentName + " -- " + jp.getText());
+
+								if (currentObject != null) {
+
+									properties.put(jp.getCurrentName(), jp.getText());
+
+									ModelProperty<? super I> property = modelEntity.getPropertyForXMLAttributeName(jp.getCurrentName());
+
+									if (!jp.getCurrentName().equals(currentName)) {
+										System.out.println("C'est quoi ce bordel?");
+									}
+
+									if (property == null) {
+
+										if (currentName.equals(ID) || currentName.equals(ID_REF)) {
+											continue;
+										}
+										switch (policy) {
+											case PERMISSIVE:
+												continue;
+											case RESTRICTIVE:
+												throw new RestrictiveDeserializationException(
+														"No attribute found for the attribute named: " + currentName);
+											case EXTENSIVE:
+												// TODO: handle extra values
+												// break;
+												continue; // As long as we don't handlethem, we continue to avoid NPE.
+										}
+									}
+									ProxyMethodHandler<I> handler = modelFactory.getHandler(currentObject.object);
+									deserializingHandlers.add(handler);
+									handler.setDeserializing(true);
+									Object value = getStringEncoder().fromString(property.getType(), jp.getText());
+									if (value != null) {
+										handler.invokeSetterForDeserialization(property, value);
+									}
+
+								}
+								else {
+									System.out.println("KESKE CA FOUT LA? : " + jp.getCurrentName() + " -- " + jp.getText());
+								}
 							}
 							else {
 								// this is irrelevant for now
@@ -142,6 +207,11 @@ public class JSonModelDeserializer extends AbstractModelDeserializer implements 
 
 			}
 
+		}
+
+		// We just finished deserialization, call deserialization finalizers now
+		for (DeserializedObject o : alreadyDeserialized) {
+			finalizeDeserialization(o.object, o.modelEntity);
 		}
 
 		return returned;
