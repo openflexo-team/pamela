@@ -105,8 +105,7 @@ public class BasicJSonDeserializeTest {
 
 		System.out.println(NodeImpl.DESERIALIZATION_TRACE);
 
-		assertEquals(
-				" BEGIN:Root BEGIN:Node1 BEGIN:Node2 BEGIN:Node21 BEGIN:Node22 BEGIN:Node23 BEGIN:Node3 END:Root END:Node1 END:Node2 END:Node21 END:Node22 END:Node23 END:Node3",
+		assertEquals(" BEGIN:First Root Node BEGIN:S BEGIN:T BEGIN:TT END:First Root Node END:S END:T END:TT",
 				NodeImpl.DESERIALIZATION_TRACE);
 
 	}

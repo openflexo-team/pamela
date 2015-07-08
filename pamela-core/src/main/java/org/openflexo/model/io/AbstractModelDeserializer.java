@@ -45,11 +45,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.openflexo.model.ModelEntity;
+import org.openflexo.model.StringEncoder;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.DeserializationPolicy;
 import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.model.factory.ProxyMethodHandler;
 
 public abstract class AbstractModelDeserializer implements ModelDeserializer {
+
+	/**
+	 * Properties used for serialization only
+	 */
+	public static final String ID = "id";
+	public static final String ID_REF = "idref";
+	public static final String CLASS_NAME = "className";
 
 	protected ModelFactory modelFactory;
 	protected DeserializationPolicy policy;
@@ -61,9 +70,17 @@ public abstract class AbstractModelDeserializer implements ModelDeserializer {
 	protected final Map<Object, Object> alreadyDeserializedMap;
 
 	/**
+	 * Stores stack of objects that are in the current deserialization context (current object and all its containers)
+	 */
+
+	protected final List<DeserializedObject> deserializedObjectStack;
+
+	/**
 	 * Stored an ordered list of deserialized objects in the order they were instantiated during deserialization phase phase
 	 */
 	protected final List<DeserializedObject> alreadyDeserialized;
+
+	protected final List<ProxyMethodHandler<?>> deserializingHandlers;
 
 	class DeserializedObject<I> {
 
@@ -80,6 +97,13 @@ public abstract class AbstractModelDeserializer implements ModelDeserializer {
 		modelFactory = aModelFactory;
 		alreadyDeserializedMap = new HashMap<Object, Object>();
 		alreadyDeserialized = new ArrayList<DeserializedObject>();
+		deserializedObjectStack = new ArrayList<DeserializedObject>();
+
+		deserializingHandlers = new ArrayList<ProxyMethodHandler<?>>();
+	}
+
+	protected StringEncoder getStringEncoder() {
+		return modelFactory.getStringEncoder();
 	}
 
 	/**
