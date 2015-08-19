@@ -55,7 +55,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.openflexo.connie.binding.ReflectionUtils;
-import org.openflexo.connie.cg.Type;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.annotations.Adder;
@@ -90,7 +89,7 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * 
  * @param <I>
  */
-public class ModelEntity<I> extends Type {
+public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	/**
 	 * The implemented interface corresponding to this model entity
@@ -981,12 +980,39 @@ public class ModelEntity<I> extends Type {
 		if (isAbstract()) {
 			return;
 		}
-		for (Method method : getImplementedInterface().getMethods()) {
+		for (Method method : getNotOverridenMethods()) {
 			if (!checkMethodImplementation(method, factory)) {
 				System.err.println("NOT FOUND: " + method + " in " + getImplementedInterface());
 				throw new MissingImplementationException(this, method, factory);
 			}
 		}
+	}
+
+	/**
+	 * Return the list of all methods beeing implemented by entity addressed by implemented interface<br>
+	 * Methods beeing shadowed by overriden methods are excluded from results
+	 * 
+	 * @return
+	 */
+	public List<Method> getNotOverridenMethods() {
+		List<Method> returned = new ArrayList<Method>();
+		for (Method m1 : getImplementedInterface().getMethods()) {
+			boolean isOverriden = false;
+			// Method overridingMethod = null;
+			for (Method m2 : getImplementedInterface().getMethods()) {
+				if (!m1.equals(m2) && PamelaUtils.methodOverrides(m2, m1, getImplementedInterface())) {
+					isOverriden = true;
+					// overridingMethod = m2;
+				}
+
+			}
+			if (!isOverriden) {
+				returned.add(m1);
+			} /*else {
+				System.out.println("Dismiss " + m1 + " because overriden by " + overridingMethod);
+				}*/
+		}
+		return returned;
 	}
 
 	/**
@@ -996,12 +1022,12 @@ public class ModelEntity<I> extends Type {
 	 * @throws ModelDefinitionException
 	 */
 	private boolean checkMethodImplementation(Method method, ModelFactory factory) throws ModelDefinitionException {
+
 		// Abstract entities are allowed not to provide all implementations
 		ModelProperty<?> property = getPropertyForMethod(method);
 		if (property != null) {
 			return true;
 		} else {
-
 			if (method.getAnnotation(Finder.class) != null) {
 				return true;
 			}
