@@ -793,7 +793,6 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		for (ModelProperty<? super I> p : properties.values()) {
 			appendProperty(p, returned);
 		}
-		System.out.println("Voila trie: " + returned);
 		return returned.iterator();
 	}
 
