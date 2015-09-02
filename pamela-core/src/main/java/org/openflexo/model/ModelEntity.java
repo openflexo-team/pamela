@@ -251,7 +251,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			if (deserializationFinalizer != null) {
 				if (this.deserializationFinalizer == null) {
 					this.deserializationFinalizer = new DeserializationFinalizer(deserializationFinalizer, m);
-				} else {
+				}
+				else {
 					throw new ModelDefinitionException(
 							"Duplicated deserialization finalizer found for entity " + getImplementedInterface());
 				}
@@ -262,7 +263,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			if (deserializationInitializer != null) {
 				if (this.deserializationInitializer == null) {
 					this.deserializationInitializer = new DeserializationInitializer(deserializationInitializer, m);
-				} else {
+				}
+				else {
 					throw new ModelDefinitionException(
 							"Duplicated deserialization initializer found for entity " + getImplementedInterface());
 				}
@@ -285,7 +287,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 									if (TypeUtils.isTypeAssignableFrom(m.getGenericReturnType(), m2.getGenericReturnType())) {
 										// m2 is the most specialized method, we can skip the adding of m
 										return false;
-									} else if (TypeUtils.isTypeAssignableFrom(m2.getGenericReturnType(), m.getGenericReturnType())) {
+									}
+									else if (TypeUtils.isTypeAssignableFrom(m2.getGenericReturnType(), m.getGenericReturnType())) {
 										// m is the most specialized method
 										// We remove the previously defined (but less generic) m2, and add more generic m method
 										remove(m2);
@@ -300,7 +303,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						implementedMethods.add(m);
 					}
 					delegateImplementations.put(candidateImplementation, implementedMethods);
-				} else {
+				}
+				else {
 					throw new ModelDefinitionException("Found candidate implementation " + c + " for entity " + getImplementedInterface()
 							+ " which does not implement " + getImplementedInterface());
 				}
@@ -314,15 +318,18 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		Getter aGetter = m.getAnnotation(Getter.class);
 		if (aGetter != null) {
 			propertyIdentifier = aGetter.value();
-		} else {
+		}
+		else {
 			Setter aSetter = m.getAnnotation(Setter.class);
 			if (aSetter != null) {
 				propertyIdentifier = aSetter.value();
-			} else {
+			}
+			else {
 				Adder anAdder = m.getAnnotation(Adder.class);
 				if (anAdder != null) {
 					propertyIdentifier = anAdder.value();
-				} else {
+				}
+				else {
 					Remover aRemover = m.getAnnotation(Remover.class);
 					if (aRemover != null) {
 						propertyIdentifier = aRemover.value();
@@ -494,18 +501,21 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		if (implementationClass != null) {
 			if (implementedInterface.isAssignableFrom(implementationClass.value())) {
 				return implementingClass = implementationClass.value();
-			} else {
+			}
+			else {
 				throw new ModelDefinitionException("Class " + implementationClass.value().getName()
 						+ " is declared as an implementation class of " + this + " but does not extend " + implementedInterface.getName());
 			}
-		} else {
+		}
+		else {
 			if (getDirectSuperEntities() != null) {
 				for (ModelEntity<? super I> e : getDirectSuperEntities()) {
 					Class<?> klass = e.getImplementingClass();
 					if (klass != null) {
 						if (implementingClass == null) {
 							implementingClass = klass;
-						} else {
+						}
+						else {
 							throw new ModelDefinitionException(
 									"Ambiguous implementing klass for entity '" + this + "'. Found more than one valid super klass: "
 											+ implementingClass.getName() + " and " + klass.getName());
@@ -664,7 +674,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			}
 			if (returned == null) {
 				returned = parent.getModelProperty(propertyIdentifier);
-			} else {
+			}
+			else {
 				returned = combineAsAncestors(parent.getModelProperty(propertyIdentifier), returned, property);
 			}
 		}
@@ -759,8 +770,45 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return xmlTag;
 	}
 
+	/**
+	 * Return an iterator for {@link ModelProperty} objects<br>
+	 * Note that order is absolutely not guaranteed
+	 * 
+	 * @return
+	 * @throws ModelDefinitionException
+	 */
 	public Iterator<ModelProperty<? super I>> getProperties() throws ModelDefinitionException {
 		return properties.values().iterator();
+	}
+
+	/**
+	 * Return an iterator for {@link ModelProperty} objects<br>
+	 * Order respect {@link CloningStrategy#cloneAfterProperty()) annotation
+	 * 
+	 * @return
+	 * @throws ModelDefinitionException
+	 */
+	public Iterator<ModelProperty<? super I>> getPropertiesOrderedForCloning() throws ModelDefinitionException {
+		ArrayList<ModelProperty<? super I>> returned = new ArrayList<>();
+		for (ModelProperty<? super I> p : properties.values()) {
+			appendProperty(p, returned);
+		}
+		System.out.println("Voila trie: " + returned);
+		return returned.iterator();
+	}
+
+	private void appendProperty(ModelProperty<? super I> p, List<ModelProperty<? super I>> list) throws ModelDefinitionException {
+		if (p.getCloneAfterProperty() != null) {
+			appendProperty((ModelProperty<? super I>) p.getCloneAfterProperty(), list);
+			if (!list.contains(p)) {
+				list.add(p);
+			}
+		}
+		else {
+			if (!list.contains(p)) {
+				list.add(0, p);
+			}
+		}
 	}
 
 	public int getPropertiesSize() {
@@ -798,7 +846,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			for (ModelEntity<?> e : entity.getDirectSuperEntities()) {
 				if (e == this) {
 					return true;
-				} else if (isAncestorOf(e)) {
+				}
+				else if (isAncestorOf(e)) {
 					return true;
 				}
 			}
@@ -812,7 +861,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		if (hasInitializers == null) {
 			if (initializers.size() > 0) {
 				return hasInitializers = true;
-			} else if (getDirectSuperEntities() != null) {
+			}
+			else if (getDirectSuperEntities() != null) {
 				for (ModelEntity<?> e : getDirectSuperEntities()) {
 					if (e.hasInitializers()) {
 						return hasInitializers = true;
@@ -848,7 +898,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 					ModelInitializer initializer = e.getInitializerForArgs(types);
 					if (found == null) {
 						found = initializer;
-					} else {
+					}
+					else {
 						throw new ModelDefinitionException("Initializer clash: " + found.getInitializingMethod().toGenericString()
 								+ " cannot be distinguished with " + initializer.getInitializingMethod().toGenericString()
 								+ ". Please override initializer in " + getImplementedInterface());
@@ -946,13 +997,15 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	public Modify getModify() throws ModelDefinitionException {
 		if (modify != null) {
 			return modify;
-		} else {
+		}
+		else {
 			if (getDirectSuperEntities() != null) {
 				for (ModelEntity<? super I> e : getDirectSuperEntities()) {
 					if (e.getModify() != null) {
 						if (modify == null) {
 							modify = e.getModify();
-						} else {
+						}
+						else {
 							throw new ModelDefinitionException("Duplicated modify annotation on " + this
 									+ ". Please add modify annotation on " + implementedInterface.getName());
 						}
@@ -1027,7 +1080,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		ModelProperty<?> property = getPropertyForMethod(method);
 		if (property != null) {
 			return true;
-		} else {
+		}
+		else {
 			if (method.getAnnotation(Finder.class) != null) {
 				return true;
 			}
