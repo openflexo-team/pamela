@@ -39,19 +39,61 @@
 package org.openflexo.model;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.openflexo.connie.type.TypeUtils;
+
 public class PamelaUtils {
 
+	/**
+	 * Return boolean indicating if supplied methods are equivalent
+	 * 
+	 * @param method
+	 * @param to
+	 * @return
+	 */
 	public static boolean methodIsEquivalentTo(@Nonnull Method method, @Nullable Method to) {
 		if (to == null) {
 			return method == null;
 		}
 		return method.getName().equals(to.getName())/* && method.getReturnType().equals(to.getReturnType())*/
 				&& Arrays.equals(method.getParameterTypes(), to.getParameterTypes());
+	}
+
+	/**
+	 * Return boolean indicating if method m1 overrides method m2 in the supplied context
+	 * 
+	 * @param m1
+	 * @param m2
+	 * @param context
+	 * @return
+	 */
+	public static boolean methodOverrides(@Nonnull Method m1, @Nonnull Method m2, @Nonnull Type context) {
+
+		if (!m2.getDeclaringClass().isAssignableFrom(m1.getDeclaringClass())) {
+			return false;
+		}
+
+		if (!m1.getName().equals(m2.getName())) {
+			return false;
+		}
+		if (m1.getGenericParameterTypes().length != m2.getGenericParameterTypes().length) {
+			return false;
+		}
+		// names and number of arguments are same
+
+		Type[] m1Types = new Type[m1.getGenericParameterTypes().length];
+		Type[] m2Types = new Type[m2.getGenericParameterTypes().length];
+		for (int i = 0; i < m1.getGenericParameterTypes().length; i++) {
+			m1Types[i] = TypeUtils.makeInstantiatedType(m1.getGenericParameterTypes()[i], context);
+			m2Types[i] = TypeUtils.makeInstantiatedType(m2.getGenericParameterTypes()[i], context);
+		}
+
+		return Arrays.equals(m1Types, m2Types);
 	}
 
 }

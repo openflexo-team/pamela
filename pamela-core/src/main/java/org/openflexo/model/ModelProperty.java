@@ -66,6 +66,7 @@ import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.factory.PAMELAConstants;
+import org.openflexo.toolbox.StringUtils;
 
 public class ModelProperty<I> {
 
@@ -137,9 +138,10 @@ public class ModelProperty<I> {
 			}
 			if (aGetter != null && aGetter.value().equals(propertyIdentifier)) {
 				if (getter != null) {
-					throw new ModelDefinitionException("Duplicate getter '" + propertyIdentifier + "' defined for interface "
-							+ implementedInterface);
-				} else {
+					throw new ModelDefinitionException(
+							"Duplicate getter '" + propertyIdentifier + "' defined for interface " + implementedInterface);
+				}
+				else {
 					getter = aGetter;
 					getterMethod = m;
 					xmlAttribute = m.getAnnotation(XMLAttribute.class);
@@ -152,9 +154,10 @@ public class ModelProperty<I> {
 			}
 			if (aSetter != null && aSetter.value().equals(propertyIdentifier)) {
 				if (setter != null) {
-					throw new ModelDefinitionException("Duplicate setter '" + propertyIdentifier + "' defined for interface "
-							+ implementedInterface);
-				} else {
+					throw new ModelDefinitionException(
+							"Duplicate setter '" + propertyIdentifier + "' defined for interface " + implementedInterface);
+				}
+				else {
 					setter = aSetter;
 					setterMethod = m;
 					setPastingPoint = m.getAnnotation(PastingPoint.class);
@@ -162,9 +165,10 @@ public class ModelProperty<I> {
 			}
 			if (anAdder != null && anAdder.value().equals(propertyIdentifier)) {
 				if (adder != null) {
-					throw new ModelDefinitionException("Duplicate adder '" + propertyIdentifier + "' defined for interface "
-							+ implementedInterface);
-				} else {
+					throw new ModelDefinitionException(
+							"Duplicate adder '" + propertyIdentifier + "' defined for interface " + implementedInterface);
+				}
+				else {
 					adder = anAdder;
 					adderMethod = m;
 					addPastingPoint = m.getAnnotation(PastingPoint.class);
@@ -172,9 +176,10 @@ public class ModelProperty<I> {
 			}
 			if (aRemover != null && aRemover.value().equals(propertyIdentifier)) {
 				if (remover != null) {
-					throw new ModelDefinitionException("Duplicate remover '" + propertyIdentifier + "' defined for interface "
-							+ implementedInterface);
-				} else {
+					throw new ModelDefinitionException(
+							"Duplicate remover '" + propertyIdentifier + "' defined for interface " + implementedInterface);
+				}
+				else {
 					remover = aRemover;
 					removerMethod = m;
 				}
@@ -222,18 +227,18 @@ public class ModelProperty<I> {
 
 		if (getter != null) {
 			switch (getCardinality()) {
-			case SINGLE:
-				type = getterMethod.getReturnType();
-				break;
-			case LIST:
-				type = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[0]);
-				break;
-			case MAP:
-				keyType = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[0]);
-				type = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[1]);
-				break;
-			default:
-				break;
+				case SINGLE:
+					type = getterMethod.getReturnType();
+					break;
+				case LIST:
+					type = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[0]);
+					break;
+				case MAP:
+					keyType = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[0]);
+					type = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[1]);
+					break;
+				default:
+					break;
 			}
 		}
 	}
@@ -244,12 +249,12 @@ public class ModelProperty<I> {
 		}
 		if (getXMLAttribute() != null && getXMLAttribute().xmlTag().equals(PAMELAConstants.CLASS_ATTRIBUTE)
 				&& getXMLAttribute().namespace().equals(PAMELAConstants.NS)) {
-			throw new ModelDefinitionException("Invalid property identifier '" + PAMELAConstants.CLASS_ATTRIBUTE + "' with namespace "
-					+ PAMELAConstants.NS + "!");
+			throw new ModelDefinitionException(
+					"Invalid property identifier '" + PAMELAConstants.CLASS_ATTRIBUTE + "' with namespace " + PAMELAConstants.NS + "!");
 		}
 		if (getGetter() == null) {
-			throw new ModelDefinitionException("No getter defined for " + propertyIdentifier + ", interface "
-					+ modelEntity.getImplementedInterface());
+			throw new ModelDefinitionException(
+					"No getter defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
 		}
 		if (type.isPrimitive() && getter.defaultValue().equals(Getter.UNDEFINED)) {
 			throw new ModelDefinitionException("No default value defined for primitive property " + this);
@@ -259,15 +264,16 @@ public class ModelProperty<I> {
 				if (getType().isPrimitive()) {
 					Converter<?> converter = StringConverterLibrary.getInstance().getConverter(getType());
 					if (converter == null) {
-						throw new ModelDefinitionException("No converter for type '" + getType() + "'. Cannot convert default value "
-								+ getter.defaultValue());
-					} else {
+						throw new ModelDefinitionException(
+								"No converter for type '" + getType() + "'. Cannot convert default value " + getter.defaultValue());
+					}
+					else {
 						try {
 							defaultValue = converter.convertFromString(getter.defaultValue(), null);
 						} catch (InvalidDataException e) {
 							e.printStackTrace();
-							throw new ModelDefinitionException("String value '" + getter.defaultValue() + "' cannot be converted to a "
-									+ getType().getName(), e);
+							throw new ModelDefinitionException(
+									"String value '" + getter.defaultValue() + "' cannot be converted to a " + getType().getName(), e);
 						}
 					}
 				}
@@ -286,19 +292,19 @@ public class ModelProperty<I> {
 		}
 
 		switch (getCardinality()) {
-		case LIST:
-		case MAP:
-			if (getAdder() == null) {
-				throw new ModelDefinitionException("No adder defined for " + propertyIdentifier + ", interface "
-						+ modelEntity.getImplementedInterface());
-			}
-			if (getRemover() == null) {
-				throw new ModelDefinitionException("No remover defined for " + propertyIdentifier + ", interface "
-						+ modelEntity.getImplementedInterface());
-			}
-			break;
-		default:
-			break;
+			case LIST:
+			case MAP:
+				if (getAdder() == null) {
+					throw new ModelDefinitionException(
+							"No adder defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
+				}
+				if (getRemover() == null) {
+					throw new ModelDefinitionException(
+							"No remover defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
+				}
+				break;
+			default:
+				break;
 		}
 
 		if (getGetterMethod() != null && getGetterMethod().getParameterTypes().length > 0) {
@@ -314,68 +320,68 @@ public class ModelProperty<I> {
 
 			if (!TypeUtils.isTypeAssignableFrom(getGetterMethod().getReturnType(), getSetterMethod().getParameterTypes()[0])
 					&& !TypeUtils.isTypeAssignableFrom(getSetterMethod().getParameterTypes()[0], getGetterMethod().getReturnType())) {
-				throw new ModelDefinitionException("Invalid setter method for property '" + propertyIdentifier + "': method "
-						+ getSetterMethod().toString() + " parameter must be assignable from or to "
-						+ getGetterMethod().getReturnType().getName());
+				throw new ModelDefinitionException(
+						"Invalid setter method for property '" + propertyIdentifier + "': method " + getSetterMethod().toString()
+								+ " parameter must be assignable from or to " + getGetterMethod().getReturnType().getName());
 			}
 		}
 
 		if (getAdderMethod() != null) {
 			switch (getCardinality()) {
-			case LIST:
-				if (getAdderMethod().getParameterTypes().length != 1) {
-					throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-							+ getAdderMethod().toString() + " must have exactly 1 parameter");
-				}
-				if (!TypeUtils.isTypeAssignableFrom(type, getAdderMethod().getParameterTypes()[0])) {
-					throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-							+ getAdderMethod().toString() + " parameter must be assignable to " + type.getName());
-				}
-				break;
-			case MAP:
-				if (getAdderMethod().getParameterTypes().length != 2) {
-					throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-							+ getAdderMethod().toString() + " must have exactly 2 parameters");
-				}
-				if (!TypeUtils.isTypeAssignableFrom(keyType, getAdderMethod().getParameterTypes()[0])) {
-					throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-							+ getAdderMethod().toString() + " first parameter must be assignable to " + keyType.getName());
-				}
-				if (!TypeUtils.isTypeAssignableFrom(type, getAdderMethod().getParameterTypes()[1])) {
-					throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-							+ getAdderMethod().toString() + " second parameter must be assignable to " + type.getName());
-				}
-				break;
-			default:
-				break;
+				case LIST:
+					if (getAdderMethod().getParameterTypes().length != 1) {
+						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
+								+ getAdderMethod().toString() + " must have exactly 1 parameter");
+					}
+					if (!TypeUtils.isTypeAssignableFrom(type, getAdderMethod().getParameterTypes()[0])) {
+						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
+								+ getAdderMethod().toString() + " parameter must be assignable to " + type.getName());
+					}
+					break;
+				case MAP:
+					if (getAdderMethod().getParameterTypes().length != 2) {
+						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
+								+ getAdderMethod().toString() + " must have exactly 2 parameters");
+					}
+					if (!TypeUtils.isTypeAssignableFrom(keyType, getAdderMethod().getParameterTypes()[0])) {
+						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
+								+ getAdderMethod().toString() + " first parameter must be assignable to " + keyType.getName());
+					}
+					if (!TypeUtils.isTypeAssignableFrom(type, getAdderMethod().getParameterTypes()[1])) {
+						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
+								+ getAdderMethod().toString() + " second parameter must be assignable to " + type.getName());
+					}
+					break;
+				default:
+					break;
 			}
 		}
 
 		if (getRemoverMethod() != null) {
 			switch (getCardinality()) {
-			case LIST:
-				if (getRemoverMethod().getParameterTypes().length != 1) {
-					throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-							+ getRemoverMethod().toString() + " must have exactly 1 parameter");
-				}
-				if (!TypeUtils.isTypeAssignableFrom(type, getRemoverMethod().getParameterTypes()[0])) {
-					throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-							+ getRemoverMethod().toString() + " parameter must be assignable to " + type.getName());
-				}
-				break;
-			case MAP:
-				if (getRemoverMethod().getParameterTypes().length != 1) {
-					throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-							+ getRemoverMethod().toString() + " must have exactly 1 parameter");
-				}
-				if (!TypeUtils.isTypeAssignableFrom(keyType, getRemoverMethod().getParameterTypes()[0])) {
-					throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-							+ getRemoverMethod().toString() + " first parameter must be assignable to " + keyType.getName());
-				}
+				case LIST:
+					if (getRemoverMethod().getParameterTypes().length != 1) {
+						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
+								+ getRemoverMethod().toString() + " must have exactly 1 parameter");
+					}
+					if (!TypeUtils.isTypeAssignableFrom(type, getRemoverMethod().getParameterTypes()[0])) {
+						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
+								+ getRemoverMethod().toString() + " parameter must be assignable to " + type.getName());
+					}
+					break;
+				case MAP:
+					if (getRemoverMethod().getParameterTypes().length != 1) {
+						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
+								+ getRemoverMethod().toString() + " must have exactly 1 parameter");
+					}
+					if (!TypeUtils.isTypeAssignableFrom(keyType, getRemoverMethod().getParameterTypes()[0])) {
+						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
+								+ getRemoverMethod().toString() + " first parameter must be assignable to " + keyType.getName());
+					}
 
-				break;
-			default:
-				break;
+					break;
+				default:
+					break;
 			}
 		}
 	}
@@ -432,8 +438,8 @@ public class ModelProperty<I> {
 			if (property.getReturnedValue() != null) {
 				if (!getReturnedValue().value().equals(property.getReturnedValue().value())) {
 					if (rulingProperty == null) {
-						return "Returned value '" + getReturnedValue().value() + "' is not equal to '"
-								+ property.getReturnedValue().value() + "'";
+						return "Returned value '" + getReturnedValue().value() + "' is not equal to '" + property.getReturnedValue().value()
+								+ "'";
 					}
 				}
 			}
@@ -459,13 +465,15 @@ public class ModelProperty<I> {
 						return "Embedded deletion conditions are not equal";
 					}
 				}
-			} else if (property.getComplexEmbedded() != null) {
+			}
+			else if (property.getComplexEmbedded() != null) {
 				if (rulingProperty == null || rulingProperty.getEmbedded() == null && rulingProperty.getComplexEmbedded() == null) {
 					return "Cannot define both " + Embedded.class.getSimpleName() + " and " + ComplexEmbedded.class.getSimpleName()
 							+ " on the same property.";
 				}
 			}
-		} else if (getComplexEmbedded() != null) {
+		}
+		else if (getComplexEmbedded() != null) {
 			if (property.getComplexEmbedded() != null) {
 				boolean ok = true;
 				List<ClosureCondition> ccList = Arrays.asList(property.getComplexEmbedded().closureConditions());
@@ -510,7 +518,8 @@ public class ModelProperty<I> {
 						return "Deletion conditions are not equal";
 					}
 				}
-			} else if (property.getEmbedded() != null) {
+			}
+			else if (property.getEmbedded() != null) {
 				if (rulingProperty == null || rulingProperty.getEmbedded() == null && rulingProperty.getComplexEmbedded() == null) {
 					return "Cannot define both " + ComplexEmbedded.class.getSimpleName() + " and " + Embedded.class.getSimpleName()
 							+ " on the same property.";
@@ -528,13 +537,15 @@ public class ModelProperty<I> {
 						return "XML tag '" + getXMLAttribute().xmlTag() + "' is not equal to '" + property.getXMLAttribute().xmlTag() + "'";
 					}
 				}
-			} else if (property.getXMLElement() != null) {
+			}
+			else if (property.getXMLElement() != null) {
 				if (rulingProperty == null || rulingProperty.getXMLAttribute() != null && rulingProperty.getXMLElement() != null) {
 					return "Property '" + propertyIdentifier + "' is declared as an XMLAttribute on " + getModelEntity()
 							+ " but as an XMLElement on " + property.getModelEntity();
 				}
 			}
-		} else if (getXMLElement() != null) {
+		}
+		else if (getXMLElement() != null) {
 			if (property.getXMLElement() != null) {
 				if (!getXMLElement().xmlTag().equals(XMLElement.DEFAULT_XML_TAG)
 						&& !property.getXMLElement().xmlTag().equals(XMLElement.DEFAULT_XML_TAG)
@@ -559,7 +570,8 @@ public class ModelProperty<I> {
 
 					}
 				}
-			} else if (property.getXMLAttribute() != null) {
+			}
+			else if (property.getXMLAttribute() != null) {
 				if (rulingProperty == null || rulingProperty.getXMLAttribute() != null && rulingProperty.getXMLElement() != null) {
 					return "Property '" + propertyIdentifier + "' is declared as an XMLElement on " + getModelEntity()
 							+ " but as an XMLAttribute on " + property.getModelEntity();
@@ -601,7 +613,8 @@ public class ModelProperty<I> {
 		Method removerMethod = null;
 		if (rulingProperty != null && rulingProperty.getGetter() != null) {
 			getter = rulingProperty.getGetter();
-		} else {
+		}
+		else {
 			Cardinality cardinality = null;
 			String inverse = null;
 			String defaultValue = null;
@@ -609,23 +622,27 @@ public class ModelProperty<I> {
 			boolean ignoreType;
 			if (getGetter() != null) {
 				cardinality = getGetter().cardinality();
-			} else {
+			}
+			else {
 				cardinality = property.getGetter().cardinality();
 			}
 			if (getGetter() == null || getGetter().inverse().equals(Getter.UNDEFINED)) {
 				inverse = property.getGetter().inverse();
-			} else {
+			}
+			else {
 				inverse = getGetter().inverse();
 			}
 			if (getGetter() == null || getGetter().defaultValue().equals(Getter.UNDEFINED)) {
 				defaultValue = property.getGetter().defaultValue();
-			} else {
+			}
+			else {
 				defaultValue = getGetter().defaultValue();
 			}
 			if (getGetter() == null) {
 				stringConvertable = property.getGetter().isStringConvertable();
 				ignoreType = property.getGetter().ignoreType();
-			} else {
+			}
+			else {
 				stringConvertable = getGetter().isStringConvertable();
 				ignoreType = getGetter().ignoreType();
 			}
@@ -633,28 +650,34 @@ public class ModelProperty<I> {
 		}
 		if (rulingProperty != null && rulingProperty.getSetter() != null) {
 			setter = rulingProperty.getSetter();
-		} else {
+		}
+		else {
 			if (getSetter() != null) {
 				setter = getSetter();
-			} else if (property.getSetter() != null) {
+			}
+			else if (property.getSetter() != null) {
 				setter = property.getSetter();
 			}
 		}
 		if (rulingProperty != null && rulingProperty.getAdder() != null) {
 			adder = rulingProperty.getAdder();
-		} else {
+		}
+		else {
 			if (getAdder() != null) {
 				adder = getAdder();
-			} else if (property.getAdder() != null) {
+			}
+			else if (property.getAdder() != null) {
 				adder = property.getAdder();
 			}
 		}
 		if (rulingProperty != null && rulingProperty.getRemover() != null) {
 			remover = rulingProperty.getRemover();
-		} else {
+		}
+		else {
 			if (getRemover() != null) {
 				remover = getRemover();
-			} else if (property.getRemover() != null) {
+			}
+			else if (property.getRemover() != null) {
 				remover = property.getRemover();
 			}
 		}
@@ -662,68 +685,84 @@ public class ModelProperty<I> {
 		if (rulingProperty != null && (rulingProperty.getEmbedded() != null || rulingProperty.getComplexEmbedded() != null)) {
 			embedded = rulingProperty.getEmbedded();
 			complexEmbedded = rulingProperty.getComplexEmbedded();
-		} else if (getEmbedded() != null) {
+		}
+		else if (getEmbedded() != null) {
 			embedded = getEmbedded();
-		} else if (getComplexEmbedded() != null) {
+		}
+		else if (getComplexEmbedded() != null) {
 			complexEmbedded = getComplexEmbedded();
-		} else if (property.getEmbedded() != null) {
+		}
+		else if (property.getEmbedded() != null) {
 			embedded = property.getEmbedded();
-		} else if (property.getComplexEmbedded() != null) {
+		}
+		else if (property.getComplexEmbedded() != null) {
 			complexEmbedded = property.getComplexEmbedded();
 		}
 
 		if (rulingProperty != null && rulingProperty.getReturnedValue() != null) {
 			returnedValue = rulingProperty.getReturnedValue();
-		} else if (getReturnedValue() != null) {
+		}
+		else if (getReturnedValue() != null) {
 			returnedValue = getReturnedValue();
-		} else if (property.getReturnedValue() != null) {
+		}
+		else if (property.getReturnedValue() != null) {
 			returnedValue = property.getReturnedValue();
 		}
 
 		if (rulingProperty != null && rulingProperty.cloningStrategy != null) {
 			cloningStrategy = rulingProperty.cloningStrategy;
-		} else if (this.cloningStrategy != null) {
+		}
+		else if (this.cloningStrategy != null) {
 			cloningStrategy = this.cloningStrategy;
-		} else if (property.cloningStrategy != null) {
+		}
+		else if (property.cloningStrategy != null) {
 			cloningStrategy = property.cloningStrategy;
 		}
 
 		if (rulingProperty != null && rulingProperty.getGetterMethod() != null) {
 			getterMethod = rulingProperty.getGetterMethod();
-		} else {
+		}
+		else {
 			if (getGetterMethod() != null) {
 				getterMethod = getGetterMethod();
-			} else {
+			}
+			else {
 				getterMethod = property.getGetterMethod();
 			}
 		}
 
 		if (rulingProperty != null && rulingProperty.getSetterMethod() != null) {
 			setterMethod = rulingProperty.getSetterMethod();
-		} else {
+		}
+		else {
 			if (getSetterMethod() != null) {
 				setterMethod = getSetterMethod();
-			} else {
+			}
+			else {
 				setterMethod = property.getSetterMethod();
 			}
 		}
 
 		if (rulingProperty != null && rulingProperty.getAdderMethod() != null) {
 			adderMethod = rulingProperty.getAdderMethod();
-		} else {
+		}
+		else {
 			if (getAdderMethod() != null) {
 				adderMethod = getAdderMethod();
-			} else {
+			}
+			else {
 				adderMethod = property.getAdderMethod();
 			}
 		}
 
 		if (rulingProperty != null && rulingProperty.getRemoverMethod() != null) {
 			removerMethod = rulingProperty.getRemoverMethod();
-		} else {
+		}
+		else {
 			if (getRemoverMethod() != null) {
 				removerMethod = getRemoverMethod();
-			} else {
+			}
+			else {
 				removerMethod = property.getRemoverMethod();
 			}
 		}
@@ -731,13 +770,16 @@ public class ModelProperty<I> {
 		if (rulingProperty != null && (rulingProperty.getXMLAttribute() != null || rulingProperty.getXMLElement() != null)) {
 			xmlAttribute = rulingProperty.getXMLAttribute();
 			xmlElement = rulingProperty.getXMLElement();
-		} else if (getXMLAttribute() != null || property.getXMLAttribute() != null) {
+		}
+		else if (getXMLAttribute() != null || property.getXMLAttribute() != null) {
 			if (getXMLAttribute() != null && !getXMLAttribute().xmlTag().equals(XMLAttribute.DEFAULT_XML_TAG)) {
 				xmlAttribute = getXMLAttribute();
-			} else {
+			}
+			else {
 				xmlAttribute = property.getXMLAttribute();
 			}
-		} else if (getXMLElement() != null || property.getXMLElement() != null) {
+		}
+		else if (getXMLElement() != null || property.getXMLElement() != null) {
 			String xmlTag = XMLElement.DEFAULT_XML_TAG;
 			String context = XMLElement.NO_CONTEXT;
 			String namespace = XMLElement.NO_NAME_SPACE;
@@ -746,26 +788,31 @@ public class ModelProperty<I> {
 				if (property.getXMLElement() != null) {
 					if (!getXMLElement().xmlTag().equals(XMLElement.DEFAULT_XML_TAG)) {
 						xmlTag = getXMLElement().xmlTag();
-					} else {
+					}
+					else {
 						xmlTag = property.getXMLElement().xmlTag();
 					}
 					if (!getXMLElement().context().equals(XMLElement.NO_CONTEXT)) {
 						context = getXMLElement().context();
-					} else {
+					}
+					else {
 						context = property.getXMLElement().context();
 					}
 					if (!getXMLElement().namespace().equals(XMLElement.NO_NAME_SPACE)) {
 						namespace = getXMLElement().namespace();
-					} else {
+					}
+					else {
 						namespace = property.getXMLElement().namespace();
 					}
 					primary |= getXMLElement().primary();
 					primary |= property.getXMLElement().primary();
 					xmlElement = new XMLElement.XMLElementImpl(xmlTag, context, namespace, primary);
-				} else {
+				}
+				else {
 					xmlElement = getXMLElement();
 				}
-			} else {
+			}
+			else {
 				xmlElement = property.getXMLElement();
 			}
 		}
@@ -824,7 +871,8 @@ public class ModelProperty<I> {
 	public String getXMLContext() {
 		if (xmlElement != null) {
 			return xmlElement.context();
-		} else {
+		}
+		else {
 			return "";
 		}
 	}
@@ -860,9 +908,11 @@ public class ModelProperty<I> {
 	public Object getDefaultValue(ModelFactory factory) throws InvalidDataException {
 		if (defaultValue != null) {
 			return defaultValue;
-		} else if (!getGetter().defaultValue().equals(Getter.UNDEFINED)) {
+		}
+		else if (!getGetter().defaultValue().equals(Getter.UNDEFINED)) {
 			return factory.getStringEncoder().fromString(getType(), getGetter().defaultValue());
-		} else {
+		}
+		else {
 			return null;
 		}
 	}
@@ -936,12 +986,24 @@ public class ModelProperty<I> {
 		if (cloningStrategy == null) {
 			if (ModelEntityLibrary.has(getType())) {
 				return StrategyType.REFERENCE;
-			} else {
+			}
+			else {
 				return StrategyType.CLONE;
 			}
-		} else {
+		}
+		else {
 			return cloningStrategy.value();
 		}
+	}
+
+	public ModelProperty<?> getCloneAfterProperty() throws ModelDefinitionException {
+		if (cloningStrategy != null) {
+			String pAsString = cloningStrategy.cloneAfterProperty();
+			if (StringUtils.isNotEmpty(pAsString)) {
+				return getModelEntity().getModelProperty(pAsString);
+			}
+		}
+		return null;
 	}
 
 	public String getStrategyTypeFactory() {
