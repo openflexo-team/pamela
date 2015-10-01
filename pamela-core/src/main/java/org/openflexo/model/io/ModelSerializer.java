@@ -50,14 +50,17 @@ import org.openflexo.model.factory.SerializationPolicy;
  * Serializer API should be implemented by any Class that can serialize a PAMELA Model
  * 
  * @author xtof
- *
+ * 
  */
 
 public interface ModelSerializer {
 
-	void serializeDocument(Object object, OutputStream os, boolean resetModifiedStatus) throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException;
+	void serializeDocument(Object object, OutputStream os, boolean resetModifiedStatus) throws IOException, IllegalArgumentException,
+			IllegalAccessException, InvocationTargetException, ModelDefinitionException;
 
-	void setSerializationPolicy (SerializationPolicy policy);
-	
-	
+	/*
+	 * TODO: need to define what SerializationPolicy means
+	 */
+	void setSerializationPolicy(SerializationPolicy policy);
+
 }
