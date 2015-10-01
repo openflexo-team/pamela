@@ -41,12 +41,6 @@ package org.openflexo.model;
 
 import junit.framework.TestCase;
 
-import org.flexo.model.AbstractNode;
-import org.flexo.model.TestModelObject;
-import org.flexo.model.FlexoProcess;
-import org.flexo.model.StartNode;
-import org.flexo.model.TokenEdge;
-import org.flexo.model.WKFObject;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 
 public abstract class AbstractPAMELATest extends TestCase {
