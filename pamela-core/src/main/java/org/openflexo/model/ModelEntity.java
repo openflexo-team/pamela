@@ -253,8 +253,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 					this.deserializationFinalizer = new DeserializationFinalizer(deserializationFinalizer, m);
 				}
 				else {
-					throw new ModelDefinitionException(
-							"Duplicated deserialization finalizer found for entity " + getImplementedInterface());
+					throw new ModelDefinitionException("Duplicated deserialization finalizer found for entity " + getImplementedInterface());
 				}
 			}
 
@@ -265,8 +264,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 					this.deserializationInitializer = new DeserializationInitializer(deserializationInitializer, m);
 				}
 				else {
-					throw new ModelDefinitionException(
-							"Duplicated deserialization initializer found for entity " + getImplementedInterface());
+					throw new ModelDefinitionException("Duplicated deserialization initializer found for entity "
+							+ getImplementedInterface());
 				}
 			}
 		}
@@ -408,9 +407,9 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 									}
 								}
 								if (!localImplementationWasFound) {
-									throw new ModelDefinitionException(
-											"Multiple inheritance implementation clash with method " + m + " defined in " + implClass
-													+ " and " + m2.getDeclaringClass() + ". Please disambiguate method.");
+									throw new ModelDefinitionException("Multiple inheritance implementation clash with method " + m
+											+ " defined in " + implClass + " and " + m2.getDeclaringClass()
+											+ ". Please disambiguate method.");
 								}
 							}
 						}
@@ -516,9 +515,9 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 							implementingClass = klass;
 						}
 						else {
-							throw new ModelDefinitionException(
-									"Ambiguous implementing klass for entity '" + this + "'. Found more than one valid super klass: "
-											+ implementingClass.getName() + " and " + klass.getName());
+							throw new ModelDefinitionException("Ambiguous implementing class for entity '" + this
+									+ "'. Found more than one valid super class: " + implementingClass.getName() + " and "
+									+ klass.getName());
 						}
 					}
 				}
@@ -781,7 +780,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return properties.values().iterator();
 	}
 
-	/**
+/**
 	 * Return an iterator for {@link ModelProperty} objects<br>
 	 * Order respect {@link CloningStrategy#cloneAfterProperty()) annotation
 	 * 
@@ -1183,8 +1182,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	 * @return true if an implementation was found
 	 * @throws ModelDefinitionException
 	 */
-	private boolean checkMethodImplementationInDelegateImplementations(Method method, ModelFactory factory)
-			throws ModelDefinitionException {
+	private boolean checkMethodImplementationInDelegateImplementations(Method method, ModelFactory factory) throws ModelDefinitionException {
 		// Look up in delegate implementation class
 		if (getDelegateImplementations().size() > 0) {
 			for (Class<? super I> delegateImplementationClass : getDelegateImplementations().keySet()) {
