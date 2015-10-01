@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.jdom2.JDOMException;
 import org.openflexo.IObjectGraphFactory;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContextLibrary;
@@ -70,9 +71,9 @@ import org.openflexo.model.exceptions.MissingImplementationException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.io.JDOMXMLDeserializer;
+import org.openflexo.model.io.JDOMXMLSerializer;
 import org.openflexo.model.io.ModelDeserializer;
 import org.openflexo.model.io.ModelSerializer;
-import org.openflexo.model.io.XMLSerializer;
 import org.openflexo.model.undo.CreateCommand;
 
 import javassist.util.proxy.MethodFilter;
@@ -180,7 +181,7 @@ public class ModelFactory implements IObjectGraphFactory {
 		}
 
 		public I newInstance(Object... args) throws IllegalArgumentException, NoSuchMethodException, InstantiationException,
-		IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+				IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 			if (modelEntity.isAbstract()) {
 				throw new InstantiationException(modelEntity + " is declared as an abstract entity, cannot instantiate it");
 			}
@@ -589,8 +590,9 @@ public class ModelFactory implements IObjectGraphFactory {
 		boolean append = false;
 		switch (embeddingType) {
 			case CLOSURE:
-				append = p.getEmbedded() != null && p.getEmbedded().closureConditions().length == 0
-						|| p.getComplexEmbedded() != null && p.getComplexEmbedded().closureConditions().length == 0;
+
+				append = p.getEmbedded() != null && p.getEmbedded().closureConditions().length == 0 || p.getComplexEmbedded() != null
+						&& p.getComplexEmbedded().closureConditions().length == 0;
 				break;
 			case DELETION:
 				append = p.getEmbedded() != null && p.getEmbedded().deletionConditions().length == 0
@@ -607,7 +609,7 @@ public class ModelFactory implements IObjectGraphFactory {
 			}
 		}
 		else {
-			List<Object> requiredPresence = new ArrayList<>();
+			List<Object> requiredPresence = new ArrayList<Object>();
 			if (p.getEmbedded() != null) {
 				switch (embeddingType) {
 					case CLOSURE:
@@ -714,8 +716,8 @@ public class ModelFactory implements IObjectGraphFactory {
 	 * @throws ModelDefinitionException
 	 * @throws CloneNotSupportedException
 	 */
-	public Object paste(Clipboard clipboard, Object context)
-			throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
+	public Object paste(Clipboard clipboard, Object context) throws ModelExecutionException, ModelDefinitionException,
+			CloneNotSupportedException {
 		if (!isProxyObject(context)) {
 			throw new ClipboardOperationException("Cannot paste here: context is not valid: " + context);
 		}
@@ -735,8 +737,8 @@ public class ModelFactory implements IObjectGraphFactory {
 	 * @throws ModelDefinitionException
 	 * @throws CloneNotSupportedException
 	 */
-	public Object paste(Clipboard clipboard, ModelProperty<?> modelProperty, Object context)
-			throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
+	public Object paste(Clipboard clipboard, ModelProperty<?> modelProperty, Object context) throws ModelExecutionException,
+			ModelDefinitionException, CloneNotSupportedException {
 		if (!isProxyObject(context)) {
 			throw new ClipboardOperationException("Cannot paste here: context is not valid");
 		}
@@ -779,9 +781,9 @@ public class ModelFactory implements IObjectGraphFactory {
 
 
 	public ModelSerializer getModelSerializer() {
-		if (modelSerializer == null){
+		if (modelSerializer == null) {
 			// Default to standard XMLSerialization
-			modelSerializer = new XMLSerializer(this);
+			modelSerializer = new JDOMXMLSerializer(this);
 		}
 		return modelSerializer;
 	}
@@ -790,22 +792,20 @@ public class ModelFactory implements IObjectGraphFactory {
 		this.modelSerializer = modelSerializer;
 	}
 
-
 	public void serialize(Object object, OutputStream os) throws IOException, IllegalArgumentException, IllegalAccessException,
-	InvocationTargetException, ModelDefinitionException {
+			InvocationTargetException, ModelDefinitionException {
 		serialize(object, os, SerializationPolicy.PERMISSIVE, true);
 	}
 
 
 	public void serialize(Object object, OutputStream os, SerializationPolicy policy, boolean resetModifiedStatus) throws IOException,
-	IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		getModelSerializer().setSerializationPolicy(policy);
 		getModelSerializer().serializeDocument(object, os, resetModifiedStatus);
 	}
 
-
 	public ModelDeserializer getModelDeserializer() {
-		if (modelDeserializer == null){
+		if (modelDeserializer == null) {
 			// default to XMLDeserializer
 			modelDeserializer = new JDOMXMLDeserializer(this);
 		}
@@ -821,15 +821,15 @@ public class ModelFactory implements IObjectGraphFactory {
 		return deserialize(is, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public Object deserialize(InputStream is, DeserializationPolicy policy) throws IOException, InvalidDataException,
-	ModelDefinitionException {
+	public Object deserialize(InputStream is, DeserializationPolicy policy) throws IOException, JDOMException, InvalidDataException,
+			ModelDefinitionException {
 		ModelDeserializer md = getModelDeserializer();
-		if (md != null){
+		if (md != null) {
 			md.setDeserializationPolicy(policy);
 			return md.deserializeDocument(is);
 		}
 		else {
-			throw new InvalidDataException ("ERROR: No Deserializer set!");
+			throw new InvalidDataException("ERROR: No Deserializer set!");
 		}
 	}
 
@@ -839,15 +839,15 @@ public class ModelFactory implements IObjectGraphFactory {
 	}
 
 
-	public Object deserialize(String input, DeserializationPolicy policy) throws IOException,  InvalidDataException,
-	ModelDefinitionException {
+	public Object deserialize(String input, DeserializationPolicy policy) throws IOException, InvalidDataException,
+			ModelDefinitionException {
 		ModelDeserializer md = getModelDeserializer();
-		if (md != null){
+		if (md != null) {
 			md.setDeserializationPolicy(policy);
 			return md.deserializeDocument(input);
 		}
 		else {
-			throw new InvalidDataException ("ERROR: No Deserializer set!");
+			throw new InvalidDataException("ERROR: No Deserializer set!");
 		}
 	}
 
