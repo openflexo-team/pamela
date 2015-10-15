@@ -87,6 +87,11 @@ public class ModelContext {
 		public ModelEntity<?> getAccessedEntity() {
 			return accessedEntity;
 		}
+
+		@Override
+		public String toString() {
+			return "ModelPropertyXMLTag" + getAccessedEntity() + getProperty() + "/tag=" + getTag();
+		}
 	}
 
 	private Map<Class, ModelEntity> modelEntities;
@@ -116,8 +121,8 @@ public class ModelContext {
 				// TODO: handle properly namespaces. Different namespaces allows to have identical tags
 				// See also importModelEntity(Class<T>)
 				if (entity != null && !entity.getImplementedInterface().equals(e.getValue().getImplementedInterface())) {
-					throw new ModelDefinitionException(entity + " and " + e.getValue()
-							+ " declare the same XML tag but not the same implemented interface");
+					throw new ModelDefinitionException(
+							entity + " and " + e.getValue() + " declare the same XML tag but not the same implemented interface");
 				}
 			}
 			modelEntities.putAll(context.modelEntities);
@@ -155,9 +160,9 @@ public class ModelContext {
 		modelEntities.put(modelEntity.getImplementedInterface(), modelEntity);
 		ModelEntity<?> put = modelEntitiesByXmlTag.put(modelEntity.getXMLTag(), modelEntity);
 		if (put != null && put != modelEntity) {
-			throw new ModelDefinitionException("Two entities define the same XMLTag '" + modelEntity.getXMLTag()
-					+ "'. Implemented interfaces: " + modelEntity.getImplementedInterface().getName() + " "
-					+ put.getImplementedInterface().getName());
+			throw new ModelDefinitionException(
+					"Two entities define the same XMLTag '" + modelEntity.getXMLTag() + "'. Implemented interfaces: "
+							+ modelEntity.getImplementedInterface().getName() + " " + put.getImplementedInterface().getName());
 		}
 		for (ModelEntity<?> e : modelEntity.getEmbeddedEntities()) {
 			if (!visited.contains(e)) {

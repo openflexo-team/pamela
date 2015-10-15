@@ -54,7 +54,8 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * 
  * To instantiate and enable an {@link UndoManager}, use the {@link ModelFactory#createUndoManager()} method.<br>
  * 
- * {@link UndoManager} internally manages a list of {@link CompoundEdit}, which are aggregates of PAMELA atomic events ({@link AtomicEdit}).<br>
+ * {@link UndoManager} internally manages a list of {@link CompoundEdit}, which are aggregates of PAMELA atomic events ({@link AtomicEdit}).
+ * <br>
  * You should use {{@link #startRecording(String)} and {{@link #stopRecording(CompoundEdit)} methods to semantically control undo/redo
  * sequences.<br>
  * 
@@ -158,10 +159,17 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 
 			if (currentEdition != null) {
 				System.err.println("[PLEASE TRACK ME] : UndoManager exception: already recording " + currentEdition.getPresentationName());
+				if (currentEdition.getPresentationName().equals(UNIDENTIFIED_RECORDING)) {
+					currentEdition.setPresentationName(presentationName);
+				}
 				// (new Exception("UndoManager exception: already recording " + currentEdition.getPresentationName())).printStackTrace();
-				stopRecording(currentEdition);
+				// SGU: before, we were stopping currentEdition and start a new one
+				// Now, we aggregate the both compound edits
+				// stopRecording(currentEdition);
 			}
-			currentEdition = makeCompoundEdit(presentationName);
+			else {
+				currentEdition = makeCompoundEdit(presentationName);
+			}
 			addEdit(currentEdition);
 
 		}
@@ -190,7 +198,8 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		if (currentEdition == null) {
 			(new Exception("UndoManager exception: was not recording")).printStackTrace();
 			return null;
-		} else if (currentEdition != edit) {
+		}
+		else if (currentEdition != edit) {
 			(new Exception("UndoManager exception: was not recording this edit")).printStackTrace();
 			return null;
 		}
@@ -348,7 +357,8 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			if (currentEdition == null) {
 				if (allowsAnticipatedRecording) {
 					startAsAnticipatedRecording();
-				} else {
+				}
+				else {
 					System.err.println("[PLEASE TRACK ME] : PAMELA edit received outside official recording. Create a default one !!!");
 					startRecording(UNIDENTIFIED_RECORDING);
 				}
@@ -356,7 +366,8 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			// System.out.println("[PAMELA] Register in UndoManager: " + anEdit.getPresentationName());
 			currentEdition.addEdit(anEdit);
 			return true;
-		} else if (anEdit instanceof CompoundEdit) {
+		}
+		else if (anEdit instanceof CompoundEdit) {
 			if (undoInProgress) {
 				(new Exception("UndoManager exception: received CompoundEdit while UNDO in progress")).printStackTrace();
 				return false;
@@ -368,7 +379,8 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			boolean returned = super.addEdit(anEdit);
 			fireAddEdit(anEdit);
 			return returned;
-		} else {
+		}
+		else {
 			System.out.println("???? Unexpected Edit " + anEdit);
 			return false;
 		}
@@ -520,7 +532,8 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		System.out.println("Debugging UNDO manager");
 		if (currentEdition != null) {
 			System.out.println("UndoManager, currently recording " + currentEdition.getPresentationName());
-		} else {
+		}
+		else {
 			System.out.println("UndoManager, currently NOT recording ");
 		}
 		System.out.println("Edits=" + edits.size());

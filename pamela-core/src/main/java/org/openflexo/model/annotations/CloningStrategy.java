@@ -44,6 +44,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation used to tune cloning strategy for a given property
+ * 
+ * @author sylvain
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)
 public @interface CloningStrategy {
@@ -57,4 +63,11 @@ public @interface CloningStrategy {
 	StrategyType value() default StrategyType.CLONE;
 
 	String factory() default UNDEFINED;
+
+	/**
+	 * Used when defining complex cloning strategy, to perform the clone of a property before an other one
+	 * 
+	 * @return
+	 */
+	public String cloneAfterProperty() default UNDEFINED;
 }

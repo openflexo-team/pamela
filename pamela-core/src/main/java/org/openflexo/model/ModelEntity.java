@@ -55,7 +55,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import org.openflexo.connie.binding.ReflectionUtils;
-import org.openflexo.connie.cg.Type;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.annotations.Adder;
@@ -90,7 +89,7 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * 
  * @param <I>
  */
-public class ModelEntity<I> extends Type {
+public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	/**
 	 * The implemented interface corresponding to this model entity
@@ -252,7 +251,8 @@ public class ModelEntity<I> extends Type {
 			if (deserializationFinalizer != null) {
 				if (this.deserializationFinalizer == null) {
 					this.deserializationFinalizer = new DeserializationFinalizer(deserializationFinalizer, m);
-				} else {
+				}
+				else {
 					throw new ModelDefinitionException(
 							"Duplicated deserialization finalizer found for entity " + getImplementedInterface());
 				}
@@ -263,7 +263,8 @@ public class ModelEntity<I> extends Type {
 			if (deserializationInitializer != null) {
 				if (this.deserializationInitializer == null) {
 					this.deserializationInitializer = new DeserializationInitializer(deserializationInitializer, m);
-				} else {
+				}
+				else {
 					throw new ModelDefinitionException(
 							"Duplicated deserialization initializer found for entity " + getImplementedInterface());
 				}
@@ -286,7 +287,8 @@ public class ModelEntity<I> extends Type {
 									if (TypeUtils.isTypeAssignableFrom(m.getGenericReturnType(), m2.getGenericReturnType())) {
 										// m2 is the most specialized method, we can skip the adding of m
 										return false;
-									} else if (TypeUtils.isTypeAssignableFrom(m2.getGenericReturnType(), m.getGenericReturnType())) {
+									}
+									else if (TypeUtils.isTypeAssignableFrom(m2.getGenericReturnType(), m.getGenericReturnType())) {
 										// m is the most specialized method
 										// We remove the previously defined (but less generic) m2, and add more generic m method
 										remove(m2);
@@ -301,7 +303,8 @@ public class ModelEntity<I> extends Type {
 						implementedMethods.add(m);
 					}
 					delegateImplementations.put(candidateImplementation, implementedMethods);
-				} else {
+				}
+				else {
 					throw new ModelDefinitionException("Found candidate implementation " + c + " for entity " + getImplementedInterface()
 							+ " which does not implement " + getImplementedInterface());
 				}
@@ -315,15 +318,18 @@ public class ModelEntity<I> extends Type {
 		Getter aGetter = m.getAnnotation(Getter.class);
 		if (aGetter != null) {
 			propertyIdentifier = aGetter.value();
-		} else {
+		}
+		else {
 			Setter aSetter = m.getAnnotation(Setter.class);
 			if (aSetter != null) {
 				propertyIdentifier = aSetter.value();
-			} else {
+			}
+			else {
 				Adder anAdder = m.getAnnotation(Adder.class);
 				if (anAdder != null) {
 					propertyIdentifier = anAdder.value();
-				} else {
+				}
+				else {
 					Remover aRemover = m.getAnnotation(Remover.class);
 					if (aRemover != null) {
 						propertyIdentifier = aRemover.value();
@@ -495,18 +501,21 @@ public class ModelEntity<I> extends Type {
 		if (implementationClass != null) {
 			if (implementedInterface.isAssignableFrom(implementationClass.value())) {
 				return implementingClass = implementationClass.value();
-			} else {
+			}
+			else {
 				throw new ModelDefinitionException("Class " + implementationClass.value().getName()
 						+ " is declared as an implementation class of " + this + " but does not extend " + implementedInterface.getName());
 			}
-		} else {
+		}
+		else {
 			if (getDirectSuperEntities() != null) {
 				for (ModelEntity<? super I> e : getDirectSuperEntities()) {
 					Class<?> klass = e.getImplementingClass();
 					if (klass != null) {
 						if (implementingClass == null) {
 							implementingClass = klass;
-						} else {
+						}
+						else {
 							throw new ModelDefinitionException(
 									"Ambiguous implementing klass for entity '" + this + "'. Found more than one valid super klass: "
 											+ implementingClass.getName() + " and " + klass.getName());
@@ -665,7 +674,8 @@ public class ModelEntity<I> extends Type {
 			}
 			if (returned == null) {
 				returned = parent.getModelProperty(propertyIdentifier);
-			} else {
+			}
+			else {
 				returned = combineAsAncestors(parent.getModelProperty(propertyIdentifier), returned, property);
 			}
 		}
@@ -760,8 +770,44 @@ public class ModelEntity<I> extends Type {
 		return xmlTag;
 	}
 
+	/**
+	 * Return an iterator for {@link ModelProperty} objects<br>
+	 * Note that order is absolutely not guaranteed
+	 * 
+	 * @return
+	 * @throws ModelDefinitionException
+	 */
 	public Iterator<ModelProperty<? super I>> getProperties() throws ModelDefinitionException {
 		return properties.values().iterator();
+	}
+
+	/**
+	 * Return an iterator for {@link ModelProperty} objects<br>
+	 * Order respect {@link CloningStrategy#cloneAfterProperty()) annotation
+	 * 
+	 * @return
+	 * @throws ModelDefinitionException
+	 */
+	public Iterator<ModelProperty<? super I>> getPropertiesOrderedForCloning() throws ModelDefinitionException {
+		ArrayList<ModelProperty<? super I>> returned = new ArrayList<>();
+		for (ModelProperty<? super I> p : properties.values()) {
+			appendProperty(p, returned);
+		}
+		return returned.iterator();
+	}
+
+	private void appendProperty(ModelProperty<? super I> p, List<ModelProperty<? super I>> list) throws ModelDefinitionException {
+		if (p.getCloneAfterProperty() != null) {
+			appendProperty((ModelProperty<? super I>) p.getCloneAfterProperty(), list);
+			if (!list.contains(p)) {
+				list.add(p);
+			}
+		}
+		else {
+			if (!list.contains(p)) {
+				list.add(0, p);
+			}
+		}
 	}
 
 	public int getPropertiesSize() {
@@ -799,7 +845,8 @@ public class ModelEntity<I> extends Type {
 			for (ModelEntity<?> e : entity.getDirectSuperEntities()) {
 				if (e == this) {
 					return true;
-				} else if (isAncestorOf(e)) {
+				}
+				else if (isAncestorOf(e)) {
 					return true;
 				}
 			}
@@ -813,7 +860,8 @@ public class ModelEntity<I> extends Type {
 		if (hasInitializers == null) {
 			if (initializers.size() > 0) {
 				return hasInitializers = true;
-			} else if (getDirectSuperEntities() != null) {
+			}
+			else if (getDirectSuperEntities() != null) {
 				for (ModelEntity<?> e : getDirectSuperEntities()) {
 					if (e.hasInitializers()) {
 						return hasInitializers = true;
@@ -849,7 +897,8 @@ public class ModelEntity<I> extends Type {
 					ModelInitializer initializer = e.getInitializerForArgs(types);
 					if (found == null) {
 						found = initializer;
-					} else {
+					}
+					else {
 						throw new ModelDefinitionException("Initializer clash: " + found.getInitializingMethod().toGenericString()
 								+ " cannot be distinguished with " + initializer.getInitializingMethod().toGenericString()
 								+ ". Please override initializer in " + getImplementedInterface());
@@ -947,13 +996,15 @@ public class ModelEntity<I> extends Type {
 	public Modify getModify() throws ModelDefinitionException {
 		if (modify != null) {
 			return modify;
-		} else {
+		}
+		else {
 			if (getDirectSuperEntities() != null) {
 				for (ModelEntity<? super I> e : getDirectSuperEntities()) {
 					if (e.getModify() != null) {
 						if (modify == null) {
 							modify = e.getModify();
-						} else {
+						}
+						else {
 							throw new ModelDefinitionException("Duplicated modify annotation on " + this
 									+ ". Please add modify annotation on " + implementedInterface.getName());
 						}
@@ -981,12 +1032,39 @@ public class ModelEntity<I> extends Type {
 		if (isAbstract()) {
 			return;
 		}
-		for (Method method : getImplementedInterface().getMethods()) {
+		for (Method method : getNotOverridenMethods()) {
 			if (!checkMethodImplementation(method, factory)) {
 				System.err.println("NOT FOUND: " + method + " in " + getImplementedInterface());
 				throw new MissingImplementationException(this, method, factory);
 			}
 		}
+	}
+
+	/**
+	 * Return the list of all methods beeing implemented by entity addressed by implemented interface<br>
+	 * Methods beeing shadowed by overriden methods are excluded from results
+	 * 
+	 * @return
+	 */
+	public List<Method> getNotOverridenMethods() {
+		List<Method> returned = new ArrayList<Method>();
+		for (Method m1 : getImplementedInterface().getMethods()) {
+			boolean isOverriden = false;
+			// Method overridingMethod = null;
+			for (Method m2 : getImplementedInterface().getMethods()) {
+				if (!m1.equals(m2) && PamelaUtils.methodOverrides(m2, m1, getImplementedInterface())) {
+					isOverriden = true;
+					// overridingMethod = m2;
+				}
+
+			}
+			if (!isOverriden) {
+				returned.add(m1);
+			} /*else {
+				System.out.println("Dismiss " + m1 + " because overriden by " + overridingMethod);
+				}*/
+		}
+		return returned;
 	}
 
 	/**
@@ -996,12 +1074,13 @@ public class ModelEntity<I> extends Type {
 	 * @throws ModelDefinitionException
 	 */
 	private boolean checkMethodImplementation(Method method, ModelFactory factory) throws ModelDefinitionException {
+
 		// Abstract entities are allowed not to provide all implementations
 		ModelProperty<?> property = getPropertyForMethod(method);
 		if (property != null) {
 			return true;
-		} else {
-
+		}
+		else {
 			if (method.getAnnotation(Finder.class) != null) {
 				return true;
 			}
