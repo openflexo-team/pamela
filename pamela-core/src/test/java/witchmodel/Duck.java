@@ -38,69 +38,35 @@
 
 package witchmodel;
 
-import org.openflexo.model.annotations.Getter;
 import org.openflexo.model.annotations.Implementation;
+import org.openflexo.model.annotations.ImplementationClass;
+import org.openflexo.model.annotations.Initializer;
 import org.openflexo.model.annotations.ModelEntity;
 import org.openflexo.model.annotations.Setter;
-import org.openflexo.model.annotations.XMLAttribute;
 import org.openflexo.model.annotations.XMLElement;
+import org.openflexo.model.factory.AccessibleProxyObject;
 
-@ModelEntity()
-@XMLElement()
-public interface PhysicalObject {
+import witchmodel.Duck.PersonImpl;
 
-	public static final String WIDTH = "width";
-	public static final String HEIGHT = "height";
-	public static final String LENGTH = "lenght";
-	public static final String DENSITY = "density";
+@ModelEntity
+@XMLElement
+@ImplementationClass(PersonImpl.class)
+public interface Duck extends PhysicalObject, FloatingStuff, AccessibleProxyObject {
 
-	@Getter(value = WIDTH, defaultValue = "0")
-	@XMLAttribute(xmlTag = WIDTH)
-	public Float getWidth();
-
-	@Setter(WIDTH)
-	public void setWidth(Float value);
-
-	@Getter(value = HEIGHT, defaultValue = "0")
-	@XMLAttribute(xmlTag = HEIGHT)
-	public Float getHeight();
-
-	@Setter(HEIGHT)
-	public void setHeight(Float value);
-
-	@Getter(value = LENGTH, defaultValue = "0")
-	@XMLAttribute(xmlTag = LENGTH)
-	public Float getLength();
-
-	@Setter(LENGTH)
-	public void setLength(Float value);
-
-	@Getter(value = DENSITY, defaultValue = "0")
-	@XMLAttribute(xmlTag = DENSITY)
-	public Float getDensity();
-
-	@Setter(DENSITY)
-	public void setDensity(Float value);
-
-	public Float getFullVolume();
-
-	public Float getWeight();
-
-	public boolean weighsSameAs(PhysicalObject o);
+	@Initializer
+	void init();
 
 	@Implementation
-	public abstract class PhysicalObjectImpl implements PhysicalObject {
+	public abstract class PersonImpl implements Duck {
 
-		public Float getFullVolume() {
-			return this.getHeight() * this.getWidth() * this.getLength();
+		public void init() {
+			this.performSuperSetter(DENSITY, (float) 0.3);
 		}
 
-		public Float getWeight() {
-			return this.getFullVolume() * this.getDensity() * 1000;
-		}
-
-		public boolean weighsSameAs(PhysicalObject o) {
-			return this.getWeight() == o.getWeight();
+		@Override
+		@Setter(DENSITY)
+		public void setDensity(Float value) {
+			this.performSuperSetter(DENSITY, (float) 0.3);
 		}
 	}
 

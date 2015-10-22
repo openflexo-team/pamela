@@ -49,16 +49,24 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.model.ModelContext;
+import org.openflexo.model.factory.EditingContext;
+import org.openflexo.model.factory.EditingContextImpl;
 import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.model.undo.CompoundEdit;
+import org.openflexo.model.undo.UndoManager;
 
-import witchmodel.FloatingStuff;
+import witchmodel.BurningObject;
+import witchmodel.Duck;
 import witchmodel.Person;
 import witchmodel.PhysicalObject;
+import witchmodel.WoodenObject;
 
 public class WitchBasicTests extends AbstractPAMELATest {
 
 	private ModelFactory factory;
 	private ModelContext modelContext;
+	private EditingContext editingContext;
+	private UndoManager undoManager;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -73,8 +81,14 @@ public class WitchBasicTests extends AbstractPAMELATest {
 	@Before
 	public void setUp() throws Exception {
 		new File("/tmp").mkdirs();
-		modelContext = new ModelContext(PhysicalObject.class, Person.class);
+		modelContext = new ModelContext(PhysicalObject.class, Person.class, Duck.class, WoodenObject.class);
 		factory = new ModelFactory(modelContext);
+
+		editingContext = new EditingContextImpl();
+		// TODO: ça c'est un peu pourri quand même!
+		((EditingContextImpl) editingContext).createUndoManager();
+		factory.setEditingContext(editingContext);
+		undoManager = editingContext.getUndoManager();
 	}
 
 	@Override
@@ -89,9 +103,9 @@ public class WitchBasicTests extends AbstractPAMELATest {
 	 */
 	public void test1() throws Exception {
 
-		System.out.println(modelContext.debug());
+		// System.out.println(modelContext.debug());
 
-		assertEquals(3, modelContext.getEntityCount());
+		assertEquals(6, modelContext.getEntityCount());
 
 	}
 
@@ -106,7 +120,7 @@ public class WitchBasicTests extends AbstractPAMELATest {
 		apObject.setLength((float) 0.25);
 
 		System.out.println("Volume: " + apObject.getFullVolume() + " m3");
-		System.out.println("Weight: " + apObject.getWeight() + " Kg");
+		System.out.println("Weight: " + apObject.getWeight() + " Kg\n\n");
 
 		assertEquals((float) 0.125, apObject.getFullVolume().floatValue());
 		assertEquals((float) (0.125 * 2.25 * 1000), apObject.getWeight().floatValue());
@@ -126,21 +140,59 @@ public class WitchBasicTests extends AbstractPAMELATest {
 
 	public void testWitch() throws Exception {
 
-		Person apObject = factory.newInstance(Person.class);
-		assertTrue(apObject instanceof Person);
+		Person apPerson = factory.newInstance(Person.class);
+		Duck aDuck = factory.newInstance(Duck.class);
+		assertTrue(apPerson instanceof Person);
+		assertTrue(aDuck instanceof Duck);
 
-		apObject.setDensity((float) 1);
-		apObject.setWidth((float) 0.3);
-		apObject.setHeight((float) 1.75);
-		apObject.setLength((float) 0.15);
+		apPerson.setDensity((float) 100); // Should DO nothing
+		apPerson.setWidth((float) 0.30);
+		apPerson.setHeight((float) 1.5);
+		apPerson.setLength((float) 0.20);
+		assertEquals((float) 0.95, apPerson.getDensity());
 
-		System.out.println("Volume: " + apObject.getFullVolume() + " m3");
-		System.out.println("Weight: " + apObject.getWeight() + " Kg");
-		System.out.println("Sous l'eau de: " + ((FloatingStuff) apObject).getInWaterDepth() + " m");
+		// Testing undo
+		CompoundEdit initial = undoManager.startRecording("initial");
+		apPerson.setName("Whalaou");
+		undoManager.stopRecording(initial);
+		CompoundEdit changename = undoManager.startRecording("changename");
+		apPerson.setName("Okabunga");
+		undoManager.stopRecording(changename);
+		assertTrue(apPerson.getName().equals("Okabunga"));
+		undoManager.undo();
+		assertTrue(apPerson.getName().equals("Whalaou"));
+
+		aDuck.setWidth((float) 0.30);
+		aDuck.setHeight((float) 0.15);
+		aDuck.setLength((float) 0.20);
+		assertEquals((float) 0.3, aDuck.getDensity());
+
+		System.out.println("Volume: " + apPerson.getFullVolume() + " m3");
+		System.out.println("Weight: " + apPerson.getWeight() + " Kg");
+		System.out.println("Sous l'eau de: " + apPerson.getInWaterDepth() + " m\n\n");
+
+		System.out.println("Volume: " + aDuck.getFullVolume() + " m3");
+		System.out.println("Weight: " + aDuck.getWeight() + " Kg");
+		System.out.println("Sous l'eau de: " + aDuck.getInWaterDepth() + " m\n\n");
+
+		if (apPerson.weighsSameAs(aDuck)) {
+			System.out.print("She's a Witch!");
+			if (apPerson instanceof BurningObject) {
+				System.out.println("BUUURNNN!!");
+				apPerson.burn();
+			}
+		}
+		else {
+			System.out.print("OK, she is not...");
+			if (apPerson instanceof BurningObject) {
+				System.out.println("Let's burn it anyway!");
+				apPerson.burn();
+			}
+		}
 
 		try {
 			FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml");
-			factory.serialize(apObject, fos);
+			factory.serialize(apPerson, fos);
 			fos.flush();
 			fos.close();
 		} catch (FileNotFoundException e) {
