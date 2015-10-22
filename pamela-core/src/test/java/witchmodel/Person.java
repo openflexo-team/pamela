@@ -38,20 +38,35 @@
 
 package witchmodel;
 
+import org.openflexo.model.annotations.Getter;
+import org.openflexo.model.annotations.Implementation;
+import org.openflexo.model.annotations.ImplementationClass;
 import org.openflexo.model.annotations.Initializer;
 import org.openflexo.model.annotations.ModelEntity;
 import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.XMLElement;
 import org.openflexo.model.factory.AccessibleProxyObject;
 
+import witchmodel.Person.PersonImpl;
+
 @ModelEntity
 @XMLElement
-public interface Person extends PhysicalObject, FloatingStuff, AccessibleProxyObject {
+@ImplementationClass(PersonImpl.class)
+public interface Person extends PhysicalObject, FloatingStuff, BurningObject, AccessibleProxyObject {
+
+	static String NAME = "Name";
 
 	@Initializer
 	void init();
 
-	public abstract class PersonImpl extends PhysicalObjectImpl implements Person {
+	@Getter(value = NAME)
+	String getName();
+
+	@Setter(NAME)
+	void setName(String value);
+
+	@Implementation
+	public abstract class PersonImpl implements Person {
 
 		public void init() {
 			this.performSuperSetter(DENSITY, (float) 0.95);

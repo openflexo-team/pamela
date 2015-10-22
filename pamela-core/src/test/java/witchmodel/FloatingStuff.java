@@ -38,26 +38,20 @@
 
 package witchmodel;
 
-import org.openflexo.model.annotations.Getter;
-import org.openflexo.model.annotations.ImplementationClass;
+import org.openflexo.model.annotations.Implementation;
 import org.openflexo.model.annotations.ModelEntity;
 
-import witchmodel.FloatingStuff.FloatingStuffImpl;
-
 @ModelEntity()
-@ImplementationClass(FloatingStuffImpl.class)
 public interface FloatingStuff extends PhysicalObject {
 
-	public static final String IWD = "IWD";
-
-	@Getter(value = IWD)
 	public Float getInWaterDepth();
 
+	@Implementation
 	public abstract class FloatingStuffImpl implements FloatingStuff {
 
 		public Float getInWaterDepth() {
-			Float surface = this.getWidth() * this.getWeight();
-			return this.getWeight() / surface;
+			Float surface = this.getWidth() * this.getLength();
+			return this.getWeight() / (1000 * surface);
 		}
 	}
 
