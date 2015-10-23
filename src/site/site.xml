@@ -23,7 +23,7 @@
  <custom>
 	<openflexo-skin>
 		<sideMenus>true</sideMenus>
-		<localMenu>pamelaMenu.html</localMenu>
+		<localMenu>https://developers.openflexo.org/developersMenu.html</localMenu>
 	</openflexo-skin>
  </custom>
 

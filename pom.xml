@@ -13,6 +13,7 @@
     <artifactId>pamela</artifactId>
     <name>Pamela</name>
     <packaging>pom</packaging>
+    <url>https://pamela.openflexo.org/</url>
     <scm>
         <connection>scm:git:ssh://git@github.com/openflexo-team/pamela.git</connection>
         <url>https://github.com/openflexo-team/pamela</url>
