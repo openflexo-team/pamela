@@ -16,8 +16,6 @@
     <artifactId>openflexo-skin</artifactId>
     <version>1.3-SNAPSHOT</version>
   </skin>
-
- <custom>
 	<openflexo-skin>
 		<sideMenus>true</sideMenus>
 		<localMenu>/inc/html/developersMenu.html</localMenu>

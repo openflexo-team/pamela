@@ -14,7 +14,7 @@
   <skin>
     <groupId>org.openflexo</groupId>
     <artifactId>openflexo-skin</artifactId>
-    <version>1.3-SNAPSHOT	</version>
+    <version>1.3-SNAPSHOT</version>
   </skin>
 
  <custom>
@@ -25,6 +25,7 @@
 		<includeVersionLinks>true</includeVersionLinks>
 	</openflexo-skin>
  </custom>
+
   <body>
     <menu name="Pamela Core">
       <item name="Description" href="index.html" />
