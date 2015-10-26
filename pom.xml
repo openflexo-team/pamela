@@ -35,6 +35,7 @@
         <javassist.version>3.18.0-GA</javassist.version>
 	<changes.componentfilter>AND component=*</changes.componentfilter>
         <pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>
+	<sitedeploy.dir>/home/www/sites/pamela</sitedeploy.dir>
     </properties>
     <!-- ************
 	tools Config Dependency
@@ -110,7 +111,7 @@
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
+                <artifactId>jacoco-maven-plugin</artifsitedeploy.diractId>
                 <configuration>
                     <excludes>
                         <exclude>org.openflexo.model3.*</exclude>
@@ -172,7 +173,7 @@
             <distributionManagement>
                 <site>
                     <id>pamela.website</id>
-                    <url>scp://server-one.openflexo.org/home/www/sites/pamela/SNAPSHOT/</url>
+                    <url>scp://server-one.openflexo.org${sitedeploy.dir}/SNAPSHOT/</url>
                 </site>
             </distributionManagement>
         </profile>
@@ -189,7 +190,7 @@
             <distributionManagement>
                 <site>
                     <id>pamela.website</id>
-                    <url>scp://server-one.openflexo.org/home/www/sites/pamela/SNAPSHOT/</url>
+                    <url>scp://server-one.openflexo.org${sitedeploy.dir}/SNAPSHOT/</url>
                 </site>
             </distributionManagement>
         </profile>
@@ -206,7 +207,7 @@
             <distributionManagement>
                 <site>
                     <id>pamela.website</id>
-                    <url>scp://server-one.openflexo.org/home/www/sites/pamela/${project.version}/</url>
+                    <url>scp://server-one.openflexo.org${sitedeploy.dir}/${project.version}/</url>
                 </site>
             </distributionManagement>
         </profile>
