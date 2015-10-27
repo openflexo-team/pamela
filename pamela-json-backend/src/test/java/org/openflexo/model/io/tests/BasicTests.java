@@ -29,6 +29,7 @@ import org.openflexo.model.factory.AccessibleProxyObject;
 import org.openflexo.model.factory.Clipboard;
 import org.openflexo.model.factory.EmbeddingType;
 import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.model.io.JSonModelSerializer;
 import org.openflexo.toolbox.FileUtils;
 
 public class BasicTests extends AbstractPAMELATest {
@@ -51,6 +52,10 @@ public class BasicTests extends AbstractPAMELATest {
 		new File("/tmp").mkdirs();
 		modelContext = new ModelContext(FlexoProcess.class);
 		factory = new ModelFactory(modelContext);
+
+		factory = new ModelFactory(FlexoProcess.class);
+		JSonModelSerializer modelSerializer = new JSonModelSerializer(factory);
+		factory.setModelSerializer(modelSerializer);
 	}
 
 	@Override
@@ -131,7 +136,7 @@ public class BasicTests extends AbstractPAMELATest {
 		assertEquals(process, edge2.getProcess());
 
 		try {
-			FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml");
+			FileOutputStream fos = new FileOutputStream("/tmp/TestFile.json");
 			factory.serialize(process, fos);
 			fos.flush();
 			fos.close();
@@ -518,7 +523,7 @@ public class BasicTests extends AbstractPAMELATest {
 		assertEquals(0, newNode.getOutgoingEdges().size());
 		FileOutputStream fos = null;
 		try {
-			fos = new FileOutputStream("/tmp/TestFile.xml");
+			fos = new FileOutputStream("/tmp/TestFile.json");
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
@@ -593,7 +598,7 @@ public class BasicTests extends AbstractPAMELATest {
 		assertSame(newStartNode.getOutgoingEdges().get(0), newActivity.getIncomingEdges().get(0));
 		FileOutputStream fos = null;
 		try {
-			fos = new FileOutputStream("/tmp/TestFile.xml");
+			fos = new FileOutputStream("/tmp/TestFile.json");
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());

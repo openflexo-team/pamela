@@ -42,6 +42,7 @@ public class BasicJSonSerializationTests extends AbstractPAMELATest {
 		factory2 = new ModelFactory(MyNode.class);
 		modelSerializer2 = new JSonModelSerializer(factory2);
 		factory2.setModelSerializer(modelSerializer2);
+
 		factory = new ModelFactory(FlexoProcess.class);
 		modelSerializer = new JSonModelSerializer(factory);
 		factory.setModelSerializer(modelSerializer);
