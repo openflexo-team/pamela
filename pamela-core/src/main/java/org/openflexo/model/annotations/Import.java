@@ -50,5 +50,5 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.TYPE)
 public @interface Import {
 
-	public Class<?> value();
+	Class<?> value();
 }

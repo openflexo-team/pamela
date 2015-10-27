@@ -49,9 +49,9 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface Setter {
 
-	public String value();
+	String value();
 
-	public static class SetterImpl implements Setter {
+	class SetterImpl implements Setter {
 
 		private final String value;
 

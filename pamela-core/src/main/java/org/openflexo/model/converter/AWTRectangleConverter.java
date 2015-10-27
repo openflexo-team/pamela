@@ -38,10 +38,10 @@
 
 package org.openflexo.model.converter;
 
-import java.awt.Rectangle;
-
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.factory.ModelFactory;
+
+import java.awt.*;
 
 /**
  * @author gpolet
@@ -51,18 +51,10 @@ public class AWTRectangleConverter extends Converter<Rectangle> {
 
 	public static final AWTRectangleConverter instance = new AWTRectangleConverter();
 
-	/**
-	 * @param aClass
-	 */
 	public AWTRectangleConverter() {
 		super(Rectangle.class);
 	}
 
-	/**
-	 * Overrides convertFromString
-	 * 
-	 * @see org.openflexo.xmlcode.StringEncoder.Converter#convertFromString(java.lang.String)
-	 */
 	@Override
 	public Rectangle convertFromString(String value, ModelFactory factory) {
 		if (value == null) {
@@ -104,11 +96,6 @@ public class AWTRectangleConverter extends Converter<Rectangle> {
 		return r;
 	}
 
-	/**
-	 * Overrides convertToString
-	 * 
-	 * @see org.openflexo.xmlcode.StringEncoder.Converter#convertToString(java.lang.Object)
-	 */
 	@Override
 	public String convertToString(Rectangle r) {
 		return "[x=" + r.x + ",y=" + r.y + ",width=" + r.width + ",height=" + r.height + "]";

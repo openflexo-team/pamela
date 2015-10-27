@@ -56,10 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
-
 import org.jdom2.JDOMException;
 import org.openflexo.IObjectGraphFactory;
 import org.openflexo.model.ModelContext;
@@ -79,6 +75,10 @@ import org.openflexo.model.io.JDOMXMLSerializer;
 import org.openflexo.model.io.ModelDeserializer;
 import org.openflexo.model.io.ModelSerializer;
 import org.openflexo.model.undo.CreateCommand;
+
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
 
 /**
  * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
@@ -163,8 +163,8 @@ public class ModelFactory implements IObjectGraphFactory {
 		public void setSuperclass(Class clazz) {
 			if (getSuperclass() != clazz) {
 				if (locked) {
-					throw new IllegalStateException("ProxyFactory for " + modelEntity
-							+ " is locked. Super-class can no longer be modified.");
+					throw new IllegalStateException(
+							"ProxyFactory for " + modelEntity + " is locked. Super-class can no longer be modified.");
 				}
 			}
 			overridingSuperClass = true;
@@ -585,12 +585,13 @@ public class ModelFactory implements IObjectGraphFactory {
 		boolean append = false;
 		switch (embeddingType) {
 			case CLOSURE:
-				append = p.getEmbedded() != null && p.getEmbedded().closureConditions().length == 0 || p.getComplexEmbedded() != null
-						&& p.getComplexEmbedded().closureConditions().length == 0;
+
+				append = p.getEmbedded() != null && p.getEmbedded().closureConditions().length == 0
+						|| p.getComplexEmbedded() != null && p.getComplexEmbedded().closureConditions().length == 0;
 				break;
 			case DELETION:
-				append = p.getEmbedded() != null && p.getEmbedded().deletionConditions().length == 0 || p.getComplexEmbedded() != null
-						&& p.getComplexEmbedded().deletionConditions().length == 0;
+				append = p.getEmbedded() != null && p.getEmbedded().deletionConditions().length == 0
+						|| p.getComplexEmbedded() != null && p.getComplexEmbedded().deletionConditions().length == 0;
 				break;
 		}
 
@@ -710,8 +711,8 @@ public class ModelFactory implements IObjectGraphFactory {
 	 * @throws ModelDefinitionException
 	 * @throws CloneNotSupportedException
 	 */
-	public Object paste(Clipboard clipboard, Object context) throws ModelExecutionException, ModelDefinitionException,
-			CloneNotSupportedException {
+	public Object paste(Clipboard clipboard, Object context)
+			throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
 		if (!isProxyObject(context)) {
 			throw new ClipboardOperationException("Cannot paste here: context is not valid: " + context);
 		}
@@ -731,8 +732,8 @@ public class ModelFactory implements IObjectGraphFactory {
 	 * @throws ModelDefinitionException
 	 * @throws CloneNotSupportedException
 	 */
-	public Object paste(Clipboard clipboard, ModelProperty<?> modelProperty, Object context) throws ModelExecutionException,
-			ModelDefinitionException, CloneNotSupportedException {
+	public Object paste(Clipboard clipboard, ModelProperty<?> modelProperty, Object context)
+			throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
 		if (!isProxyObject(context)) {
 			throw new ClipboardOperationException("Cannot paste here: context is not valid");
 		}
@@ -787,9 +788,10 @@ public class ModelFactory implements IObjectGraphFactory {
 
 	public void serialize(Object object, OutputStream os) throws IOException, IllegalArgumentException, IllegalAccessException,
 			InvocationTargetException, ModelDefinitionException {
+
 		serialize(object, os, SerializationPolicy.PERMISSIVE, true);
 	}
-
+	
 	public void serialize(Object object, OutputStream os, SerializationPolicy policy, boolean resetModifiedStatus) throws IOException,
 			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		getModelSerializer().setSerializationPolicy(policy);

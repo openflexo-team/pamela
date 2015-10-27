@@ -49,9 +49,9 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface Remover {
 
-	public String value();
+	String value();
 
-	public static class RemoverImpl implements Remover {
+	class RemoverImpl implements Remover {
 		private final String value;
 
 		public RemoverImpl(String value) {

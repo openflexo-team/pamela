@@ -48,6 +48,6 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.PARAMETER)
 public @interface Parameter {
 
-	public String value();
+	String value();
 
 }

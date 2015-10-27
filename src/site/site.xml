@@ -23,14 +23,13 @@
  <custom>
 	<openflexo-skin>
 		<sideMenus>true</sideMenus>
-		<localMenu>pamelaMenu.html</localMenu>
+		<localMenu>/inc/html/developersMenu.html</localMenu>
+		<displayBreadCrumbs>true</displayBreadCrumbs>
+		<includeVersionLinks>true</includeVersionLinks>
 	</openflexo-skin>
  </custom>
 
   <body>
-    <links>
-      <item name="Openflexo" href="http://www.openflexo.org"/>
-    </links>
    <!--  <menu name="Usage">
       <item name="Usage simple" href="usage.html" />
       <item name="FAQ" href="http://maven.apache.org/archetype/maven-archetype-plugin/specification/specification.html"/>

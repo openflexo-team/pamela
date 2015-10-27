@@ -49,9 +49,9 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface Adder {
 
-	public String value();
+    String value();
 
-	public static class AdderImpl implements Adder {
+	class AdderImpl implements Adder {
 
 		private final String value;
 

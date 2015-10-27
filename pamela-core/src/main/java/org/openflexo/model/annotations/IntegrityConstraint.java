@@ -47,5 +47,5 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IntegrityConstraint {
 
-	public String value();
+	String value();
 }

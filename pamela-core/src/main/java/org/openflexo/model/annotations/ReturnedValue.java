@@ -48,5 +48,5 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface ReturnedValue {
 
-	public String value();
+    String value();
 }
