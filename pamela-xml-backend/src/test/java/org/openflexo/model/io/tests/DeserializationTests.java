@@ -1,4 +1,4 @@
-package org.openflexo;
+package org.openflexo.model.io.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
