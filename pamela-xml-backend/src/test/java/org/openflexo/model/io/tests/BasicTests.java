@@ -29,6 +29,8 @@ import org.openflexo.model.factory.AccessibleProxyObject;
 import org.openflexo.model.factory.Clipboard;
 import org.openflexo.model.factory.EmbeddingType;
 import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.model.io.JDOMXMLDeserializer;
+import org.openflexo.model.io.JDOMXMLSerializer;
 import org.openflexo.toolbox.FileUtils;
 
 public class BasicTests extends AbstractPAMELATest {
@@ -51,6 +53,11 @@ public class BasicTests extends AbstractPAMELATest {
 		new File("/tmp").mkdirs();
 		modelContext = new ModelContext(FlexoProcess.class);
 		factory = new ModelFactory(modelContext);
+
+		JDOMXMLSerializer serializer = new JDOMXMLSerializer(factory);
+		JDOMXMLDeserializer deserializer = new JDOMXMLDeserializer(factory);
+		factory.setModelSerializer(serializer);
+		factory.setModelDeserializer(deserializer);
 	}
 
 	@Override

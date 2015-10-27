@@ -21,6 +21,8 @@ import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.DeserializationPolicy;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.factory.SerializationPolicy;
+import org.openflexo.model.io.JDOMXMLDeserializer;
+import org.openflexo.model.io.JDOMXMLSerializer;
 import org.openflexo.model4.Node;
 import org.openflexo.model4.Node.NodeImpl;
 import org.openflexo.test.OrderedRunner;
@@ -37,6 +39,12 @@ public class DeserializationTests {
 		ModelEntityLibrary.clear();
 		file = File.createTempFile("PAMELA-TestDeserialization", ".xml");
 		factory = new ModelFactory(Node.class);
+
+		JDOMXMLSerializer serializer = new JDOMXMLSerializer(factory);
+		JDOMXMLDeserializer deserializer = new JDOMXMLDeserializer(factory);
+
+		factory.setModelSerializer(serializer);
+		factory.setModelDeserializer(deserializer);
 	}
 
 	@AfterClass
