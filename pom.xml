@@ -27,6 +27,7 @@
         <module>pamela-core</module>
         <module>pamela-editor</module>
         <module>pamela-json-backend</module>
+        <module>pamela-xml-backend</module>
     </modules>
     <!-- ************
 	Properties
