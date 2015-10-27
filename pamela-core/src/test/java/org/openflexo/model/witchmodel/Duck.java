@@ -36,22 +36,36 @@
  * 
  */
 
-package witchmodel;
+package org.openflexo.model.witchmodel;
 
 import org.openflexo.model.annotations.Implementation;
+import org.openflexo.model.annotations.ImplementationClass;
+import org.openflexo.model.annotations.Initializer;
 import org.openflexo.model.annotations.ModelEntity;
+import org.openflexo.model.annotations.Setter;
+import org.openflexo.model.annotations.XMLElement;
+import org.openflexo.model.factory.AccessibleProxyObject;
+import org.openflexo.model.witchmodel.Duck.PersonImpl;
 
-@ModelEntity()
-public interface FloatingStuff extends PhysicalObject {
+@ModelEntity
+@XMLElement
+@ImplementationClass(PersonImpl.class)
+public interface Duck extends PhysicalObject, FloatingStuff, AccessibleProxyObject {
 
-	public Float getInWaterDepth();
+	@Initializer
+	void init();
 
 	@Implementation
-	public abstract class FloatingStuffImpl implements FloatingStuff {
+	public abstract class PersonImpl implements Duck {
 
-		public Float getInWaterDepth() {
-			Float surface = this.getWidth() * this.getLength();
-			return this.getWeight() / (1000 * surface);
+		public void init() {
+			this.performSuperSetter(DENSITY, (float) 0.3);
+		}
+
+		@Override
+		@Setter(DENSITY)
+		public void setDensity(Float value) {
+			this.performSuperSetter(DENSITY, (float) 0.3);
 		}
 	}
 

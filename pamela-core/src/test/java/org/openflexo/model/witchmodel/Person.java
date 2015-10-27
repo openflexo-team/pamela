@@ -36,7 +36,7 @@
  * 
  */
 
-package witchmodel;
+package org.openflexo.model.witchmodel;
 
 import org.openflexo.model.annotations.Getter;
 import org.openflexo.model.annotations.Implementation;
@@ -46,8 +46,7 @@ import org.openflexo.model.annotations.ModelEntity;
 import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.XMLElement;
 import org.openflexo.model.factory.AccessibleProxyObject;
-
-import witchmodel.Person.PersonImpl;
+import org.openflexo.model.witchmodel.Person.PersonImpl;
 
 @ModelEntity
 @XMLElement
