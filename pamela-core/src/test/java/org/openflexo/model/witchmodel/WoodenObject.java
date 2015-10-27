@@ -36,38 +36,13 @@
  * 
  */
 
-package witchmodel;
+package org.openflexo.model.witchmodel;
 
-import org.openflexo.model.annotations.Implementation;
-import org.openflexo.model.annotations.ImplementationClass;
-import org.openflexo.model.annotations.Initializer;
 import org.openflexo.model.annotations.ModelEntity;
-import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.XMLElement;
-import org.openflexo.model.factory.AccessibleProxyObject;
 
-import witchmodel.Duck.PersonImpl;
-
-@ModelEntity
-@XMLElement
-@ImplementationClass(PersonImpl.class)
-public interface Duck extends PhysicalObject, FloatingStuff, AccessibleProxyObject {
-
-	@Initializer
-	void init();
-
-	@Implementation
-	public abstract class PersonImpl implements Duck {
-
-		public void init() {
-			this.performSuperSetter(DENSITY, (float) 0.3);
-		}
-
-		@Override
-		@Setter(DENSITY)
-		public void setDensity(Float value) {
-			this.performSuperSetter(DENSITY, (float) 0.3);
-		}
-	}
+@ModelEntity()
+@XMLElement()
+public interface WoodenObject extends PhysicalObject, BurningObject {
 
 }

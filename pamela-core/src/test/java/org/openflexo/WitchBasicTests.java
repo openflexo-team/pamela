@@ -54,12 +54,11 @@ import org.openflexo.model.factory.EditingContextImpl;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.undo.CompoundEdit;
 import org.openflexo.model.undo.UndoManager;
-
-import witchmodel.BurningObject;
-import witchmodel.Duck;
-import witchmodel.Person;
-import witchmodel.PhysicalObject;
-import witchmodel.WoodenObject;
+import org.openflexo.model.witchmodel.BurningObject;
+import org.openflexo.model.witchmodel.Duck;
+import org.openflexo.model.witchmodel.Person;
+import org.openflexo.model.witchmodel.PhysicalObject;
+import org.openflexo.model.witchmodel.WoodenObject;
 
 public class WitchBasicTests extends AbstractPAMELATest {
 

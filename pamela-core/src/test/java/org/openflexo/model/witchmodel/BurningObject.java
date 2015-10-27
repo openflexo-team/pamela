@@ -36,13 +36,22 @@
  * 
  */
 
-package witchmodel;
+package org.openflexo.model.witchmodel;
 
+import org.openflexo.model.annotations.Implementation;
 import org.openflexo.model.annotations.ModelEntity;
-import org.openflexo.model.annotations.XMLElement;
 
-@ModelEntity()
-@XMLElement()
-public interface WoodenObject extends PhysicalObject, BurningObject {
+@ModelEntity(isAbstract = true)
+public interface BurningObject extends PhysicalObject {
+
+	public void burn();
+
+	@Implementation
+	public abstract class BurningObjectImpl implements BurningObject {
+
+		public void burn() {
+			System.out.println("You shall be burnt to ashes!");
+		}
+	}
 
 }
