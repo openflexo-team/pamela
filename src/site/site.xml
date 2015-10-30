@@ -32,10 +32,10 @@
 
 	<body>
 
-		<menu name="test"
+		<!--  <menu name="test"
 			img="https://developers.openflexo.org/images/components/pamela/PamelaScreenshot.png">
 			<item name="toto"></item>
-		</menu>
+		</menu>-->
 
 		<menu
 			img="https://developers.openflexo.org/images/components/pamela/PamelaScreenshot.png" />
