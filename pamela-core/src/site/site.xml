@@ -28,7 +28,7 @@
   <body>
 
 
-    <menu name="Pamela core">
+    <menu name="Pamela core" img="https://developers.openflexo.org/images/components/pamela/pamela_logo64x64.png">
       <item name="Home" 		href="index.html" />
       <item name="Getting started"    	href="GettingStarted.html" />
       <item name="FAQ" 			href="faq.html"/>
