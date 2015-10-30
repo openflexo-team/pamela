@@ -31,6 +31,8 @@
 
   <body>
   
+    <menu img="/images/components/pamela/PamelaScreenshot.png"/>
+    
     <menu name="Pamela">
       <item name="Home" 		href="index.html" />
       <item name="Pamela-core"    	href="pamela-core/index.html" />
