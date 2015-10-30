@@ -35,12 +35,12 @@
 		<!--  <menu name="test"
 			img="https://developers.openflexo.org/images/components/pamela/PamelaScreenshot.png">
 			<item name="toto"></item>
-		</menu>-->
+		</menu>
 
 		<menu
-			img="https://developers.openflexo.org/images/components/pamela/PamelaScreenshot.png" />
+			img="https://developers.openflexo.org/images/components/pamela/PamelaScreenshot.png" />-->
 
-		<menu name="Pamela">
+		<menu name="Pamela" img="https://developers.openflexo.org/images/components/pamela/PamelaScreenshot.png">
 			<item name="Home" href="index.html" />
 			<item name="Pamela-core" href="pamela-core/index.html" />
 			<item name="Pamela-editor" href="pamela-editor/index.html" />
