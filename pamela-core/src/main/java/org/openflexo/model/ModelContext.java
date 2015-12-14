@@ -49,11 +49,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.annotation.Nonnull;
 
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.toolbox.StringUtils;
 
 public class ModelContext {
 
@@ -78,6 +80,19 @@ public class ModelContext {
 
 		public String getTag() {
 			return tag;
+		}
+
+		public List<String> getDeprecatedTags() {
+			if (accessedEntity.getXMLElement() != null && StringUtils.isNotEmpty(accessedEntity.getXMLElement().deprecatedXMLTags())) {
+				List<String> returned = new ArrayList<String>();
+				StringTokenizer st = new StringTokenizer(accessedEntity.getXMLElement().deprecatedXMLTags(), ",");
+				while (st.hasMoreTokens()) {
+					String nextTag = st.nextToken();
+					returned.add(property.getXMLContext() + nextTag);
+				}
+				return returned;
+			}
+			return null;
 		}
 
 		public ModelProperty<? super I> getProperty() {
@@ -158,11 +173,25 @@ public class ModelContext {
 	private void appendEntity(ModelEntity<?> modelEntity, Set<ModelEntity<?>> visited) throws ModelDefinitionException {
 		visited.add(modelEntity);
 		modelEntities.put(modelEntity.getImplementedInterface(), modelEntity);
-		ModelEntity<?> put = modelEntitiesByXmlTag.put(modelEntity.getXMLTag(), modelEntity);
-		if (put != null && put != modelEntity) {
-			throw new ModelDefinitionException(
-					"Two entities define the same XMLTag '" + modelEntity.getXMLTag() + "'. Implemented interfaces: "
-							+ modelEntity.getImplementedInterface().getName() + " " + put.getImplementedInterface().getName());
+		if (!modelEntity.isAbstract()) {
+			ModelEntity<?> put = modelEntitiesByXmlTag.put(modelEntity.getXMLTag(), modelEntity);
+			if (put != null && put != modelEntity) {
+				throw new ModelDefinitionException(
+						"Two entities define the same XMLTag '" + modelEntity.getXMLTag() + "'. Implemented interfaces: "
+								+ modelEntity.getImplementedInterface().getName() + " " + put.getImplementedInterface().getName());
+			}
+			if (modelEntity.getXMLElement() != null && StringUtils.isNotEmpty(modelEntity.getXMLElement().deprecatedXMLTags())) {
+				StringTokenizer st = new StringTokenizer(modelEntity.getXMLElement().deprecatedXMLTags(), ",");
+				while (st.hasMoreTokens()) {
+					String deprecatedTag = st.nextToken();
+					ModelEntity<?> put2 = modelEntitiesByXmlTag.put(deprecatedTag, modelEntity);
+					if (put2 != null && put2 != modelEntity) {
+						throw new ModelDefinitionException(
+								"Two entities define the same XMLTag '" + deprecatedTag + "'. Implemented interfaces: "
+										+ modelEntity.getImplementedInterface().getName() + " " + put2.getImplementedInterface().getName());
+					}
+				}
+			}
 		}
 		for (ModelEntity<?> e : modelEntity.getEmbeddedEntities()) {
 			if (!visited.contains(e)) {
@@ -218,16 +247,28 @@ public class ModelContext {
 					if (accessedEntity != null) {
 						List<ModelEntity> allDescendantsAndMe = accessedEntity.getAllDescendantsAndMe(this);
 						for (ModelEntity accessible : allDescendantsAndMe) {
-							ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<I>(property, accessible);
-							ModelPropertyXMLTag<?> put = tags.put(tag.getTag(), tag);
-							if (put != null) {
-								throw new ModelDefinitionException("Property " + property
-										+ " defines a context which leads to an XMLElement name clash with " + accessible);
+							if (!accessible.isAbstract()) {
+								ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<I>(property, accessible);
+								ModelPropertyXMLTag<?> put = tags.put(tag.getTag(), tag);
+								if (put != null) {
+									throw new ModelDefinitionException("Property " + property
+											+ " defines a context which leads to an XMLElement name clash with " + accessible);
+								}
+								if (tag.getDeprecatedTags() != null) {
+									for (String deprecatedTag : tag.getDeprecatedTags()) {
+										ModelPropertyXMLTag<?> put2 = tags.put(deprecatedTag, tag);
+										if (put2 != null) {
+											throw new ModelDefinitionException("Property " + property
+													+ " defines a context which leads to an XMLElement name clash with " + accessible);
+										}
+									}
+								}
 							}
 						}
 						// Fixed issue while commenting following line and replacing it by a call to model-factory specific StringEncoder
 						// } else if (StringConverterLibrary.getInstance().hasConverter(property.getType())) {
-					} else if (modelFactory.getStringEncoder().isConvertable(property.getType())) {
+					}
+					else if (modelFactory.getStringEncoder().isConvertable(property.getType())) {
 						ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<I>(property);
 						ModelPropertyXMLTag<?> put = tags.put(tag.getTag(), tag);
 						if (put != null) {
@@ -253,7 +294,8 @@ public class ModelContext {
 		ModelEntity<?> modelEntity = getModelEntity(i);
 		if (modelEntity != null && !entities.contains(i)) {
 			entities.add(modelEntity);
-		} else {
+		}
+		else {
 			for (Class<?> j : i.getInterfaces()) {
 				appendKnownEntities(entities, j);
 			}
