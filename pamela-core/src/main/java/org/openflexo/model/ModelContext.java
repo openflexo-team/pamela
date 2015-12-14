@@ -173,13 +173,13 @@ public class ModelContext {
 	private void appendEntity(ModelEntity<?> modelEntity, Set<ModelEntity<?>> visited) throws ModelDefinitionException {
 		visited.add(modelEntity);
 		modelEntities.put(modelEntity.getImplementedInterface(), modelEntity);
+		ModelEntity<?> put = modelEntitiesByXmlTag.put(modelEntity.getXMLTag(), modelEntity);
+		if (put != null && put != modelEntity) {
+			throw new ModelDefinitionException(
+					"Two entities define the same XMLTag '" + modelEntity.getXMLTag() + "'. Implemented interfaces: "
+							+ modelEntity.getImplementedInterface().getName() + " " + put.getImplementedInterface().getName());
+		}
 		if (!modelEntity.isAbstract()) {
-			ModelEntity<?> put = modelEntitiesByXmlTag.put(modelEntity.getXMLTag(), modelEntity);
-			if (put != null && put != modelEntity) {
-				throw new ModelDefinitionException(
-						"Two entities define the same XMLTag '" + modelEntity.getXMLTag() + "'. Implemented interfaces: "
-								+ modelEntity.getImplementedInterface().getName() + " " + put.getImplementedInterface().getName());
-			}
 			if (modelEntity.getXMLElement() != null && StringUtils.isNotEmpty(modelEntity.getXMLElement().deprecatedXMLTags())) {
 				StringTokenizer st = new StringTokenizer(modelEntity.getXMLElement().deprecatedXMLTags(), ",");
 				while (st.hasMoreTokens()) {
@@ -247,13 +247,13 @@ public class ModelContext {
 					if (accessedEntity != null) {
 						List<ModelEntity> allDescendantsAndMe = accessedEntity.getAllDescendantsAndMe(this);
 						for (ModelEntity accessible : allDescendantsAndMe) {
+							ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<I>(property, accessible);
+							ModelPropertyXMLTag<?> put = tags.put(tag.getTag(), tag);
+							if (put != null) {
+								throw new ModelDefinitionException("Property " + property
+										+ " defines a context which leads to an XMLElement name clash with " + accessible);
+							}
 							if (!accessible.isAbstract()) {
-								ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<I>(property, accessible);
-								ModelPropertyXMLTag<?> put = tags.put(tag.getTag(), tag);
-								if (put != null) {
-									throw new ModelDefinitionException("Property " + property
-											+ " defines a context which leads to an XMLElement name clash with " + accessible);
-								}
 								if (tag.getDeprecatedTags() != null) {
 									for (String deprecatedTag : tag.getDeprecatedTags()) {
 										ModelPropertyXMLTag<?> put2 = tags.put(deprecatedTag, tag);
