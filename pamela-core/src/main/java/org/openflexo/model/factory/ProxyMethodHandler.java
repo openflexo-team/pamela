@@ -964,7 +964,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			}
 			return value;
 		}
-		Object returned = values.get(property.getPropertyIdentifier());
+		Object returned = null;
+		if (values != null){
+			returned = values.get(property.getPropertyIdentifier());
+			}
 		if (returned != null) {
 			return returned;
 		}
