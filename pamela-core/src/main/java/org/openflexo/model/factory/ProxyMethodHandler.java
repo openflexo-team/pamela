@@ -773,7 +773,18 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		// TODO: maybe we have to check that is is not the same PropertyChangeSupport ???
 		getPropertyChangeSuppport().firePropertyChange(DELETED, false, true);
+
+		// TODO ASK Syl if we should not remove all the listeners from pcSupport here?!?
+		// Did it by default
+		for (PropertyChangeListener cl: propertyChangeSupport.getPropertyChangeListeners()){
+			// TODO => notify the listener when it forgot to stop listening
+			propertyChangeSupport.removePropertyChangeListener(cl);
+		}
+	
+		
 		propertyChangeSupport = null;
+		
+		
 		return deleted;
 	}
 
