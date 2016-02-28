@@ -73,6 +73,7 @@ import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
 import org.openflexo.model.PamelaUtils;
 import org.openflexo.model.annotations.Adder;
+import org.openflexo.model.annotations.CloningStrategy.StrategyType;
 import org.openflexo.model.annotations.ComplexEmbedded;
 import org.openflexo.model.annotations.Embedded;
 import org.openflexo.model.annotations.Finder;
@@ -772,7 +773,18 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		// TODO: maybe we have to check that is is not the same PropertyChangeSupport ???
 		getPropertyChangeSuppport().firePropertyChange(DELETED, false, true);
+
+		// TODO ASK Syl if we should not remove all the listeners from pcSupport here?!?
+		// Did it by default
+		for (PropertyChangeListener cl: propertyChangeSupport.getPropertyChangeListeners()){
+			// TODO => notify the listener when it forgot to stop listening
+			propertyChangeSupport.removePropertyChangeListener(cl);
+		}
+	
+		
 		propertyChangeSupport = null;
+		
+		
 		return deleted;
 	}
 
@@ -963,7 +975,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			}
 			return value;
 		}
-		Object returned = values.get(property.getPropertyIdentifier());
+		Object returned = null;
+		if (values != null){
+			returned = values.get(property.getPropertyIdentifier());
+			}
 		if (returned != null) {
 			return returned;
 		}
@@ -1911,76 +1926,78 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				// have a setter or allow properties to live without a setter.
 				switch (p.getCardinality()) {
 					case SINGLE:
-						Object singleValue = invokeGetter(p);
-						switch (p.getCloningStrategy()) {
-							case CLONE:
-								if (getModelFactory().getStringEncoder().isConvertable(p.getType())) {
-									Object clonedValue = null;
-									try {
-										String clonedValueAsString = getModelFactory().getStringEncoder().toString(singleValue);
-										clonedValue = getModelFactory().getStringEncoder().fromString(p.getType(), clonedValueAsString);
-									} catch (InvalidDataException e) {
-										throw new ModelExecutionException(e);
+						if (p.getCloningStrategy() != StrategyType.IGNORE) {
+							Object singleValue = invokeGetter(p);
+							switch (p.getCloningStrategy()) {
+								case CLONE:
+									if (getModelFactory().getStringEncoder().isConvertable(p.getType())) {
+										Object clonedValue = null;
+										try {
+											String clonedValueAsString = getModelFactory().getStringEncoder().toString(singleValue);
+											clonedValue = getModelFactory().getStringEncoder().fromString(p.getType(), clonedValueAsString);
+										} catch (InvalidDataException e) {
+											throw new ModelExecutionException(e);
+										}
+										clonedObjectHandler.invokeSetter(p, clonedValue);
+										// clonedObjectHandler.internallyInvokeSetter(p, clonedValue);
 									}
-									clonedObjectHandler.invokeSetter(p, clonedValue);
-									// clonedObjectHandler.internallyInvokeSetter(p, clonedValue);
-								}
-								else if (ModelEntity.isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
-									// boolean debug = false;
-									/*if (p.getPropertyIdentifier().equals("startShape")) {
+									else if (ModelEntity.isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
+										// boolean debug = false;
+										/*if (p.getPropertyIdentifier().equals("startShape")) {
 										System.out.println("Tiens, pour startShape, singleValue=" + singleValue);
 										debug = true;
-									}*/
-									Object clonedValue = clonedObjects.get(singleValue);
-									/*if (debug) {
+										}*/
+										Object clonedValue = clonedObjects.get(singleValue);
+										/*if (debug) {
 										System.out.println("clonedValue=" + clonedValue + " singleValue=" + singleValue);
 										System.out.println("context=" + context);
 										System.out.println("isPartOfContext=" + isPartOfContext(singleValue, EmbeddingType.CLOSURE, context));
-									}*/
-									if (!isPartOfContext(singleValue, EmbeddingType.CLOSURE, context)) {
-										clonedValue = null;
-										/*if (debug) {
-											System.out.println("mais pas dans le contexte !!!");
 										}*/
+										if (!isPartOfContext(singleValue, EmbeddingType.CLOSURE, context)) {
+											clonedValue = null;
+											/*if (debug) {
+											System.out.println("mais pas dans le contexte !!!");
+											}*/
+										}
+										clonedObjectHandler.invokeSetter(p, clonedValue);
+										// clonedObjectHandler.internallyInvokeSetter(p, clonedValue);
 									}
-									clonedObjectHandler.invokeSetter(p, clonedValue);
-									// clonedObjectHandler.internallyInvokeSetter(p, clonedValue);
-								}
-								break;
-							case REFERENCE:
-								Object referenceValue = singleValue != null ? clonedObjects.get(singleValue) : null;
-								if (referenceValue == null) {
-									referenceValue = singleValue;
-								}
-								clonedObjectHandler.invokeSetter(p, referenceValue);
-								// clonedObjectHandler.internallyInvokeSetter(p, referenceValue);
-								break;
-							case CUSTOM_CLONE:
-								// clonedObjectHandler.invokeSetter(p, singleValue);
-								// clonedObjectHandler.internallyInvokeSetter(p, referenceValue);
-								break;
-							case FACTORY:
-								// We have here to invoke custom code (encoded in getStrategyTypeFactory())
-								try {
-									Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(),
-											clonedObject /*getObject()*/);
-									clonedObjectHandler.invokeSetter(p, computedValue);
-								} catch (InvalidKeyValuePropertyException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								} catch (TypeMismatchException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								} catch (NullReferenceException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								} catch (InvocationTargetException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-								break;
-							case IGNORE:
-								break;
+									break;
+								case REFERENCE:
+									Object referenceValue = singleValue != null ? clonedObjects.get(singleValue) : null;
+									if (referenceValue == null) {
+										referenceValue = singleValue;
+									}
+									clonedObjectHandler.invokeSetter(p, referenceValue);
+									// clonedObjectHandler.internallyInvokeSetter(p, referenceValue);
+									break;
+								case CUSTOM_CLONE:
+									// clonedObjectHandler.invokeSetter(p, singleValue);
+									// clonedObjectHandler.internallyInvokeSetter(p, referenceValue);
+									break;
+								case FACTORY:
+									// We have here to invoke custom code (encoded in getStrategyTypeFactory())
+									try {
+										Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(),
+												clonedObject /*getObject()*/);
+										clonedObjectHandler.invokeSetter(p, computedValue);
+									} catch (InvalidKeyValuePropertyException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									} catch (TypeMismatchException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									} catch (NullReferenceException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									} catch (InvocationTargetException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
+									break;
+								case IGNORE:
+									break;
+							}
 						}
 						break;
 					case LIST:

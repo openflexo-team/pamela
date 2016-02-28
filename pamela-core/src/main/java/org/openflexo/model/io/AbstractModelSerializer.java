@@ -64,7 +64,7 @@ public abstract class AbstractModelSerializer implements ModelSerializer {
 		this.policy = policy;
 	}
 
-	protected StringEncoder getStringEncoder() {
+	public StringEncoder getStringEncoder() {
 		return modelFactory.getStringEncoder();
 	}
 }

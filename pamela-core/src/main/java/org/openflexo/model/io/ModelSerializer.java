@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 
+import org.jdom2.Document;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.SerializationPolicy;
 
@@ -55,7 +56,7 @@ import org.openflexo.model.factory.SerializationPolicy;
 
 public interface ModelSerializer {
 
-	void serializeDocument(Object object, OutputStream os, boolean resetModifiedStatus) throws IOException, IllegalArgumentException,
+	Document serializeDocument(Object object, OutputStream os, boolean resetModifiedStatus) throws IOException, IllegalArgumentException,
 			IllegalAccessException, InvocationTargetException, ModelDefinitionException;
 
 	/*
