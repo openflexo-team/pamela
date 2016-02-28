@@ -56,7 +56,7 @@ import org.openflexo.model.factory.SerializationPolicy;
 
 public interface ModelSerializer {
 
-	Document serializeDocument(Object object, OutputStream os, boolean resetModifiedStatus) throws IOException, IllegalArgumentException,
+	void serializeDocument(Object object, OutputStream os, boolean resetModifiedStatus) throws IOException, IllegalArgumentException,
 			IllegalAccessException, InvocationTargetException, ModelDefinitionException;
 
 	/*

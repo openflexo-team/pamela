@@ -99,7 +99,7 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 	/** TODO: Ask Syl why he added this (Document) to serializeDocument ! **/
 	
 	@Override
-	public Document serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus) throws IOException,
+	public void serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus) throws IOException,
 			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Document builtDocument = new Document();
 		id = 0;
@@ -117,8 +117,7 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 			e.printStackTrace();
 		}
 		out.flush();
-		return builtDocument;
-	}
+		}
 
 	public String buildXMLOutput(Document doc) {
 		StringWriter writer = new StringWriter();
