@@ -64,6 +64,7 @@ import java.util.StringTokenizer;
 import javax.annotation.Nonnull;
 
 import org.openflexo.connie.BindingEvaluator;
+import org.openflexo.connie.DataBinding;
 import org.openflexo.connie.exception.NullReferenceException;
 import org.openflexo.connie.exception.TypeMismatchException;
 import org.openflexo.connie.type.TypeUtils;
@@ -776,15 +777,13 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		// TODO ASK Syl if we should not remove all the listeners from pcSupport here?!?
 		// Did it by default
-		for (PropertyChangeListener cl: propertyChangeSupport.getPropertyChangeListeners()){
+		for (PropertyChangeListener cl : propertyChangeSupport.getPropertyChangeListeners()) {
 			// TODO => notify the listener when it forgot to stop listening
 			propertyChangeSupport.removePropertyChangeListener(cl);
 		}
-	
-		
+
 		propertyChangeSupport = null;
-		
-		
+
 		return deleted;
 	}
 
@@ -976,9 +975,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return value;
 		}
 		Object returned = null;
-		if (values != null){
+		if (values != null) {
 			returned = values.get(property.getPropertyIdentifier());
-			}
+		}
 		if (returned != null) {
 			return returned;
 		}
@@ -1797,7 +1796,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 */
 	private Object performClone(Hashtable<CloneableProxyObject, Object> clonedObjects, Object... context)
 			throws ModelExecutionException, ModelDefinitionException {
-		// System.out.println("******* performClone " + getObject());
+		//System.out.println("******* performClone " + getObject());
 		boolean setIsBeingCloned = !beingCloned;
 		beingCloned = true;
 		Object returned = null;
@@ -1827,7 +1826,20 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 										}
 									}
 									else {
-										clonedObjectHandler.invokeSetter(p, singleValue);
+										if (singleValue != null) {
+											if (singleValue instanceof String) {
+												clonedObjectHandler.invokeSetter(p, new String((String) singleValue));
+											}
+											else if (singleValue instanceof DataBinding) {
+												clonedObjectHandler.invokeSetter(p, ((DataBinding) singleValue).clone());
+											}
+											else {
+												// TODO: handle primitive types and some basic types (eg. String)
+												clonedObjectHandler.invokeSetter(p, singleValue);
+											}
+										}
+										else {
+										}
 									}
 									break;
 								case REFERENCE:
