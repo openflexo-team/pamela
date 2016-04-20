@@ -1796,7 +1796,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 */
 	private Object performClone(Hashtable<CloneableProxyObject, Object> clonedObjects, Object... context)
 			throws ModelExecutionException, ModelDefinitionException {
-		//System.out.println("******* performClone " + getObject());
+		// System.out.println("******* performClone " + getObject());
 		boolean setIsBeingCloned = !beingCloned;
 		beingCloned = true;
 		Object returned = null;
@@ -1827,10 +1827,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 									}
 									else {
 										if (singleValue != null) {
-											if (singleValue instanceof String) {
+											/*if (singleValue instanceof String) {
 												clonedObjectHandler.invokeSetter(p, new String((String) singleValue));
 											}
-											else if (singleValue instanceof DataBinding) {
+											else*/ if (singleValue instanceof DataBinding) {
 												clonedObjectHandler.invokeSetter(p, ((DataBinding) singleValue).clone());
 											}
 											else {
@@ -1839,6 +1839,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 											}
 										}
 										else {
+											clonedObjectHandler.invokeSetter(p, null);
 										}
 									}
 									break;
