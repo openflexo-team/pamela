@@ -1,4 +1,4 @@
-&/**
+/**
  * 
  * Copyright (c) 2014-2015, Openflexo
  * 
@@ -49,8 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import javassist.util.proxy.ProxyObject;
-
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -69,6 +67,8 @@ import org.openflexo.model.factory.PAMELAConstants;
 import org.openflexo.model.factory.ProxyMethodHandler;
 import org.openflexo.toolbox.StringUtils;
 
+import javassist.util.proxy.ProxyObject;
+
 public class JDOMXMLSerializer extends AbstractModelSerializer {
 
 	public static final String ID = "id";
@@ -78,8 +78,7 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 	private Map<Object, ObjectReference> objectReferences;
 
 	/**
-	 * Stores already serialized objects where key is the serialized object and
-	 * value is a
+	 * Stores already serialized objects where key is the serialized object and value is a
 	 * 
 	 * <pre>
 	 * Object
@@ -96,8 +95,8 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 	}
 
 	@Override
-	public void serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus) throws IOException,
-			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+	public void serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus)
+			throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Document builtDocument = new Document();
 		id = 0;
 		objectReferences = new HashMap<Object, ObjectReference>();
@@ -151,8 +150,7 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 	// Améliorer la couverture du test
 
 	private <I> Element serializeElement(Object object, XMLElement context, boolean resetModifiedStatus)
-			throws IllegalArgumentException, IllegalAccessException, InvocationTargetException,
-			ModelDefinitionException {
+			throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Element returned;
 		if (object instanceof ProxyObject) {
 			ProxyMethodHandler<I> handler = (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
@@ -164,36 +162,35 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 			if (modelFactory.getModelContext().getModelEntity(implementedInterface) == null) {
 				serializeModelEntityName = true;
 				switch (policy) {
-				case EXTENSIVE:
-					List<ModelEntity<?>> upperEntities = modelFactory.getModelContext().getUpperEntities(object);
-					if (upperEntities.size() == 0) {
-						throw new ModelDefinitionException("Cannot serialize object of type: "
-								+ object.getClass().getName() + " in context " + context.xmlTag()
-								+ ". No model entity could be found in the model mapping");
-					} else if (upperEntities.size() > 1) {
-						throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
-								+ ". More than one entities are known in this model mapping.");
-					}
-					ModelEntity e = upperEntities.get(0);
-					xmlTag = e.getXMLTag();
-					modelEntity = ModelContextLibrary.getModelContext(implementedInterface).getModelEntity(
-							implementedInterface);
-					break;
-				case PERMISSIVE:
-					upperEntities = modelFactory.getModelContext().getUpperEntities(object);
-					if (upperEntities.size() == 0) {
-						throw new ModelDefinitionException("Cannot serialize object of type: "
-								+ object.getClass().getName() + " in context " + context.xmlTag()
-								+ ". No model entity could be found in the model mapping");
-					} else if (upperEntities.size() > 1) {
-						throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
-								+ ". More than one entities are known in this model mapping.");
-					}
-					modelEntity = (ModelEntity<I>) upperEntities.get(0);
-					break;
-				case RESTRICTIVE:
-					throw new RestrictiveSerializationException("Entity of type " + implementedInterface.getName()
-							+ " cannot be serialized in this model context");
+					case EXTENSIVE:
+						List<ModelEntity<?>> upperEntities = modelFactory.getModelContext().getUpperEntities(object);
+						if (upperEntities.size() == 0) {
+							throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
+									+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
+						}
+						else if (upperEntities.size() > 1) {
+							throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
+									+ ". More than one entities are known in this model mapping.");
+						}
+						ModelEntity e = upperEntities.get(0);
+						xmlTag = e.getXMLTag();
+						modelEntity = ModelContextLibrary.getModelContext(implementedInterface).getModelEntity(implementedInterface);
+						break;
+					case PERMISSIVE:
+						upperEntities = modelFactory.getModelContext().getUpperEntities(object);
+						if (upperEntities.size() == 0) {
+							throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
+									+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
+						}
+						else if (upperEntities.size() > 1) {
+							throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
+									+ ". More than one entities are known in this model mapping.");
+						}
+						modelEntity = (ModelEntity<I>) upperEntities.get(0);
+						break;
+					case RESTRICTIVE:
+						throw new RestrictiveSerializationException(
+								"Entity of type " + implementedInterface.getName() + " cannot be serialized in this model context");
 				}
 			}
 			String contextString = context != null ? context.context() : "";
@@ -218,11 +215,11 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 						returned = new Element(elementName, namespace);
 						returned.setAttribute(ID, reference.toString());
 						if (serializeModelEntityName) {
-							returned.setAttribute(PAMELAConstants.MODEL_ENTITY_ATTRIBUTE, handler.getModelEntity()
-									.getImplementedInterface().getName(), PAMELAConstants.NAMESPACE);
+							returned.setAttribute(PAMELAConstants.MODEL_ENTITY_ATTRIBUTE,
+									handler.getModelEntity().getImplementedInterface().getName(), PAMELAConstants.NAMESPACE);
 							if (handler.getOverridingSuperClass() != null) {
-								returned.setAttribute(PAMELAConstants.CLASS_ATTRIBUTE, handler
-										.getOverridingSuperClass().getName(), PAMELAConstants.NAMESPACE);
+								returned.setAttribute(PAMELAConstants.CLASS_ATTRIBUTE, handler.getOverridingSuperClass().getName(),
+										PAMELAConstants.NAMESPACE);
 							}
 						}
 						Iterator<ModelProperty<? super I>> properties = modelEntity.getProperties();
@@ -258,23 +255,22 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 							else if (p.getXMLElement() != null) {
 								XMLElement propertyXMLElement = p.getXMLElement();
 								switch (p.getCardinality()) {
-								case SINGLE:
-									Object oValue = handler.invokeGetter(p);
-									if (oValue != null) {
-										Element propertyElement = serializeElement(oValue, propertyXMLElement,
-												resetModifiedStatus);
-										returned.addContent(propertyElement);
-									}
-									break;
-								case LIST:
-									List<?> values = (List<?>) handler.invokeGetter(p);
-									// NPE if list not initialized
-									if (values != null) {
-										for (Object o : values) {
-											if (o != null) {
-												Element propertyElement2 = serializeElement(o, propertyXMLElement,
-														resetModifiedStatus);
-												returned.addContent(propertyElement2);
+									case SINGLE:
+										Object oValue = handler.invokeGetter(p);
+										if (oValue != null) {
+											Element propertyElement = serializeElement(oValue, propertyXMLElement, resetModifiedStatus);
+											returned.addContent(propertyElement);
+										}
+										break;
+									case LIST:
+										List<?> values = (List<?>) handler.invokeGetter(p);
+										// NPE if list not initialized
+										if (values != null) {
+											for (Object o : values) {
+												if (o != null) {
+													Element propertyElement2 = serializeElement(o, propertyXMLElement, resetModifiedStatus);
+													returned.addContent(propertyElement2);
+												}
 											}
 										}
 										break;
@@ -302,15 +298,17 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 									"Hu hoh, really don't know how you got into this state: your object is string convertable but conversion could not be performed",
 									e);
 						}
-					} else {
-						throw new ModelDefinitionException("No XML element for "
-								+ modelEntity.getImplementedInterface() + " modelEntity=" + modelEntity);
+					}
+					else {
+						throw new ModelDefinitionException(
+								"No XML element for " + modelEntity.getImplementedInterface() + " modelEntity=" + modelEntity);
 					}
 				} finally {
 					handler.setSerializing(false, resetModifiedStatus);
 				}
 
-			} else {
+			}
+			else {
 				// This object was already serialized somewhere, only put an
 				// idref
 				// Debugging.debug ("This object has already been serialized
@@ -337,9 +335,9 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 					returned = new Element(context.xmlTag(), context.namespace());
 					returned.setText(getStringEncoder().toString(object));
 					return returned;
-				} else {
-					throw new ModelDefinitionException("No XML tag defined for " + context + " while serializing "
-							+ object);
+				}
+				else {
+					throw new ModelDefinitionException("No XML tag defined for " + context + " while serializing " + object);
 				}
 			} catch (InvalidDataException e) {
 				throw new ModelDefinitionException(
@@ -421,11 +419,13 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 
 		private void addElementReference(ElementReference elementReference) {
 			if (isFullyDescribed(elementReference.element)) {
-				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+" PRIMARY "+outputter.outputString(elementReference.element));
+				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+" PRIMARY
+				// "+outputter.outputString(elementReference.element));
 				primaryElement = elementReference;
 			}
 			else {
-				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+"         "+outputter.outputString(elementReference.element));
+				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+"
+				// "+outputter.outputString(elementReference.element));
 				referenceElements.add(elementReference);
 			}
 		}
