@@ -64,6 +64,7 @@ import java.util.StringTokenizer;
 import javax.annotation.Nonnull;
 
 import org.openflexo.connie.BindingEvaluator;
+import org.openflexo.connie.DataBinding;
 import org.openflexo.connie.exception.NullReferenceException;
 import org.openflexo.connie.exception.TypeMismatchException;
 import org.openflexo.connie.type.TypeUtils;
@@ -773,7 +774,16 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		// TODO: maybe we have to check that is is not the same PropertyChangeSupport ???
 		getPropertyChangeSuppport().firePropertyChange(DELETED, false, true);
+
+		// TODO ASK Syl if we should not remove all the listeners from pcSupport here?!?
+		// Did it by default
+		for (PropertyChangeListener cl : propertyChangeSupport.getPropertyChangeListeners()) {
+			// TODO => notify the listener when it forgot to stop listening
+			propertyChangeSupport.removePropertyChangeListener(cl);
+		}
+
 		propertyChangeSupport = null;
+
 		return deleted;
 	}
 
@@ -964,7 +974,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			}
 			return value;
 		}
-		Object returned = values.get(property.getPropertyIdentifier());
+		Object returned = null;
+		if (values != null) {
+			returned = values.get(property.getPropertyIdentifier());
+		}
 		if (returned != null) {
 			return returned;
 		}
@@ -1813,7 +1826,21 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 										}
 									}
 									else {
-										clonedObjectHandler.invokeSetter(p, singleValue);
+										if (singleValue != null) {
+											/*if (singleValue instanceof String) {
+												clonedObjectHandler.invokeSetter(p, new String((String) singleValue));
+											}
+											else*/ if (singleValue instanceof DataBinding) {
+												clonedObjectHandler.invokeSetter(p, ((DataBinding) singleValue).clone());
+											}
+											else {
+												// TODO: handle primitive types and some basic types (eg. String)
+												clonedObjectHandler.invokeSetter(p, singleValue);
+											}
+										}
+										else {
+											clonedObjectHandler.invokeSetter(p, null);
+										}
 									}
 									break;
 								case REFERENCE:
@@ -1846,29 +1873,31 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							break;
 						case LIST:
 							List values = (List) invokeGetter(p);
-							List values2 = new ArrayList(values);
-							for (Object value : values2) {
-								switch (p.getCloningStrategy()) {
-									case CLONE:
-										if (ModelEntity.isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
-											if (!isPartOfContext(value, EmbeddingType.CLOSURE, context)) {
-												// Don't do it, outside of context
-											}
-											else {
-												appendToClonedObjects(clonedObjects, (CloneableProxyObject) value);
-											}
-										} // SGU: removed this code i think it's wrong
-										/*else {
+							if (values != null) {
+								List values2 = new ArrayList(values);
+								for (Object value : values2) {
+									switch (p.getCloningStrategy()) {
+										case CLONE:
+											if (ModelEntity.isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
+												if (!isPartOfContext(value, EmbeddingType.CLOSURE, context)) {
+													// Don't do it, outside of context
+												}
+												else {
+													appendToClonedObjects(clonedObjects, (CloneableProxyObject) value);
+												}
+											} // SGU: removed this code i think it's wrong
+											/*else {
 											clonedObjectHandler.invokeAdder(p, value);
 											}*/
-										break;
-									case REFERENCE:
-										clonedObjectHandler.invokeAdder(p, value);
-										break;
-									case FACTORY:
-										break;
-									case IGNORE:
-										break;
+											break;
+										case REFERENCE:
+											clonedObjectHandler.invokeAdder(p, value);
+											break;
+										case FACTORY:
+											break;
+										case IGNORE:
+											break;
+									}
 								}
 							}
 							break;
@@ -1988,50 +2017,53 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						break;
 					case LIST:
 						List<?> values = (List<?>) invokeGetter(p);
-						List<?> valuesToClone = new ArrayList<Object>(values);
-						/*System.out.println("Cloning of property " + p);
-						System.out.println("Values to clone are: ");
-						for (Object value : valuesToClone) {
+						if (values != null) {
+							List<?> valuesToClone = new ArrayList<Object>(values);
+							/*System.out.println("Cloning of property " + p);
+							System.out.println("Values to clone are: ");
+							for (Object value : valuesToClone) {
 							System.out.println("* " + value);
-						}*/
-						for (Object value : valuesToClone) {
-							switch (p.getCloningStrategy()) {
-								case CLONE:
-									if (getModelFactory().getStringEncoder().isConvertable(p.getType())) {
-										Object clonedValue = null;
-										try {
-											String clonedValueAsString = getModelFactory().getStringEncoder().toString(value);
-											clonedValue = getModelFactory().getStringEncoder().fromString(p.getType(), clonedValueAsString);
-										} catch (InvalidDataException e) {
-											throw new ModelExecutionException(e);
-										}
-										List<?> l = (List<?>) clonedObjectHandler.invokeGetter(p);
-										clonedObjectHandler.invokeAdder(p, clonedValue);
-									}
-									else if (ModelEntity.isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
-										Object clonedValue = clonedObjects.get(value);
-										if (!isPartOfContext(value, EmbeddingType.CLOSURE, context)) {
-											clonedValue = null;
-										}
-										if (clonedValue != null) {
+							}*/
+							for (Object value : valuesToClone) {
+								switch (p.getCloningStrategy()) {
+									case CLONE:
+										if (getModelFactory().getStringEncoder().isConvertable(p.getType())) {
+											Object clonedValue = null;
+											try {
+												String clonedValueAsString = getModelFactory().getStringEncoder().toString(value);
+												clonedValue = getModelFactory().getStringEncoder().fromString(p.getType(),
+														clonedValueAsString);
+											} catch (InvalidDataException e) {
+												throw new ModelExecutionException(e);
+											}
+											List<?> l = (List<?>) clonedObjectHandler.invokeGetter(p);
 											clonedObjectHandler.invokeAdder(p, clonedValue);
 										}
-									}
-									break;
-								case REFERENCE:
-									Object referenceValue = value != null ? clonedObjects.get(value) : null;
-									if (referenceValue == null) {
-										referenceValue = value;
-									}
-									clonedObjectHandler.invokeAdder(p, referenceValue);
-									break;
-								case FACTORY:
-									// TODO Not implemented
-									break;
-								case IGNORE:
-									break;
-							}
+										else if (ModelEntity.isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
+											Object clonedValue = clonedObjects.get(value);
+											if (!isPartOfContext(value, EmbeddingType.CLOSURE, context)) {
+												clonedValue = null;
+											}
+											if (clonedValue != null) {
+												clonedObjectHandler.invokeAdder(p, clonedValue);
+											}
+										}
+										break;
+									case REFERENCE:
+										Object referenceValue = value != null ? clonedObjects.get(value) : null;
+										if (referenceValue == null) {
+											referenceValue = value;
+										}
+										clonedObjectHandler.invokeAdder(p, referenceValue);
+										break;
+									case FACTORY:
+										// TODO Not implemented
+										break;
+									case IGNORE:
+										break;
+								}
 
+							}
 						}
 						break;
 					default:

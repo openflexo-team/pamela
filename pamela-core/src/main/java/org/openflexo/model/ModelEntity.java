@@ -513,11 +513,12 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 					if (klass != null) {
 						if (implementingClass == null) {
 							implementingClass = klass;
+							// System.out.println("Found " + implementingClass + " for " + e.getImplementedInterface());
 						}
-						else {
-							throw new ModelDefinitionException("Ambiguous implementing class for entity '" + this
-									+ "'. Found more than one valid super class: " + implementingClass.getName() + " and "
-									+ klass.getName());
+						else if (implementingClass != klass) {
+							throw new ModelDefinitionException(
+									"Ambiguous implementing klass for entity '" + this + "'. Found more than one valid super klass: "
+											+ implementingClass.getName() + " and " + klass.getName());
 						}
 					}
 				}
