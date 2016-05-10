@@ -49,8 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import javassist.util.proxy.ProxyObject;
-
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -68,6 +66,8 @@ import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.factory.PAMELAConstants;
 import org.openflexo.model.factory.ProxyMethodHandler;
 import org.openflexo.toolbox.StringUtils;
+
+import javassist.util.proxy.ProxyObject;
 
 public class JDOMXMLSerializer extends AbstractModelSerializer {
 
@@ -95,8 +95,8 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 	}
 
 	@Override
-	public void serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus) throws IOException,
-			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+	public void serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus)
+			throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Document builtDocument = new Document();
 		id = 0;
 		objectReferences = new HashMap<Object, ObjectReference>();
@@ -149,8 +149,8 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 
 	// Améliorer la couverture du test
 
-	private <I> Element serializeElement(Object object, XMLElement context, boolean resetModifiedStatus) throws IllegalArgumentException,
-			IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+	private <I> Element serializeElement(Object object, XMLElement context, boolean resetModifiedStatus)
+			throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Element returned;
 		if (object instanceof ProxyObject) {
 			ProxyMethodHandler<I> handler = (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
@@ -215,8 +215,8 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 						returned = new Element(elementName, namespace);
 						returned.setAttribute(ID, reference.toString());
 						if (serializeModelEntityName) {
-							returned.setAttribute(PAMELAConstants.MODEL_ENTITY_ATTRIBUTE, handler.getModelEntity()
-									.getImplementedInterface().getName(), PAMELAConstants.NAMESPACE);
+							returned.setAttribute(PAMELAConstants.MODEL_ENTITY_ATTRIBUTE,
+									handler.getModelEntity().getImplementedInterface().getName(), PAMELAConstants.NAMESPACE);
 							if (handler.getOverridingSuperClass() != null) {
 								returned.setAttribute(PAMELAConstants.CLASS_ATTRIBUTE, handler.getOverridingSuperClass().getName(),
 										PAMELAConstants.NAMESPACE);
@@ -286,8 +286,8 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 						}
 					}
 					else {
-						throw new ModelDefinitionException("No XML element for " + modelEntity.getImplementedInterface() + " modelEntity="
-								+ modelEntity);
+						throw new ModelDefinitionException(
+								"No XML element for " + modelEntity.getImplementedInterface() + " modelEntity=" + modelEntity);
 					}
 				} finally {
 					handler.setSerializing(false, resetModifiedStatus);
@@ -397,11 +397,13 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 
 		private void addElementReference(ElementReference elementReference) {
 			if (isFullyDescribed(elementReference.element)) {
-				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+" PRIMARY "+outputter.outputString(elementReference.element));
+				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+" PRIMARY
+				// "+outputter.outputString(elementReference.element));
 				primaryElement = elementReference;
 			}
 			else {
-				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+"         "+outputter.outputString(elementReference.element));
+				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+"
+				// "+outputter.outputString(elementReference.element));
 				referenceElements.add(elementReference);
 			}
 		}
