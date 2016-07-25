@@ -1,0 +1,70 @@
+buildscript {
+  repositories {
+    jcenter()
+  }
+}
+
+subprojects {
+  apply plugin: 'java'
+
+  project.buildDir = 'target'
+  
+  repositories {
+    jcenter()
+  }
+ 
+  dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.+'
+  }
+
+  test {
+    testLogging {
+      // Show that tests are run in the command-line output
+      events 'started', 'passed'
+      //showStandardStreams = true
+    }
+  }
+
+  if (JavaVersion.current().isJava8Compatible()) {
+    allprojects {
+      tasks.withType(Javadoc) {
+	options.addBooleanOption('Xdoclint:none', true)
+      }
+    }
+  }
+
+  task testJar(type: Jar) {
+    classifier = 'tests'
+    from sourceSets.test.output
+  }
+
+  task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+  }
+
+  task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+  }
+
+  artifacts {
+    archives sourcesJar
+    archives javadocJar
+    archives testJar
+  }
+}
+
+apply plugin: 'maven'
+
+archivesBaseName = rootProject.name
+group = 'org.openflexo'
+version = '1.4-SNAPSHOT'
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      repository(url: 'file:./maven')
+    }
+  }
+}
