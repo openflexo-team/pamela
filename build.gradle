@@ -10,7 +10,8 @@ buildscript {
 
 subprojects {
   apply plugin: 'java'
-
+  apply plugin: "pride"
+  
   project.buildDir = 'target'
   
   repositories {
