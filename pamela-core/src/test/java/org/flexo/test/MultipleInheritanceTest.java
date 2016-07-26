@@ -30,7 +30,8 @@ public class MultipleInheritanceTest {
 	public void testFactory() {
 
 		try {
-			ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(A.class, B.class, C.class, D1.class));
+			// Var unused ModelFactory factory =
+			new ModelFactory(ModelContextLibrary.getCompoundModelContext(A.class, B.class, C.class, D1.class));
 
 			fail();
 		} catch (ModelDefinitionException e) {

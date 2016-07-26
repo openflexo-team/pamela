@@ -9,8 +9,9 @@ buildscript {
 }
 
 subprojects {
+  group='org.openflexo'
   apply plugin: 'java'
-  apply plugin: "pride"
+  apply plugin: 'pride'
   
   project.buildDir = 'target'
   

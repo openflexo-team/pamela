@@ -185,9 +185,9 @@ public class ModelProperty<I> {
 				}
 			}
 		}
-		return new ModelProperty<I>(modelEntity, propertyIdentifier, getter, setter, adder, remover, xmlAttribute, xmlElement,
-				returnedValue, embedded, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod, setterMethod,
-				adderMethod, removerMethod);
+		return new ModelProperty<>(modelEntity, propertyIdentifier, getter, setter, adder, remover, xmlAttribute, xmlElement, returnedValue,
+				embedded, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod, setterMethod, adderMethod,
+				removerMethod);
 	}
 
 	protected ModelProperty(ModelEntity<I> modelEntity, String propertyIdentifier, Getter getter, Setter setter, Adder adder,
@@ -827,7 +827,7 @@ public class ModelProperty<I> {
 			setPastingPoint = rulingProperty.getSetPastingPoint();
 		}
 
-		return new ModelProperty<I>(getModelEntity(), getPropertyIdentifier(), getter, setter, adder, remover, xmlAttribute, xmlElement,
+		return new ModelProperty<>(getModelEntity(), getPropertyIdentifier(), getter, setter, adder, remover, xmlAttribute, xmlElement,
 				returnedValue, embedded, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod, setterMethod,
 				adderMethod, removerMethod);
 	}

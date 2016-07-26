@@ -84,7 +84,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 		pcSupport = new PropertyChangeSupport(this);
 
-		ruleSets = new HashMap<Class<?>, ValidationRuleSet<?>>();
+		ruleSets = new HashMap<>();
 
 		try {
 			searchAndRegisterValidationRules(modelContext);
@@ -115,7 +115,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 			// System.out.println("assertTrue(validationModel.getValidationModelFactory().getModelContext().getModelEntity("
 			// + e.getImplementedInterface().toString().substring(10) + ".class) != null);");
 			Class i = e.getImplementedInterface();
-			ruleSets.put(i, new ValidationRuleSet<Validable>(i));
+			ruleSets.put(i, new ValidationRuleSet<>(i));
 		}
 
 		// Now manage inheritance
@@ -136,7 +136,8 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 				// System.out.println("Found " + originRuleSet.getDeclaredType() + " inherits from " + superInterface);
 				originRuleSet.addParentRuleSet((ValidationRuleSet) ruleSets.get(superInterface));
 
-			} else {
+			}
+			else {
 				manageInheritanceFor(superInterface, originRuleSet);
 			}
 		}
@@ -217,7 +218,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 	public List<Class<?>> getSortedClasses() {
 		if (sortedClasses == null) {
-			sortedClasses = new ArrayList<Class<?>>();
+			sortedClasses = new ArrayList<>();
 			sortedClasses.addAll(ruleSets.keySet());
 			Collections.sort(sortedClasses, new ClassComparator());
 		}
@@ -314,7 +315,8 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 			for (int i = startIndex + 2; i < localized.length(); i++) {
 				if (localized.charAt(i) == '(') {
 					p++;
-				} else if (localized.charAt(i) == ')') {
+				}
+				else if (localized.charAt(i) == ')') {
 					p--;
 				}
 				if (p == 0) {

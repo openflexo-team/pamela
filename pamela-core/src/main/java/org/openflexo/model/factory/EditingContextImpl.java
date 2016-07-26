@@ -55,7 +55,7 @@ public class EditingContextImpl implements EditingContext {
 	private UndoManager undoManager;
 
 	public EditingContextImpl() {
-		objects = new HashSet<Object>();
+		objects = new HashSet<>();
 	}
 
 	/**

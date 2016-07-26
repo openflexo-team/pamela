@@ -37,7 +37,6 @@
  * 
  */
 
-
 package org.openflexo.model;
 
 import java.lang.annotation.Annotation;
@@ -59,7 +58,7 @@ public class ModelInitializer {
 			throws ModelDefinitionException {
 		this.initializer = initializer;
 		this.initializingMethod = initializingMethod;
-		this.parameters = new ArrayList<String>(initializingMethod.getParameterTypes().length);
+		this.parameters = new ArrayList<>(initializingMethod.getParameterTypes().length);
 		for (Annotation[] annotations : initializingMethod.getParameterAnnotations()) {
 			boolean found = false;
 			for (Annotation annotation : annotations) {

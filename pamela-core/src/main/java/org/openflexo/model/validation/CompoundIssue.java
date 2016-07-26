@@ -58,7 +58,7 @@ public class CompoundIssue<R extends ValidationRule<R, V>, V extends Validable> 
 
 	public CompoundIssue(V anObject) {
 		super(anObject, null);
-		_containedIssues = new Vector<ValidationIssue<R, V>>();
+		_containedIssues = new Vector<>();
 	}
 
 	public CompoundIssue(V anObject, List<ValidationIssue<R, V>> issues) {
@@ -97,7 +97,7 @@ public class CompoundIssue<R extends ValidationRule<R, V>, V extends Validable> 
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		for (ValidationIssue issue : getContainedIssues()) {
+		for (ValidationIssue<?, ?> issue : getContainedIssues()) {
 			sb.append(issue.toString() + "\n");
 		}
 		return sb.toString();

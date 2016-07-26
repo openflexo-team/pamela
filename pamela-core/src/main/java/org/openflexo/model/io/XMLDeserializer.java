@@ -110,9 +110,9 @@ public class XMLDeserializer {
 	public XMLDeserializer(ModelFactory factory, DeserializationPolicy policy) {
 		this.modelFactory = factory;
 		this.policy = policy;
-		alreadyDeserializedMap = new HashMap<Object, Object>();
-		alreadyDeserialized = new ArrayList<DeserializedObject>();
-		deserializingHandlers = new ArrayList<ProxyMethodHandler<?>>();
+		alreadyDeserializedMap = new HashMap<>();
+		alreadyDeserialized = new ArrayList<>();
+		deserializingHandlers = new ArrayList<>();
 	}
 
 	private StringEncoder getStringEncoder() {
@@ -226,7 +226,7 @@ public class XMLDeserializer {
 			alreadyDeserializedMap.put(currentDeserializedReference, returned);
 		}
 
-		alreadyDeserialized.add(new DeserializedObject<I>(returned, modelEntity));
+		alreadyDeserialized.add(new DeserializedObject<>(returned, modelEntity));
 
 		ProxyMethodHandler<I> handler = modelFactory.getHandler(returned);
 		deserializingHandlers.add(handler);
@@ -404,7 +404,7 @@ public class XMLDeserializer {
 	}
 
 	public Document makeIndex(Document doc) {
-		index = new Hashtable<String, Element>();
+		index = new Hashtable<>();
 		Iterator<Element> it = doc.getDescendants(new ElementWithIDFilter());
 		Element e = null;
 		while (it.hasNext()) {

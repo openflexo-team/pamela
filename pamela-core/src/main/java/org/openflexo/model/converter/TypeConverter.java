@@ -54,7 +54,7 @@ public class TypeConverter extends Converter<Type> {
 
 	private final Map<Class<? extends CustomType>, CustomTypeFactory<?>> factories;
 
-	private final List<CustomType> deserializedTypes = new ArrayList<CustomType>();
+	private final List<CustomType> deserializedTypes = new ArrayList<>();
 
 	public TypeConverter(Map<Class<? extends CustomType>, CustomTypeFactory<?>> factories) {
 		super(Type.class);
