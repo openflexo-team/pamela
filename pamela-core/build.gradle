@@ -8,5 +8,5 @@ dependencies {
 
 test {
   // TODO brings back unit test
-  exclude '**/BasicTests4*'
+  //  exclude '**/BasicTests4*'
 }
