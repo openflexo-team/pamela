@@ -40,6 +40,7 @@
 package org.openflexo.model;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.List;
@@ -120,68 +121,77 @@ public class ModelProperty<I> {
 		Method adderMethod = null;
 		Method removerMethod = null;
 		Class<I> implementedInterface = modelEntity.getImplementedInterface();
+
 		for (Method m : implementedInterface.getDeclaredMethods()) {
-			Getter aGetter = m.getAnnotation(Getter.class);
-			Setter aSetter = m.getAnnotation(Setter.class);
-			Adder anAdder = m.getAnnotation(Adder.class);
-			Remover aRemover = m.getAnnotation(Remover.class);
-			if (aGetter == null && aSetter == null && anAdder == null && aRemover == null) {
-				for (Method m1 : ReflectionUtils.getOverridenMethods(m)) {
-					aGetter = m1.getAnnotation(Getter.class);
-					aSetter = m1.getAnnotation(Setter.class);
-					anAdder = m1.getAnnotation(Adder.class);
-					aRemover = m1.getAnnotation(Remover.class);
-					if (aGetter != null || aSetter != null || anAdder != null || aRemover != null) {
-						break;
+			/* Annotations has changed in Java 8: see http://bugs.java.com/view_bug.do?bug_id=6695379
+			 * Now annotations are copied to bridge methods (see https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html 
+			 * or https://javax0.wordpress.com/2014/02/26/syntethic-and-bridge-methods).
+			 * We need to add a test if the method is a bridge (it reuses the volatile kind)
+			 * Notice that the eclipse compiler does not follow the annotation copy to bridge method for the moment (27/7/2016)
+			 */
+			if (!Modifier.isVolatile(m.getModifiers())) {
+				Getter aGetter = m.getAnnotation(Getter.class);
+				Setter aSetter = m.getAnnotation(Setter.class);
+				Adder anAdder = m.getAnnotation(Adder.class);
+				Remover aRemover = m.getAnnotation(Remover.class);
+				if (aGetter == null && aSetter == null && anAdder == null && aRemover == null) {
+					for (Method m1 : ReflectionUtils.getOverridenMethods(m)) {
+						aGetter = m1.getAnnotation(Getter.class);
+						aSetter = m1.getAnnotation(Setter.class);
+						anAdder = m1.getAnnotation(Adder.class);
+						aRemover = m1.getAnnotation(Remover.class);
+						if (aGetter != null || aSetter != null || anAdder != null || aRemover != null) {
+							break;
+						}
 					}
 				}
-			}
-			if (aGetter != null && aGetter.value().equals(propertyIdentifier)) {
-				if (getter != null) {
-					throw new ModelDefinitionException(
-							"Duplicate getter '" + propertyIdentifier + "' defined for interface " + implementedInterface);
+				if (aGetter != null && aGetter.value().equals(propertyIdentifier)) {
+					if (getter != null) {
+						throw new ModelDefinitionException(
+								"Duplicate getter '" + propertyIdentifier + "' defined for " + implementedInterface);
+					}
+					else {
+						getter = aGetter;
+						getterMethod = m;
+						xmlAttribute = m.getAnnotation(XMLAttribute.class);
+						xmlElement = m.getAnnotation(XMLElement.class);
+						returnedValue = m.getAnnotation(ReturnedValue.class);
+						cloningStrategy = m.getAnnotation(CloningStrategy.class);
+						embedded = m.getAnnotation(Embedded.class);
+						complexEmbedded = m.getAnnotation(ComplexEmbedded.class);
+					}
 				}
-				else {
-					getter = aGetter;
-					getterMethod = m;
-					xmlAttribute = m.getAnnotation(XMLAttribute.class);
-					xmlElement = m.getAnnotation(XMLElement.class);
-					returnedValue = m.getAnnotation(ReturnedValue.class);
-					cloningStrategy = m.getAnnotation(CloningStrategy.class);
-					embedded = m.getAnnotation(Embedded.class);
-					complexEmbedded = m.getAnnotation(ComplexEmbedded.class);
+				if (aSetter != null && aSetter.value().equals(propertyIdentifier)) {
+					if (setter != null) {
+						throw new ModelDefinitionException(
+								"Duplicate setter '" + propertyIdentifier + "' defined for " + implementedInterface);
+					}
+					else {
+						setter = aSetter;
+						setterMethod = m;
+						setPastingPoint = m.getAnnotation(PastingPoint.class);
+					}
 				}
-			}
-			if (aSetter != null && aSetter.value().equals(propertyIdentifier)) {
-				if (setter != null) {
-					throw new ModelDefinitionException(
-							"Duplicate setter '" + propertyIdentifier + "' defined for interface " + implementedInterface);
+				if (anAdder != null && anAdder.value().equals(propertyIdentifier)) {
+					if (adder != null) {
+						throw new ModelDefinitionException(
+								"Duplicate adder '" + propertyIdentifier + "' defined for " + implementedInterface);
+					}
+					else {
+						adder = anAdder;
+						adderMethod = m;
+						addPastingPoint = m.getAnnotation(PastingPoint.class);
+					}
 				}
-				else {
-					setter = aSetter;
-					setterMethod = m;
-					setPastingPoint = m.getAnnotation(PastingPoint.class);
-				}
-			}
-			if (anAdder != null && anAdder.value().equals(propertyIdentifier)) {
-				if (adder != null) {
-					throw new ModelDefinitionException(
-							"Duplicate adder '" + propertyIdentifier + "' defined for interface " + implementedInterface);
-				}
-				else {
-					adder = anAdder;
-					adderMethod = m;
-					addPastingPoint = m.getAnnotation(PastingPoint.class);
-				}
-			}
-			if (aRemover != null && aRemover.value().equals(propertyIdentifier)) {
-				if (remover != null) {
-					throw new ModelDefinitionException(
-							"Duplicate remover '" + propertyIdentifier + "' defined for interface " + implementedInterface);
-				}
-				else {
-					remover = aRemover;
-					removerMethod = m;
+				if (aRemover != null && aRemover.value().equals(propertyIdentifier)) {
+					if (remover != null) {
+						throw new ModelDefinitionException(
+								"Duplicate remover '" + propertyIdentifier + "' defined for " + implementedInterface);
+					}
+					else {
+						remover = aRemover;
+						removerMethod = m;
+					}
 				}
 			}
 		}
