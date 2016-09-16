@@ -135,7 +135,9 @@ public class TypeConverter extends Converter<Type> {
 	public void stopDeserializing() {
 		// We iterate on all type that have been deserialized and try to resolve types that are not fully resolved
 		for (CustomType t : deserializedTypes) {
+			//System.out.println("> type: " + t.getSerializationRepresentation());
 			if (!t.isResolved()) {
+				//System.out.println("resolve");
 				CustomTypeFactory<?> customTypeFactory = factories.get(t.getClass());
 				t.resolve(customTypeFactory);
 			}
