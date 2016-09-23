@@ -36,71 +36,22 @@
  * 
  */
 
-package witchmodel;
+package org.openflexo.model.witchmodel;
 
-import org.openflexo.model.annotations.Getter;
 import org.openflexo.model.annotations.Implementation;
 import org.openflexo.model.annotations.ModelEntity;
-import org.openflexo.model.annotations.Setter;
-import org.openflexo.model.annotations.XMLAttribute;
-import org.openflexo.model.annotations.XMLElement;
 
 @ModelEntity()
-@XMLElement()
-public interface PhysicalObject {
+public interface FloatingStuff extends PhysicalObject {
 
-	public static final String WIDTH = "width";
-	public static final String HEIGHT = "height";
-	public static final String LENGTH = "lenght";
-	public static final String DENSITY = "density";
-
-	@Getter(value = WIDTH, defaultValue = "0")
-	@XMLAttribute(xmlTag = WIDTH)
-	public Float getWidth();
-
-	@Setter(WIDTH)
-	public void setWidth(Float value);
-
-	@Getter(value = HEIGHT, defaultValue = "0")
-	@XMLAttribute(xmlTag = HEIGHT)
-	public Float getHeight();
-
-	@Setter(HEIGHT)
-	public void setHeight(Float value);
-
-	@Getter(value = LENGTH, defaultValue = "0")
-	@XMLAttribute(xmlTag = LENGTH)
-	public Float getLength();
-
-	@Setter(LENGTH)
-	public void setLength(Float value);
-
-	@Getter(value = DENSITY, defaultValue = "0")
-	@XMLAttribute(xmlTag = DENSITY)
-	public Float getDensity();
-
-	@Setter(DENSITY)
-	public void setDensity(Float value);
-
-	public Float getFullVolume();
-
-	public Float getWeight();
-
-	public boolean weighsSameAs(PhysicalObject o);
+	public Float getInWaterDepth();
 
 	@Implementation
-	public abstract class PhysicalObjectImpl implements PhysicalObject {
+	public abstract class FloatingStuffImpl implements FloatingStuff {
 
-		public Float getFullVolume() {
-			return this.getHeight() * this.getWidth() * this.getLength();
-		}
-
-		public Float getWeight() {
-			return this.getFullVolume() * this.getDensity() * 1000;
-		}
-
-		public boolean weighsSameAs(PhysicalObject o) {
-			return this.getWeight() == o.getWeight();
+		public Float getInWaterDepth() {
+			Float surface = this.getWidth() * this.getLength();
+			return this.getWeight() / (1000 * surface);
 		}
 	}
 

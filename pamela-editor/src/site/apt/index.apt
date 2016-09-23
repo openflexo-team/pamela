@@ -1,15 +1,13 @@
  -----
-PAMELA CORE
+ Openflexo PAMELA
  -----
-Sylvain Guerin
+ The Openflexo team
  -----
-25/10/2015
- -----
-  
-+-----+
-PAMELA CORE is the modelling framework core component.
-+-----+
 
-+-----+
-TODO
-+-----+
+PAMELA-editor
+
+  PAMELA-editor provides basic support for PAMELA model editions accross an existing source code base.
+  
+  DIANA component provides a graphical editor on top of this.
+  
+  

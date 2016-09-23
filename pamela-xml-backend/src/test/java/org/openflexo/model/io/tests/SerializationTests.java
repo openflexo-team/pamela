@@ -1,4 +1,4 @@
-package org.openflexo;
+package org.openflexo.model.io.tests;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,6 +7,7 @@ import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
 import org.jdom2.JDOMException;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +22,8 @@ import org.openflexo.model.exceptions.RestrictiveSerializationException;
 import org.openflexo.model.factory.DeserializationPolicy;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.factory.SerializationPolicy;
+import org.openflexo.model.io.JDOMXMLDeserializer;
+import org.openflexo.model.io.JDOMXMLSerializer;
 
 public class SerializationTests extends AbstractPAMELATest {
 
@@ -38,15 +41,34 @@ public class SerializationTests extends AbstractPAMELATest {
 
 		factory2 = new ModelFactory(MyNode.class);
 		factory = new ModelFactory(FlexoProcess.class);
+
+		JDOMXMLSerializer serializer2 = new JDOMXMLSerializer(factory2);
+		JDOMXMLDeserializer deserializer2 = new JDOMXMLDeserializer(factory2);
+		factory2.setModelSerializer(serializer2);
+		factory2.setModelDeserializer(deserializer2);
+
+		JDOMXMLSerializer serializer = new JDOMXMLSerializer(factory);
+		JDOMXMLDeserializer deserializer = new JDOMXMLDeserializer(factory);
+		factory.setModelSerializer(serializer);
+		factory.setModelDeserializer(deserializer);
+
 	}
 
 	@Override
+	@After
 	public void tearDown() {
 		file.delete();
+		file = null;
+		factory = null;
+		factory2 = null;
+
 	}
 
 	@Test
 	public void testSerializationPolicy() throws IOException, ModelDefinitionException, JDOMException, InvalidDataException {
+
+		Assert.assertNotNull(factory.getModelSerializer());
+		Assert.assertNotNull(factory2.getModelSerializer());
 
 		Assert.assertNull(factory.getModelContext().getModelEntity(MyNode.class));
 		Assert.assertNotNull(factory2.getModelContext().getModelEntity(MyNode.class));
@@ -80,7 +102,10 @@ public class SerializationTests extends AbstractPAMELATest {
 		}
 		// Just to make sure
 		process = null;
-		factory = new ModelFactory(FlexoProcess.class);
+
+		Assert.assertNotNull(factory.getModelDeserializer());
+		Assert.assertNotNull(factory2.getModelDeserializer());
+
 		FileInputStream fis = null;
 
 		try {
@@ -118,7 +143,10 @@ public class SerializationTests extends AbstractPAMELATest {
 		} finally {
 			IOUtils.closeQuietly(fos);
 		}
-		factory = new ModelFactory(FlexoProcess.class);
+
+		Assert.assertNotNull(factory.getModelDeserializer());
+		Assert.assertNotNull(factory2.getModelDeserializer());
+
 		try {
 			fis = new FileInputStream(file);
 			process = (FlexoProcess) factory.deserialize(fis, DeserializationPolicy.EXTENSIVE);

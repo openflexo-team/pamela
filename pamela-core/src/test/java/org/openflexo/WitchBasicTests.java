@@ -39,9 +39,6 @@
 package org.openflexo;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -54,12 +51,11 @@ import org.openflexo.model.factory.EditingContextImpl;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.undo.CompoundEdit;
 import org.openflexo.model.undo.UndoManager;
-
-import witchmodel.BurningObject;
-import witchmodel.Duck;
-import witchmodel.Person;
-import witchmodel.PhysicalObject;
-import witchmodel.WoodenObject;
+import org.openflexo.model.witchmodel.BurningObject;
+import org.openflexo.model.witchmodel.Duck;
+import org.openflexo.model.witchmodel.Person;
+import org.openflexo.model.witchmodel.PhysicalObject;
+import org.openflexo.model.witchmodel.WoodenObject;
 
 public class WitchBasicTests extends AbstractPAMELATest {
 
@@ -125,17 +121,6 @@ public class WitchBasicTests extends AbstractPAMELATest {
 		assertEquals((float) 0.125, apObject.getFullVolume().floatValue());
 		assertEquals((float) (0.125 * 2.25 * 1000), apObject.getWeight().floatValue());
 
-		try {
-			FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml");
-			factory.serialize(apObject, fos);
-			fos.flush();
-			fos.close();
-		} catch (FileNotFoundException e) {
-			fail(e.getMessage());
-		} catch (IOException e) {
-			fail(e.getMessage());
-		}
-
 	}
 
 	public void testWitch() throws Exception {
@@ -188,17 +173,6 @@ public class WitchBasicTests extends AbstractPAMELATest {
 				System.out.println("Let's burn it anyway!");
 				apPerson.burn();
 			}
-		}
-
-		try {
-			FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml");
-			factory.serialize(apPerson, fos);
-			fos.flush();
-			fos.close();
-		} catch (FileNotFoundException e) {
-			fail(e.getMessage());
-		} catch (IOException e) {
-			fail(e.getMessage());
 		}
 
 	}

@@ -1,9 +1,14 @@
-package org.openflexo;
+package org.openflexo.model.io.tests;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -18,11 +23,15 @@ import org.openflexo.model.ModelContext;
 import org.openflexo.model.StartNode;
 import org.openflexo.model.TokenEdge;
 import org.openflexo.model.WKFAnnotation;
+import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.UnitializedEntityException;
 import org.openflexo.model.factory.AccessibleProxyObject;
 import org.openflexo.model.factory.Clipboard;
 import org.openflexo.model.factory.EmbeddingType;
 import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.model.io.JDOMXMLDeserializer;
+import org.openflexo.model.io.JDOMXMLSerializer;
+import org.openflexo.toolbox.FileUtils;
 
 public class BasicTests extends AbstractPAMELATest {
 
@@ -44,6 +53,11 @@ public class BasicTests extends AbstractPAMELATest {
 		new File("/tmp").mkdirs();
 		modelContext = new ModelContext(FlexoProcess.class);
 		factory = new ModelFactory(modelContext);
+
+		JDOMXMLSerializer serializer = new JDOMXMLSerializer(factory);
+		JDOMXMLDeserializer deserializer = new JDOMXMLDeserializer(factory);
+		factory.setModelSerializer(serializer);
+		factory.setModelDeserializer(deserializer);
 	}
 
 	@Override
@@ -123,6 +137,17 @@ public class BasicTests extends AbstractPAMELATest {
 		System.out.println("edge2=" + edge2);
 		assertEquals(process, edge2.getProcess());
 
+		try {
+			FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml");
+			factory.serialize(process, fos);
+			fos.flush();
+			fos.close();
+		} catch (FileNotFoundException e) {
+			fail(e.getMessage());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		}
+
 	}
 
 	public void test3() throws Exception {
@@ -157,11 +182,35 @@ public class BasicTests extends AbstractPAMELATest {
 		startNode.setMasterAnnotation(annotation1);
 		startNode.addToOtherAnnotations(annotation2);
 
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream(file);
+			factory.serialize(process, fos);
+		} catch (FileNotFoundException e) {
+			fail(e.getMessage());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		} finally {
+			IOUtils.closeQuietly(fos);
+		}
+		String xml1 = FileUtils.fileContents(file);
+
 		edge2.setStartNode(startNode);
 		assertEquals(startNode, edge2.getStartNode());
 		assertTrue(startNode.getOutgoingEdges().contains(edge2));
 		assertEquals(2, startNode.getOutgoingEdges().size());
 		assertEquals(0, activityNode.getOutgoingEdges().size());
+
+		try {
+			fos = new FileOutputStream(file);
+			factory.serialize(process, fos);
+		} catch (FileNotFoundException e) {
+			fail(e.getMessage());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		} finally {
+			IOUtils.closeQuietly(fos);
+		}
 
 		activityNode.addToOutgoingEdges(edge2);
 		assertEquals(activityNode, edge2.getStartNode());
@@ -170,6 +219,74 @@ public class BasicTests extends AbstractPAMELATest {
 		assertEquals(1, startNode.getOutgoingEdges().size());
 		assertEquals(1, activityNode.getOutgoingEdges().size());
 
+		try {
+			fos = new FileOutputStream(file);
+			factory.serialize(process, fos);
+		} catch (FileNotFoundException e) {
+			fail(e.getMessage());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		} finally {
+			IOUtils.closeQuietly(fos);
+		}
+
+		String xml3 = FileUtils.fileContents(file, "UTF-8");
+		assertEquals(xml1, xml3);
+
+		// test4
+		process = loadProcessFromFile(file);
+
+		assertTrue(process instanceof FlexoProcess);
+
+		assertEquals("NewProcess", process.getName());
+		assertEquals("234XX", process.getFlexoID());
+		assertEquals(8, process.getFoo());
+		activityNode = (ActivityNode) process.getNodeNamed("MyActivity");
+		assertNotNull(activityNode);
+		assertEquals("MyActivity", activityNode.getName());
+		assertTrue(process.getNodes().contains(activityNode));
+		assertEquals(process, activityNode.getProcess());
+		startNode = (StartNode) process.getNodeNamed("Start");
+		assertNotNull(startNode);
+		assertNotNull(startNode.getMasterAnnotation());
+		assertEquals("Annotation 1", startNode.getMasterAnnotation().getText());
+		assertEquals(1, startNode.getOtherAnnotations().size());
+		endNode = (EndNode) process.getNodeNamed("End");
+		assertNotNull(endNode);
+		edge1 = (TokenEdge) process.getEdgeNamed("edge1");
+		assertNotNull(edge1);
+		edge2 = (TokenEdge) process.getEdgeNamed("edge2");
+		assertNotNull(edge2);
+		assertEquals(process, edge1.getProcess());
+		assertEquals(process, edge2.getProcess());
+		assertEquals(activityNode, edge2.getStartNode());
+		assertTrue(activityNode.getOutgoingEdges().contains(edge2));
+		assertEquals(1, startNode.getOutgoingEdges().size());
+		assertEquals(1, activityNode.getOutgoingEdges().size());
+		file.delete();
+	}
+
+	private FlexoProcess loadProcessFromFile(File file) throws ModelDefinitionException {
+
+		FlexoProcess process = null;
+
+		FileOutputStream fos = null;
+		try {
+			FileInputStream fis = new FileInputStream(file);
+			try {
+				process = (FlexoProcess) factory.deserialize(fis);
+			} finally {
+				IOUtils.closeQuietly(fis);
+			}
+			System.out.println("Read: " + process);
+			fos = new FileOutputStream(file);
+			factory.serialize(process, fos);
+		} catch (Exception e) {
+			fail(e.getMessage());
+		} finally {
+			IOUtils.closeQuietly(fos);
+		}
+		return process;
 	}
 
 	public void test5() throws Exception {
@@ -293,6 +410,18 @@ public class BasicTests extends AbstractPAMELATest {
 
 		assertNotSame(edge1, edge1Copy);
 		assertNotSame(edge2, edge2Copy);
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream(file);
+			factory.serialize(processCopy, fos);
+		} catch (FileNotFoundException e) {
+			fail(e.getMessage());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		} finally {
+			IOUtils.closeQuietly(fos);
+			file.delete();
+		}
 
 	}
 
@@ -394,6 +523,17 @@ public class BasicTests extends AbstractPAMELATest {
 		ActivityNode newNode = (ActivityNode) pasted;
 		assertEquals(0, newNode.getIncomingEdges().size());
 		assertEquals(0, newNode.getOutgoingEdges().size());
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream("/tmp/TestFile.xml");
+			factory.serialize(process, fos);
+		} catch (FileNotFoundException e) {
+			fail(e.getMessage());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		} finally {
+			IOUtils.closeQuietly(fos);
+		}
 
 	}
 
@@ -458,7 +598,17 @@ public class BasicTests extends AbstractPAMELATest {
 		assertEquals(0, newStartNode.getIncomingEdges().size());
 		assertEquals(1, newStartNode.getOutgoingEdges().size());
 		assertSame(newStartNode.getOutgoingEdges().get(0), newActivity.getIncomingEdges().get(0));
-
+		FileOutputStream fos = null;
+		try {
+			fos = new FileOutputStream("/tmp/TestFile.xml");
+			factory.serialize(process, fos);
+		} catch (FileNotFoundException e) {
+			fail(e.getMessage());
+		} catch (IOException e) {
+			fail(e.getMessage());
+		} finally {
+			IOUtils.closeQuietly(fos);
+		}
 	}
 
 	public void testModify() {
@@ -470,6 +620,9 @@ public class BasicTests extends AbstractPAMELATest {
 		process.setFoo(8);
 		assertTrue(process.isModified());
 
+		serializeObject(process);
+		assertFalse(process.isModified());
+
 		ActivityNode activityNode = factory.newInstance(ActivityNode.class);
 		assertFalse(activityNode.isModified());
 		// Here we verify that if we use an initializer, the object is marked as modified
@@ -478,14 +631,20 @@ public class BasicTests extends AbstractPAMELATest {
 
 		process.addToNodes(activityNode);
 		assertTrue(process.isModified());
+		serializeObject(process);
+		assertFalse(process.isModified());
+		assertFalse(activityNode.isModified());
 		activityNode.setName("Coucou");
 		assertTrue(activityNode.isModified());
 		assertTrue(process.isModified());// Here we verify the forward state
+		serializeObject(process);
+		assertFalse(activityNode.isModified());// Here we verify the synch forward state
 
 		StartNode startNode = factory.newInstance(StartNode.class, "Start");
 		process.addToNodes(startNode);
 		EndNode endNode = factory.newInstance(EndNode.class, "End");
 		process.addToNodes(endNode);
+		serializeObject(process);
 		TokenEdge edge1 = factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
 		assertTrue(process.isModified());// Here we verify the forward state
 		assertTrue(activityNode.isModified());
@@ -496,6 +655,9 @@ public class BasicTests extends AbstractPAMELATest {
 
 		process.removeFromNodes(activityNode);
 
+		serializeObject(process);
+
+		assertFalse(process.isModified());// Here we verify that process has been marked as not-modified (by the serialization mechanism)
 		assertTrue(activityNode.isModified()); // And that activity node is no longer synched with its previous container process.
 	}
 
