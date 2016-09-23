@@ -88,59 +88,27 @@ public class TypeConverter extends Converter<Type> {
 			deserializedTypes.add(returned);
 
 			return returned;
-
-			/*try {
-				Constructor<?> noArgConstructor = customTypeClass.getConstructor();
-				returned = (CustomType) noArgConstructor.newInstance();
-			} catch (NoSuchMethodException e) {
-				System.out.println("Pas de constructeur sans argument");
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}
-
-			try {
-				if (customTypeClass.getConstructors().length > 0) {
-					Constructor<?> constructorWithArgs = customTypeClass.getConstructors()[0];
-					Object[] args = new Object[constructorWithArgs.getGenericParameterTypes().length];
-					for (int i = 0; i < args.length; i++) {
-						args[i] = null;
-					}
-					returned = (CustomType) constructorWithArgs.newInstance(args);
-				} else {
-					System.out.println("Pas de constructeurs");
-				}
-			} catch (SecurityException e) {
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			} catch (IllegalArgumentException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			}*/
-
-			/*System.out.println("return " + returned);
-
-			if (returned != null) {
-				System.out.println("set config " + configuration);
-				returned.setSerializedConfiguration(configuration, factory);
-			}
-
-			return null;*/
 		}
 
 		else {
+			// TODO: this should handled from a proper way
+			// Here is a quick fix
 			try {
+				if (value.equals("boolean")) {
+					return Boolean.class;
+				}
+				else if (value.equals("int")) {
+					return Integer.class;
+				}
+				else if (value.equals("long")) {
+					return Long.class;
+				}
+				else if (value.equals("float")) {
+					return Float.class;
+				}
+				else if (value.equals("double")) {
+					return Double.class;
+				}
 				return Class.forName(value);
 			} catch (ClassNotFoundException e) {
 				// Warns about the exception
@@ -154,7 +122,8 @@ public class TypeConverter extends Converter<Type> {
 
 		if (value instanceof CustomType) {
 			return value.getClass().getName() + "<" + ((CustomType) value).getSerializationRepresentation() + ">";
-		} else {
+		}
+		else {
 			return TypeUtils.fullQualifiedRepresentation(value);
 		}
 	}
@@ -166,7 +135,9 @@ public class TypeConverter extends Converter<Type> {
 	public void stopDeserializing() {
 		// We iterate on all type that have been deserialized and try to resolve types that are not fully resolved
 		for (CustomType t : deserializedTypes) {
+			//System.out.println("> type: " + t.getSerializationRepresentation());
 			if (!t.isResolved()) {
+				//System.out.println("resolve");
 				CustomTypeFactory<?> customTypeFactory = factories.get(t.getClass());
 				t.resolve(customTypeFactory);
 			}

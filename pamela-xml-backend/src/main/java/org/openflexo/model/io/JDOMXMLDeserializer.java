@@ -106,6 +106,10 @@ public class JDOMXMLDeserializer extends AbstractModelDeserializer implements Mo
 
 	private Object buildObjectFromNode(Element node) throws InvalidDataException, ModelDefinitionException {
 		ModelEntity<?> modelEntity = modelFactory.getModelContext().getModelEntity(node.getName());
+		if (modelEntity == null) {
+			System.out.println("Could not find ModelEntity for " + node.getName());
+			return null;
+		}
 		Object object = buildObjectFromNodeAndModelEntity(node, modelEntity);
 		for (ProxyMethodHandler<?> handler : deserializingHandlers) {
 			handler.setDeserializing(false);
@@ -118,8 +122,8 @@ public class JDOMXMLDeserializer extends AbstractModelDeserializer implements Mo
 		return object;
 	}
 
-	private <I> Object buildObjectFromNodeAndModelEntity(Element node, ModelEntity<I> modelEntity) throws InvalidDataException,
-			ModelDefinitionException {
+	private <I> Object buildObjectFromNodeAndModelEntity(Element node, ModelEntity<I> modelEntity)
+			throws InvalidDataException, ModelDefinitionException {
 		Object currentDeserializedReference = null;
 		Attribute idAttribute = node.getAttribute(ID);
 		Attribute idrefAttribute = node.getAttribute(ID_REF);
@@ -200,8 +204,8 @@ public class JDOMXMLDeserializer extends AbstractModelDeserializer implements Mo
 			ModelProperty<? super I> property = modelEntity.getPropertyForXMLAttributeName(attribute.getName());
 			if (property == null) {
 				if (attribute.getNamespace().equals(PAMELAConstants.NAMESPACE)
-						&& (attribute.getName().equals(PAMELAConstants.CLASS_ATTRIBUTE) || attribute.getName().equals(
-								PAMELAConstants.MODEL_ENTITY_ATTRIBUTE))) {
+						&& (attribute.getName().equals(PAMELAConstants.CLASS_ATTRIBUTE)
+								|| attribute.getName().equals(PAMELAConstants.MODEL_ENTITY_ATTRIBUTE))) {
 					continue;
 				}
 				if (attribute.getName().equals(ID) || attribute.getName().equals(ID_REF)) {
@@ -262,8 +266,8 @@ public class JDOMXMLDeserializer extends AbstractModelDeserializer implements Mo
 												policy == DeserializationPolicy.EXTENSIVE);
 									}
 									else {
-										throw new ModelExecutionException(className + " does not implement " + implementedInterface
-												+ " for node " + child.getName());
+										throw new ModelExecutionException(
+												className + " does not implement " + implementedInterface + " for node " + child.getName());
 									}
 								} catch (ClassNotFoundException e) {
 									// TODO: log something here
@@ -299,8 +303,8 @@ public class JDOMXMLDeserializer extends AbstractModelDeserializer implements Mo
 				}
 				else {
 					// Should not happen
-					throw new ModelExecutionException("Found property " + property + " but was unable to deserialize the content of node "
-							+ child);
+					throw new ModelExecutionException(
+							"Found property " + property + " but was unable to deserialize the content of node " + child);
 				}
 				switch (property.getCardinality()) {
 					case SINGLE:
