@@ -43,24 +43,42 @@ import java.util.logging.Level;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.rm.Resource;
-import org.openflexo.rm.ResourceLocator;
 
-public class ResourceLocationConverter extends Converter<Resource> {
+/**
+ * A converter that allows to address a {@link Resource} relatively to another {@link Resource} (the container resource)
+ * 
+ * @author sylvain
+ *
+ */
+public class RelativePathResourceConverter extends Converter<Resource> {
 
 	private static final java.util.logging.Logger logger = org.openflexo.logging.FlexoLogger
-			.getLogger(ResourceLocationConverter.class.getPackage().getName());
-	private static final ResourceLocator rl = ResourceLocator.getResourceLocator();
+			.getLogger(RelativePathResourceConverter.class.getPackage().getName());
 
-	public ResourceLocationConverter() {
+	private Resource containerResource;
+
+	public RelativePathResourceConverter(Resource containerResource) {
 		super(Resource.class);
+		this.containerResource = containerResource;
+	}
+
+	public Resource getContainerResource() {
+		return containerResource;
+	}
+
+	public void setContainerResource(Resource containerResource) {
+		this.containerResource = containerResource;
 	}
 
 	@Override
 	public Resource convertFromString(String value, ModelFactory factory) {
-		Resource resourceloc = ResourceLocator.locateResource(value);
-		if (resourceloc == null) {
-			logger.warning("Cannot find Resource: " + value);
-		}
+
+		System.out.println("Je cherche la resource " + value + " depuis " + containerResource);
+
+		Resource resourceloc = containerResource.locateResource(value);
+
+		System.out.println("Je trouve " + resourceloc);
+
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("********* convertFromString " + value + " return " + resourceloc.toString());
 		}
@@ -69,6 +87,7 @@ public class ResourceLocationConverter extends Converter<Resource> {
 
 	@Override
 	public String convertToString(Resource value) {
-		return value.getRelativePath();
+		return containerResource.computeRelativePath(value);
 	}
+
 }
