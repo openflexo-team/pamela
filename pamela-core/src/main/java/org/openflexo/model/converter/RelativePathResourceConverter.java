@@ -73,11 +73,11 @@ public class RelativePathResourceConverter extends Converter<Resource> {
 	@Override
 	public Resource convertFromString(String value, ModelFactory factory) {
 
-		System.out.println("Je cherche la resource " + value + " depuis " + containerResource);
+		// System.out.println("Je cherche la resource " + value + " depuis " + containerResource);
 
 		Resource resourceloc = containerResource.locateResource(value);
 
-		System.out.println("Je trouve " + resourceloc);
+		// System.out.println("Je trouve " + resourceloc);
 
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("********* convertFromString " + value + " return " + resourceloc.toString());
