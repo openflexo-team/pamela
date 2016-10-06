@@ -87,6 +87,10 @@ public class RelativePathResourceConverter extends Converter<Resource> {
 
 	@Override
 	public String convertToString(Resource value) {
+		if (containerResource == null) {
+			logger.warning("Could not compute relative path of " + value + " with RelativePathConverter bound to containerResource=null");
+			return null;
+		}
 		return containerResource.computeRelativePath(value);
 	}
 
