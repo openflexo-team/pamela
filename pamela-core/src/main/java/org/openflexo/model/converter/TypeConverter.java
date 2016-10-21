@@ -75,7 +75,9 @@ public class TypeConverter extends Converter<Type> {
 				throw new InvalidDataException("Supplied value represents a type not found: " + value);
 			}
 
-			System.out.println("Found " + customTypeClass);
+			if (factories == null) {
+				throw new InvalidDataException("No custom type factories found while deserializing " + value + " as " + customTypeClass);
+			}
 
 			CustomTypeFactory<?> customTypeFactory = factories.get(customTypeClass);
 
@@ -135,9 +137,9 @@ public class TypeConverter extends Converter<Type> {
 	public void stopDeserializing() {
 		// We iterate on all type that have been deserialized and try to resolve types that are not fully resolved
 		for (CustomType t : deserializedTypes) {
-			//System.out.println("> type: " + t.getSerializationRepresentation());
+			// System.out.println("> type: " + t.getSerializationRepresentation());
 			if (!t.isResolved()) {
-				//System.out.println("resolve");
+				// System.out.println("resolve");
 				CustomTypeFactory<?> customTypeFactory = factories.get(t.getClass());
 				t.resolve(customTypeFactory);
 			}
