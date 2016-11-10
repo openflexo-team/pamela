@@ -38,9 +38,6 @@
 
 package org.openflexo.model.factory;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.openflexo.model.undo.UndoManager;
 
 /**
@@ -51,11 +48,10 @@ import org.openflexo.model.undo.UndoManager;
  */
 public class EditingContextImpl implements EditingContext {
 
-	private final Set<Object> objects;
+	//private final Set<Object> objects = new HashSet<Object>();
 	private UndoManager undoManager;
 
 	public EditingContextImpl() {
-		objects = new HashSet<Object>();
 	}
 
 	/**
@@ -66,10 +62,12 @@ public class EditingContextImpl implements EditingContext {
 	 */
 	@Override
 	public boolean register(Object object) {
-		if (!objects.contains(object)) {
-			objects.add(object);
-			return true;
-		}
+		// Unplug registering until we work on edited objects life cycle
+
+		//if (!objects.contains(object)) {
+		//	objects.add(object);
+		//	return true;
+		//}
 		return false;
 	}
 
@@ -81,11 +79,13 @@ public class EditingContextImpl implements EditingContext {
 	 */
 	@Override
 	public boolean unregister(Object object) {
-		if (objects.contains(object)) {
-			objects.remove(object);
-			return true;
-		}
-		System.err.println("Trying to unregister an object which is not registered");
+		// Unplug registering until we work on edited objects life cycle
+
+		//if (objects.contains(object)) {
+		//	objects.remove(object);
+		//	return true;
+		//}
+		//System.err.println("Trying to unregister an object which is not registered");
 		return false;
 	}
 
