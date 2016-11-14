@@ -57,7 +57,7 @@ public interface EditingContext {
 	 * @param object
 	 * @return boolean indicating if registering was successfull
 	 */
-	public boolean register(Object object);
+	boolean register(Object object);
 
 	/**
 	 * Unregister supplied object from this EditingContext
@@ -65,12 +65,12 @@ public interface EditingContext {
 	 * @param object
 	 * @return boolean indicating if un-registering was successfull
 	 */
-	public boolean unregister(Object object);
+	boolean unregister(Object object);
 
 	/**
 	 * Return UndoManager associated with this {@link EditingContext} when any.
 	 * 
 	 * @return
 	 */
-	public UndoManager getUndoManager();
+	UndoManager getUndoManager();
 }
