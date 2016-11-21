@@ -38,6 +38,9 @@
 
 package org.openflexo.model.validation;
 
+import org.openflexo.toolbox.ChainedCollection;
+import org.openflexo.toolbox.HasPropertyChangeSupport;
+
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,9 +51,6 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.openflexo.toolbox.ChainedCollection;
-import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
  * A {@link ValidationReport} contains all issues regarding to the validation of a whole objects tree computed from a root object.<br>
