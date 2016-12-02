@@ -81,10 +81,11 @@ Pamela can be directly downloaded from the [OpenFlexo maven repository](https://
 - `org.openflexo:connie-core:1.3-RC1`, 
 - `org.openflexo:flexoutils:1.3-RC1`,
 - `org.openflexo:tools-configuration:0.4-RC1`. 
- 
 - `com.google.guava:guava:18.0`, 
 - `org.apache.commons:commons-lang3:3.1`, 
 - `org.javassist:javassist:3.18.0-GA`, 
+
+**TODO**
 
 #### Build it your self
 
@@ -98,7 +99,57 @@ In order to get the most up to date code you can build Pamela yourself.
 
 Building Pamela is easy, follow these steps:
 
-TODO
+**TODO**
+
+
+## Your first model
+
+To build your first model, you only have to defined the interface, Pamela does the implementation for you. 
+Just write: 
+
+```java
+@ModelEntity
+interface Person {
+	String NAME = "name";
+
+	@Getter(NAME)
+	String getName();
+
+	@Setter(NAME)
+	void setName(String name);
+}
+```
+
+Pamela will build a class that implements the `getName` getter and the `setName` setter.
+The getter is really simple, it returns the stored property `name`.
+The setter is much more evolved sine it:
+
+- sets the value,
+- notify the value change (if the new value is actually different) and
+- saves the change to an undo manager.
+
+The setter will also handle the opposite property when needed as we see later on.
+
+
+**Gotcha**
+
+Since Pamela constructs it's own implementation of the interface, you can also build your own.
+
+```java
+public class PersonImpl {
+	private String name;
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+}
+```
+
+But this implementation is really basic and doesn't provide advanced capabilities as Pamela does. 
 
 ## Reference documentation
 
@@ -114,4 +165,14 @@ Exception in thread "main" java.lang.RuntimeException: by java.lang.IllegalAcces
 ```
 
 This means that the interface `MyClass` isn't accessible, it must be `public`.
+
+### How to check if my model is sound
+
+Pamela offer high level model definitions but it does so by tricking the Java compiler using `abstract` constructions.
+You can easily check if your model is sound with a simple test:
+
+```java
+ModelFactory factory = new ModelFactory(MyRootModelClass.class);
+factory.checkMethodImplementations();
+```
 
