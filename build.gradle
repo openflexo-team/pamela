@@ -1,15 +1,4 @@
 
-
-allprojects {
-  apply plugin: 'project-report'
-
-
-  htmlDependencyReport {
-    projects = project.allprojects
-  }
-}
-
-
 subprojects {
   apply plugin: 'maven-publish'
   apply plugin: 'java'
@@ -35,12 +24,12 @@ subprojects {
 
     /*
     repositories {
-    jcenter()
-    maven { url "https://maven.openflexo.org/artifactory/openflexo-release/" }
-    maven { url "https://maven.openflexo.org/artifactory/openflexo-snapshot/" }
-    maven { url "https://maven.openflexo.org/artifactory/openflexo-deps/" }
-  }
-     */
+      jcenter()
+      maven { url "https://maven.openflexo.org/artifactory/openflexo-release/" }
+      maven { url "https://maven.openflexo.org/artifactory/openflexo-snapshot/" }
+      maven { url "https://maven.openflexo.org/artifactory/openflexo-deps/" }
+    }
+   */
   }
 
   compileJava.options.encoding = 'UTF-8'
