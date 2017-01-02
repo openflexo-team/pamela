@@ -18,15 +18,6 @@ subprojects {
     repositories {
       maven { url "https://maven.openflexo.org/artifactory/openflexo-snapshot/" }
     }
-
-    /*
-    repositories {
-      jcenter()
-      maven { url "https://maven.openflexo.org/artifactory/openflexo-release/" }
-      maven { url "https://maven.openflexo.org/artifactory/openflexo-snapshot/" }
-      maven { url "https://maven.openflexo.org/artifactory/openflexo-deps/" }
-    }
-   */
   }
 
   compileJava.options.encoding = 'UTF-8'
@@ -37,9 +28,9 @@ subprojects {
 
   repositories {
     jcenter()
-    maven {
-      url "https://maven.openflexo.org/artifactory/openflexo-snapshot/"
-    }
+    maven { url "https://maven.openflexo.org/artifactory/openflexo-snapshot/" }
+    maven { url "https://maven.openflexo.org/artifactory/openflexo-release/" }
+    maven { url "https://maven.openflexo.org/artifactory/openflexo-deps/" }
   }
 
   dependencies {
