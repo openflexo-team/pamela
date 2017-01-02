@@ -8,9 +8,6 @@ subprojects {
   //  apply plugin: 'findbugs'
   //  apply plugin: 'Site'
 
-  group='org.openflexo'
-  version = '1.4-SNAPSHOT'
-
   publishing {
     publications {
       mavenJava(MavenPublication) {
