@@ -111,8 +111,8 @@ public class XMLSerializer {
 			throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Document builtDocument = new Document();
 		id = 0;
-		objectReferences = new HashMap<Object, ObjectReference>();
-		alreadySerialized = new HashMap<Object, Object>();
+		objectReferences = new HashMap<>();
+		alreadySerialized = new HashMap<>();
 		Element rootElement = serializeElement(object, null, resetModifiedStatus);
 		postProcess(rootElement);
 		builtDocument.setRootElement(rootElement);
@@ -168,7 +168,7 @@ public class XMLSerializer {
 							throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
 									+ ". More than one entities are known in this model mapping.");
 						}
-						ModelEntity e = upperEntities.get(0);
+						ModelEntity<?> e = upperEntities.get(0);
 						xmlTag = e.getXMLTag();
 						modelEntity = ModelContextLibrary.getModelContext(implementedInterface).getModelEntity(implementedInterface);
 						break;
@@ -373,7 +373,7 @@ public class XMLSerializer {
 		protected ObjectReference(Object anObject, XMLElement xmlElement, XMLElement context, Element anElement) {
 			super();
 			serializedObject = anObject;
-			referenceElements = new Vector<ElementReference>();
+			referenceElements = new Vector<>();
 			addElementReference(new ElementReference(xmlElement, context, anElement));
 		}
 

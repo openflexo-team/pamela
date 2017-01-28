@@ -68,8 +68,8 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 	public ProblemIssue(R rule, V anObject, String aMessage) {
 		super(anObject, aMessage);
 		validationRule = rule;
-		fixProposals = new ArrayList<FixProposal<R, V>>();
-		relatedValidableObjects = new ArrayList<Validable>();
+		fixProposals = new ArrayList<>();
+		relatedValidableObjects = new ArrayList<>();
 	}
 
 	public ProblemIssue(R rule, V anObject, String aMessage, FixProposal<R, V> proposal) {
@@ -93,7 +93,7 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 	}
 
 	public <FP extends FixProposal<R, V>> List<FP> getFixProposals(Class<? extends FP> fixProposalClass) {
-		List<FP> returned = new ArrayList<FP>();
+		List<FP> returned = new ArrayList<>();
 		for (FixProposal<R, V> fixProposal : getFixProposals()) {
 			if (fixProposalClass.isAssignableFrom(fixProposal.getClass())) {
 				returned.add((FP) fixProposal);
@@ -168,7 +168,7 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 			logger.fine("Remove related issues");
 		}
 
-		for (ValidationIssue<?, ?> issue : new ArrayList<ValidationIssue<?, ?>>(allIssuesToRemove)) {
+		for (ValidationIssue<?, ?> issue : new ArrayList<>(allIssuesToRemove)) {
 			validationReport.removeFromValidationIssues(issue);
 		}
 

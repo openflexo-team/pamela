@@ -49,8 +49,8 @@ import org.openflexo.model.exceptions.ModelDefinitionException;
 
 public class ModelContextLibrary {
 
-	private static final Map<Class<?>, ModelContext> contexts = new Hashtable<Class<?>, ModelContext>();
-	private static final Map<Set<Class<?>>, ModelContext> setContexts = new Hashtable<Set<Class<?>>, ModelContext>();
+	private static final Map<Class<?>, ModelContext> contexts = new Hashtable<>();
+	private static final Map<Set<Class<?>>, ModelContext> setContexts = new Hashtable<>();
 
 	public static synchronized ModelContext getModelContext(Class<?> baseClass) throws ModelDefinitionException {
 		ModelContext context = contexts.get(baseClass);
@@ -69,7 +69,7 @@ public class ModelContextLibrary {
 			return getModelContext(classes[0]);
 		}
 
-		Set<Class<?>> set = new HashSet<Class<?>>(Arrays.asList(classes));
+		Set<Class<?>> set = new HashSet<>(Arrays.asList(classes));
 		ModelContext context = setContexts.get(set);
 		if (context == null) {
 			setContexts.put(set, context = new ModelContext(classes));
@@ -78,7 +78,7 @@ public class ModelContextLibrary {
 	}
 
 	public static ModelContext getCompoundModelContext(Class<?> baseClass, Class<?>[] classes) throws ModelDefinitionException {
-		Class[] newArray = new Class[classes.length + 1];
+		Class<?>[] newArray = new Class[classes.length + 1];
 		for (int i = 0; i < classes.length; i++) {
 			newArray[i] = classes[i];
 		}

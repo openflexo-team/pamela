@@ -39,25 +39,11 @@
 
 package org.openflexo.model;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-
 import org.openflexo.connie.binding.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.annotations.Adder;
+import org.openflexo.model.annotations.CloningStrategy;
 import org.openflexo.model.annotations.Finder;
 import org.openflexo.model.annotations.Getter;
 import org.openflexo.model.annotations.Implementation;
@@ -81,6 +67,20 @@ import org.openflexo.model.factory.KeyValueCoding;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.factory.ProxyMethodHandler;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
+
+import javax.annotation.Nonnull;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This class represents an instance of the {@link org.openflexo.model.annotations.ModelEntity} annotation declared on an interface.
@@ -182,11 +182,11 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		super(implementedInterface.getName());
 
 		this.implementedInterface = implementedInterface;
-		declaredModelProperties = new HashMap<String, ModelProperty<I>>();
-		properties = new HashMap<String, ModelProperty<? super I>>();
-		propertyMethods = new HashMap<ModelMethod, ModelProperty<? super I>>();
-		initializers = new HashMap<Method, ModelInitializer>();
-		embeddedEntities = new HashSet<ModelEntity<?>>();
+		declaredModelProperties = new HashMap<>();
+		properties = new HashMap<>();
+		propertyMethods = new HashMap<>();
+		initializers = new HashMap<>();
+		embeddedEntities = new HashSet<>();
 		entityAnnotation = implementedInterface.getAnnotation(org.openflexo.model.annotations.ModelEntity.class);
 		implementationClass = implementedInterface.getAnnotation(ImplementationClass.class);
 		xmlElement = implementedInterface.getAnnotation(XMLElement.class);
@@ -197,7 +197,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		for (Class<?> i : implementedInterface.getInterfaces()) {
 			if (i.isAnnotationPresent(org.openflexo.model.annotations.ModelEntity.class)) {
 				if (superImplementedInterfaces == null) {
-					superImplementedInterfaces = new ArrayList<Class<? super I>>();
+					superImplementedInterfaces = new ArrayList<>();
 				}
 				superImplementedInterfaces.add((Class<? super I>) i);
 			}
@@ -272,7 +272,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		}
 
 		// Init delegate implementations
-		delegateImplementations = new HashMap<Class<I>, Set<Method>>();
+		delegateImplementations = new HashMap<>();
 		for (Class<?> c : getImplementedInterface().getDeclaredClasses()) {
 			if (c.getAnnotation(Implementation.class) != null) {
 				if (getImplementedInterface().isAssignableFrom(c)) {
@@ -386,7 +386,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		// System.out.println("getDirectSuperEntities()=" + getDirectSuperEntities());
 
 		if (getDirectSuperEntities() != null) {
-			Set<Method> implementedMethods = new HashSet<Method>();
+			Set<Method> implementedMethods = new HashSet<>();
 			for (ModelEntity<? super I> parentEntity : getDirectSuperEntities()) {
 				for (Class<? super I> implClass : parentEntity.delegateImplementations.keySet()) {
 					for (Method m : parentEntity.delegateImplementations.get(implClass)) {
@@ -428,11 +428,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	 * @param m
 	 * @return
 	 */
-	private boolean isToBeExcludedFromImplementationClashChecking(Method m) {
-		if (m.getName().contains("jacocoInit")) {
-			return true;
-		}
-		return false;
+	private static boolean isToBeExcludedFromImplementationClashChecking(Method m) {
+		return m.getName().contains("jacocoInit");
 	}
 
 	void mergeProperties() throws ModelDefinitionException {
@@ -538,7 +535,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	public List<ModelEntity<? super I>> getDirectSuperEntities() throws ModelDefinitionException {
 		if (directSuperEntities == null && superImplementedInterfaces != null) {
-			directSuperEntities = new ArrayList<ModelEntity<? super I>>(superImplementedInterfaces.size());
+			directSuperEntities = new ArrayList<>(superImplementedInterfaces.size());
 			for (Class<? super I> superInterface : superImplementedInterfaces) {
 				ModelEntity<? super I> superEntity = ModelEntityLibrary.get(superInterface, true);
 				directSuperEntities.add(superEntity);
@@ -555,11 +552,11 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	 */
 	public List<ModelEntity<? super I>> getAllSuperEntities() throws ModelDefinitionException {
 		if (allSuperEntities == null && superImplementedInterfaces != null) {
-			allSuperEntities = new ArrayList<ModelEntity<? super I>>();
+			allSuperEntities = new ArrayList<>();
 			// 1. We add the direct ancestors of this entity
 			allSuperEntities.addAll(getDirectSuperEntities());
 			// 2. We add the indirect ancestors of this entity to have a topologically sorted array.
-			for (ModelEntity<? super I> superEntity : new ArrayList<ModelEntity<? super I>>(allSuperEntities)) {
+			for (ModelEntity<? super I> superEntity : new ArrayList<>(allSuperEntities)) {
 				allSuperEntities.addAll(superEntity.getAllSuperEntities());
 			}
 		}
@@ -582,7 +579,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		if (modelPropertiesByXMLAttributeName == null) {
 			synchronized (this) {
 				if (modelPropertiesByXMLAttributeName == null) {
-					modelPropertiesByXMLAttributeName = new HashMap<String, ModelProperty<? super I>>();
+					modelPropertiesByXMLAttributeName = new HashMap<>();
 					for (ModelProperty<? super I> property : properties.values()) {
 						if (property.getXMLTag() != null) {
 							modelPropertiesByXMLAttributeName.put(property.getXMLTag(), property);
@@ -784,7 +781,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	/**
 	 * Return an iterator for {@link ModelProperty} objects<br>
-	 * Order respect {@link CloningStrategy#cloneAfterProperty()) annotation
+	 * Order respect {@link CloningStrategy#cloneAfterProperty()} annotation
 	 * 
 	 * @return
 	 * @throws ModelDefinitionException
@@ -827,10 +824,10 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	}
 
 	public List<ModelEntity> getAllDescendants(ModelContext modelContext) throws ModelDefinitionException {
-		List<ModelEntity> returned = new ArrayList<ModelEntity>();
+		List<ModelEntity> returned = new ArrayList<>();
 		Iterator<ModelEntity> i = modelContext.getEntities();
 		while (i.hasNext()) {
-			ModelEntity entity = i.next();
+			ModelEntity<?> entity = i.next();
 			if (isAncestorOf(entity)) {
 				returned.add(entity);
 			}
@@ -913,7 +910,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	}
 
 	public List<ModelInitializer> getPossibleInitializers(Class<?>[] types) {
-		List<ModelInitializer> list = new ArrayList<ModelInitializer>();
+		List<ModelInitializer> list = new ArrayList<>();
 		for (ModelInitializer init : initializers.values()) {
 			int i = 0;
 			Class<?>[] parameterTypes = init.getInitializingMethod().getParameterTypes();
@@ -985,7 +982,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	 * @return a list of model properties to which an instance of <code>type</code> can be assigned or added
 	 */
 	public Collection<ModelProperty<? super I>> getPropertiesAssignableFrom(Class<?> type) {
-		Collection<ModelProperty<? super I>> ppProperties = new ArrayList<ModelProperty<? super I>>();
+		Collection<ModelProperty<? super I>> ppProperties = new ArrayList<>();
 		for (ModelProperty<? super I> p : properties.values()) {
 			if (TypeUtils.isTypeAssignableFrom(p.getType(), type)) {
 				ppProperties.add(p);
@@ -1048,7 +1045,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	 * @return
 	 */
 	public List<Method> getNotOverridenMethods() {
-		List<Method> returned = new ArrayList<Method>();
+		List<Method> returned = new ArrayList<>();
 		for (Method m1 : getImplementedInterface().getMethods()) {
 			boolean isOverriden = false;
 			// Method overridingMethod = null;
@@ -1082,13 +1079,10 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			return true;
 		}
 		else {
-			if (method.getAnnotation(Finder.class) != null) {
-				return true;
-			}
-
-			if (method.getAnnotation(Initializer.class) != null) {
-				return true;
-			}
+			if (method.getAnnotation(Getter.class) != null) { return true; }
+			if (method.getAnnotation(Setter.class) != null) { return true; }
+			if (method.getAnnotation(Finder.class) != null) { return true; }
+			if (method.getAnnotation(Initializer.class) != null) { return true; }
 
 			// This has not been recognized as a property
 			if (HasPropertyChangeSupport.class.isAssignableFrom(getImplementedInterface())) {
@@ -1160,7 +1154,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			}
 
 			// Look up in base implementation class
-			Class implementingClassForInterface = factory.getImplementingClassForInterface(getImplementedInterface());
+			Class<?> implementingClassForInterface = factory.getImplementingClassForInterface(getImplementedInterface());
 			if (implementingClassForInterface != null) {
 				try {
 					Method m = implementingClassForInterface.getMethod(method.getName(), method.getParameterTypes());

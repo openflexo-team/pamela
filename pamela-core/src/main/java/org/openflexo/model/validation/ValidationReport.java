@@ -79,7 +79,6 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(ValidationReport.class.getPackage().getName());
 
 	private final Validable rootObject;
@@ -100,7 +99,6 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	protected ReportMode mode = ReportMode.ALL;
 
-	@SuppressWarnings("unchecked")
 	protected ValidationReport(ValidationModel validationModel, Validable rootObject) throws InterruptedException {
 		super();
 
@@ -109,20 +107,20 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		this.validationModel = validationModel;
 		this.rootObject = rootObject;
 
-		allIssues = new ArrayList<ValidationIssue<?, ?>>();
+		allIssues = new ArrayList<>();
 
-		infoIssues = new ArrayList<InformationIssue<?, ?>>();
-		errors = new ArrayList<ValidationError<?, ?>>();
-		warnings = new ArrayList<ValidationWarning<?, ?>>();
+		infoIssues = new ArrayList<>();
+		errors = new ArrayList<>();
+		warnings = new ArrayList<>();
 
-		infoIssuesMap = new HashMap<Validable, List<InformationIssue<?, ?>>>();
-		errorsMap = new HashMap<Validable, List<ValidationError<?, ?>>>();
-		warningsMap = new HashMap<Validable, List<ValidationWarning<?, ?>>>();
+		infoIssuesMap = new HashMap<>();
+		errorsMap = new HashMap<>();
+		warningsMap = new HashMap<>();
 
 		List<ValidationIssue<?, ?>> issues = performDeepValidation(rootObject);
 
 		if (issues.size() == 0) {
-			addToValidationIssues(new InformationIssue(rootObject, "consistency_check_ok"));
+			addToValidationIssues(new InformationIssue<>(rootObject, "consistency_check_ok"));
 		}
 	}
 
@@ -151,7 +149,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	private List<ValidationIssue<?, ?>> performDeepValidation(Validable rootObject) throws InterruptedException {
 
-		List<ValidationIssue<?, ?>> returned = new ArrayList<ValidationIssue<?, ?>>();
+		List<ValidationIssue<?, ?>> returned = new ArrayList<>();
 
 		// Get all the objects to validate
 		Collection<Validable> allEmbeddedValidableObjects = retrieveAllEmbeddedValidableObjects(rootObject);
@@ -159,7 +157,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		// logger.info("For object " + object + " objects to validate are: " + allEmbeddedValidableObjects);
 
 		// Remove duplicated objects
-		Vector<Validable> objectsToValidate = new Vector<Validable>();
+		Vector<Validable> objectsToValidate = new Vector<>();
 		for (Validable next : allEmbeddedValidableObjects) {
 			if (!objectsToValidate.contains(next)) {
 				objectsToValidate.add(next);
@@ -201,7 +199,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	}
 
 	private <V extends Validable> List<ValidationIssue<?, ?>> performValidation(V validable) {
-		List<ValidationIssue<?, ?>> returned = new ArrayList<ValidationIssue<?, ?>>();
+		List<ValidationIssue<?, ?>> returned = new ArrayList<>();
 
 		ValidationRuleSet<? super V> ruleSet = getValidationModel().getRuleSet(validable);
 
@@ -261,7 +259,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				}
 				else if (issue instanceof CompoundIssue) {
 					for (ValidationIssue<R, V> containedIssue : ((CompoundIssue<R, V>) issue).getContainedIssues()) {
-						if (containedIssue instanceof ProblemIssue && ((ProblemIssue) containedIssue).getFixProposals().size() == 1) {
+						if (containedIssue instanceof ProblemIssue && ((ProblemIssue<?, ?>) containedIssue).getFixProposals().size() == 1) {
 							addToValidationIssues(containedIssue);
 							if (logger.isLoggable(Level.INFO)) {
 								logger.info("Fixing automatically...");
@@ -337,7 +335,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	}*/
 
 	public Collection<Validable> retrieveAllEmbeddedValidableObjects(Validable o) {
-		List<Validable> returned = new ArrayList<Validable>();
+		List<Validable> returned = new ArrayList<>();
 		appendAllEmbeddedValidableObjects(o, returned);
 		return returned;
 	}
@@ -412,7 +410,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				infoIssues.add((InformationIssue<?, ?>) issue);
 				List<InformationIssue<?, ?>> l = infoIssuesMap.get(issue.getValidable());
 				if (l == null) {
-					l = new ArrayList<InformationIssue<?, ?>>();
+					l = new ArrayList<>();
 					infoIssuesMap.put(issue.getValidable(), l);
 				}
 				l.add((InformationIssue<?, ?>) issue);
@@ -422,7 +420,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				warnings.add((ValidationWarning<?, ?>) issue);
 				List<ValidationWarning<?, ?>> l = warningsMap.get(issue.getValidable());
 				if (l == null) {
-					l = new ArrayList<ValidationWarning<?, ?>>();
+					l = new ArrayList<>();
 					warningsMap.put(issue.getValidable(), l);
 				}
 				l.add((ValidationWarning<?, ?>) issue);
@@ -432,7 +430,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				errors.add((ValidationError<?, ?>) issue);
 				List<ValidationError<?, ?>> l = errorsMap.get(issue.getValidable());
 				if (l == null) {
-					l = new ArrayList<ValidationError<?, ?>>();
+					l = new ArrayList<>();
 					errorsMap.put(issue.getValidable(), l);
 				}
 				l.add((ValidationError<?, ?>) issue);
@@ -513,7 +511,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	// TODO: perf issues
 	public List<ValidationIssue<?, ?>> issuesRegarding(ValidationRule<?, ?> rule) {
 
-		List<ValidationIssue<?, ?>> returned = new ArrayList<ValidationIssue<?, ?>>();
+		List<ValidationIssue<?, ?>> returned = new ArrayList<>();
 
 		for (ValidationIssue<?, ?> issue : getAllIssues()) {
 			if (issue.getCause() == rule) {
@@ -533,7 +531,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	}
 
 	public void delete() {
-		for (ValidationIssue<?, ?> issue : new ArrayList<ValidationIssue<?, ?>>(getAllIssues())) {
+		for (ValidationIssue<?, ?> issue : new ArrayList<>(getAllIssues())) {
 			issue.delete();
 		}
 	}

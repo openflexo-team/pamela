@@ -179,7 +179,7 @@ public class ModelFactory implements IObjectGraphFactory {
 				throw new InstantiationException(modelEntity + " is declared as an abstract entity, cannot instantiate it");
 			}
 			locked = true;
-			ProxyMethodHandler<I> handler = new ProxyMethodHandler<I>(this, getEditingContext());
+			ProxyMethodHandler<I> handler = new ProxyMethodHandler<>(this, getEditingContext());
 			I returned = (I) create(new Class<?>[0], new Object[0], handler);
 			handler.setObject(returned);
 			if (args == null) {
@@ -232,7 +232,7 @@ public class ModelFactory implements IObjectGraphFactory {
 
 	public ModelFactory(ModelContext modelContext) {
 		this.modelContext = modelContext;
-		proxyFactories = new HashMap<Class, PAMELAProxyFactory>();
+		proxyFactories = new HashMap<>();
 		stringEncoder = new StringEncoder(this);
 	}
 
@@ -262,7 +262,7 @@ public class ModelFactory implements IObjectGraphFactory {
 			I returned = proxyFactory.newInstance(args);
 			if (getEditingContext() != null) {
 				if (getEditingContext().getUndoManager() != null) {
-					getEditingContext().getUndoManager().addEdit(new CreateCommand<I>(returned, proxyFactory.getModelEntity(), this));
+					getEditingContext().getUndoManager().addEdit(new CreateCommand<>(returned, proxyFactory.getModelEntity(), this));
 				}
 			}
 			return returned;
@@ -297,7 +297,7 @@ public class ModelFactory implements IObjectGraphFactory {
 			I returned = proxyFactory.newInstance(args);
 			if (getEditingContext() != null) {
 				if (getEditingContext().getUndoManager() != null) {
-					getEditingContext().getUndoManager().addEdit(new CreateCommand<I>(returned, proxyFactory.getModelEntity(), this));
+					getEditingContext().getUndoManager().addEdit(new CreateCommand<>(returned, proxyFactory.getModelEntity(), this));
 				}
 			}
 			return returned;
@@ -353,7 +353,7 @@ public class ModelFactory implements IObjectGraphFactory {
 			}
 			else {
 				if (create) {
-					proxyFactories.put(implementedInterface, proxyFactory = new PAMELAProxyFactory<I>(entity));
+					proxyFactories.put(implementedInterface, proxyFactory = new PAMELAProxyFactory<>(entity));
 				}
 			}
 		}
@@ -509,7 +509,7 @@ public class ModelFactory implements IObjectGraphFactory {
 			return Collections.emptyList();
 		}
 
-		List<Object> derivedObjectsFromContext = new ArrayList<Object>();
+		List<Object> derivedObjectsFromContext = new ArrayList<>();
 		if (context != null && context.length > 0) {
 			for (Object o : context) {
 				derivedObjectsFromContext.add(o);
@@ -517,13 +517,13 @@ public class ModelFactory implements IObjectGraphFactory {
 			}
 		}
 
-		List<Object> returned = new ArrayList<Object>();
+		List<Object> returned = new ArrayList<>();
 		try {
 			appendEmbeddedObjects(root, returned, embeddingType);
 		} catch (ModelDefinitionException e) {
 			throw new ModelExecutionException(e);
 		}
-		List<Object> discardedObjects = new ArrayList<Object>();
+		List<Object> discardedObjects = new ArrayList<>();
 		for (int i = 0; i < returned.size(); i++) {
 			Object o = returned.get(i);
 			if (o instanceof ConditionalPresence) {
@@ -594,12 +594,12 @@ public class ModelFactory implements IObjectGraphFactory {
 			}
 		}
 		else {
-			List<Object> requiredPresence = new ArrayList<Object>();
+			List<Object> requiredPresence = new ArrayList<>();
 			if (p.getEmbedded() != null) {
 				switch (embeddingType) {
 					case CLOSURE:
 						for (String c : p.getEmbedded().closureConditions()) {
-							ModelEntity closureConditionEntity = getModelEntityForInstance(child);
+							ModelEntity<?> closureConditionEntity = getModelEntityForInstance(child);
 							ModelProperty closureConditionProperty = closureConditionEntity.getModelProperty(c);
 							Object closureConditionRequiredObject = getHandler(child).invokeGetter(closureConditionProperty);
 							if (closureConditionRequiredObject != null) {
@@ -609,7 +609,7 @@ public class ModelFactory implements IObjectGraphFactory {
 						break;
 					case DELETION:
 						for (String c : p.getEmbedded().deletionConditions()) {
-							ModelEntity deletionConditionEntity = getModelEntityForInstance(child);
+							ModelEntity<?> deletionConditionEntity = getModelEntityForInstance(child);
 							ModelProperty deletionConditionProperty = deletionConditionEntity.getModelProperty(c);
 							Object deletionConditionRequiredObject = getHandler(child).invokeGetter(deletionConditionProperty);
 							if (deletionConditionRequiredObject != null) {
@@ -914,7 +914,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	public void checkMethodImplementations() throws ModelDefinitionException, MissingImplementationException {
 		ModelContext modelContext = getModelContext();
 		for (Iterator<ModelEntity> it = modelContext.getEntities(); it.hasNext();) {
-			ModelEntity e = it.next();
+			ModelEntity<?> e = it.next();
 			e.checkMethodImplementations(this);
 		}
 
