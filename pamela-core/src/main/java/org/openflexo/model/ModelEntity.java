@@ -78,6 +78,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -183,7 +184,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 		this.implementedInterface = implementedInterface;
 		declaredModelProperties = new HashMap<>();
-		properties = new HashMap<>();
+		properties = new LinkedHashMap<>();
 		propertyMethods = new HashMap<>();
 		initializers = new HashMap<>();
 		embeddedEntities = new HashSet<>();
