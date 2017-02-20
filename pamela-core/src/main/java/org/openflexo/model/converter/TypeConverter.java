@@ -45,6 +45,7 @@ import java.util.Map;
 
 import org.openflexo.connie.type.CustomType;
 import org.openflexo.connie.type.CustomTypeFactory;
+import org.openflexo.connie.type.ParameterizedTypeImpl;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.exceptions.InvalidDataException;
@@ -73,6 +74,10 @@ public class TypeConverter extends Converter<Type> {
 			} catch (ClassNotFoundException e) {
 				// Warns about the exception
 				throw new InvalidDataException("Supplied value represents a type not found: " + value);
+			}
+
+			if (customTypeClass.equals(List.class)) {
+				return new ParameterizedTypeImpl(List.class, convertFromString(configuration, factory));
 			}
 
 			if (factories == null) {
