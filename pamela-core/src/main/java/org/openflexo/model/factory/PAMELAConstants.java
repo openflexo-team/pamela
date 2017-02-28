@@ -59,6 +59,5 @@ public class PAMELAConstants {
 
 	public static boolean isPamelaAttribute(String namespace, String name) {
 		return PAMELAConstants.NS.equals(namespace) && PAMELAConstants.PAMELA_ATTRIBUTES.contains(name);
-
 	}
 }

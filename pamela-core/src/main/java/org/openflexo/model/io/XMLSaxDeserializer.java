@@ -230,8 +230,10 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			}
 
 		} else if (policy == DeserializationPolicy.RESTRICTIVE) {
+
 			throw new SAXException(new InvalidDataException("Could not find ModelEntity for " +  qName));
 		}
+
 		// push current state to stack
 		pushInfo(info);
 
@@ -271,6 +273,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		if (property != null) {
 			try {
 				ProxyMethodHandler parent = factory.getHandler(info.getParent());
+
 				switch (property.getCardinality()) {
 					case SINGLE:
 						parent.invokeSetterForDeserialization(property, info.getObject());
@@ -299,6 +302,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			// No need to go further: i've got my object
 			return false;
 		}
+
 
 		try {
 			// search concrete model entity

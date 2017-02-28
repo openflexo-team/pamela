@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (c) 2013-2017, Openflexo
  *
  * This file is part of Flexo-foundation, a component of the software infrastructure
@@ -36,6 +36,7 @@
 package org.openflexo.model.io;
 
 import java.lang.reflect.Method;
+
 import org.openflexo.model.DeserializationFinalizer;
 import org.openflexo.model.DeserializationInitializer;
 import org.openflexo.model.ModelEntity;
@@ -48,6 +49,7 @@ import org.xml.sax.SAXException;
 /**
  * Represents an object transformed from an XML source with it's meta-informations
  */
+
 public class TransformedObjectInfo {
 
 	private static final Object[] EMPTY_ARGS = new Object[0];
