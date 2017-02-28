@@ -48,13 +48,13 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.filter.ElementFilter;
 import org.jdom2.input.SAXBuilder;
+import org.openflexo.model.DeserializationFinalizer;
 import org.openflexo.model.ModelContext.ModelPropertyXMLTag;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
@@ -89,17 +89,6 @@ public class XMLDeserializer {
 	 */
 	private final List<DeserializedObject> alreadyDeserialized;
 
-	class DeserializedObject<I> {
-
-		I object;
-		ModelEntity<I> modelEntity;
-
-		DeserializedObject(I object, ModelEntity<I> modelEntity) {
-			this.object = object;
-			this.modelEntity = modelEntity;
-		}
-	}
-
 	private final List<ProxyMethodHandler<?>> deserializingHandlers;
 	private final DeserializationPolicy policy;
 
@@ -119,7 +108,9 @@ public class XMLDeserializer {
 		return modelFactory.getStringEncoder();
 	}
 
-	public Object deserializeDocument(InputStream in) throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
+	public Object deserializeDocument(InputStream in)
+		throws IOException, JDOMException, InvalidDataException, ModelDefinitionException, InvocationTargetException, IllegalAccessException
+	{
 		alreadyDeserializedMap.clear();
 		alreadyDeserialized.clear();
 		Document dataDocument = parseXMLData(in);
@@ -127,7 +118,9 @@ public class XMLDeserializer {
 		return buildObjectFromNode(rootElement);
 	}
 
-	public Object deserializeDocument(String xml) throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
+	public Object deserializeDocument(String xml)
+		throws IOException, JDOMException, InvalidDataException, ModelDefinitionException, InvocationTargetException, IllegalAccessException
+	{
 		alreadyDeserializedMap.clear();
 		alreadyDeserialized.clear();
 		Document dataDocument = parseXMLData(xml);
@@ -135,8 +128,10 @@ public class XMLDeserializer {
 		return buildObjectFromNode(rootElement);
 	}
 
-	private Object buildObjectFromNode(Element node) throws InvalidDataException, ModelDefinitionException {
-		ModelEntity<?> modelEntity = modelFactory.getModelContext().getModelEntity(node.getName());
+	private Object buildObjectFromNode(Element node)
+			throws InvalidDataException, ModelDefinitionException, InvocationTargetException, IllegalAccessException
+	{
+		ModelEntity<Object> modelEntity = (ModelEntity<Object>) modelFactory.getModelContext().getModelEntity(node.getName());
 		if (modelEntity == null) {
 			System.out.println("Could not find ModelEntity for " + node.getName());
 			return null;
@@ -148,12 +143,12 @@ public class XMLDeserializer {
 
 		// We just finished deserialization, call deserialization finalizers now
 		for (DeserializedObject o : alreadyDeserialized) {
-			finalizeDeserialization(o.object, o.modelEntity);
+			finalizeDeserialization(o);
 		}
 		return object;
 	}
 
-	private <I> Object buildObjectFromNodeAndModelEntity(Element node, ModelEntity<I> modelEntity)
+	private Object buildObjectFromNodeAndModelEntity(Element node, ModelEntity<Object> modelEntity)
 			throws InvalidDataException, ModelDefinitionException {
 		Object currentDeserializedReference = null;
 		Attribute idAttribute = node.getAttribute(ID);
@@ -196,7 +191,7 @@ public class XMLDeserializer {
 
 		// I need to rebuild it
 
-		I returned;
+		Object returned;
 		String text = node.getText();
 		if (text != null && getStringEncoder() != null && getStringEncoder().isConvertable(modelEntity.getImplementedInterface())) {
 			// GPO: I am not sure this is still useful.
@@ -207,12 +202,12 @@ public class XMLDeserializer {
 			}
 		}
 		else {
-			Class<I> entityClass = modelEntity.getImplementedInterface();
+			Class<Object> entityClass = modelEntity.getImplementedInterface();
 			// TODO: This little hook should disappear (backward compatibility with XMLCoDe where for some classes, class name was also
 			// serialized)
 			if (classNameAttribute != null) {
 				try {
-					entityClass = (Class<I>) Class.forName(classNameAttribute.getValue());
+					entityClass = (Class<Object>) Class.forName(classNameAttribute.getValue());
 					// System.out.println("Switch from " + modelEntity.getImplementedInterface() + " to " + entityClass);
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
@@ -226,13 +221,13 @@ public class XMLDeserializer {
 			alreadyDeserializedMap.put(currentDeserializedReference, returned);
 		}
 
-		alreadyDeserialized.add(new DeserializedObject<>(returned, modelEntity));
+		alreadyDeserialized.add(new DeserializedObject(returned, modelEntity));
 
-		ProxyMethodHandler<I> handler = modelFactory.getHandler(returned);
+		ProxyMethodHandler<Object> handler = modelFactory.getHandler(returned);
 		deserializingHandlers.add(handler);
 		handler.setDeserializing(true);
 		for (Attribute attribute : node.getAttributes()) {
-			ModelProperty<? super I> property = modelEntity.getPropertyForXMLAttributeName(attribute.getName());
+			ModelProperty<Object> property = modelEntity.getPropertyForXMLAttributeName(attribute.getName());
 			if (property == null) {
 				if (attribute.getNamespace().equals(PAMELAConstants.NAMESPACE)
 						&& (attribute.getName().equals(PAMELAConstants.CLASS_ATTRIBUTE)
@@ -260,24 +255,24 @@ public class XMLDeserializer {
 
 		}
 		for (Element child : node.getChildren()) {
-			ModelPropertyXMLTag<I> modelPropertyXMLTag = modelFactory.getModelContext().getPropertyForXMLTag(modelEntity, modelFactory,
+			ModelPropertyXMLTag<Object> modelPropertyXMLTag = modelFactory.getModelContext().getPropertyForXMLTag(modelEntity, modelFactory,
 					child.getName());
-			ModelProperty<? super I> property = null;
-			ModelEntity<?> entity = null;
+			ModelProperty<Object> property = null;
+			ModelEntity<Object> entity = null;
 			if (modelPropertyXMLTag != null) {
 				property = modelPropertyXMLTag.getProperty();
-				entity = modelPropertyXMLTag.getAccessedEntity();
+				entity = (ModelEntity<Object>) modelPropertyXMLTag.getAccessedEntity();
 			}
 			else if (policy == DeserializationPolicy.RESTRICTIVE) {
 				throw new RestrictiveDeserializationException("Element with name does not fit any properties within entity " + modelEntity);
 			}
-			Class<?> implementedInterface = null;
-			Class<?> implementingClass = null;
+			Class<Object> implementedInterface = null;
+			Class<Object> implementingClass = null;
 			String entityName = child.getAttributeValue(PAMELAConstants.MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.NAMESPACE);
 			String className = child.getAttributeValue(PAMELAConstants.CLASS_ATTRIBUTE, PAMELAConstants.NAMESPACE);
 			if (entityName != null) {
 				try {
-					implementedInterface = Class.forName(entityName);
+					implementedInterface = (Class<Object>) Class.forName(entityName);
 				} catch (ClassNotFoundException e) {
 					// TODO: log something here
 				}
@@ -291,9 +286,9 @@ public class XMLDeserializer {
 							entity = modelFactory.importClass(implementedInterface);
 							if (className != null) {
 								try {
-									implementingClass = Class.forName(className);
+									implementingClass = (Class<Object>) Class.forName(className);
 									if (implementedInterface.isAssignableFrom(implementingClass)) {
-										modelFactory.setImplementingClassForInterface((Class) implementingClass, implementedInterface,
+										modelFactory.setImplementingClassForInterface(implementingClass, implementedInterface,
 												policy == DeserializationPolicy.EXTENSIVE);
 									}
 									else {
@@ -445,19 +440,15 @@ public class XMLDeserializer {
 		}
 	}
 
-	private <I> void finalizeDeserialization(I object, ModelEntity<I> modelEntity) {
-		try {
-			if (modelEntity.getDeserializationFinalizer() != null) {
-				modelEntity.getDeserializationFinalizer().getDeserializationFinalizerMethod().invoke(object, new Object[0]);
-			}
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (ModelDefinitionException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
+	private void finalizeDeserialization(DeserializedObject deserializedObject)
+			throws ModelDefinitionException, InvocationTargetException, IllegalAccessException
+	{
+		ModelEntity<Object> modelEntity = deserializedObject.getModelEntity();
+		Object object = deserializedObject.getObject();
+
+		DeserializationFinalizer deserializationFinalizer = modelEntity.getDeserializationFinalizer();
+		if (deserializationFinalizer != null) {
+			deserializationFinalizer.getDeserializationFinalizerMethod().invoke(object, new Object[0]);
 		}
 		modelFactory.objectHasBeenDeserialized(object, modelEntity.getImplementedInterface());
 	}
