@@ -77,7 +77,9 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	public static final String ID = "id";
 	public static final String ID_REF = "idref";
 
-	public static final Set<String> INTERNAL_ATTRIBUTE = Stream.of(ID, ID_REF).collect(Collectors.toSet());
+	public static final Set<String> IGNORED_ATTRIBUTES = Stream.of(
+			ID, ID_REF, "xmlns:p", PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.Q_CLASS_ATTRIBUTE
+		).collect(Collectors.toSet());
 
 	private final ModelFactory factory;
 	private final ModelContext context;
@@ -341,7 +343,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			// Creates object instance
 			Class<Object> entityClass = concreteEntity.getImplementedInterface();
 			Object returned = factory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
-			initializeDeserialization(returned, expectedModelEntity);
+			initializeDeserialization(returned, concreteEntity);
 
 			// registers object
 			if (id != null) {
@@ -358,10 +360,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 				ModelProperty<Object> property = concreteEntity.getPropertyForXMLAttributeName(attributeName);
 				if (property == null) {
-					if (PAMELAConstants.isPamelaAttribute(attributeNamespace, attributeName)) {
-						continue;
-					}
-					if (INTERNAL_ATTRIBUTE.contains(attributeName)) {
+					if (IGNORED_ATTRIBUTES.contains(attributeName)) {
 						continue;
 					}
 
