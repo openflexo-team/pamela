@@ -378,6 +378,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			info.setObject(returned);
 			info.initializeDeserialization();
 
+
 			for (int i = 0; i < attributes.getLength(); i++) {
 				String attributeName = attributes.getQName(i);
 				ModelProperty<Object> property = concreteEntity.getPropertyForXMLAttributeName(attributeName);
