@@ -44,7 +44,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -83,8 +82,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	private final ModelFactory factory;
 	private final ModelContext context;
-
-	private final Map<String, String> prefixMap = new HashMap<>();
 
 	/**
 	 * Stores already serialized objects where value is the serialized object and key is an object coding the unique identifier of the
