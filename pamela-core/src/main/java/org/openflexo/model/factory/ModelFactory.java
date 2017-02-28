@@ -829,13 +829,13 @@ public class ModelFactory implements IObjectGraphFactory {
 		else {
 			throw new IOException("ERROR: Pamela Model Factory has No Deserializer set!");
 		}
+
 	}
 
 	@Override
 	public Object deserialize(String input) throws Exception {
 		return deserialize(input, DeserializationPolicy.PERMISSIVE);
 	}
-
 
 	public Object deserialize(String input, DeserializationPolicy policy)
 			throws IOException, InvalidDataException, ModelDefinitionException {

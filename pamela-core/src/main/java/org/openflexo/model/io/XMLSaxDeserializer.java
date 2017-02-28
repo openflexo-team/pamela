@@ -51,8 +51,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContext.ModelPropertyXMLTag;
 import org.openflexo.model.ModelEntity;
@@ -433,5 +435,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	private TransformedObjectInfo popInfo() {
 		return stack.pop();
+
 	}
 }
