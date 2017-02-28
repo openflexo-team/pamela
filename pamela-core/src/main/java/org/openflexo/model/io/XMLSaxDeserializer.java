@@ -262,6 +262,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		}
 
 		currentConvertibleString = new StringBuilder();
+
 	}
 
 	private void connectObject(TransformedObjectInfo info) throws SAXException {
@@ -371,7 +372,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			// End of the strange code
 			// ----- Warning -----
 
-
 			// Creates object instance
 			Class<Object> entityClass = concreteEntity.getImplementedInterface();
 			Object returned = factory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
@@ -400,6 +400,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				info.initializeDeserialization();
 				connectObject(childInfo);
 				allObjects.add(childInfo);
+
 			}
 
 			return true;
