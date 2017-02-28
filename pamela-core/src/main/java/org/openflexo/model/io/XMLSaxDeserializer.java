@@ -222,8 +222,27 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		// register for finalization
 		alreadyDeserialized.add(info);
 
-		// here info contains a constructed object
-		// TODO fill objects structures
+		// adds object to its parent if needed
+		ModelProperty<Object> property = info.getLeadingProperty();
+		if (property != null) {
+			try {
+				ProxyMethodHandler parent = factory.getHandler(stack.getLast().getObject());
+				switch (property.getCardinality()) {
+					case SINGLE:
+						parent.invokeSetterForDeserialization(property, info.getObject());
+						break;
+					case LIST:
+						parent.invokeAdderForDeserialization(property, info.getObject());
+						break;
+					case MAP:
+						throw new UnsupportedOperationException("Cannot deserialize maps for now");
+					default:
+						break;
+				}
+			} catch (ModelDefinitionException e) {
+				throw new SAXException(e);
+			}
+		}
 	}
 
 	private Object buildObjectFromAttributes(String name, ModelEntity<Object> expectedModelEntity, Attributes attributes) throws SAXException {
@@ -319,8 +338,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 			}
 
-
-
 			// Creates object instance
 			Class<Object> entityClass = concreteEntity.getImplementedInterface();
 			Object returned = factory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
@@ -339,7 +356,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				String attributeName = attributes.getLocalName(i);
 				String attributeValue = attributes.getValue(i);
 
-				ModelProperty<Object> property = expectedModelEntity.getPropertyForXMLAttributeName(attributeName);
+				ModelProperty<Object> property = concreteEntity.getPropertyForXMLAttributeName(attributeName);
 				if (property == null) {
 					if (PAMELAConstants.isPamelaAttribute(attributeNamespace, attributeName)) {
 						continue;
@@ -356,7 +373,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 						case EXTENSIVE:
 							// TODO: handle extra values
 							// break;
-							continue; // As long as we don't handlethem, we continue to avoid NPE.
+							continue; // As long as we don't handle them, we continue to avoid NPE.
 					}
 				}
 				Object value = getStringEncoder().fromString(property.getType(), attributeValue);
@@ -370,155 +387,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		} catch (Exception e) {
 			throw new SAXException(e);
 		}
-
-		/*
-		for (Element child : node.getChildren()) {
-			ModelPropertyXMLTag<I> modelPropertyXMLTag = factory.getModelContext().getPropertyForXMLTag(expectedModelEntity, factory,
-					child.getName());
-			ModelProperty<? super I> property = null;
-			ModelEntity<?> entity = null;
-			if (modelPropertyXMLTag != null) {
-				property = modelPropertyXMLTag.getProperty();
-				entity = modelPropertyXMLTag.getAccessedEntity();
-			}
-			else if (policy == DeserializationPolicy.RESTRICTIVE) {
-				throw new RestrictiveDeserializationException("Element with name does not fit any properties within entity " + expectedModelEntity);
-			}
-
-
-			Class<?> implementedInterface = null;
-			Class<?> implementingClass = null;
-			String entityName = child.getAttributeValue(PAMELAConstants.MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.NAMESPACE);
-			String className = child.getAttributeValue(PAMELAConstants.CLASS_ATTRIBUTE, PAMELAConstants.NAMESPACE);
-			if (entityName != null) {
-				try {
-					implementedInterface = Class.forName(entityName);
-				} catch (ClassNotFoundException e) {
-					// TODO: log something here
-				}
-				switch (policy) {
-					case PERMISSIVE:
-						break;
-					case RESTRICTIVE:
-						break;
-					case EXTENSIVE:
-						if (entityName != null) {
-							entity = factory.importClass(implementedInterface);
-							if (className != null) {
-								try {
-									implementingClass = Class.forName(className);
-									if (implementedInterface.isAssignableFrom(implementingClass)) {
-										factory.setImplementingClassForInterface((Class) implementingClass, implementedInterface,
-												policy == DeserializationPolicy.EXTENSIVE);
-									}
-									else {
-										throw new ModelExecutionException(
-												className + " does not implement " + implementedInterface + " for node " + child.getName());
-									}
-								} catch (ClassNotFoundException e) {
-									// TODO: log something here
-								}
-							}
-						}
-						break;
-				}
-				if (implementedInterface != null) {
-					if (policy == DeserializationPolicy.EXTENSIVE) {
-						entity = factory.getExtendedContext().getModelEntity(implementedInterface);
-					}
-					else {
-						entity = factory.getModelContext().getModelEntity(implementedInterface);
-					}
-				}
-				if (entity == null && policy == DeserializationPolicy.RESTRICTIVE) {
-					if (entityName != null) {
-						throw new RestrictiveDeserializationException("Entity " + entityName + " is not part of this model context");
-					}
-					else {
-						throw new RestrictiveDeserializationException("No entity found for tag " + child.getName());
-					}
-				}
-			}
-			if (property != null) {
-				Object value = null;
-				if (entity != null && !getStringEncoder().isConvertable(property.getType())) {
-					value = buildObjectFromNodeAndModelEntity(child, entity);
-				}
-				else if (getStringEncoder().isConvertable(property.getType())) {
-					value = getStringEncoder().fromString(property.getType(), child.getText());
-				}
-				else {
-					// Should not happen
-					throw new ModelExecutionException(
-							"Found property " + property + " but was unable to deserialize the content of node " + child);
-				}
-				switch (property.getCardinality()) {
-					case SINGLE:
-						handler.invokeSetterForDeserialization(property, value);
-						break;
-					case LIST:
-						handler.invokeAdderForDeserialization(property, value);
-						break;
-					case MAP:
-						throw new UnsupportedOperationException("Cannot deserialize maps for now");
-					default:
-						break;
-				}
-			}
-
-		}
-		*/
-
 	}
-
-	/*
-	private class MatchingElement {
-		private final Element element;
-		private final ModelEntity<?> modelEntity;
-
-		private MatchingElement(Element element, ModelEntity<?> modelEntity) {
-			super();
-			this.element = element;
-			this.modelEntity = modelEntity;
-		}
-
-		@Override
-		public String toString() {
-			return element.toString() + "/" + modelEntity;
-		}
-	}
-
-	protected Document parseXMLData(InputStream xmlStream) throws IOException, JDOMException {
-		SAXBuilder parser = new SAXBuilder();
-		Document reply = parser.build(xmlStream);
-		makeIndex(reply);
-		return reply;
-	}
-
-	protected Document parseXMLData(String xml) throws IOException, JDOMException {
-		SAXBuilder parser = new SAXBuilder();
-		Document reply = parser.build(new StringReader(xml));
-		makeIndex(reply);
-		return reply;
-	}
-
-	static private class ElementWithIDFilter extends ElementFilter {
-
-		public ElementWithIDFilter() {
-			super();
-		}
-
-		@Override
-		public Element filter(Object arg0) {
-			Element element = super.filter(arg0);
-			if (element != null && element.getAttributeValue("id") != null) {
-				return element;
-			}
-			return null;
-		}
-
-	}
-	*/
 
 	private void initializeDeserialization(Object object, ModelEntity<Object> modelEntity) throws SAXException {
 		factory.objectIsBeeingDeserialized(object, modelEntity.getImplementedInterface());
