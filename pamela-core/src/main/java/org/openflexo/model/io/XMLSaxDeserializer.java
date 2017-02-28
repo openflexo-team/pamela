@@ -152,6 +152,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			}
 
 			return rootInfo.getObject();
+
 		} catch (SAXException e) {
 			if (e.getCause() instanceof Exception) throw (Exception) e.getCause();
 			else throw new InvalidDataException(e.getMessage());
@@ -189,6 +190,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 						else if (policy == DeserializationPolicy.RESTRICTIVE) {
 							throw new RestrictiveDeserializationException("Element with name does not fit any properties within entity " + parentModelEntity);
 						}
+
 					}
 				}
 			} catch (ModelDefinitionException e) {
@@ -231,8 +233,10 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 		} else if (policy == DeserializationPolicy.RESTRICTIVE) {
 
+
 			throw new SAXException(new InvalidDataException("Could not find ModelEntity for " +  qName));
 		}
+
 
 		// push current state to stack
 		pushInfo(info);
@@ -269,7 +273,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		// don't set a null object
 		if (info.getObject() == null) return;
 
-		// adds object to its parent if needed
 		ModelProperty<Object> property = info.getLeadingProperty();
 		if (property != null) {
 			try {
@@ -298,6 +301,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	 * @return true if an object was built, false other wise
 	 */
 	private boolean buildObjectFromAttributes(String name, String id, TransformedObjectInfo info, Attributes attributes) throws SAXException {
+
 		// if it's the case, the serialization has problems
 		if (id != null && objectsWithId.containsKey(id)) {
 			// No need to go further: i've got my object
