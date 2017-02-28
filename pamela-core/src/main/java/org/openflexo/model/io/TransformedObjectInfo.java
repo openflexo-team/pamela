@@ -36,27 +36,33 @@
 package org.openflexo.model.io;
 
 import org.openflexo.model.ModelEntity;
+import org.openflexo.model.ModelProperty;
+import org.openflexo.model.exceptions.InvalidDataException;
+import org.openflexo.model.factory.ModelFactory;
+import org.xml.sax.SAXException;
 
 /**
- * Deserialized object
+ * Represents an object transformed from an XML source with it's meta-informations
  */
-public class DeserializedObject {
+public class TransformedObjectInfo {
 
 	private final boolean convertible;
 	private final Object object;
+	private final ModelProperty<Object> leadingProperty;
 	private final ModelEntity<Object> modelEntity;
 
-	public DeserializedObject(Object object, ModelEntity<Object> modelEntity) {
-		this(false, object, modelEntity);
+	public TransformedObjectInfo(Object object, ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity) {
+		this(false, object, leadingProperty, modelEntity);
 	}
 
-	public DeserializedObject(ModelEntity<Object> modelEntity) {
-		this(true, modelEntity);
+	public TransformedObjectInfo(ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity) {
+		this(true, null, leadingProperty, modelEntity);
 	}
 
-	private DeserializedObject(boolean convertible, Object object, ModelEntity<Object> modelEntity) {
+	private TransformedObjectInfo(boolean convertible, Object object, ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity) {
 		this.convertible = convertible;
 		this.object = object;
+		this.leadingProperty = leadingProperty;
 		this.modelEntity = modelEntity;
 	}
 
@@ -68,7 +74,21 @@ public class DeserializedObject {
 		return object;
 	}
 
+	public ModelProperty<Object> getLeadingProperty() {
+		return leadingProperty;
+	}
+
 	public ModelEntity<Object> getModelEntity() {
 		return modelEntity;
+	}
+
+	public TransformedObjectInfo convert(ModelFactory factory, String source) throws SAXException {
+		try {
+			Class<Object> implementedInterface = modelEntity.getImplementedInterface();
+			Object object = factory.getStringEncoder().fromString(implementedInterface, source);
+			return new TransformedObjectInfo(object, leadingProperty, modelEntity);
+		} catch (InvalidDataException e) {
+			throw new SAXException(e);
+		}
 	}
 }

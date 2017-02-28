@@ -773,12 +773,11 @@ public class ModelFactory implements IObjectGraphFactory {
 	}
 
 	@Override
-	public Object deserialize(InputStream is) throws Exception, IOException {
+	public Object deserialize(InputStream is) throws Exception {
 		return deserialize(is, DeserializationPolicy.PERMISSIVE);
 	}
 
 	public Object deserialize(InputStream is, DeserializationPolicy policy) throws Exception {
-		//XMLDeserializer deserializer = new XMLDeserializer(this, policy);
 		XMLSaxDeserializer deserializer = new XMLSaxDeserializer(this, policy);
 		return deserializer.deserializeDocument(is);
 	}
