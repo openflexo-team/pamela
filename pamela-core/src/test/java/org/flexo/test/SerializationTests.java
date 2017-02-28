@@ -1,15 +1,18 @@
 package org.flexo.test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.logging.Level;
 import org.apache.commons.io.IOUtils;
 import org.flexo.model.AbstractNode;
 import org.flexo.model.FlexoProcess;
 import org.flexo.model.MyNode;
-import org.jdom2.JDOMException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openflexo.model.AbstractPAMELATest;
-import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.RestrictiveDeserializationException;
 import org.openflexo.model.exceptions.RestrictiveSerializationException;
@@ -20,12 +23,6 @@ import org.openflexo.toolbox.Duration;
 import org.openflexo.toolbox.Duration.DurationUnit;
 import org.openflexo.toolbox.FileFormat;
 import org.openflexo.toolbox.FileFormat.BinaryFileFormat;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.logging.Level;
 
 public class SerializationTests extends AbstractPAMELATest {
 
@@ -52,7 +49,7 @@ public class SerializationTests extends AbstractPAMELATest {
 	}
 
 	@Test
-	public void testSerializationPolicy() throws IOException, ModelDefinitionException, JDOMException, InvalidDataException {
+	public void testSerializationPolicy() throws Exception {
 
 		Assert.assertNull(factory.getModelContext().getModelEntity(MyNode.class));
 		Assert.assertNotNull(factory2.getModelContext().getModelEntity(MyNode.class));

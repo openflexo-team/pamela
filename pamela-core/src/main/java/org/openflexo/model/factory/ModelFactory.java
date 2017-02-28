@@ -39,27 +39,6 @@
 
 package org.openflexo.model.factory;
 
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
-import org.jdom2.JDOMException;
-import org.openflexo.IObjectGraphFactory;
-import org.openflexo.model.ModelContext;
-import org.openflexo.model.ModelContextLibrary;
-import org.openflexo.model.ModelEntity;
-import org.openflexo.model.ModelInitializer;
-import org.openflexo.model.ModelProperty;
-import org.openflexo.model.StringConverterLibrary.Converter;
-import org.openflexo.model.StringEncoder;
-import org.openflexo.model.annotations.PastingPoint;
-import org.openflexo.model.exceptions.InvalidDataException;
-import org.openflexo.model.exceptions.MissingImplementationException;
-import org.openflexo.model.exceptions.ModelDefinitionException;
-import org.openflexo.model.exceptions.ModelExecutionException;
-import org.openflexo.model.io.XMLDeserializer;
-import org.openflexo.model.io.XMLSerializer;
-import org.openflexo.model.undo.CreateCommand;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,6 +55,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
+import org.openflexo.IObjectGraphFactory;
+import org.openflexo.model.ModelContext;
+import org.openflexo.model.ModelContextLibrary;
+import org.openflexo.model.ModelEntity;
+import org.openflexo.model.ModelInitializer;
+import org.openflexo.model.ModelProperty;
+import org.openflexo.model.StringConverterLibrary.Converter;
+import org.openflexo.model.StringEncoder;
+import org.openflexo.model.annotations.PastingPoint;
+import org.openflexo.model.exceptions.MissingImplementationException;
+import org.openflexo.model.exceptions.ModelDefinitionException;
+import org.openflexo.model.exceptions.ModelExecutionException;
+import org.openflexo.model.io.XMLSaxDeserializer;
+import org.openflexo.model.io.XMLSerializer;
+import org.openflexo.model.undo.CreateCommand;
 
 /**
  * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
@@ -780,20 +777,19 @@ public class ModelFactory implements IObjectGraphFactory {
 		return deserialize(is, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public Object deserialize(InputStream is, DeserializationPolicy policy)
-			throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
-		XMLDeserializer deserializer = new XMLDeserializer(this, policy);
+	public Object deserialize(InputStream is, DeserializationPolicy policy) throws Exception {
+		//XMLDeserializer deserializer = new XMLDeserializer(this, policy);
+		XMLSaxDeserializer deserializer = new XMLSaxDeserializer(this, policy);
 		return deserializer.deserializeDocument(is);
 	}
 
 	@Override
-	public Object deserialize(String input) throws Exception, IOException {
+	public Object deserialize(String input) throws Exception {
 		return deserialize(input, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public Object deserialize(String input, DeserializationPolicy policy)
-			throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
-		XMLDeserializer deserializer = new XMLDeserializer(this, policy);
+	public Object deserialize(String input, DeserializationPolicy policy) throws Exception {
+		XMLSaxDeserializer deserializer = new XMLSaxDeserializer(this, policy);
 		return deserializer.deserializeDocument(input);
 	}
 
