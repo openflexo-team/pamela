@@ -51,7 +51,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.xml.parsers.SAXParser;
@@ -85,6 +84,12 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			ID, ID_REF, CLASS_NAME, "xmlns:p", PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.Q_CLASS_ATTRIBUTE
 		).collect(Collectors.toSet());
 
+
+	@FunctionalInterface
+	private interface Resolver {
+		void resolve(Object resolved) throws SAXException;
+	}
+
 	private final ModelFactory factory;
 	private final ModelContext context;
 
@@ -97,7 +102,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	/**
 	 * Stores lambda to resolve forward references
 	 */
-	private final Map<String, List<Consumer<Object>>> forwardReferences = new HashMap<>();
+	private final Map<String, List<Resolver>> forwardReferences = new HashMap<>();
 
 	/**
 	 * Stores an ordered list of deserialized objects in the order they were instantiated during deserialization phase phase
@@ -179,11 +184,13 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		// searches for correct model entity to resolve
 		ModelEntity<Object> modelEntity = null;
 		ModelProperty<Object> leadingProperty = null;
+		Object parent = null;
 		if (stack.isEmpty()) {
 			modelEntity = (ModelEntity<Object>) factory.getModelContext().getModelEntity(qName);
 		} else {
 			try {
 				TransformedObjectInfo parentInfo = stack.getLast();
+				parent = parentInfo.getObject();
 				if (parentInfo != null) {
 					ModelEntity<Object> parentModelEntity = parentInfo.getModelEntity();
 					ModelPropertyXMLTag<Object> modelPropertyXMLTag = context.getPropertyForXMLTag(parentModelEntity, factory, qName);
@@ -205,7 +212,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			if (getStringEncoder().isConvertable(modelEntity.getImplementedInterface())) {
 				// object is convertible from a string, it will only contains a string
 				currentConvertibleString = "";
-				info = new TransformedObjectInfo(leadingProperty, modelEntity);
+				info = new TransformedObjectInfo(leadingProperty, parent, modelEntity);
 			}
 			else {
 				String idref = attributes.getValue(ID_REF);
@@ -214,27 +221,21 @@ public class XMLSaxDeserializer extends DefaultHandler {
 					Object referenceObject = alreadyDeserializedMap.get(idref);
 					if (referenceObject == null) {
 						// it needs to be resolved later
-						final ModelEntity<Object> finalModelEntity = modelEntity;
 						final ModelProperty<Object> finalModelProperty = leadingProperty;
-						List<Consumer<Object>> forwards = forwardReferences.getOrDefault(idref, new ArrayList<>());
-						forwards.add((target) -> {
-							try {
-								connectObject(new TransformedObjectInfo(target, finalModelProperty, finalModelEntity));
-							} catch (SAXException e) {
-								// TODO add lambda with SAXException
-								e.printStackTrace();
-							}
-						});
+						final Object finalParent = parent;
+						final ModelEntity<Object> finalModelEntity = modelEntity;
+						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (id) -> new ArrayList<>());
+						forwards.add((target) -> connectObject(new TransformedObjectInfo(target, finalModelProperty, finalParent, finalModelEntity)));
 						info = null;
 					}
 					else {
-						info = new TransformedObjectInfo(referenceObject, leadingProperty, modelEntity);
+						info = new TransformedObjectInfo(referenceObject, leadingProperty, parent, modelEntity);
 					}
 				}
 				else {
 					// object is constructed using attributes
 					Object object = buildObjectFromAttributes(localName, modelEntity, attributes);
-					info = new TransformedObjectInfo(object, leadingProperty, modelEntity);
+					info = new TransformedObjectInfo(object, leadingProperty, parent, modelEntity);
 				}
 			}
 		} else if (policy != DeserializationPolicy.RESTRICTIVE) {
@@ -276,7 +277,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		ModelProperty<Object> property = info.getLeadingProperty();
 		if (property != null) {
 			try {
-				ProxyMethodHandler parent = factory.getHandler(stack.getLast().getObject());
+				ProxyMethodHandler parent = factory.getHandler(info.getParent());
 				switch (property.getCardinality()) {
 					case SINGLE:
 						parent.invokeSetterForDeserialization(property, info.getObject());
@@ -425,14 +426,14 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		}
 	}
 
-	private void register(String id, Object object) {
+	private void register(String id, Object object) throws SAXException {
 		alreadyDeserializedMap.put(id, object);
 
 		// resolves forward references if any
-		List<Consumer<Object>> forwards = forwardReferences.remove(id);
+		List<Resolver> forwards = forwardReferences.remove(id);
 		if (forwards != null) {
-			for (Consumer<Object> forward : forwards) {
-				forward.accept(object);
+			for (Resolver forward : forwards) {
+				forward.resolve(object);
 			}
 		}
 
