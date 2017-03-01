@@ -51,13 +51,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
 import org.openflexo.model.DeserializationFinalizer;
 import org.openflexo.model.DeserializationInitializer;
 import org.openflexo.model.ModelContext;
@@ -81,10 +78,17 @@ public class SAXXMLDeserializer extends DefaultHandler implements ModelDeseriali
 
 	public static final String ID = "id";
 	public static final String ID_REF = "idref";
+	public static final String CLASS_NAME = "className";
 
 	public static final Set<String> IGNORED_ATTRIBUTES = Stream.of(
-			ID, ID_REF, "xmlns:p", PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.Q_CLASS_ATTRIBUTE
+			ID, ID_REF, CLASS_NAME, "xmlns:p", PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.Q_CLASS_ATTRIBUTE
 		).collect(Collectors.toSet());
+
+
+	@FunctionalInterface
+	private interface Resolver {
+		void resolve(Object resolved) throws SAXException;
+	}
 
 	private final ModelFactory factory;
 	private final ModelContext context;
@@ -98,7 +102,7 @@ public class SAXXMLDeserializer extends DefaultHandler implements ModelDeseriali
 	/**
 	 * Stores lambda to resolve forward references
 	 */
-	private final Map<String, List<Consumer<Object>>> forwardReferences = new HashMap<>();
+	private final Map<String, List<Resolver>> forwardReferences = new HashMap<>();
 
 	/**
 	 * Stores an ordered list of deserialized objects in the order they were instantiated during deserialization phase phase
@@ -180,11 +184,13 @@ public class SAXXMLDeserializer extends DefaultHandler implements ModelDeseriali
 		// searches for correct model entity to resolve
 		ModelEntity<Object> modelEntity = null;
 		ModelProperty<Object> leadingProperty = null;
+		Object parent = null;
 		if (stack.isEmpty()) {
 			modelEntity = (ModelEntity<Object>) factory.getModelContext().getModelEntity(qName);
 		} else {
 			try {
 				TransformedObjectInfo parentInfo = stack.getLast();
+				parent = parentInfo.getObject();
 				if (parentInfo != null) {
 					ModelEntity<Object> parentModelEntity = parentInfo.getModelEntity();
 					ModelPropertyXMLTag<Object> modelPropertyXMLTag = context.getPropertyForXMLTag(parentModelEntity, factory, qName);
@@ -206,7 +212,7 @@ public class SAXXMLDeserializer extends DefaultHandler implements ModelDeseriali
 			if (getStringEncoder().isConvertable(modelEntity.getImplementedInterface())) {
 				// object is convertible from a string, it will only contains a string
 				currentConvertibleString = "";
-				info = new TransformedObjectInfo(leadingProperty, modelEntity);
+				info = new TransformedObjectInfo(leadingProperty, parent, modelEntity);
 			}
 			else {
 				String idref = attributes.getValue(ID_REF);
@@ -215,28 +221,21 @@ public class SAXXMLDeserializer extends DefaultHandler implements ModelDeseriali
 					Object referenceObject = alreadyDeserializedMap.get(idref);
 					if (referenceObject == null) {
 						// it needs to be resolved later
-						final ModelEntity<Object> finalModelEntity = modelEntity;
 						final ModelProperty<Object> finalModelProperty = leadingProperty;
-						List<Consumer<Object>> forwards = forwardReferences.getOrDefault(idref, new ArrayList<>());
-						forwards.add((target) -> {
-							System.out.println("-----> Resolving " + idref + " <------");
-							try {
-								connectObject(new TransformedObjectInfo(target, finalModelProperty, finalModelEntity));
-							} catch (SAXException e) {
-								// TODO add lambda with SAXException
-								e.printStackTrace();
-							}
-						});
+						final Object finalParent = parent;
+						final ModelEntity<Object> finalModelEntity = modelEntity;
+						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (id) -> new ArrayList<>());
+						forwards.add((target) -> connectObject(new TransformedObjectInfo(target, finalModelProperty, finalParent, finalModelEntity)));
 						info = null;
 					}
 					else {
-						info = new TransformedObjectInfo(referenceObject, leadingProperty, modelEntity);
+						info = new TransformedObjectInfo(referenceObject, leadingProperty, parent, modelEntity);
 					}
 				}
 				else {
 					// object is constructed using attributes
 					Object object = buildObjectFromAttributes(localName, modelEntity, attributes);
-					info = new TransformedObjectInfo(object, leadingProperty, modelEntity);
+					info = new TransformedObjectInfo(object, leadingProperty, parent, modelEntity);
 				}
 			}
 		} else if (policy != DeserializationPolicy.RESTRICTIVE) {
@@ -278,7 +277,7 @@ public class SAXXMLDeserializer extends DefaultHandler implements ModelDeseriali
 		ModelProperty<Object> property = info.getLeadingProperty();
 		if (property != null) {
 			try {
-				ProxyMethodHandler parent = factory.getHandler(stack.getLast().getObject());
+				ProxyMethodHandler parent = factory.getHandler(info.getParent());
 				switch (property.getCardinality()) {
 					case SINGLE:
 						parent.invokeSetterForDeserialization(property, info.getObject());
@@ -312,23 +311,33 @@ public class SAXXMLDeserializer extends DefaultHandler implements ModelDeseriali
 		}
 
 		try {
-
 			// search concrete model entity
 			ModelEntity<Object> concreteEntity = expectedModelEntity;
 			Class<Object> implementedInterface = null;
 			Class<Object> implementingClass = null;
 
 			String entityName = attributes.getValue(PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE);
-			String className = attributes.getValue(PAMELAConstants.Q_CLASS_ATTRIBUTE);
-			if (entityName != null) {
-				// ----- Warning -----
-				// This next code come from the old deserialization process, I don't fully understand what's done here.
-				// I keep it for compatibility, I'll come back there to clean it up later
-				// ----- Warning -----
+			String className = attributes.getValue(CLASS_NAME);
+			if (className == null) {
+				className = attributes.getValue(PAMELAConstants.Q_CLASS_ATTRIBUTE);
+			}
+
+			// ----- Warning -----
+			// This next code come from the old deserialization process, I don't fully understand what's done here.
+			// I keep it for compatibility, I'll come back there to clean it up later
+			// ----- Warning -----
+			if (className != null) {
+				try {
+					implementedInterface = (Class<Object>) Class.forName(className);
+				} catch (ClassNotFoundException e) {
+					throw new InvalidDataException("Class not found "+ e.getMessage());
+				}
+			}
+			else if (entityName != null) {
 				try {
 					implementedInterface = (Class<Object>) Class.forName(entityName);
 				} catch (ClassNotFoundException e) {
-					// TODO: log something here
+					throw new InvalidDataException("Class not found "+ e.getMessage());
 				}
 				if (entityName != null && policy == DeserializationPolicy.EXTENSIVE) {
 					concreteEntity = factory.importClass(implementedInterface);
@@ -342,31 +351,32 @@ public class SAXXMLDeserializer extends DefaultHandler implements ModelDeseriali
 								throw new ModelExecutionException(className + " does not implement " + implementedInterface + " for node " + name);
 							}
 						} catch (ClassNotFoundException e) {
-							// TODO: log something here
+							throw new InvalidDataException("Class not found "+ e.getMessage());
 						}
-						}
-				}
-				if (implementedInterface != null) {
-					if (policy == DeserializationPolicy.EXTENSIVE) {
-						concreteEntity = factory.getExtendedContext().getModelEntity(implementedInterface);
-					}
-					else {
-						concreteEntity = factory.getModelContext().getModelEntity(implementedInterface);
 					}
 				}
-				if (concreteEntity == null && policy == DeserializationPolicy.RESTRICTIVE) {
-					if (entityName != null) {
-						throw new RestrictiveDeserializationException("Entity " + entityName + " is not part of this model context");
-					}
-					else {
-						throw new RestrictiveDeserializationException("No entity found for tag " + name);
-					}
-				}
-				// ----- Warning -----
-				// End of the strange code
-				// ----- Warning -----
-
 			}
+
+			if (implementedInterface != null) {
+				if (policy == DeserializationPolicy.EXTENSIVE) {
+					concreteEntity = factory.getExtendedContext().getModelEntity(implementedInterface);
+				}
+				else {
+					concreteEntity = factory.getModelContext().getModelEntity(implementedInterface);
+				}
+			}
+			if (concreteEntity == null && policy == DeserializationPolicy.RESTRICTIVE) {
+				if (entityName != null) {
+					throw new RestrictiveDeserializationException("Entity " + entityName + " is not part of this model context");
+				}
+				else {
+					throw new RestrictiveDeserializationException("No entity found for tag " + name);
+				}
+			}
+			// ----- Warning -----
+			// End of the strange code
+			// ----- Warning -----
+
 
 			// Creates object instance
 			Class<Object> entityClass = concreteEntity.getImplementedInterface();
@@ -411,18 +421,19 @@ public class SAXXMLDeserializer extends DefaultHandler implements ModelDeseriali
 			return returned;
 
 		} catch (Exception e) {
+			if (e instanceof SAXException) throw (SAXException) e;
 			throw new SAXException(e);
 		}
 	}
 
-	private void register(String id, Object object) {
+	private void register(String id, Object object) throws SAXException {
 		alreadyDeserializedMap.put(id, object);
 
 		// resolves forward references if any
-		List<Consumer<Object>> forwards = forwardReferences.remove(id);
+		List<Resolver> forwards = forwardReferences.remove(id);
 		if (forwards != null) {
-			for (Consumer<Object> forward : forwards) {
-				forward.accept(object);
+			for (Resolver forward : forwards) {
+				forward.resolve(object);
 			}
 		}
 

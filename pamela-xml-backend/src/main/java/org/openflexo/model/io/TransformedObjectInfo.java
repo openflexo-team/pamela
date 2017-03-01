@@ -47,20 +47,22 @@ import org.xml.sax.SAXException;
 public class TransformedObjectInfo {
 
 	private final boolean convertible;
+	private final Object parent;
 	private final Object object;
 	private final ModelProperty<Object> leadingProperty;
 	private final ModelEntity<Object> modelEntity;
 
-	public TransformedObjectInfo(Object object, ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity) {
-		this(false, object, leadingProperty, modelEntity);
+	public TransformedObjectInfo(Object object, ModelProperty<Object> leadingProperty, Object parent, ModelEntity<Object> modelEntity) {
+		this(false, object, leadingProperty, parent, modelEntity);
 	}
 
-	public TransformedObjectInfo(ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity) {
-		this(true, null, leadingProperty, modelEntity);
+	public TransformedObjectInfo(ModelProperty<Object> leadingProperty, Object parent, ModelEntity<Object> modelEntity) {
+		this(true, null, leadingProperty, parent, modelEntity);
 	}
 
-	private TransformedObjectInfo(boolean convertible, Object object, ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity) {
+	private TransformedObjectInfo(boolean convertible, Object object, ModelProperty<Object> leadingProperty, Object parent, ModelEntity<Object> modelEntity) {
 		this.convertible = convertible;
+		this.parent = parent;
 		this.object = object;
 		this.leadingProperty = leadingProperty;
 		this.modelEntity = modelEntity;
@@ -68,6 +70,10 @@ public class TransformedObjectInfo {
 
 	public boolean isConvertible() {
 		return convertible;
+	}
+
+	public Object getParent() {
+		return parent;
 	}
 
 	public Object getObject() {
@@ -86,7 +92,7 @@ public class TransformedObjectInfo {
 		try {
 			Class<Object> implementedInterface = modelEntity.getImplementedInterface();
 			Object object = factory.getStringEncoder().fromString(implementedInterface, source);
-			return new TransformedObjectInfo(object, leadingProperty, modelEntity);
+			return new TransformedObjectInfo(object, leadingProperty, parent, modelEntity);
 		} catch (InvalidDataException e) {
 			throw new SAXException(e);
 		}
