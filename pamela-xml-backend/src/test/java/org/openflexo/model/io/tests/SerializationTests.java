@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
-import org.jdom2.JDOMException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,7 +14,6 @@ import org.openflexo.model.AbstractNode;
 import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.model.FlexoProcess;
 import org.openflexo.model.MyNode;
-import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.RestrictiveDeserializationException;
 import org.openflexo.model.exceptions.RestrictiveSerializationException;
@@ -65,7 +63,7 @@ public class SerializationTests extends AbstractPAMELATest {
 	}
 
 	@Test
-	public void testSerializationPolicy() throws IOException, ModelDefinitionException, JDOMException, InvalidDataException {
+	public void testSerializationPolicy() throws Exception {
 
 		Assert.assertNotNull(factory.getModelSerializer());
 		Assert.assertNotNull(factory2.getModelSerializer());

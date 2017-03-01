@@ -56,7 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.jdom2.JDOMException;
 import org.openflexo.IObjectGraphFactory;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContextLibrary;
@@ -820,7 +819,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	}
 
 	public Object deserialize(InputStream is, DeserializationPolicy policy)
-			throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
+			throws Exception {
 		ModelDeserializer md = getModelDeserializer();
 		if (md != null) {
 			md.setDeserializationPolicy(policy);
@@ -838,7 +837,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	}
 
 	public Object deserialize(String input, DeserializationPolicy policy)
-			throws IOException, InvalidDataException, ModelDefinitionException {
+			throws Exception {
 		ModelDeserializer md = getModelDeserializer();
 		if (md != null) {
 			md.setDeserializationPolicy(policy);
