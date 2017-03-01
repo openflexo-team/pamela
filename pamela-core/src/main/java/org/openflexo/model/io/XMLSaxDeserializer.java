@@ -79,9 +79,10 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	public static final String ID = "id";
 	public static final String ID_REF = "idref";
+	public static final String CLASS_NAME = "className";
 
 	public static final Set<String> IGNORED_ATTRIBUTES = Stream.of(
-			ID, ID_REF, "xmlns:p", PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.Q_CLASS_ATTRIBUTE
+			ID, ID_REF, CLASS_NAME, "xmlns:p", PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.Q_CLASS_ATTRIBUTE
 		).collect(Collectors.toSet());
 
 	private final ModelFactory factory;
@@ -217,7 +218,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 						final ModelProperty<Object> finalModelProperty = leadingProperty;
 						List<Consumer<Object>> forwards = forwardReferences.getOrDefault(idref, new ArrayList<>());
 						forwards.add((target) -> {
-							System.out.println("-----> Resolving " + idref + " <------");
 							try {
 								connectObject(new TransformedObjectInfo(target, finalModelProperty, finalModelEntity));
 							} catch (SAXException e) {
@@ -310,23 +310,33 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		}
 
 		try {
-
 			// search concrete model entity
 			ModelEntity<Object> concreteEntity = expectedModelEntity;
 			Class<Object> implementedInterface = null;
 			Class<Object> implementingClass = null;
 
 			String entityName = attributes.getValue(PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE);
-			String className = attributes.getValue(PAMELAConstants.Q_CLASS_ATTRIBUTE);
-			if (entityName != null) {
-				// ----- Warning -----
-				// This next code come from the old deserialization process, I don't fully understand what's done here.
-				// I keep it for compatibility, I'll come back there to clean it up later
-				// ----- Warning -----
+			String className = attributes.getValue(CLASS_NAME);
+			if (className == null) {
+				className = attributes.getValue(PAMELAConstants.Q_CLASS_ATTRIBUTE);
+			}
+
+			// ----- Warning -----
+			// This next code come from the old deserialization process, I don't fully understand what's done here.
+			// I keep it for compatibility, I'll come back there to clean it up later
+			// ----- Warning -----
+			if (className != null) {
+				try {
+					implementedInterface = (Class<Object>) Class.forName(className);
+				} catch (ClassNotFoundException e) {
+					throw new InvalidDataException("Class not found "+ e.getMessage());
+				}
+			}
+			else if (entityName != null) {
 				try {
 					implementedInterface = (Class<Object>) Class.forName(entityName);
 				} catch (ClassNotFoundException e) {
-					// TODO: log something here
+					throw new InvalidDataException("Class not found "+ e.getMessage());
 				}
 				if (entityName != null && policy == DeserializationPolicy.EXTENSIVE) {
 					concreteEntity = factory.importClass(implementedInterface);
@@ -340,31 +350,32 @@ public class XMLSaxDeserializer extends DefaultHandler {
 								throw new ModelExecutionException(className + " does not implement " + implementedInterface + " for node " + name);
 							}
 						} catch (ClassNotFoundException e) {
-							// TODO: log something here
+							throw new InvalidDataException("Class not found "+ e.getMessage());
 						}
-						}
-				}
-				if (implementedInterface != null) {
-					if (policy == DeserializationPolicy.EXTENSIVE) {
-						concreteEntity = factory.getExtendedContext().getModelEntity(implementedInterface);
-					}
-					else {
-						concreteEntity = factory.getModelContext().getModelEntity(implementedInterface);
 					}
 				}
-				if (concreteEntity == null && policy == DeserializationPolicy.RESTRICTIVE) {
-					if (entityName != null) {
-						throw new RestrictiveDeserializationException("Entity " + entityName + " is not part of this model context");
-					}
-					else {
-						throw new RestrictiveDeserializationException("No entity found for tag " + name);
-					}
-				}
-				// ----- Warning -----
-				// End of the strange code
-				// ----- Warning -----
-
 			}
+
+			if (implementedInterface != null) {
+				if (policy == DeserializationPolicy.EXTENSIVE) {
+					concreteEntity = factory.getExtendedContext().getModelEntity(implementedInterface);
+				}
+				else {
+					concreteEntity = factory.getModelContext().getModelEntity(implementedInterface);
+				}
+			}
+			if (concreteEntity == null && policy == DeserializationPolicy.RESTRICTIVE) {
+				if (entityName != null) {
+					throw new RestrictiveDeserializationException("Entity " + entityName + " is not part of this model context");
+				}
+				else {
+					throw new RestrictiveDeserializationException("No entity found for tag " + name);
+				}
+			}
+			// ----- Warning -----
+			// End of the strange code
+			// ----- Warning -----
+
 
 			// Creates object instance
 			Class<Object> entityClass = concreteEntity.getImplementedInterface();
@@ -409,6 +420,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			return returned;
 
 		} catch (Exception e) {
+			if (e instanceof SAXException) throw (SAXException) e;
 			throw new SAXException(e);
 		}
 	}
