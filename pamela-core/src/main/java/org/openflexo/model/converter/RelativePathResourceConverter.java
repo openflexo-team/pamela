@@ -43,34 +43,55 @@ import java.util.logging.Level;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.rm.Resource;
-import org.openflexo.rm.ResourceLocator;
 
+/**
+ * A converter that allows to address a {@link Resource} relatively to another {@link Resource} (the container resource)
+ * 
+ * @author sylvain
+ *
+ */
 public class RelativePathResourceConverter extends Converter<Resource> {
 
-	private static final java.util.logging.Logger logger = org.openflexo.logging.FlexoLogger.getLogger(RelativePathResourceConverter.class
-			.getPackage().getName());
+	private static final java.util.logging.Logger logger = org.openflexo.logging.FlexoLogger
+			.getLogger(RelativePathResourceConverter.class.getPackage().getName());
 
-	private final String relativePath;
+	private Resource containerResource;
 
-	public RelativePathResourceConverter(String aRelativePath) {
+	public RelativePathResourceConverter(Resource containerResource) {
 		super(Resource.class);
-		relativePath = aRelativePath;
+		this.containerResource = containerResource;
+	}
+
+	public Resource getContainerResource() {
+		return containerResource;
+	}
+
+	public void setContainerResource(Resource containerResource) {
+		this.containerResource = containerResource;
 	}
 
 	@Override
 	public Resource convertFromString(String value, ModelFactory factory) {
-		Resource resourceloc = ResourceLocator.locateResource(relativePath+"/"+value);
-		if (resourceloc == null) {
-			logger.warning("Cannot find Resource: " + value );
-		}
+
+		// System.out.println("Je cherche la resource " + value + " depuis " + containerResource);
+
+		Resource resourceloc = containerResource.locateResource(value);
+
+		// System.out.println("Je trouve " + resourceloc);
+
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("********* convertFromString " + value + " return " + resourceloc.toString());
 		}
 		return resourceloc;
 	}
-	
+
 	@Override
 	public String convertToString(Resource value) {
-		return value.makePathRelativeToString(relativePath);
+		if (containerResource == null) {
+			logger.warning("Could not compute relative path of " + value + " with RelativePathConverter bound to containerResource=null");
+			return null;
+		}
+		return containerResource.computeRelativePath(value);
 	}
+
 }

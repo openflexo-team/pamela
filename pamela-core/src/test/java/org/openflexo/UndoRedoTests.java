@@ -1,18 +1,6 @@
-<<<<<<< HEAD:pamela-core/src/test/java/org/openflexo/UndoRedoTests.java
 package org.openflexo;
 
-import org.junit.After;
-=======
-package org.flexo.test;
 
-import org.flexo.model.AbstractNode;
-import org.flexo.model.EndNode;
-import org.flexo.model.FlexoProcess;
-import org.flexo.model.StartNode;
-import org.flexo.model.TestModelObject;
-import org.flexo.model.TokenEdge;
-import org.flexo.model.WKFObject;
->>>>>>> 1.3:pamela-core/src/test/java/org/flexo/test/UndoRedoTests.java
 import org.junit.Before;
 import org.junit.Test;
 import org.openflexo.model.AbstractNode;

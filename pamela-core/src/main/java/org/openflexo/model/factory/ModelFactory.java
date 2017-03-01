@@ -39,23 +39,9 @@
 
 package org.openflexo.model.factory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
 import org.jdom2.JDOMException;
 import org.openflexo.IObjectGraphFactory;
 import org.openflexo.model.ModelContext;
@@ -74,9 +60,22 @@ import org.openflexo.model.io.ModelDeserializer;
 import org.openflexo.model.io.ModelSerializer;
 import org.openflexo.model.undo.CreateCommand;
 
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 /**
  * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
@@ -266,7 +265,6 @@ public class ModelFactory implements IObjectGraphFactory {
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
 			I returned = proxyFactory.newInstance(args);
 			if (getEditingContext() != null) {
-				getEditingContext().register(returned);
 				if (getEditingContext().getUndoManager() != null) {
 					getEditingContext().getUndoManager().addEdit(new CreateCommand<I>(returned, proxyFactory.getModelEntity(), this));
 				}
@@ -302,7 +300,6 @@ public class ModelFactory implements IObjectGraphFactory {
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true, useExtended);
 			I returned = proxyFactory.newInstance(args);
 			if (getEditingContext() != null) {
-				getEditingContext().register(returned);
 				if (getEditingContext().getUndoManager() != null) {
 					getEditingContext().getUndoManager().addEdit(new CreateCommand<I>(returned, proxyFactory.getModelEntity(), this));
 				}

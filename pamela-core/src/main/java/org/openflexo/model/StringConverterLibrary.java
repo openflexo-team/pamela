@@ -54,7 +54,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.openflexo.model.converter.DataBindingConverter;
-import org.openflexo.model.converter.ResourceLocationConverter;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.factory.ModelFactory;
 
@@ -91,7 +90,7 @@ public class StringConverterLibrary {
 		addConverter(new FontConverter());
 		addConverter(new NumberConverter());
 		addConverter(new DataBindingConverter());
-		addConverter(new ResourceLocationConverter());
+		// addConverter(new ResourceLocationConverter());
 	}
 
 	public Map<Class<?>, Converter<?>> getConverters() {
@@ -318,7 +317,8 @@ public class StringConverterLibrary {
 			} catch (NumberFormatException e) {
 				if (value.equals("POSITIVE_INFINITY")) {
 					return Double.POSITIVE_INFINITY;
-				} else if (value.equals("NEGATIVE_INFINITY")) {
+				}
+				else if (value.equals("NEGATIVE_INFINITY")) {
 					return Double.NEGATIVE_INFINITY;
 				}
 				throw e;
@@ -410,7 +410,8 @@ public class StringConverterLibrary {
 		public String convertToString(Date date) {
 			if (date != null) {
 				return _dateFormat + "," + new SimpleDateFormat(_dateFormat).format(date);
-			} else {
+			}
+			else {
 				return null;
 			}
 		}
@@ -421,7 +422,8 @@ public class StringConverterLibrary {
 		public String getDateRepresentation(Date date) {
 			if (date != null) {
 				return new SimpleDateFormat(_dateFormat).format(date);
-			} else {
+			}
+			else {
 				return null;
 			}
 		}
@@ -453,7 +455,8 @@ public class StringConverterLibrary {
 		public String convertToString(URL anURL) {
 			if (anURL != null) {
 				return anURL.toExternalForm();
-			} else {
+			}
+			else {
 				return null;
 			}
 		}
@@ -480,7 +483,8 @@ public class StringConverterLibrary {
 		public String convertToString(File aFile) {
 			if (aFile != null) {
 				return aFile.getAbsolutePath();
-			} else {
+			}
+			else {
 				return null;
 			}
 		}
@@ -512,7 +516,8 @@ public class StringConverterLibrary {
 		public String convertToString(Class aClass) {
 			if (aClass != null) {
 				return aClass.getName();
-			} else {
+			}
+			else {
 				return null;
 			}
 		}
@@ -553,7 +558,8 @@ public class StringConverterLibrary {
 		public String convertToString(Point aPoint) {
 			if (aPoint != null) {
 				return aPoint.x + "," + aPoint.y;
-			} else {
+			}
+			else {
 				return null;
 			}
 		}
