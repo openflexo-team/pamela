@@ -218,8 +218,10 @@ public class XMLSaxDeserializer extends DefaultHandler {
 						// it needs to be resolved later
 						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (v) -> new ArrayList<>());
 						forwards.add((target) -> {
+
 							info.setObject(target.getObject());
 							connectObject(info);
+
 						});
 					}
 				}
@@ -307,6 +309,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			// No need to go further: i've got my object
 			return false;
 		}
+
 
 
 		try {
