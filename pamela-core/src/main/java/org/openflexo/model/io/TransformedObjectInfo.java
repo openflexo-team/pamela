@@ -69,6 +69,7 @@ public class TransformedObjectInfo {
 	) {
 		this.factory = factory;
 		this.parent = parent;
+
 		this.leadingProperty = leadingProperty;
 		if (modelEntity != null) {
 			this.modelEntity = modelEntity;
@@ -143,6 +144,7 @@ public class TransformedObjectInfo {
 					throw new SAXException(e);
 				}
 			}
+
 		}
 	}
 

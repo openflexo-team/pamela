@@ -42,23 +42,26 @@ package org.openflexo.model.io;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
+import org.openflexo.model.DeserializationFinalizer;
+import org.openflexo.model.DeserializationInitializer;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContext.ModelPropertyXMLTag;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
+import org.openflexo.model.StringEncoder;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
@@ -71,9 +74,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-/**
- * XML deserializer using a SAX Parser
- */
 public class XMLSaxDeserializer extends DefaultHandler {
 
 	public static final String ID = "id";
@@ -87,7 +87,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	@FunctionalInterface
 	private interface Resolver {
-		void resolve(TransformedObjectInfo resolved) throws SAXException;
+		void resolve(Object resolved) throws SAXException;
 	}
 
 	private final ModelFactory factory;
@@ -97,22 +97,23 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	 * Stores already serialized objects where value is the serialized object and key is an object coding the unique identifier of the
 	 * object
 	 */
-	private final HashMap<String, Object> objectsWithId = new HashMap<>();
-
-	private final List<TransformedObjectInfo> allObjects = new LinkedList<>();
+	private final Map<String, Object> alreadyDeserializedMap = new LinkedHashMap<>();
 
 	/**
 	 * Stores lambda to resolve forward references
 	 */
 	private final Map<String, List<Resolver>> forwardReferences = new HashMap<>();
 
+	/**
+	 * Stores an ordered list of deserialized objects in the order they were instantiated during deserialization phase phase
+	 */
+	private final LinkedList<TransformedObjectInfo> alreadyDeserialized = new LinkedList<>();
+
 	private final DeserializationPolicy policy;
 
-	private StringBuilder currentConvertibleString = new StringBuilder();
+	private String currentConvertibleString = null;
 
 	private LinkedList<TransformedObjectInfo> stack = new LinkedList<>();
-
-	private TransformedObjectInfo rootInfo = null;
 
 	public XMLSaxDeserializer(ModelFactory factory) {
 		this(factory, DeserializationPolicy.PERMISSIVE);
@@ -124,12 +125,16 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		this.context = factory.getModelContext();
 	}
 
+	private StringEncoder getStringEncoder() {
+		return factory.getStringEncoder();
+	}
+
 	public Object deserializeDocument(String xml) throws Exception {
 		return deserializeDocument(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
 	}
 
 	public Object deserializeDocument(InputStream in) throws Exception {
-		objectsWithId.clear();
+		alreadyDeserializedMap.clear();
 
 		// prepares buffered stream
 		if (!(in instanceof BufferedInputStream && in instanceof ByteArrayInputStream)) {
@@ -141,9 +146,14 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			SAXParser parser = parserFactory.newSAXParser();
 			parser.parse(in, this);
 
-			// Close deserializing mode
-			for (TransformedObjectInfo info : allObjects) {
-				info.finalizeDeserialization();
+			// We just finished deserialization, call deserialization finalizers now
+			for (TransformedObjectInfo info : alreadyDeserialized) {
+				Object object = info.getObject();
+
+				ProxyMethodHandler handler = factory.getHandler(object);
+				handler.setDeserializing(false);
+
+				finalizeDeserialization(object, info.getModelEntity());
 			}
 
 			// checks for pending references
@@ -151,8 +161,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				throw new InvalidDataException("Unresolved references to objects with identifiers " + forwardReferences.keySet());
 			}
 
-			return rootInfo.getObject();
-
+			return alreadyDeserialized.getLast().getObject();
 		} catch (SAXException e) {
 			if (e.getCause() instanceof Exception) throw (Exception) e.getCause();
 			else throw new InvalidDataException(e.getMessage());
@@ -169,117 +178,106 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		// nothing to do
 	}
 
-	private TransformedObjectInfo constructMetaInformations(String qName) throws SAXException {
+
+	@Override
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		// searches for correct model entity to resolve
 		ModelEntity<Object> modelEntity = null;
 		ModelProperty<Object> leadingProperty = null;
 		Object parent = null;
-		if (stackEmpty()) {
+		if (stack.isEmpty()) {
 			modelEntity = (ModelEntity<Object>) factory.getModelContext().getModelEntity(qName);
 		} else {
 			try {
-				TransformedObjectInfo parentInfo = peekInfo();
+				TransformedObjectInfo parentInfo = stack.getLast();
+				parent = parentInfo.getObject();
 				if (parentInfo != null) {
-					parent = parentInfo.getObject();
-					if (parentInfo != null) {
-						ModelEntity<Object> parentModelEntity = parentInfo.getModelEntity();
-						ModelPropertyXMLTag<Object> modelPropertyXMLTag = context.getPropertyForXMLTag(parentModelEntity, factory, qName);
-						if (modelPropertyXMLTag != null) {
-							modelEntity = (ModelEntity<Object>) modelPropertyXMLTag.getAccessedEntity();
-							leadingProperty = modelPropertyXMLTag.getProperty();
-						}
-						else if (policy == DeserializationPolicy.RESTRICTIVE) {
-							throw new RestrictiveDeserializationException("Element with name does not fit any properties within entity " + parentModelEntity);
-						}
-
+					ModelEntity<Object> parentModelEntity = parentInfo.getModelEntity();
+					ModelPropertyXMLTag<Object> modelPropertyXMLTag = context.getPropertyForXMLTag(parentModelEntity, factory, qName);
+					if (modelPropertyXMLTag != null) {
+						modelEntity = (ModelEntity<Object>) modelPropertyXMLTag.getAccessedEntity();
+						leadingProperty = modelPropertyXMLTag.getProperty();
+					}
+					else if (policy == DeserializationPolicy.RESTRICTIVE) {
+						throw new RestrictiveDeserializationException("Element with name does not fit any properties within entity " + parentModelEntity);
 					}
 				}
 			} catch (ModelDefinitionException e) {
 				throw new SAXException(e);
 			}
 		}
-		return leadingProperty != null || modelEntity != null ? new TransformedObjectInfo(factory, parent, leadingProperty, modelEntity) : null;
-	}
 
-	@Override
-	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		final TransformedObjectInfo info = constructMetaInformations(qName);
-		String id = attributes.getValue(ID);
-
-		if (info != null ) {
-			// if modelEntity is convertible from start, a
-			if (!info.isConvertible()) {
+		final TransformedObjectInfo info;
+		if (modelEntity != null ) {
+			if (getStringEncoder().isConvertable(modelEntity.getImplementedInterface())) {
+				// object is convertible from a string, it will only contains a string
+				currentConvertibleString = "";
+				info = new TransformedObjectInfo(leadingProperty, parent, modelEntity);
+			}
+			else {
 				String idref = attributes.getValue(ID_REF);
 				if (idref != null) {
 					// objects is a reference
-					Object referenceObject = objectsWithId.get(idref);
-					if (referenceObject != null) {
-						info.setObject(referenceObject);
-					} else {
+					Object referenceObject = alreadyDeserializedMap.get(idref);
+					if (referenceObject == null) {
 						// it needs to be resolved later
-						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (v) -> new ArrayList<>());
-						forwards.add((target) -> {
-
-							info.setObject(target.getObject());
-							connectObject(info);
-
-						});
+						final ModelProperty<Object> finalModelProperty = leadingProperty;
+						final Object finalParent = parent;
+						final ModelEntity<Object> finalModelEntity = modelEntity;
+						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (id) -> new ArrayList<>());
+						forwards.add((target) -> connectObject(new TransformedObjectInfo(target, finalModelProperty, finalParent, finalModelEntity)));
+						info = null;
+					}
+					else {
+						info = new TransformedObjectInfo(referenceObject, leadingProperty, parent, modelEntity);
 					}
 				}
 				else {
 					// object is constructed using attributes
-					if (buildObjectFromAttributes(localName, id, info, attributes)) {
-						register(id, info);
-					}
+					Object object = buildObjectFromAttributes(localName, modelEntity, attributes);
+					info = new TransformedObjectInfo(object, leadingProperty, parent, modelEntity);
 				}
 			}
-
-		} else if (policy == DeserializationPolicy.RESTRICTIVE) {
-
-
+		} else if (policy != DeserializationPolicy.RESTRICTIVE) {
+			// ignores the element
+			info = null;
+		} else {
 			throw new SAXException(new InvalidDataException("Could not find ModelEntity for " +  qName));
 		}
-
-
 		// push current state to stack
-		pushInfo(info);
+		stack.addLast(info);
 
 	}
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		String text = new String(ch, start, length).trim();
-		currentConvertibleString.append(text);
+		currentConvertibleString = new String(ch, start, length);
 	}
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		TransformedObjectInfo info = popInfo();
+		TransformedObjectInfo info = stack.removeLast();
 		// info may be null if current object is a reference
 		if (info != null) {
 			if (info.isConvertible()) {
 				// transforms string to object and construct new info
-				info.setFromString(currentConvertibleString.toString());
-				info.initializeDeserialization();
+				info = info.convert(factory, currentConvertibleString);
+				currentConvertibleString = null;
 			}
 
-			if (info.isResolved()) {
-				connectObject(info);
-			}
+			// register for finalization
+			alreadyDeserialized.add(info);
+			connectObject(info);
 		}
-
-		currentConvertibleString = new StringBuilder();
 
 	}
 
 	private void connectObject(TransformedObjectInfo info) throws SAXException {
-		// don't set a null object
-		if (info.getObject() == null) return;
-
+		// adds object to its parent if needed
 		ModelProperty<Object> property = info.getLeadingProperty();
 		if (property != null) {
 			try {
 				ProxyMethodHandler parent = factory.getHandler(info.getParent());
-
 				switch (property.getCardinality()) {
 					case SINGLE:
 						parent.invokeSetterForDeserialization(property, info.getObject());
@@ -298,23 +296,23 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		}
 	}
 
-	/**
-	 * Constructs an object from it's attributes
-	 * @return true if an object was built, false other wise
-	 */
-	private boolean buildObjectFromAttributes(String name, String id, TransformedObjectInfo info, Attributes attributes) throws SAXException {
+	private Object buildObjectFromAttributes(String name, ModelEntity<Object> expectedModelEntity, Attributes attributes) throws SAXException {
 
+		// TODO does this really happen ?
+		String id = attributes.getValue(ID);
 		// if it's the case, the serialization has problems
-		if (id != null && objectsWithId.containsKey(id)) {
-			// No need to go further: i've got my object
-			return false;
+		if (id != null) {
+			// does object already exists ?
+			Object referenceObject = alreadyDeserializedMap.get(id);
+			if (referenceObject != null) {
+				// No need to go further: i've got my object
+				return referenceObject;
+			}
 		}
-
-
 
 		try {
 			// search concrete model entity
-			ModelEntity<Object> concreteEntity = info.getModelEntity();
+			ModelEntity<Object> concreteEntity = expectedModelEntity;
 			Class<Object> implementedInterface = null;
 			Class<Object> implementingClass = null;
 
@@ -379,75 +377,98 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			// End of the strange code
 			// ----- Warning -----
 
+
 			// Creates object instance
 			Class<Object> entityClass = concreteEntity.getImplementedInterface();
 			Object returned = factory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
-			info.setObject(returned);
-			info.initializeDeserialization();
+			initializeDeserialization(returned, concreteEntity);
 
+			// registers object
+			if (id != null) {
+				register(id, returned);
+			}
+
+			ProxyMethodHandler<Object> handler = factory.getHandler(returned);
+			handler.setDeserializing(true);
 
 			for (int i = 0; i < attributes.getLength(); i++) {
 				String attributeName = attributes.getQName(i);
+				String attributeValue = attributes.getValue(i);
+
 				ModelProperty<Object> property = concreteEntity.getPropertyForXMLAttributeName(attributeName);
-
-				if (property == null && IGNORED_ATTRIBUTES.contains(attributeName)) {
-					continue;
-				}
-
 				if (property == null) {
-					if (policy == DeserializationPolicy.RESTRICTIVE) {
-						throw new RestrictiveDeserializationException("No attribute found for the attribute named: " + attributeName);
-					} else {
+					if (IGNORED_ATTRIBUTES.contains(attributeName)) {
 						continue;
 					}
+
+					switch (policy) {
+						case PERMISSIVE:
+							continue;
+						case RESTRICTIVE:
+							throw new RestrictiveDeserializationException("No attribute found for the attribute named: " + attributeName);
+						case EXTENSIVE:
+							// TODO: handle extra values
+							// break;
+							continue; // As long as we don't handle them, we continue to avoid NPE.
+					}
 				}
-
-				// transforms child
-				TransformedObjectInfo childInfo = new TransformedObjectInfo(factory, returned, property, null);
-				childInfo.setFromString(attributes.getValue(i));
-				info.initializeDeserialization();
-				connectObject(childInfo);
-				allObjects.add(childInfo);
-
+				Object value = getStringEncoder().fromString(property.getType(), attributeValue);
+				if (value != null) {
+					handler.invokeSetterForDeserialization(property, value);
+				}
 			}
 
-			return true;
+			return returned;
+
 		} catch (Exception e) {
 			if (e instanceof SAXException) throw (SAXException) e;
 			throw new SAXException(e);
 		}
 	}
 
-	private void register(String id, TransformedObjectInfo info) throws SAXException {
-		allObjects.add(info);
-		if (id != null) {
-			objectsWithId.put(id, info.getObject());
+	private void register(String id, Object object) throws SAXException {
+		alreadyDeserializedMap.put(id, object);
 
-			// resolves forward references if any
-			List<Resolver> forwards = forwardReferences.remove(id);
-			if (forwards != null) {
-				for (Resolver forward : forwards) {
-					forward.resolve(info);
+		// resolves forward references if any
+		List<Resolver> forwards = forwardReferences.remove(id);
+		if (forwards != null) {
+			for (Resolver forward : forwards) {
+				forward.resolve(object);
+			}
+		}
+
+	}
+
+	private void initializeDeserialization(Object object, ModelEntity<Object> modelEntity) throws SAXException {
+		factory.objectIsBeeingDeserialized(object, modelEntity.getImplementedInterface());
+		try {
+			DeserializationInitializer deserializationInitializer = modelEntity.getDeserializationInitializer();
+			if (deserializationInitializer != null) {
+				Method deserializationInitializerMethod = deserializationInitializer.getDeserializationInitializerMethod();
+				if (deserializationInitializerMethod.getParameterTypes().length == 0) {
+					deserializationInitializerMethod.invoke(object, new Object[0]);
+				}
+				else if (deserializationInitializerMethod.getParameterTypes().length == 1) {
+					deserializationInitializerMethod.invoke(object, factory);
+				}
+				else {
+					throw new ModelDefinitionException("Wrong number of argument for deserialization initializer " + deserializationInitializerMethod);
 				}
 			}
+		} catch (Exception e) {
+			throw new SAXException(e);
 		}
 	}
 
-	private boolean stackEmpty() {
-		return stack.isEmpty();
-	}
-
-	private void pushInfo(TransformedObjectInfo info) {
-		if (stack.isEmpty()) rootInfo = info;
-		stack.push(info);
-	}
-
-	private TransformedObjectInfo peekInfo() {
-		return stack.peek();
-	}
-
-	private TransformedObjectInfo popInfo() {
-		return stack.pop();
-
+	private void finalizeDeserialization(Object object, ModelEntity<Object> modelEntity) throws SAXException {
+		try {
+			DeserializationFinalizer deserializationFinalizer = modelEntity.getDeserializationFinalizer();
+			if (deserializationFinalizer != null) {
+				deserializationFinalizer.getDeserializationFinalizerMethod().invoke(object, new Object[0]);
+			}
+		} catch (Exception e) {
+			throw new SAXException(e);
+		}
+		factory.objectHasBeenDeserialized(object, modelEntity.getImplementedInterface());
 	}
 }
