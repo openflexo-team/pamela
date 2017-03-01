@@ -54,8 +54,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.openflexo.model.DeserializationFinalizer;
 import org.openflexo.model.DeserializationInitializer;
 import org.openflexo.model.ModelContext;
@@ -75,7 +77,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class XMLSaxDeserializer extends DefaultHandler {
+public class SAXXMLDeserializer extends DefaultHandler implements ModelDeserializer {
 
 	public static final String ID = "id";
 	public static final String ID_REF = "idref";
@@ -103,17 +105,17 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	 */
 	private final LinkedList<TransformedObjectInfo> alreadyDeserialized = new LinkedList<>();
 
-	private final DeserializationPolicy policy;
+	private DeserializationPolicy policy;
 
 	private String currentConvertibleString = null;
 
 	private LinkedList<TransformedObjectInfo> stack = new LinkedList<>();
 
-	public XMLSaxDeserializer(ModelFactory factory) {
+	public SAXXMLDeserializer(ModelFactory factory) {
 		this(factory, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public XMLSaxDeserializer(ModelFactory factory, DeserializationPolicy policy) {
+	public SAXXMLDeserializer(ModelFactory factory, DeserializationPolicy policy) {
 		this.factory = factory;
 		this.policy = policy;
 		this.context = factory.getModelContext();
@@ -458,4 +460,10 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		}
 		factory.objectHasBeenDeserialized(object, modelEntity.getImplementedInterface());
 	}
+
+	@Override
+	public void setDeserializationPolicy(DeserializationPolicy policy) {
+		this.policy = policy;
+	}
+	
 }

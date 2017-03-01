@@ -38,11 +38,8 @@
 
 package org.openflexo.model.io;
 
-import java.io.IOException;
 import java.io.InputStream;
 
-import org.openflexo.model.exceptions.InvalidDataException;
-import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.DeserializationPolicy;
 
 /**
@@ -55,9 +52,9 @@ import org.openflexo.model.factory.DeserializationPolicy;
 
 public interface ModelDeserializer {
 
-	<I> Object deserializeDocument(String input) throws IOException, InvalidDataException, ModelDefinitionException;
+	<I> Object deserializeDocument(String input) throws Exception;
 
-	<I> Object deserializeDocument(InputStream is) throws IOException, InvalidDataException, ModelDefinitionException;
+	<I> Object deserializeDocument(InputStream is) throws Exception;
 
 	void setDeserializationPolicy(DeserializationPolicy policy);
 

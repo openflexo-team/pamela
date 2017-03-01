@@ -809,7 +809,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	}
 
 	public Object deserialize(InputStream is, DeserializationPolicy policy)
-			throws IOException, InvalidDataException, ModelDefinitionException {
+			throws Exception {
 		ModelDeserializer md = getModelDeserializer();
 		if (md != null) {
 			md.setDeserializationPolicy(policy);
@@ -830,7 +830,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	}
 
 	public Object deserialize(String input, DeserializationPolicy policy)
-			throws IOException, InvalidDataException, ModelDefinitionException {
+			throws Exception {
 		ModelDeserializer md = getModelDeserializer();
 		if (md != null) {
 			md.setDeserializationPolicy(policy);

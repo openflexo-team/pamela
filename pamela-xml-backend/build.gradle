@@ -1,9 +1,7 @@
 dependencies {
-  compile flexoUtils()
-  compile connie()
-  compile pamela-core()
 
-  compile group: 'org.javassist', name: 'javassist', version: '3.20.0-GA'
+  compile project (":pamela-core")
+  
 
   testCompile testUtils()
 }
