@@ -1,1 +1,3 @@
 include 'pamela-core'
+include 'pamela-xml-backend'
+include 'pamela-json-backend'

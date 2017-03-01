@@ -39,10 +39,23 @@
 
 package org.openflexo.model.factory;
 
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
-import org.jdom2.JDOMException;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
+
 import org.openflexo.IObjectGraphFactory;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContextLibrary;
@@ -60,22 +73,9 @@ import org.openflexo.model.io.ModelDeserializer;
 import org.openflexo.model.io.ModelSerializer;
 import org.openflexo.model.undo.CreateCommand;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
 
 /**
  * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
@@ -804,12 +804,12 @@ public class ModelFactory implements IObjectGraphFactory {
 	}
 
 	@Override
-	public Object deserialize(InputStream is) throws Exception, IOException {
+	public Object deserialize(InputStream is) throws Exception {
 		return deserialize(is, DeserializationPolicy.PERMISSIVE);
 	}
 
 	public Object deserialize(InputStream is, DeserializationPolicy policy)
-			throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
+			throws IOException, InvalidDataException, ModelDefinitionException {
 		ModelDeserializer md = getModelDeserializer();
 		if (md != null) {
 			md.setDeserializationPolicy(policy);
@@ -818,10 +818,14 @@ public class ModelFactory implements IObjectGraphFactory {
 		else {
 			throw new IOException("ERROR: Pamela Model Factory has No Deserializer set!");
 		}
+		/**
+		 * public Object deserialize(InputStream is, DeserializationPolicy policy) throws Exception { XMLSaxDeserializer deserializer = new
+		 * XMLSaxDeserializer(this, policy); return deserializer.deserializeDocument(is);
+		 **/
 	}
 
 	@Override
-	public Object deserialize(String input) throws Exception, IOException {
+	public Object deserialize(String input) throws Exception {
 		return deserialize(input, DeserializationPolicy.PERMISSIVE);
 	}
 
@@ -835,7 +839,11 @@ public class ModelFactory implements IObjectGraphFactory {
 		else {
 			throw new InvalidDataException("ERROR: No Deserializer set!");
 		}
-	}
+/**
+	public Object deserialize(String input, DeserializationPolicy policy) throws Exception {
+		XMLSaxDeserializer deserializer = new XMLSaxDeserializer(this, policy);
+		return deserializer.deserializeDocument(input);
+**/	}
 
 	/**
 	 * Hook to detect an object creation Default implementation silently returns
