@@ -72,7 +72,7 @@ public class StringConverterLibrary {
 	private final Map<Class<?>, Converter<?>> unmodifiableConverters;
 
 	public StringConverterLibrary() {
-		converters = new Hashtable<Class<?>, Converter<?>>();
+		converters = new Hashtable<>();
 		unmodifiableConverters = Collections.unmodifiableMap(converters);
 		addConverter(new BooleanConverter());
 		addConverter(new IntegerConverter());

@@ -51,7 +51,7 @@ public class DataBindingConverter extends Converter<DataBinding<?>> {
 
 	@Override
 	public DataBinding<?> convertFromString(String value, ModelFactory factory) throws InvalidDataException {
-		return new DataBinding<Object>(value);
+		return new DataBinding<>(value);
 	}
 
 	@Override

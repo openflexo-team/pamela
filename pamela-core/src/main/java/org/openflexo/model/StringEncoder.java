@@ -54,7 +54,7 @@ import org.openflexo.model.factory.ProxyMethodHandler;
 import com.google.common.primitives.Primitives;
 
 public class StringEncoder {
-	private Map<Class<?>, Converter<?>> converters = new Hashtable<Class<?>, Converter<?>>();
+	private Map<Class<?>, Converter<?>> converters = new Hashtable<>();
 
 	private ModelFactory modelFactory;
 
@@ -80,7 +80,7 @@ public class StringEncoder {
 		}
 		else {
 			if (object instanceof Enum) {
-				return ((Enum) object).name();
+				return ((Enum<?>) object).name();
 			}
 			throw new InvalidDataException("Supplied value has no converter for type " + aClass.getName());
 		}

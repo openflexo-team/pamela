@@ -442,8 +442,10 @@ public class BasicTests extends AbstractPAMELATest {
 		process.addToNodes(startNode);
 		EndNode endNode = factory.newInstance(EndNode.class, "End");
 		process.addToNodes(endNode);
-		TokenEdge edge1 = factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
-		TokenEdge edge2 = factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
+		// Var unused TokenEdge edge1 =
+		factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
+		// Var unused TokenEdge edge2 =
+		factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
 
 		// Clone activityNode, edge1 and edge2 will be cloned as their
 		// related property @CloningStrategy is flagged as CLONE
@@ -502,8 +504,10 @@ public class BasicTests extends AbstractPAMELATest {
 		process.addToNodes(startNode);
 		EndNode endNode = factory.newInstance(EndNode.class, "End");
 		process.addToNodes(endNode);
-		TokenEdge edge1 = factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
-		TokenEdge edge2 = factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
+		// Var unused TokenEdge edge1 =
+		factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
+		// Var unused TokenEdge edge2 =
+		factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
 
 		Clipboard clipboard = factory.copy(activityNode);
 		System.out.println("Clipboard 1");
@@ -554,8 +558,10 @@ public class BasicTests extends AbstractPAMELATest {
 		process.addToNodes(startNode);
 		EndNode endNode = factory.newInstance(EndNode.class, "End");
 		process.addToNodes(endNode);
-		TokenEdge edge1 = factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
-		TokenEdge edge2 = factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
+		// Var unused TokenEdge edge1 =
+		factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
+		// Var unused TokenEdge edge2 =
+		factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
 
 		Clipboard clipboard = factory.copy(startNode, activityNode);
 		System.out.println("Clipboard");
@@ -749,7 +755,7 @@ public class BasicTests extends AbstractPAMELATest {
 
 		if (o instanceof List) {
 			StringBuffer returned = new StringBuffer();
-			for (Object o2 : (List<Object>) o) {
+			for (Object o2 : (List<?>) o) {
 				returned.append(debug(o2));
 			}
 			return returned.toString();

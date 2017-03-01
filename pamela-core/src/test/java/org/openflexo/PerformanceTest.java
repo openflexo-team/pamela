@@ -138,7 +138,7 @@ public class PerformanceTest {
 		@Override
 		public void addToChildren(ModelObject child) {
 			if (children == null) {
-				children = new ArrayList<PerformanceTest.ModelObject>();
+				children = new ArrayList<>();
 			}
 			if (!children.contains(child)) {
 				children.add(child);
@@ -182,7 +182,7 @@ public class PerformanceTest {
 
 		private void removeAndReaddChildren(ModelObject object) {
 			if (object.getChildren() != null && object.getChildren().size() > 0) {
-				List<ModelObject> children = new ArrayList<PerformanceTest.ModelObject>(object.getChildren());
+				List<ModelObject> children = new ArrayList<>(object.getChildren());
 				for (ModelObject child : children) {
 					object.removeFromChildren(child);
 					removeAndReaddChildren(child);
@@ -230,8 +230,9 @@ public class PerformanceTest {
 	public static ModelObject buildModel(int numberOfChildren, int depth, ModelFactory factory) {
 		ModelObject object;
 		if (factory != null) {
-			object = factory.newInstance(ModelObject.class, null);
-		} else {
+			object = factory.newInstance(ModelObject.class);
+		}
+		else {
 			object = new ModelObjectImpl();
 		}
 		if (depth > 0) {

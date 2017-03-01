@@ -56,7 +56,7 @@ public abstract class ParameteredFixProposal<R extends ValidationRule<R, V>, V e
 
 	public ParameteredFixProposal(String aMessage, ParameterDefinition<?>[] parameters) {
 		super(aMessage);
-		this.parameters = new Hashtable<String, ParameterDefinition<?>>();
+		this.parameters = new Hashtable<>();
 		for (int i = 0; i < parameters.length; i++) {
 			this.parameters.put(parameters[i].getName(), parameters[i]);
 		}

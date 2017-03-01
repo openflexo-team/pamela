@@ -83,8 +83,8 @@ public class ValidationRuleSet<V extends Validable> implements HasPropertyChange
 		pcSupport = new PropertyChangeSupport(this);
 
 		declaredType = type;
-		declaredRules = new ArrayList<ValidationRule<?, V>>();
-		parentRuleSets = new ArrayList<ValidationRuleSet<? super V>>();
+		declaredRules = new ArrayList<>();
+		parentRuleSets = new ArrayList<>();
 
 		for (Class<?> c : type.getDeclaredClasses()) {
 			DefineValidationRule annotation = c.getAnnotation(DefineValidationRule.class);
@@ -150,7 +150,7 @@ public class ValidationRuleSet<V extends Validable> implements HasPropertyChange
 	 * @return
 	 */
 	public List<ValidationRule<?, ? super V>> getRules() {
-		List<ValidationRule<?, ? super V>> returned = new ArrayList<ValidationRule<?, ? super V>>();
+		List<ValidationRule<?, ? super V>> returned = new ArrayList<>();
 		for (int i = 0; i < getRulesCount(); i++) {
 			returned.add(getRuleAt(i));
 		}

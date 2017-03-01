@@ -42,9 +42,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyFactory;
-
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
 import org.openflexo.model.PamelaUtils;
@@ -53,6 +50,9 @@ import org.openflexo.model.undo.AddCommand;
 import org.openflexo.model.undo.RemoveCommand;
 import org.openflexo.model.undo.SetCommand;
 import org.openflexo.model.undo.UndoManager;
+
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyFactory;
 
 /**
  * Represents a partial delegate implementation, associated to a master {@link ProxyMethodHandler}<br>
@@ -145,26 +145,25 @@ public class DelegateImplementation<I> extends ProxyFactory implements MethodHan
 			if (property != null) {
 				I masterObject = masterMethodHandler.getObject();
 				if (PamelaUtils.methodIsEquivalentTo(method, property.getSetterMethod())) {
-					// System.out.println("DETECTS SET with " + proceed + " insteadof " + method);
+					// System.out.println("DETECTS SET with " + proceed + " instead of " + method);
 					Object oldValue = masterMethodHandler.invokeGetter(property);
 					if (getUndoManager() != null) {
 						if (oldValue != args[0]) {
 							getUndoManager().addEdit(
-									new SetCommand<I>(masterObject, getModelEntity(), property, oldValue, args[0], getModelFactory()));
+									new SetCommand<>(masterObject, getModelEntity(), property, oldValue, args[0], getModelFactory()));
 						}
 					}
 				}
 				if (PamelaUtils.methodIsEquivalentTo(method, property.getAdderMethod())) {
-					// System.out.println("DETECTS ADD with " + proceed + " insteadof " + method);
+					// System.out.println("DETECTS ADD with " + proceed + " instead of " + method);
 					if (getUndoManager() != null) {
-						getUndoManager().addEdit(new AddCommand<I>(masterObject, getModelEntity(), property, args[0], getModelFactory()));
+						getUndoManager().addEdit(new AddCommand<>(masterObject, getModelEntity(), property, args[0], getModelFactory()));
 					}
 				}
 				if (PamelaUtils.methodIsEquivalentTo(method, property.getRemoverMethod())) {
-					// System.out.println("DETECTS REMOVE with " + proceed + " insteadof " + method);
+					// System.out.println("DETECTS REMOVE with " + proceed + " instead of " + method);
 					if (getUndoManager() != null) {
-						getUndoManager()
-								.addEdit(new RemoveCommand<I>(masterObject, getModelEntity(), property, args[0], getModelFactory()));
+						getUndoManager().addEdit(new RemoveCommand<>(masterObject, getModelEntity(), property, args[0], getModelFactory()));
 					}
 				}
 			}
@@ -206,7 +205,8 @@ public class DelegateImplementation<I> extends ProxyFactory implements MethodHan
 					e.printStackTrace();
 					throw new ModelExecutionException(e.getCause());
 				}
-			} else {
+			}
+			else {
 				// Master object is not yet set, silently returns null
 				System.err.println("Called method " + method + " on uninitialized ProxyMethodHandler " + getModelEntity());
 				return null;
