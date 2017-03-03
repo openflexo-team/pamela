@@ -46,30 +46,19 @@ import org.xml.sax.SAXException;
  */
 public class TransformedObjectInfo {
 
-	private final boolean convertible;
+	private final ModelFactory factory;
+
 	private final Object parent;
-	private final Object object;
 	private final ModelProperty<Object> leadingProperty;
 	private final ModelEntity<Object> modelEntity;
 
-	public TransformedObjectInfo(Object object, ModelProperty<Object> leadingProperty, Object parent, ModelEntity<Object> modelEntity) {
-		this(false, object, leadingProperty, parent, modelEntity);
-	}
+	private Object object;
 
-	public TransformedObjectInfo(ModelProperty<Object> leadingProperty, Object parent, ModelEntity<Object> modelEntity) {
-		this(true, null, leadingProperty, parent, modelEntity);
-	}
-
-	private TransformedObjectInfo(boolean convertible, Object object, ModelProperty<Object> leadingProperty, Object parent, ModelEntity<Object> modelEntity) {
-		this.convertible = convertible;
+	public TransformedObjectInfo(ModelFactory factory, Object parent, ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity) {
+		this.factory = factory;
 		this.parent = parent;
-		this.object = object;
 		this.leadingProperty = leadingProperty;
 		this.modelEntity = modelEntity;
-	}
-
-	public boolean isConvertible() {
-		return convertible;
 	}
 
 	public Object getParent() {
@@ -80,6 +69,19 @@ public class TransformedObjectInfo {
 		return object;
 	}
 
+	public void setObject(Object object) {
+		this.object = object;
+	}
+
+	public void setFromString(String source) throws SAXException {
+		try {
+			Class<Object> implementedInterface = modelEntity.getImplementedInterface();
+			object = factory.getStringEncoder().fromString(implementedInterface, source);
+		} catch (InvalidDataException e) {
+			throw new SAXException(e);
+		}
+	}
+
 	public ModelProperty<Object> getLeadingProperty() {
 		return leadingProperty;
 	}
@@ -88,13 +90,8 @@ public class TransformedObjectInfo {
 		return modelEntity;
 	}
 
-	public TransformedObjectInfo convert(ModelFactory factory, String source) throws SAXException {
-		try {
-			Class<Object> implementedInterface = modelEntity.getImplementedInterface();
-			Object object = factory.getStringEncoder().fromString(implementedInterface, source);
-			return new TransformedObjectInfo(object, leadingProperty, parent, modelEntity);
-		} catch (InvalidDataException e) {
-			throw new SAXException(e);
-		}
+	public boolean isConvertible() {
+		return factory.getStringEncoder().isConvertable(modelEntity.getImplementedInterface());
 	}
+
 }

@@ -149,7 +149,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			// We just finished deserialization, call deserialization finalizers now
 			for (TransformedObjectInfo info : alreadyDeserialized) {
 				Object object = info.getObject();
-
 				ProxyMethodHandler handler = factory.getHandler(object);
 				handler.setDeserializing(false);
 
@@ -178,10 +177,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		// nothing to do
 	}
 
-
-	@Override
-	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		// searches for correct model entity to resolve
+	private TransformedObjectInfo constructMetaInformations(String qName) throws SAXException {
 		ModelEntity<Object> modelEntity = null;
 		ModelProperty<Object> leadingProperty = null;
 		Object parent = null;
@@ -190,58 +186,55 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		} else {
 			try {
 				TransformedObjectInfo parentInfo = stack.getLast();
-				parent = parentInfo.getObject();
 				if (parentInfo != null) {
-					ModelEntity<Object> parentModelEntity = parentInfo.getModelEntity();
-					ModelPropertyXMLTag<Object> modelPropertyXMLTag = context.getPropertyForXMLTag(parentModelEntity, factory, qName);
-					if (modelPropertyXMLTag != null) {
-						modelEntity = (ModelEntity<Object>) modelPropertyXMLTag.getAccessedEntity();
-						leadingProperty = modelPropertyXMLTag.getProperty();
-					}
-					else if (policy == DeserializationPolicy.RESTRICTIVE) {
-						throw new RestrictiveDeserializationException("Element with name does not fit any properties within entity " + parentModelEntity);
+					parent = parentInfo.getObject();
+					if (parentInfo != null) {
+						ModelEntity<Object> parentModelEntity = parentInfo.getModelEntity();
+						ModelPropertyXMLTag<Object> modelPropertyXMLTag = context.getPropertyForXMLTag(parentModelEntity, factory, qName);
+						if (modelPropertyXMLTag != null) {
+							modelEntity = (ModelEntity<Object>) modelPropertyXMLTag.getAccessedEntity();
+							leadingProperty = modelPropertyXMLTag.getProperty();
+						}
+						else if (policy == DeserializationPolicy.RESTRICTIVE) {
+							throw new RestrictiveDeserializationException("Element with name does not fit any properties within entity " + parentModelEntity);
+						}
 					}
 				}
 			} catch (ModelDefinitionException e) {
 				throw new SAXException(e);
 			}
 		}
+		return modelEntity != null ? new TransformedObjectInfo(factory, parent, leadingProperty, modelEntity) : null;
+	}
 
-		final TransformedObjectInfo info;
-		if (modelEntity != null ) {
-			if (getStringEncoder().isConvertable(modelEntity.getImplementedInterface())) {
-				// object is convertible from a string, it will only contains a string
-				currentConvertibleString = "";
-				info = new TransformedObjectInfo(leadingProperty, parent, modelEntity);
-			}
-			else {
+	@Override
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		final TransformedObjectInfo info = constructMetaInformations(qName);
+		if (info != null ) {
+			// if modelEntity is convertible from start, a
+			if (!info.isConvertible()) {
 				String idref = attributes.getValue(ID_REF);
 				if (idref != null) {
 					// objects is a reference
 					Object referenceObject = alreadyDeserializedMap.get(idref);
-					if (referenceObject == null) {
+					if (referenceObject != null) {
+						info.setObject(referenceObject);
+					} else {
 						// it needs to be resolved later
-						final ModelProperty<Object> finalModelProperty = leadingProperty;
-						final Object finalParent = parent;
-						final ModelEntity<Object> finalModelEntity = modelEntity;
 						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (id) -> new ArrayList<>());
-						forwards.add((target) -> connectObject(new TransformedObjectInfo(target, finalModelProperty, finalParent, finalModelEntity)));
-						info = null;
-					}
-					else {
-						info = new TransformedObjectInfo(referenceObject, leadingProperty, parent, modelEntity);
+						forwards.add((target) -> {
+							info.setObject(target);
+							connectObject(info);
+						});
 					}
 				}
 				else {
 					// object is constructed using attributes
-					Object object = buildObjectFromAttributes(localName, modelEntity, attributes);
-					info = new TransformedObjectInfo(object, leadingProperty, parent, modelEntity);
+					Object object = buildObjectFromAttributes(localName, info.getModelEntity(), attributes);
+					info.setObject(object);
 				}
 			}
-		} else if (policy != DeserializationPolicy.RESTRICTIVE) {
-			// ignores the element
-			info = null;
-		} else {
+		} else if (policy == DeserializationPolicy.RESTRICTIVE) {
 			throw new SAXException(new InvalidDataException("Could not find ModelEntity for " +  qName));
 		}
 		// push current state to stack
@@ -261,7 +254,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		if (info != null) {
 			if (info.isConvertible()) {
 				// transforms string to object and construct new info
-				info = info.convert(factory, currentConvertibleString);
+				info.setFromString(currentConvertibleString);
 				currentConvertibleString = null;
 			}
 
