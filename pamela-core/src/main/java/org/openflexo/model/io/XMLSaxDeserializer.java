@@ -94,23 +94,20 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	 * Stores already serialized objects where value is the serialized object and key is an object coding the unique identifier of the
 	 * object
 	 */
-	private final LinkedHashMap<String, TransformedObjectInfo> alreadyDeserializedMap = new LinkedHashMap<>();
+	private final LinkedHashMap<String, TransformedObjectInfo> readObjects = new LinkedHashMap<>();
 
 	/**
 	 * Stores lambda to resolve forward references
 	 */
 	private final Map<String, List<Resolver>> forwardReferences = new HashMap<>();
 
-	/**
-	 * Stores an ordered list of deserialized objects in the order they were instantiated during deserialization phase phase
-	 */
-	private final LinkedList<TransformedObjectInfo> alreadyDeserialized = new LinkedList<>();
-
 	private final DeserializationPolicy policy;
 
 	private String currentConvertibleString = null;
 
 	private LinkedList<TransformedObjectInfo> stack = new LinkedList<>();
+
+	private TransformedObjectInfo rootInfo = null;
 
 	public XMLSaxDeserializer(ModelFactory factory) {
 		this(factory, DeserializationPolicy.PERMISSIVE);
@@ -131,7 +128,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	}
 
 	public Object deserializeDocument(InputStream in) throws Exception {
-		alreadyDeserializedMap.clear();
+		readObjects.clear();
 
 		// prepares buffered stream
 		if (!(in instanceof BufferedInputStream && in instanceof ByteArrayInputStream)) {
@@ -144,7 +141,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			parser.parse(in, this);
 
 			// Close deserializing mode
-			for (TransformedObjectInfo info : alreadyDeserializedMap.values()) {
+			for (TransformedObjectInfo info : readObjects.values()) {
 				info.finalizeDeserialization();
 			}
 
@@ -153,7 +150,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				throw new InvalidDataException("Unresolved references to objects with identifiers " + forwardReferences.keySet());
 			}
 
-			return alreadyDeserialized.getLast().getObject();
+			return rootInfo.getObject();
 		} catch (SAXException e) {
 			if (e.getCause() instanceof Exception) throw (Exception) e.getCause();
 			else throw new InvalidDataException(e.getMessage());
@@ -174,11 +171,11 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		ModelEntity<Object> modelEntity = null;
 		ModelProperty<Object> leadingProperty = null;
 		Object parent = null;
-		if (stack.isEmpty()) {
+		if (stackEmpty()) {
 			modelEntity = (ModelEntity<Object>) factory.getModelContext().getModelEntity(qName);
 		} else {
 			try {
-				TransformedObjectInfo parentInfo = stack.getLast();
+				TransformedObjectInfo parentInfo = peekInfo();
 				if (parentInfo != null) {
 					parent = parentInfo.getObject();
 					if (parentInfo != null) {
@@ -211,7 +208,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				String idref = attributes.getValue(ID_REF);
 				if (idref != null) {
 					// objects is a reference
-					Object referenceObject = alreadyDeserializedMap.get(idref);
+					Object referenceObject = readObjects.get(idref);
 					if (referenceObject != null) {
 						info.setObject(referenceObject);
 					} else {
@@ -233,7 +230,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		}
 		// push current state to stack
 		register(id, info);
-		stack.addLast(info);
+		pushInfo(info);
 
 	}
 
@@ -244,7 +241,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		TransformedObjectInfo info = stack.removeLast();
+		TransformedObjectInfo info = popInfo();
 		// info may be null if current object is a reference
 		if (info != null) {
 			if (info.isConvertible()) {
@@ -255,7 +252,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			}
 
 			// register for finalization
-			alreadyDeserialized.add(info);
 			connectObject(info);
 		}
 
@@ -289,7 +285,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		// if it's the case, the serialization has problems
 		if (id != null) {
 			// does object already exists ?
-			Object referenceObject = alreadyDeserializedMap.get(id);
+			Object referenceObject = readObjects.get(id);
 			if (referenceObject != null) {
 				// No need to go further: i've got my object
 				return;
@@ -407,7 +403,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	}
 
 	private void register(String id, TransformedObjectInfo info) throws SAXException {
-		alreadyDeserializedMap.put(id, info);
+		readObjects.put(id, info);
 
 		// resolves forward references if any
 		List<Resolver> forwards = forwardReferences.remove(id);
@@ -416,6 +412,22 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				forward.resolve(info);
 			}
 		}
+	}
 
+	private boolean stackEmpty() {
+		return stack.isEmpty();
+	}
+
+	private void pushInfo(TransformedObjectInfo info) {
+		if (stack.isEmpty()) rootInfo = info;
+		stack.push(info);
+	}
+
+	private TransformedObjectInfo peekInfo() {
+		return stack.peek();
+	}
+
+	private TransformedObjectInfo popInfo() {
+		return stack.pop();
 	}
 }
