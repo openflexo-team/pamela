@@ -44,7 +44,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -95,7 +94,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	 * Stores already serialized objects where value is the serialized object and key is an object coding the unique identifier of the
 	 * object
 	 */
-	private final Map<String, Object> alreadyDeserializedMap = new LinkedHashMap<>();
+	private final LinkedHashMap<String, TransformedObjectInfo> alreadyDeserializedMap = new LinkedHashMap<>();
 
 	/**
 	 * Stores lambda to resolve forward references
@@ -145,8 +144,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			parser.parse(in, this);
 
 			// Close deserializing mode
-			Collections.reverse(alreadyDeserialized);
-			for (TransformedObjectInfo info : alreadyDeserialized) {
+			for (TransformedObjectInfo info : alreadyDeserializedMap.values()) {
 				info.finalizeDeserialization();
 			}
 
@@ -205,6 +203,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		final TransformedObjectInfo info = constructMetaInformations(qName);
+		String id = attributes.getValue(ID);
+
 		if (info != null ) {
 			// if modelEntity is convertible from start, a
 			if (!info.isConvertible()) {
@@ -216,7 +216,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 						info.setObject(referenceObject);
 					} else {
 						// it needs to be resolved later
-						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (id) -> new ArrayList<>());
+						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (v) -> new ArrayList<>());
 						forwards.add((target) -> {
 							info.setObject(target);
 							connectObject(info);
@@ -225,14 +225,14 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				}
 				else {
 					// object is constructed using attributes
-					Object object = buildObjectFromAttributes(localName, info.getModelEntity(), attributes);
-					info.setObject(object);
+					buildObjectFromAttributes(localName, id, info, attributes);
 				}
 			}
 		} else if (policy == DeserializationPolicy.RESTRICTIVE) {
 			throw new SAXException(new InvalidDataException("Could not find ModelEntity for " +  qName));
 		}
 		// push current state to stack
+		register(id, info);
 		stack.addLast(info);
 
 	}
@@ -250,6 +250,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			if (info.isConvertible()) {
 				// transforms string to object and construct new info
 				info.setFromString(currentConvertibleString);
+				info.initializeDeserialization();
 				currentConvertibleString = null;
 			}
 
@@ -284,23 +285,20 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		}
 	}
 
-	private Object buildObjectFromAttributes(String name, ModelEntity<Object> expectedModelEntity, Attributes attributes) throws SAXException {
-
-		// TODO does this really happen ?
-		String id = attributes.getValue(ID);
+	private void buildObjectFromAttributes(String name, String id, TransformedObjectInfo info, Attributes attributes) throws SAXException {
 		// if it's the case, the serialization has problems
 		if (id != null) {
 			// does object already exists ?
 			Object referenceObject = alreadyDeserializedMap.get(id);
 			if (referenceObject != null) {
 				// No need to go further: i've got my object
-				return referenceObject;
+				return;
 			}
 		}
 
 		try {
 			// search concrete model entity
-			ModelEntity<Object> concreteEntity = expectedModelEntity;
+			ModelEntity<Object> concreteEntity = info.getModelEntity();
 			Class<Object> implementedInterface = null;
 			Class<Object> implementingClass = null;
 
@@ -369,11 +367,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			// Creates object instance
 			Class<Object> entityClass = concreteEntity.getImplementedInterface();
 			Object returned = factory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
-
-			// registers object
-			if (id != null) {
-				register(id, returned);
-			}
+			info.setObject(returned);
+			info.initializeDeserialization();
 
 			ProxyMethodHandler<Object> handler = factory.getHandler(returned);
 			handler.setDeserializing(true);
@@ -405,22 +400,20 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				}
 			}
 
-			return returned;
-
 		} catch (Exception e) {
 			if (e instanceof SAXException) throw (SAXException) e;
 			throw new SAXException(e);
 		}
 	}
 
-	private void register(String id, Object object) throws SAXException {
-		alreadyDeserializedMap.put(id, object);
+	private void register(String id, TransformedObjectInfo info) throws SAXException {
+		alreadyDeserializedMap.put(id, info);
 
 		// resolves forward references if any
 		List<Resolver> forwards = forwardReferences.remove(id);
 		if (forwards != null) {
 			for (Resolver forward : forwards) {
-				forward.resolve(object);
+				forward.resolve(info);
 			}
 		}
 

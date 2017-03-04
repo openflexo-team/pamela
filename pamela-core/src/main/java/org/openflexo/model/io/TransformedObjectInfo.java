@@ -73,15 +73,14 @@ public class TransformedObjectInfo {
 		return object;
 	}
 
-	public void setObject(Object object) throws SAXException {
+	public void setObject(Object object) {
 		this.object = object;
-		initializeDeserialization();
 	}
 
 	public void setFromString(String source) throws SAXException {
 		try {
 			Class<Object> implementedInterface = modelEntity.getImplementedInterface();
-			setObject(factory.getStringEncoder().fromString(implementedInterface, source));
+			object = factory.getStringEncoder().fromString(implementedInterface, source);
 		} catch (InvalidDataException e) {
 			throw new SAXException(e);
 		}
@@ -100,7 +99,7 @@ public class TransformedObjectInfo {
 	}
 
 
-	private void initializeDeserialization() throws SAXException {
+	public void initializeDeserialization() throws SAXException {
 		factory.objectIsBeeingDeserialized(object, modelEntity.getImplementedInterface());
 		try {
 			DeserializationInitializer deserializationInitializer = modelEntity.getDeserializationInitializer();
