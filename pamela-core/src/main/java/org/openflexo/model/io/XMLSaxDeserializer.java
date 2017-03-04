@@ -146,13 +146,14 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			SAXParser parser = parserFactory.newSAXParser();
 			parser.parse(in, this);
 
+			// Close deserializing mode
+			for (TransformedObjectInfo info : alreadyDeserialized) {
+				factory.getHandler(info.getObject()).setDeserializing(false);
+			}
+
 			// We just finished deserialization, call deserialization finalizers now
 			for (TransformedObjectInfo info : alreadyDeserialized) {
-				Object object = info.getObject();
-				ProxyMethodHandler handler = factory.getHandler(object);
-				handler.setDeserializing(false);
-
-				finalizeDeserialization(object, info.getModelEntity());
+				finalizeDeserialization(info.getObject(), info.getModelEntity());
 			}
 
 			// checks for pending references
