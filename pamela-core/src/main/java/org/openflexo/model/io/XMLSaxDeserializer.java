@@ -42,9 +42,9 @@ package org.openflexo.model.io;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -55,8 +55,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import org.openflexo.model.DeserializationFinalizer;
-import org.openflexo.model.DeserializationInitializer;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContext.ModelPropertyXMLTag;
 import org.openflexo.model.ModelEntity;
@@ -147,13 +145,9 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			parser.parse(in, this);
 
 			// Close deserializing mode
+			Collections.reverse(alreadyDeserialized);
 			for (TransformedObjectInfo info : alreadyDeserialized) {
-				factory.getHandler(info.getObject()).setDeserializing(false);
-			}
-
-			// We just finished deserialization, call deserialization finalizers now
-			for (TransformedObjectInfo info : alreadyDeserialized) {
-				finalizeDeserialization(info.getObject(), info.getModelEntity());
+				info.finalizeDeserialization();
 			}
 
 			// checks for pending references
@@ -375,7 +369,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			// Creates object instance
 			Class<Object> entityClass = concreteEntity.getImplementedInterface();
 			Object returned = factory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
-			initializeDeserialization(returned, concreteEntity);
 
 			// registers object
 			if (id != null) {
@@ -431,38 +424,5 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			}
 		}
 
-	}
-
-	private void initializeDeserialization(Object object, ModelEntity<Object> modelEntity) throws SAXException {
-		factory.objectIsBeeingDeserialized(object, modelEntity.getImplementedInterface());
-		try {
-			DeserializationInitializer deserializationInitializer = modelEntity.getDeserializationInitializer();
-			if (deserializationInitializer != null) {
-				Method deserializationInitializerMethod = deserializationInitializer.getDeserializationInitializerMethod();
-				if (deserializationInitializerMethod.getParameterTypes().length == 0) {
-					deserializationInitializerMethod.invoke(object, new Object[0]);
-				}
-				else if (deserializationInitializerMethod.getParameterTypes().length == 1) {
-					deserializationInitializerMethod.invoke(object, factory);
-				}
-				else {
-					throw new ModelDefinitionException("Wrong number of argument for deserialization initializer " + deserializationInitializerMethod);
-				}
-			}
-		} catch (Exception e) {
-			throw new SAXException(e);
-		}
-	}
-
-	private void finalizeDeserialization(Object object, ModelEntity<Object> modelEntity) throws SAXException {
-		try {
-			DeserializationFinalizer deserializationFinalizer = modelEntity.getDeserializationFinalizer();
-			if (deserializationFinalizer != null) {
-				deserializationFinalizer.getDeserializationFinalizerMethod().invoke(object, new Object[0]);
-			}
-		} catch (Exception e) {
-			throw new SAXException(e);
-		}
-		factory.objectHasBeenDeserialized(object, modelEntity.getImplementedInterface());
 	}
 }

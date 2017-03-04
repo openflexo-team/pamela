@@ -35,9 +35,13 @@
 
 package org.openflexo.model.io;
 
+import java.lang.reflect.Method;
+import org.openflexo.model.DeserializationFinalizer;
+import org.openflexo.model.DeserializationInitializer;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
 import org.openflexo.model.exceptions.InvalidDataException;
+import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.ModelFactory;
 import org.xml.sax.SAXException;
 
@@ -69,14 +73,15 @@ public class TransformedObjectInfo {
 		return object;
 	}
 
-	public void setObject(Object object) {
+	public void setObject(Object object) throws SAXException {
 		this.object = object;
+		initializeDeserialization();
 	}
 
 	public void setFromString(String source) throws SAXException {
 		try {
 			Class<Object> implementedInterface = modelEntity.getImplementedInterface();
-			object = factory.getStringEncoder().fromString(implementedInterface, source);
+			setObject(factory.getStringEncoder().fromString(implementedInterface, source));
 		} catch (InvalidDataException e) {
 			throw new SAXException(e);
 		}
@@ -92,6 +97,44 @@ public class TransformedObjectInfo {
 
 	public boolean isConvertible() {
 		return factory.getStringEncoder().isConvertable(modelEntity.getImplementedInterface());
+	}
+
+
+	private void initializeDeserialization() throws SAXException {
+		factory.objectIsBeeingDeserialized(object, modelEntity.getImplementedInterface());
+		try {
+			DeserializationInitializer deserializationInitializer = modelEntity.getDeserializationInitializer();
+			if (deserializationInitializer != null) {
+				Method deserializationInitializerMethod = deserializationInitializer.getDeserializationInitializerMethod();
+				if (deserializationInitializerMethod.getParameterTypes().length == 0) {
+					deserializationInitializerMethod.invoke(object, new Object[0]);
+				}
+				else if (deserializationInitializerMethod.getParameterTypes().length == 1) {
+					deserializationInitializerMethod.invoke(object, factory);
+				}
+				else {
+					throw new ModelDefinitionException("Wrong number of argument for deserialization initializer " + deserializationInitializerMethod);
+				}
+			}
+		} catch (Exception e) {
+			throw new SAXException(e);
+		}
+	}
+
+	public void finalizeDeserialization() throws SAXException {
+		// closes status
+		factory.getHandler(object).setDeserializing(false);
+
+		// calls ended
+		try {
+			DeserializationFinalizer deserializationFinalizer = modelEntity.getDeserializationFinalizer();
+			if (deserializationFinalizer != null) {
+				deserializationFinalizer.getDeserializationFinalizerMethod().invoke(object, new Object[0]);
+			}
+		} catch (Exception e) {
+			throw new SAXException(e);
+		}
+		factory.objectHasBeenDeserialized(object, modelEntity.getImplementedInterface());
 	}
 
 }
