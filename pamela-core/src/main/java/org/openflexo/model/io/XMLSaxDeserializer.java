@@ -84,7 +84,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	@FunctionalInterface
 	private interface Resolver {
-		void resolve(Object resolved) throws SAXException;
+		void resolve(TransformedObjectInfo resolved) throws SAXException;
 	}
 
 	private final ModelFactory factory;
@@ -208,14 +208,14 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				String idref = attributes.getValue(ID_REF);
 				if (idref != null) {
 					// objects is a reference
-					Object referenceObject = readObjects.get(idref);
+					TransformedObjectInfo referenceObject = readObjects.get(idref);
 					if (referenceObject != null) {
-						info.setObject(referenceObject);
+						info.setObject(referenceObject.getObject());
 					} else {
 						// it needs to be resolved later
 						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (v) -> new ArrayList<>());
 						forwards.add((target) -> {
-							info.setObject(target);
+							info.setObject(target.getObject());
 							connectObject(info);
 						});
 					}
@@ -285,7 +285,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		// if it's the case, the serialization has problems
 		if (id != null) {
 			// does object already exists ?
-			Object referenceObject = readObjects.get(id);
+			TransformedObjectInfo referenceObject = readObjects.get(id);
 			if (referenceObject != null) {
 				// No need to go further: i've got my object
 				return;
