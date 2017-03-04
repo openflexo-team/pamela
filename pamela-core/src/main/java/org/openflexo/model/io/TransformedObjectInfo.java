@@ -56,6 +56,7 @@ public class TransformedObjectInfo {
 	private final ModelProperty<Object> leadingProperty;
 	private final ModelEntity<Object> modelEntity;
 
+	private boolean resolved = false;
 	private Object object;
 
 	public TransformedObjectInfo(ModelFactory factory, Object parent, ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity) {
@@ -75,12 +76,17 @@ public class TransformedObjectInfo {
 
 	public void setObject(Object object) {
 		this.object = object;
+		this.resolved = true;
+	}
+
+	public boolean isResolved() {
+		return resolved;
 	}
 
 	public void setFromString(String source) throws SAXException {
 		try {
 			Class<Object> implementedInterface = modelEntity.getImplementedInterface();
-			object = factory.getStringEncoder().fromString(implementedInterface, source);
+			setObject(factory.getStringEncoder().fromString(implementedInterface, source));
 		} catch (InvalidDataException e) {
 			throw new SAXException(e);
 		}
@@ -97,7 +103,6 @@ public class TransformedObjectInfo {
 	public boolean isConvertible() {
 		return factory.getStringEncoder().isConvertable(modelEntity.getImplementedInterface());
 	}
-
 
 	public void initializeDeserialization() throws SAXException {
 		factory.objectIsBeeingDeserialized(object, modelEntity.getImplementedInterface());

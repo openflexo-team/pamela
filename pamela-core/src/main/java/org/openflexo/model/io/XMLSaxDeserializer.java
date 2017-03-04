@@ -225,11 +225,12 @@ public class XMLSaxDeserializer extends DefaultHandler {
 					buildObjectFromAttributes(localName, id, info, attributes);
 				}
 			}
+			if (id != null) register(id, info);
+
 		} else if (policy == DeserializationPolicy.RESTRICTIVE) {
 			throw new SAXException(new InvalidDataException("Could not find ModelEntity for " +  qName));
 		}
 		// push current state to stack
-		register(id, info);
 		pushInfo(info);
 
 	}
@@ -251,8 +252,9 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				currentConvertibleString = null;
 			}
 
-			// register for finalization
-			connectObject(info);
+			if (info.isResolved()) {
+				connectObject(info);
+			}
 		}
 
 	}
