@@ -55,6 +55,7 @@ public class TransformedObjectInfo {
 	private final Object parent;
 	private final ModelProperty<Object> leadingProperty;
 	private final ModelEntity<Object> modelEntity;
+	private final Class<Object> implementedInterface;
 
 	private boolean resolved = false;
 	private Object object;
@@ -63,7 +64,13 @@ public class TransformedObjectInfo {
 		this.factory = factory;
 		this.parent = parent;
 		this.leadingProperty = leadingProperty;
-		this.modelEntity = modelEntity;
+		if (modelEntity != null) {
+			this.modelEntity = modelEntity;
+			this.implementedInterface = modelEntity.getImplementedInterface();
+		} else {
+			this.implementedInterface = (Class<Object>) leadingProperty.getType();
+			this.modelEntity = factory.getModelContext().getModelEntity(implementedInterface);
+		}
 	}
 
 	public Object getParent() {
@@ -85,7 +92,6 @@ public class TransformedObjectInfo {
 
 	public void setFromString(String source) throws SAXException {
 		try {
-			Class<Object> implementedInterface = modelEntity.getImplementedInterface();
 			setObject(factory.getStringEncoder().fromString(implementedInterface, source));
 		} catch (InvalidDataException e) {
 			throw new SAXException(e);
@@ -101,44 +107,51 @@ public class TransformedObjectInfo {
 	}
 
 	public boolean isConvertible() {
-		return factory.getStringEncoder().isConvertable(modelEntity.getImplementedInterface());
+		return factory.getStringEncoder().isConvertable(implementedInterface);
 	}
 
 	public void initializeDeserialization() throws SAXException {
-		factory.objectIsBeeingDeserialized(object, modelEntity.getImplementedInterface());
-		try {
-			DeserializationInitializer deserializationInitializer = modelEntity.getDeserializationInitializer();
-			if (deserializationInitializer != null) {
-				Method deserializationInitializerMethod = deserializationInitializer.getDeserializationInitializerMethod();
-				if (deserializationInitializerMethod.getParameterTypes().length == 0) {
-					deserializationInitializerMethod.invoke(object, new Object[0]);
+		factory.objectIsBeeingDeserialized(object, implementedInterface);
+
+		if (modelEntity != null) {
+			factory.getHandler(object).setDeserializing(true);
+
+			try {
+				DeserializationInitializer deserializationInitializer = modelEntity.getDeserializationInitializer();
+				if (deserializationInitializer != null) {
+					Method deserializationInitializerMethod = deserializationInitializer.getDeserializationInitializerMethod();
+					if (deserializationInitializerMethod.getParameterTypes().length == 0) {
+						deserializationInitializerMethod.invoke(object, new Object[0]);
+					}
+					else if (deserializationInitializerMethod.getParameterTypes().length == 1) {
+						deserializationInitializerMethod.invoke(object, factory);
+					}
+					else {
+						throw new ModelDefinitionException("Wrong number of argument for deserialization initializer " + deserializationInitializerMethod);
+					}
 				}
-				else if (deserializationInitializerMethod.getParameterTypes().length == 1) {
-					deserializationInitializerMethod.invoke(object, factory);
-				}
-				else {
-					throw new ModelDefinitionException("Wrong number of argument for deserialization initializer " + deserializationInitializerMethod);
-				}
+			} catch (Exception e) {
+				throw new SAXException(e);
 			}
-		} catch (Exception e) {
-			throw new SAXException(e);
 		}
 	}
 
 	public void finalizeDeserialization() throws SAXException {
-		// closes status
-		factory.getHandler(object).setDeserializing(false);
+		if (modelEntity != null) {
+			// closes status
+			factory.getHandler(object).setDeserializing(false);
 
-		// calls ended
-		try {
-			DeserializationFinalizer deserializationFinalizer = modelEntity.getDeserializationFinalizer();
-			if (deserializationFinalizer != null) {
-				deserializationFinalizer.getDeserializationFinalizerMethod().invoke(object, new Object[0]);
+			// calls ended
+			try {
+				DeserializationFinalizer deserializationFinalizer = modelEntity.getDeserializationFinalizer();
+				if (deserializationFinalizer != null) {
+					deserializationFinalizer.getDeserializationFinalizerMethod().invoke(object, new Object[0]);
+				}
+			} catch (Exception e) {
+				throw new SAXException(e);
 			}
-		} catch (Exception e) {
-			throw new SAXException(e);
 		}
-		factory.objectHasBeenDeserialized(object, modelEntity.getImplementedInterface());
+		factory.objectHasBeenDeserialized(object, implementedInterface);
 	}
 
 }

@@ -45,7 +45,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +93,9 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	 * Stores already serialized objects where value is the serialized object and key is an object coding the unique identifier of the
 	 * object
 	 */
-	private final LinkedHashMap<String, TransformedObjectInfo> readObjects = new LinkedHashMap<>();
+	private final HashMap<String, Object> objectsWithId = new HashMap<>();
+
+	private final List<TransformedObjectInfo> allObjects = new LinkedList<>();
 
 	/**
 	 * Stores lambda to resolve forward references
@@ -128,7 +129,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	}
 
 	public Object deserializeDocument(InputStream in) throws Exception {
-		readObjects.clear();
+		objectsWithId.clear();
 
 		// prepares buffered stream
 		if (!(in instanceof BufferedInputStream && in instanceof ByteArrayInputStream)) {
@@ -141,7 +142,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			parser.parse(in, this);
 
 			// Close deserializing mode
-			for (TransformedObjectInfo info : readObjects.values()) {
+			for (TransformedObjectInfo info : allObjects) {
 				info.finalizeDeserialization();
 			}
 
@@ -208,9 +209,9 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				String idref = attributes.getValue(ID_REF);
 				if (idref != null) {
 					// objects is a reference
-					TransformedObjectInfo referenceObject = readObjects.get(idref);
+					Object referenceObject = objectsWithId.get(idref);
 					if (referenceObject != null) {
-						info.setObject(referenceObject.getObject());
+						info.setObject(referenceObject);
 					} else {
 						// it needs to be resolved later
 						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (v) -> new ArrayList<>());
@@ -225,7 +226,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 					buildObjectFromAttributes(localName, id, info, attributes);
 				}
 			}
-			if (id != null) register(id, info);
+			register(id, info);
 
 		} else if (policy == DeserializationPolicy.RESTRICTIVE) {
 			throw new SAXException(new InvalidDataException("Could not find ModelEntity for " +  qName));
@@ -285,13 +286,9 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	private void buildObjectFromAttributes(String name, String id, TransformedObjectInfo info, Attributes attributes) throws SAXException {
 		// if it's the case, the serialization has problems
-		if (id != null) {
-			// does object already exists ?
-			TransformedObjectInfo referenceObject = readObjects.get(id);
-			if (referenceObject != null) {
-				// No need to go further: i've got my object
-				return;
-			}
+		if (id != null && objectsWithId.containsKey(id)) {
+			// No need to go further: i've got my object
+			return;
 		}
 
 		try {
@@ -368,34 +365,27 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			info.setObject(returned);
 			info.initializeDeserialization();
 
-			ProxyMethodHandler<Object> handler = factory.getHandler(returned);
-			handler.setDeserializing(true);
-
 			for (int i = 0; i < attributes.getLength(); i++) {
 				String attributeName = attributes.getQName(i);
-				String attributeValue = attributes.getValue(i);
+				if (IGNORED_ATTRIBUTES.contains(attributeName)) {
+					continue;
+				}
 
+				String attributeValue = attributes.getValue(i);
 				ModelProperty<Object> property = concreteEntity.getPropertyForXMLAttributeName(attributeName);
 				if (property == null) {
-					if (IGNORED_ATTRIBUTES.contains(attributeName)) {
+					if (policy == DeserializationPolicy.RESTRICTIVE) {
+						throw new RestrictiveDeserializationException("No attribute found for the attribute named: " + attributeName);
+					} else {
 						continue;
 					}
+				}
 
-					switch (policy) {
-						case PERMISSIVE:
-							continue;
-						case RESTRICTIVE:
-							throw new RestrictiveDeserializationException("No attribute found for the attribute named: " + attributeName);
-						case EXTENSIVE:
-							// TODO: handle extra values
-							// break;
-							continue; // As long as we don't handle them, we continue to avoid NPE.
-					}
-				}
-				Object value = getStringEncoder().fromString(property.getType(), attributeValue);
-				if (value != null) {
-					handler.invokeSetterForDeserialization(property, value);
-				}
+				TransformedObjectInfo childInfo = new TransformedObjectInfo(factory, returned, property, null);
+				childInfo.setFromString(attributeValue);
+				info.initializeDeserialization();
+				connectObject(childInfo);
+				allObjects.add(childInfo);
 			}
 
 		} catch (Exception e) {
@@ -405,7 +395,10 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	}
 
 	private void register(String id, TransformedObjectInfo info) throws SAXException {
-		readObjects.put(id, info);
+		if (id != null) {
+			objectsWithId.put(id, info.getObject());
+		}
+		allObjects.add(info);
 
 		// resolves forward references if any
 		List<Resolver> forwards = forwardReferences.remove(id);
