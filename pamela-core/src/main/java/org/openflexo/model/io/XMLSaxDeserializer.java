@@ -195,7 +195,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				throw new SAXException(e);
 			}
 		}
-		return modelEntity != null ? new TransformedObjectInfo(factory, parent, leadingProperty, modelEntity) : null;
+		return new TransformedObjectInfo(factory, parent, leadingProperty, modelEntity);
 	}
 
 	@Override
@@ -395,16 +395,16 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	}
 
 	private void register(String id, TransformedObjectInfo info) throws SAXException {
+		allObjects.add(info);
 		if (id != null) {
 			objectsWithId.put(id, info.getObject());
-		}
-		allObjects.add(info);
 
-		// resolves forward references if any
-		List<Resolver> forwards = forwardReferences.remove(id);
-		if (forwards != null) {
-			for (Resolver forward : forwards) {
-				forward.resolve(info);
+			// resolves forward references if any
+			List<Resolver> forwards = forwardReferences.remove(id);
+			if (forwards != null) {
+				for (Resolver forward : forwards) {
+					forward.resolve(info);
+				}
 			}
 		}
 	}
