@@ -195,7 +195,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				throw new SAXException(e);
 			}
 		}
-		return new TransformedObjectInfo(factory, parent, leadingProperty, modelEntity);
+		return leadingProperty != null || modelEntity != null ? new TransformedObjectInfo(factory, parent, leadingProperty, modelEntity) : null;
 	}
 
 	@Override
