@@ -261,6 +261,9 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	}
 
 	private void connectObject(TransformedObjectInfo info) throws SAXException {
+		// don't set a null object
+		if (info.getObject() == null) return;
+
 		// adds object to its parent if needed
 		ModelProperty<Object> property = info.getLeadingProperty();
 		if (property != null) {
@@ -367,12 +370,12 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 			for (int i = 0; i < attributes.getLength(); i++) {
 				String attributeName = attributes.getQName(i);
-				if (IGNORED_ATTRIBUTES.contains(attributeName)) {
+				ModelProperty<Object> property = concreteEntity.getPropertyForXMLAttributeName(attributeName);
+
+				if (property == null && IGNORED_ATTRIBUTES.contains(attributeName)) {
 					continue;
 				}
 
-				String attributeValue = attributes.getValue(i);
-				ModelProperty<Object> property = concreteEntity.getPropertyForXMLAttributeName(attributeName);
 				if (property == null) {
 					if (policy == DeserializationPolicy.RESTRICTIVE) {
 						throw new RestrictiveDeserializationException("No attribute found for the attribute named: " + attributeName);
@@ -382,7 +385,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				}
 
 				TransformedObjectInfo childInfo = new TransformedObjectInfo(factory, returned, property, null);
-				childInfo.setFromString(attributeValue);
+				childInfo.setFromString(attributes.getValue(i));
 				info.initializeDeserialization();
 				connectObject(childInfo);
 				allObjects.add(childInfo);
