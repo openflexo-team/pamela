@@ -223,10 +223,11 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				}
 				else {
 					// object is constructed using attributes
-					buildObjectFromAttributes(localName, id, info, attributes);
+					if (buildObjectFromAttributes(localName, id, info, attributes)) {
+						register(id, info);
+					}
 				}
 			}
-			register(id, info);
 
 		} else if (policy == DeserializationPolicy.RESTRICTIVE) {
 			throw new SAXException(new InvalidDataException("Could not find ModelEntity for " +  qName));
@@ -287,11 +288,15 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		}
 	}
 
-	private void buildObjectFromAttributes(String name, String id, TransformedObjectInfo info, Attributes attributes) throws SAXException {
+	/**
+	 * Constructs an object from it's attributes
+	 * @return true if an object was built, false other wise
+	 */
+	private boolean buildObjectFromAttributes(String name, String id, TransformedObjectInfo info, Attributes attributes) throws SAXException {
 		// if it's the case, the serialization has problems
 		if (id != null && objectsWithId.containsKey(id)) {
 			// No need to go further: i've got my object
-			return;
+			return false;
 		}
 
 		try {
@@ -384,6 +389,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 					}
 				}
 
+				// transforms child
 				TransformedObjectInfo childInfo = new TransformedObjectInfo(factory, returned, property, null);
 				childInfo.setFromString(attributes.getValue(i));
 				info.initializeDeserialization();
@@ -391,6 +397,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				allObjects.add(childInfo);
 			}
 
+			return true;
 		} catch (Exception e) {
 			if (e instanceof SAXException) throw (SAXException) e;
 			throw new SAXException(e);
