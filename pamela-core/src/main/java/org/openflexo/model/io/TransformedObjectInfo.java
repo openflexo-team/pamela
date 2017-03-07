@@ -36,6 +36,7 @@
 package org.openflexo.model.io;
 
 import java.lang.reflect.Method;
+
 import org.openflexo.model.DeserializationFinalizer;
 import org.openflexo.model.DeserializationInitializer;
 import org.openflexo.model.ModelEntity;
@@ -60,14 +61,16 @@ public class TransformedObjectInfo {
 	private boolean resolved = false;
 	private Object object;
 
-	public TransformedObjectInfo(ModelFactory factory, Object parent, ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity) {
+	public TransformedObjectInfo(ModelFactory factory, Object parent, ModelProperty<Object> leadingProperty,
+			ModelEntity<Object> modelEntity) {
 		this.factory = factory;
 		this.parent = parent;
 		this.leadingProperty = leadingProperty;
 		if (modelEntity != null) {
 			this.modelEntity = modelEntity;
 			this.implementedInterface = modelEntity.getImplementedInterface();
-		} else {
+		}
+		else {
 			this.implementedInterface = (Class<Object>) leadingProperty.getType();
 			this.modelEntity = factory.getModelContext().getModelEntity(implementedInterface);
 		}
@@ -127,7 +130,8 @@ public class TransformedObjectInfo {
 						deserializationInitializerMethod.invoke(object, factory);
 					}
 					else {
-						throw new ModelDefinitionException("Wrong number of argument for deserialization initializer " + deserializationInitializerMethod);
+						throw new ModelDefinitionException(
+								"Wrong number of argument for deserialization initializer " + deserializationInitializerMethod);
 					}
 				}
 			} catch (Exception e) {
@@ -139,7 +143,18 @@ public class TransformedObjectInfo {
 	public void finalizeDeserialization() throws SAXException {
 		if (modelEntity != null) {
 			// closes status
-			factory.getHandler(object).setDeserializing(false);
+
+			if (object == null) {
+				System.err.println("finalizeDeserialization() called for null object. Abort");
+				return;
+			}
+
+			if (factory.getHandler(object) != null) {
+				factory.getHandler(object).setDeserializing(false);
+			}
+			else {
+				System.err.println("No handler for object " + object);
+			}
 
 			// calls ended
 			try {
