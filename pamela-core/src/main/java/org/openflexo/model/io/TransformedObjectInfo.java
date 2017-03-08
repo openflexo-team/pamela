@@ -36,7 +36,6 @@
 package org.openflexo.model.io;
 
 import java.lang.reflect.Method;
-
 import org.openflexo.model.DeserializationFinalizer;
 import org.openflexo.model.DeserializationInitializer;
 import org.openflexo.model.ModelEntity;
@@ -51,6 +50,8 @@ import org.xml.sax.SAXException;
  */
 public class TransformedObjectInfo {
 
+	private static final Object[] EMPTY_ARGS = new Object[0];
+
 	private final ModelFactory factory;
 
 	private final Object parent;
@@ -61,8 +62,9 @@ public class TransformedObjectInfo {
 	private boolean resolved = false;
 	private Object object;
 
-	public TransformedObjectInfo(ModelFactory factory, Object parent, ModelProperty<Object> leadingProperty,
-			ModelEntity<Object> modelEntity) {
+	public TransformedObjectInfo(
+			ModelFactory factory, Object parent, ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity
+	) {
 		this.factory = factory;
 		this.parent = parent;
 		this.leadingProperty = leadingProperty;
@@ -114,53 +116,44 @@ public class TransformedObjectInfo {
 	}
 
 	public void initializeDeserialization() throws SAXException {
-		factory.objectIsBeeingDeserialized(object, implementedInterface);
+		if (object != null) {
+			factory.objectIsBeeingDeserialized(object, implementedInterface);
 
-		if (modelEntity != null) {
-			factory.getHandler(object).setDeserializing(true);
+			if (modelEntity != null) {
+				factory.getHandler(object).setDeserializing(true);
 
-			try {
-				DeserializationInitializer deserializationInitializer = modelEntity.getDeserializationInitializer();
-				if (deserializationInitializer != null) {
-					Method deserializationInitializerMethod = deserializationInitializer.getDeserializationInitializerMethod();
-					if (deserializationInitializerMethod.getParameterTypes().length == 0) {
-						deserializationInitializerMethod.invoke(object, new Object[0]);
+				try {
+					DeserializationInitializer deserializationInitializer = modelEntity.getDeserializationInitializer();
+					if (deserializationInitializer != null) {
+						Method deserializationInitializerMethod = deserializationInitializer.getDeserializationInitializerMethod();
+						if (deserializationInitializerMethod.getParameterTypes().length == 0) {
+							deserializationInitializerMethod.invoke(object, EMPTY_ARGS);
+						}
+						else if (deserializationInitializerMethod.getParameterTypes().length == 1) {
+							deserializationInitializerMethod.invoke(object, factory);
+						}
+						else {
+							String message = "Wrong number of argument for deserialization initializer " + deserializationInitializerMethod;
+							throw new ModelDefinitionException(message);
+						}
 					}
-					else if (deserializationInitializerMethod.getParameterTypes().length == 1) {
-						deserializationInitializerMethod.invoke(object, factory);
-					}
-					else {
-						throw new ModelDefinitionException(
-								"Wrong number of argument for deserialization initializer " + deserializationInitializerMethod);
-					}
+				} catch (Exception e) {
+					throw new SAXException(e);
 				}
-			} catch (Exception e) {
-				throw new SAXException(e);
 			}
 		}
 	}
 
 	public void finalizeDeserialization() throws SAXException {
-		if (modelEntity != null) {
+		if (modelEntity != null && object != null) {
 			// closes status
-
-			if (object == null) {
-				System.err.println("finalizeDeserialization() called for null object. Abort");
-				return;
-			}
-
-			if (factory.getHandler(object) != null) {
-				factory.getHandler(object).setDeserializing(false);
-			}
-			else {
-				System.err.println("No handler for object " + object);
-			}
+			factory.getHandler(object).setDeserializing(false);
 
 			// calls ended
 			try {
 				DeserializationFinalizer deserializationFinalizer = modelEntity.getDeserializationFinalizer();
 				if (deserializationFinalizer != null) {
-					deserializationFinalizer.getDeserializationFinalizerMethod().invoke(object, new Object[0]);
+					deserializationFinalizer.getDeserializationFinalizerMethod().invoke(object, EMPTY_ARGS);
 				}
 			} catch (Exception e) {
 				throw new SAXException(e);
