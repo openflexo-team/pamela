@@ -1,58 +1,13 @@
-
 buildscript {
-  repositories {
-    maven { url uri('https://maven.openflexo.org/artifactory/openflexo-deps/') }
-  }
-  dependencies {
-    classpath group: 'org.openflexo', name: 'buildplugin', version: '+'
-    classpath group: 'org.openflexo', name: 'buildconfig', version: '1.8.1-SNAPSHOT'
-  }
-}
-
-plugins {
-  id "com.jfrog.artifactory" version "4.4.13"
+    configurations.classpath.resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    repositories {
+        maven { url uri('https://maven.openflexo.org/artifactory/openflexo-deps/') }
+    }
+    dependencies {
+        classpath group: 'org.openflexo', name: 'buildplugin', version: '+'
+        classpath group: 'org.openflexo', name: 'buildconfig', version: '1.8.1-SNAPSHOT'
+    }
 }
 
 apply plugin: 'org.openflexo.buildconfig'
 allprojects { version = "1.4-SNAPSHOT" }
-
-apply plugin: 'org.openflexo.buildconfig'
-
-subprojects {
-  apply plugin: 'java'
-  apply plugin: 'maven-publish'
-  apply plugin: 'com.jfrog.artifactory'
-
-  publishing {
-    publications {
-      mavenJava(MavenPublication) {
-        from components.java
-      }
-    }
-  }
-
-  artifactory {
-    contextUrl = 'https://maven.openflexo.org/artifactory'
-    publish {
-      repository {
-        repoKey = 'openflexo-snapshot' // The Artifactory repository key to publish to
-        username = "$System.env.ARTIFACTORY_USER" // The publisher user name
-        password = "$System.env.ARTIFACTORY_PASSWORD" // The publisher password
-      }
-      defaults {
-        // Reference to Gradle publications defined in the build script.
-        // This is how we tell the Artifactory Plugin which artifacts should be
-        // published to Artifactory.
-        publications('mavenJava')
-        publishArtifacts = true
-        // Properties to be attached to the published artifacts.
-        //properties = ['qa.level': 'basic', 'dev.team' : 'core']
-        // Publish generated POM files to Artifactory (true by default)
-        publishPom = true
-      }
-    }
-    resolve {
-      repoKey = 'maven'
-    }
-  }
-}
