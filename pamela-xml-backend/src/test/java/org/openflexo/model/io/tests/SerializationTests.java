@@ -24,14 +24,16 @@ import org.openflexo.model.factory.SerializationPolicy;
 import org.openflexo.model.io.JDOMXMLDeserializer;
 import org.openflexo.model.io.JDOMXMLSerializer;
 import org.openflexo.toolbox.Duration;
+import org.openflexo.toolbox.Duration.DurationUnit;
 import org.openflexo.toolbox.FileFormat;
+import org.openflexo.toolbox.FileFormat.BinaryFileFormat;
 
 public class SerializationTests extends AbstractPAMELATest {
 
 	private static final String NODE_NAME = "aNode";
 	private static final String PROPERTY_VALUE = "aValue";
-	private static final Duration DURATION_VALUE = null;
-	private static final FileFormat FILEFORMAT_VALUE = null;
+	private static final Duration DURATION_VALUE = new Duration(10, DurationUnit.SECONDS);
+	private static final FileFormat FILEFORMAT_VALUE = BinaryFileFormat.JAR;
 	private File file;
 	private ModelFactory factory;
 	private ModelFactory factory2;
