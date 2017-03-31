@@ -45,8 +45,27 @@ package org.openflexo.model.factory;
 import com.google.common.base.Defaults;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyObject;
+import javax.annotation.Nonnull;
 import org.openflexo.connie.BindingEvaluator;
 import org.openflexo.connie.DataBinding;
 import org.openflexo.connie.exception.NullReferenceException;
@@ -80,26 +99,6 @@ import org.openflexo.model.undo.RemoveCommand;
 import org.openflexo.model.undo.SetCommand;
 import org.openflexo.model.undo.UndoManager;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
-
-import javax.annotation.Nonnull;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListener {
 
@@ -1214,8 +1213,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	private void firePropertyChange(String propertyIdentifier, Object oldValue, Object value) {
 		if (getObject() instanceof HasPropertyChangeSupport && !deleting) {
-			if (((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport() != null) {
-				((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport().firePropertyChange(propertyIdentifier, oldValue, value);
+			PropertyChangeSupport propertyChangeSupport = ((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport();
+			if (propertyChangeSupport != null) {
+				propertyChangeSupport.firePropertyChange(propertyIdentifier, oldValue, value);
 			}
 		}
 	}
