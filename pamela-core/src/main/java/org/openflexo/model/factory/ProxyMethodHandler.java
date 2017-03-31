@@ -2173,7 +2173,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					});
 			if (pastingPointProperties.size() == 0) {
 				// no properties are compatible for pasting type
-				System.out.println("No property declared as pasting point found for " + type + " in " + modelEntity);
+				//System.out.println("No property declared as pasting point found for " + type + " in " + modelEntity);
 				return false;
 			}
 			else if (pastingPointProperties.size() > 1) {
