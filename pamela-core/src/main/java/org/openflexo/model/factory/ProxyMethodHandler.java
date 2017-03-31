@@ -42,11 +42,27 @@
 
 package org.openflexo.model.factory;
 
-import com.google.common.base.Defaults;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyObject;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+
+import javax.annotation.Nonnull;
+
 import org.openflexo.connie.BindingEvaluator;
 import org.openflexo.connie.DataBinding;
 import org.openflexo.connie.exception.NullReferenceException;
@@ -81,25 +97,12 @@ import org.openflexo.model.undo.SetCommand;
 import org.openflexo.model.undo.UndoManager;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
-import javax.annotation.Nonnull;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
+import com.google.common.base.Defaults;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyObject;
 
 public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListener {
 
@@ -574,7 +577,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				/*Object oldValue = invokeGetter(property);
 				if (getModelFactory().getUndoManager() != null) {
 					getModelFactory().getUndoManager().addEdit(
-							new SetCommand<I>(getObject(), getModelEntity(), property, oldValue, newValue, getModelFactory()));
+							new SetCommand<>(getObject(), getModelEntity(), property, oldValue, newValue, getModelFactory()));
 				}*/
 				invokeSetter(property, newValue);
 				return null;
@@ -1254,7 +1257,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					+ List.class.getName() + " instances or null is allowed");
 		}
 		List<?> oldValue = (List<?>) invokeGetter(property);
-		for (Object o : new ArrayList<Object>(oldValue)) {
+		for (Object o : new ArrayList<>(oldValue)) {
 			invokeRemover(property, o);
 		}
 		if (value != null) {
@@ -1505,7 +1508,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	
 		if (!(getObject() instanceof CloneableProxyObject)) throw new CloneNotSupportedException();
 	
-		Hashtable<CloneableProxyObject,Object> clonedObjects = new Hashtable<CloneableProxyObject, Object>();
+		Hashtable<CloneableProxyObject,Object> clonedObjects = new Hashtable<>();
 		Object returned = performClone(clonedObjects);
 		for (CloneableProxyObject o : clonedObjects.keySet()) {
 			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(o);
@@ -1639,7 +1642,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			case LIST:
 				List values = (List)invokeGetter(p);
 				System.out.println("values:"+values.hashCode()+" "+values);
-				List valuesToClone = new ArrayList<Object>(values);
+				List valuesToClone = new ArrayList<>(values);
 				for (Object value : valuesToClone) {
 					switch (p.getCloningStrategy()) {
 					case CLONE:
@@ -1829,7 +1832,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 												clonedObjectHandler.invokeSetter(p, new String((String) singleValue));
 											}
 											else*/ if (singleValue instanceof DataBinding) {
-												clonedObjectHandler.invokeSetter(p, ((DataBinding) singleValue).clone());
+												clonedObjectHandler.invokeSetter(p, ((DataBinding<?>) singleValue).clone());
 											}
 											else {
 												// TODO: handle primitive types and some basic types (eg. String)
@@ -1852,16 +1855,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 										Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(), getObject());
 										clonedObjectHandler.invokeSetter(p, computedValue);
 									} catch (InvalidKeyValuePropertyException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									} catch (TypeMismatchException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									} catch (NullReferenceException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									} catch (InvocationTargetException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									}
 									break;
@@ -2016,7 +2015,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					case LIST:
 						List<?> values = (List<?>) invokeGetter(p);
 						if (values != null) {
-							List<?> valuesToClone = new ArrayList<Object>(values);
+							List<?> valuesToClone = new ArrayList<>(values);
 							/*System.out.println("Cloning of property " + p);
 							System.out.println("Values to clone are: ");
 							for (Object value : valuesToClone) {

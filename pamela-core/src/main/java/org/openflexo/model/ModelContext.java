@@ -110,8 +110,8 @@ public class ModelContext {
 	}
 
 	private Map<Class, ModelEntity> modelEntities;
-	private Map<String, ModelEntity> modelEntitiesByXmlTag;
-	private final Map<ModelEntity, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
+	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
+	private final Map<ModelEntity<?>, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
 	private final Class<?> baseClass;
 
 	public ModelContext(@Nonnull Class<?> baseClass) throws ModelDefinitionException {
@@ -120,7 +120,7 @@ public class ModelContext {
 		modelEntitiesByXmlTag = new HashMap<>();
 		modelPropertiesByXmlTag = new HashMap<>();
 		ModelEntity<?> modelEntity = ModelEntityLibrary.importEntity(baseClass);
-		appendEntity(modelEntity, new HashSet<ModelEntity<?>>());
+		appendEntity(modelEntity, new HashSet<>());
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
 	}
@@ -131,8 +131,8 @@ public class ModelContext {
 		modelEntitiesByXmlTag = new HashMap<>();
 		modelPropertiesByXmlTag = new HashMap<>();
 		for (ModelContext context : contexts) {
-			for (Entry<String, ModelEntity> e : context.modelEntitiesByXmlTag.entrySet()) {
-				ModelEntity entity = modelEntitiesByXmlTag.put(e.getKey(), e.getValue());
+			for (Entry<String, ModelEntity<?>> e : context.modelEntitiesByXmlTag.entrySet()) {
+				ModelEntity<?> entity = modelEntitiesByXmlTag.put(e.getKey(), e.getValue());
 				// TODO: handle properly namespaces. Different namespaces allows to have identical tags
 				// See also importModelEntity(Class<T>)
 				if (entity != null && !entity.getImplementedInterface().equals(e.getValue().getImplementedInterface())) {
@@ -243,10 +243,10 @@ public class ModelContext {
 			while (i.hasNext()) {
 				ModelProperty<? super I> property = i.next();
 				if (property.getXMLElement() != null) {
-					ModelEntity accessedEntity = property.getAccessedEntity();
+					ModelEntity<?> accessedEntity = property.getAccessedEntity();
 					if (accessedEntity != null) {
 						List<ModelEntity> allDescendantsAndMe = accessedEntity.getAllDescendantsAndMe(this);
-						for (ModelEntity accessible : allDescendantsAndMe) {
+						for (ModelEntity<?> accessible : allDescendantsAndMe) {
 							ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<>(property, accessible);
 							ModelPropertyXMLTag<?> put = tags.put(tag.getTag(), tag);
 							if (put != null) {

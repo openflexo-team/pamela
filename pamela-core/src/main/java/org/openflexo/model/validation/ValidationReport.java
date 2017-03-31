@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
 import org.openflexo.toolbox.ChainedCollection;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
@@ -155,7 +156,8 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		Set<Validable> objectsToValidate = new LinkedHashSet<>(retrieveAllEmbeddedValidableObjects(rootObject));
 
 		// Compute validation steps and notify validation initialization
-		long validationStepToNotify = objectsToValidate.stream().filter(validationModel::shouldNotifyValidation).collect(Collectors.counting());
+		long validationStepToNotify = objectsToValidate.stream().filter(validationModel::shouldNotifyValidation)
+				.collect(Collectors.counting());
 		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_START, rootObject, validationStepToNotify);
 
 		// Perform the validation
@@ -236,7 +238,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 						logger.info("Fixing automatically...");
 					}
 					((ProblemIssue<R, V>) issue).getFixProposals().get(0).apply(false);
-					addToValidationIssues(new InformationIssue<R, V>(next, "fixed_automatically:" + " " + issue.getMessage() + " : "
+					addToValidationIssues(new InformationIssue<>(next, "fixed_automatically:" + " " + issue.getMessage() + " : "
 							+ (((ProblemIssue<R, V>) issue).getFixProposals()).get(0).getMessage()));
 				}
 				else if (issue instanceof CompoundIssue) {
@@ -247,7 +249,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 								logger.info("Fixing automatically...");
 							}
 							((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).apply(false);
-							addToValidationIssues(new InformationIssue<R, V>(containedIssue.getValidable(),
+							addToValidationIssues(new InformationIssue<>(containedIssue.getValidable(),
 									"fixed_automatically:" + " " + containedIssue.getMessage() + " : "
 											+ ((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).getMessage()));
 						}
