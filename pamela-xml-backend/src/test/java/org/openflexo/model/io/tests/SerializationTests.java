@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -22,11 +23,15 @@ import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.factory.SerializationPolicy;
 import org.openflexo.model.io.JDOMXMLDeserializer;
 import org.openflexo.model.io.JDOMXMLSerializer;
+import org.openflexo.toolbox.Duration;
+import org.openflexo.toolbox.FileFormat;
 
 public class SerializationTests extends AbstractPAMELATest {
 
 	private static final String NODE_NAME = "aNode";
 	private static final String PROPERTY_VALUE = "aValue";
+	private static final Duration DURATION_VALUE = null;
+	private static final FileFormat FILEFORMAT_VALUE = null;
 	private File file;
 	private ModelFactory factory;
 	private ModelFactory factory2;
@@ -75,6 +80,9 @@ public class SerializationTests extends AbstractPAMELATest {
 		FlexoProcess process = (FlexoProcess) factory.newInstance(FlexoProcess.class).init();
 		MyNode node = (MyNode) factory2.newInstance(MyNode.class).init(NODE_NAME);
 		node.setMyProperty(PROPERTY_VALUE);
+        node.setMyDuration(DURATION_VALUE);
+        node.setMyFileformat(FILEFORMAT_VALUE);
+        node.setMyLevel(Level.ALL);
 		process.addToNodes(node);
 		FileOutputStream fos = null;
 		try {

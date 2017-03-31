@@ -1,12 +1,12 @@
-
 buildscript {
-  repositories {
-    maven { url uri('https://maven.openflexo.org/artifactory/openflexo-deps/') }
-  }
-  dependencies {
-    classpath group: 'org.openflexo', name: 'buildplugin', version: '+'
-    classpath group: 'org.openflexo', name: 'buildconfig', version: '1.8.1-SNAPSHOT'
-  }
+    configurations.classpath.resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    repositories {
+        maven { url uri('https://maven.openflexo.org/artifactory/openflexo-deps/') }
+    }
+    dependencies {
+        classpath group: 'org.openflexo', name: 'buildplugin', version: '+'
+        classpath group: 'org.openflexo', name: 'buildconfig', version: '1.8.1-SNAPSHOT'
+    }
 }
 
 apply plugin: 'org.openflexo.buildconfig'

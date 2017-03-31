@@ -38,19 +38,19 @@
 
 package org.openflexo.model.validation;
 
-import org.openflexo.toolbox.ChainedCollection;
-import org.openflexo.toolbox.HasPropertyChangeSupport;
-
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import org.openflexo.toolbox.ChainedCollection;
+import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
  * A {@link ValidationReport} contains all issues regarding to the validation of a whole objects tree computed from a root object.<br>
@@ -151,43 +151,25 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		List<ValidationIssue<?, ?>> returned = new ArrayList<>();
 
-		// Get all the objects to validate
-		Collection<Validable> allEmbeddedValidableObjects = retrieveAllEmbeddedValidableObjects(rootObject);
-
-		// logger.info("For object " + object + " objects to validate are: " + allEmbeddedValidableObjects);
-
-		// Remove duplicated objects
-		Vector<Validable> objectsToValidate = new Vector<>();
-		for (Validable next : allEmbeddedValidableObjects) {
-			if (!objectsToValidate.contains(next)) {
-				objectsToValidate.add(next);
-			}
-		}
+		// Gets all the objects to validate and removes duplicated objects
+		Set<Validable> objectsToValidate = new LinkedHashSet<>(retrieveAllEmbeddedValidableObjects(rootObject));
 
 		// Compute validation steps and notify validation initialization
-		int validationStepToNotify = 0;
-		for (Enumeration<Validable> en = objectsToValidate.elements(); en.hasMoreElements();) {
-			Validable next = en.nextElement();
-			if (validationModel.shouldNotifyValidation(next)) {
-				validationStepToNotify++;
-			}
-		}
-
+		long validationStepToNotify = objectsToValidate.stream().filter(validationModel::shouldNotifyValidation).collect(Collectors.counting());
 		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_START, rootObject, validationStepToNotify);
 
 		// Perform the validation
-		for (Enumeration<Validable> en = objectsToValidate.elements(); en.hasMoreElements();) {
-			Validable next = en.nextElement();
-			if (validationModel.shouldNotifyValidation(next)) {
-				getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_OBJECT, null, next);
+		for (Validable validable : objectsToValidate) {
+			if (validationModel.shouldNotifyValidation(validable)) {
+				getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_OBJECT, null, validable);
 			}
 
-			if (!next.isDeleted()) {
-				returned.addAll(performValidation(next));
+			if (!validable.isDeleted()) {
+				returned.addAll(performValidation(validable));
 			}
 
 			// Following allows task to be cancelled by throwing an InterruptedException
-			Thread.sleep(1);
+			Thread.sleep(0);
 
 		}
 

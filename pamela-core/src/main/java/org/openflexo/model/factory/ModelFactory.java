@@ -77,6 +77,7 @@ import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
+
 /**
  * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
  * 
@@ -818,10 +819,7 @@ public class ModelFactory implements IObjectGraphFactory {
 		else {
 			throw new IOException("ERROR: Pamela Model Factory has No Deserializer set!");
 		}
-		/**
-		 * public Object deserialize(InputStream is, DeserializationPolicy policy) throws Exception { XMLSaxDeserializer deserializer = new
-		 * XMLSaxDeserializer(this, policy); return deserializer.deserializeDocument(is);
-		 **/
+
 	}
 
 	@Override
@@ -839,11 +837,7 @@ public class ModelFactory implements IObjectGraphFactory {
 		else {
 			throw new InvalidDataException("ERROR: No Deserializer set!");
 		}
-/**
-	public Object deserialize(String input, DeserializationPolicy policy) throws Exception {
-		XMLSaxDeserializer deserializer = new XMLSaxDeserializer(this, policy);
-		return deserializer.deserializeDocument(input);
-**/	}
+	}
 
 	/**
 	 * Hook to detect an object creation Default implementation silently returns
