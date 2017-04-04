@@ -11,3 +11,6 @@ buildscript {
 
 apply plugin: 'org.openflexo.buildconfig'
 allprojects { version = "1.4-SNAPSHOT" }
+task test() {
+    dependsOn subprojects.test
+}
