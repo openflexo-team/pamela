@@ -63,7 +63,6 @@ import java.util.StringTokenizer;
 
 import javax.annotation.Nonnull;
 
-import javax.annotation.Nonnull;
 import org.openflexo.connie.BindingEvaluator;
 import org.openflexo.connie.DataBinding;
 import org.openflexo.connie.exception.NullReferenceException;
@@ -2174,7 +2173,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					});
 			if (pastingPointProperties.size() == 0) {
 				// no properties are compatible for pasting type
-				System.out.println("No property declared as pasting point found for " + type + " in " + modelEntity);
+				// System.out.println("No property declared as pasting point found for " + type + " in " + modelEntity);
 				return false;
 			}
 			else if (pastingPointProperties.size() > 1) {
@@ -2284,6 +2283,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 */
 	protected Object paste(Clipboard clipboard, ModelProperty<? super I> modelProperty)
 			throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
+
 		if (modelProperty.getSetPastingPoint() == null && modelProperty.getAddPastingPoint() == null) {
 			throw new ClipboardOperationException("Cannot paste here: no pasting point found");
 		}
@@ -2291,11 +2291,14 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			throw new ClipboardOperationException(
 					"Ambiguous pasting operations: both add and set operations are available for property " + modelProperty);
 		}
+		// Do it as a SET
 		if (modelProperty.getSetPastingPoint() != null) {
 			return paste(clipboard, modelProperty, modelProperty.getSetPastingPoint());
 		}
 		else {
-			return paste(clipboard, modelProperty, modelProperty.getAddPastingPoint());
+			// Do it as a ADD
+			Object returned = paste(clipboard, modelProperty, modelProperty.getAddPastingPoint());
+			return returned;
 		}
 	}
 
@@ -2313,8 +2316,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 */
 	protected Object paste(Clipboard clipboard, ModelProperty<? super I> modelProperty, PastingPoint pp)
 			throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
-		// Unused var ModelEntity<?> entity =
-		getModelEntity();
+		ModelEntity<?> entity = getModelEntity();
 		if (pp == null) {
 			throw new ClipboardOperationException("Cannot paste here: no pasting point found");
 		}
@@ -2324,8 +2326,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			// System.out.println("Found property: "+ppProperty);
 		}
 
-		// Object clipboardContent = clipboard.getContents();
-		if (getModelEntity().hasProperty(modelProperty)) {
+		// System.out.println("entity=" + entity);
+		// System.out.println("modelProperty=" + modelProperty);
+		// System.out.println("entity.hasProperty(modelProperty)=" + entity.hasProperty(modelProperty));
+
+		if (entity.hasProperty(modelProperty) || modelProperty.getModelEntity().isAncestorOf(entity)) {
 			if (modelProperty.getSetPastingPoint() == pp) {
 				if (!clipboard.isSingleObject()) {
 					throw new ClipboardOperationException("Cannot paste here: multiple cardinality clipboard for a SINGLE property");
