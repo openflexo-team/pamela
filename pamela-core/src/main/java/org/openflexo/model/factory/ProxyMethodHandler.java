@@ -63,6 +63,7 @@ import java.util.StringTokenizer;
 
 import javax.annotation.Nonnull;
 
+import javax.annotation.Nonnull;
 import org.openflexo.connie.BindingEvaluator;
 import org.openflexo.connie.DataBinding;
 import org.openflexo.connie.exception.NullReferenceException;
@@ -1217,8 +1218,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	private void firePropertyChange(String propertyIdentifier, Object oldValue, Object value) {
 		if (getObject() instanceof HasPropertyChangeSupport && !deleting) {
-			if (((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport() != null) {
-				((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport().firePropertyChange(propertyIdentifier, oldValue, value);
+			PropertyChangeSupport propertyChangeSupport = ((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport();
+			if (propertyChangeSupport != null) {
+				propertyChangeSupport.firePropertyChange(propertyIdentifier, oldValue, value);
 			}
 		}
 	}
