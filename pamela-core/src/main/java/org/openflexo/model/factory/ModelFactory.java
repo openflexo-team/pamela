@@ -55,7 +55,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.ProxyFactory;
+import javassist.util.proxy.ProxyObject;
 import org.openflexo.IObjectGraphFactory;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContextLibrary;
@@ -71,10 +73,6 @@ import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.io.XMLSaxDeserializer;
 import org.openflexo.model.io.XMLSerializer;
 import org.openflexo.model.undo.CreateCommand;
-
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
 
 /**
  * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
@@ -220,6 +218,14 @@ public class ModelFactory implements IObjectGraphFactory {
 					}
 				}
 			}
+
+			// looks for property to initialize
+			for (ModelProperty<? super I> property : modelEntity.getPropertyIterable()) {
+				if (property.getInitialize() != null) {
+					handler.invokeSetter(property, ModelFactory.this.newInstance(property.getType()));
+				}
+			}
+
 			objectHasBeenCreated(returned, modelEntity.getImplementedInterface());
 			return returned;
 		}
