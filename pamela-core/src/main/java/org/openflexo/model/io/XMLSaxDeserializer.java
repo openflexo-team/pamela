@@ -57,7 +57,6 @@ import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContext.ModelPropertyXMLTag;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
-import org.openflexo.model.StringEncoder;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.ModelExecutionException;
@@ -70,6 +69,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/**
+ * XML deserializer using a SAX Parser
+ */
 public class XMLSaxDeserializer extends DefaultHandler {
 
 	public static final String ID = "id";
@@ -118,10 +120,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		this.factory = factory;
 		this.policy = policy;
 		this.context = factory.getModelContext();
-	}
-
-	private StringEncoder getStringEncoder() {
-		return factory.getStringEncoder();
 	}
 
 	public Object deserializeDocument(String xml) throws Exception {
