@@ -577,7 +577,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				/*Object oldValue = invokeGetter(property);
 				if (getModelFactory().getUndoManager() != null) {
 					getModelFactory().getUndoManager().addEdit(
-							new SetCommand<I>(getObject(), getModelEntity(), property, oldValue, newValue, getModelFactory()));
+							new SetCommand<>(getObject(), getModelEntity(), property, oldValue, newValue, getModelFactory()));
 				}*/
 				invokeSetter(property, newValue);
 				return null;
@@ -1258,7 +1258,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					+ List.class.getName() + " instances or null is allowed");
 		}
 		List<?> oldValue = (List<?>) invokeGetter(property);
-		for (Object o : new ArrayList<Object>(oldValue)) {
+		for (Object o : new ArrayList<>(oldValue)) {
 			invokeRemover(property, o);
 		}
 		if (value != null) {
@@ -1509,7 +1509,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	
 		if (!(getObject() instanceof CloneableProxyObject)) throw new CloneNotSupportedException();
 	
-		Hashtable<CloneableProxyObject,Object> clonedObjects = new Hashtable<CloneableProxyObject, Object>();
+		Hashtable<CloneableProxyObject,Object> clonedObjects = new Hashtable<>();
 		Object returned = performClone(clonedObjects);
 		for (CloneableProxyObject o : clonedObjects.keySet()) {
 			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(o);
@@ -1643,7 +1643,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			case LIST:
 				List values = (List)invokeGetter(p);
 				System.out.println("values:"+values.hashCode()+" "+values);
-				List valuesToClone = new ArrayList<Object>(values);
+				List valuesToClone = new ArrayList<>(values);
 				for (Object value : valuesToClone) {
 					switch (p.getCloningStrategy()) {
 					case CLONE:
@@ -1833,7 +1833,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 												clonedObjectHandler.invokeSetter(p, new String((String) singleValue));
 											}
 											else*/ if (singleValue instanceof DataBinding) {
-												clonedObjectHandler.invokeSetter(p, ((DataBinding) singleValue).clone());
+												clonedObjectHandler.invokeSetter(p, ((DataBinding<?>) singleValue).clone());
 											}
 											else {
 												// TODO: handle primitive types and some basic types (eg. String)
@@ -1856,16 +1856,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 										Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(), getObject());
 										clonedObjectHandler.invokeSetter(p, computedValue);
 									} catch (InvalidKeyValuePropertyException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									} catch (TypeMismatchException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									} catch (NullReferenceException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									} catch (InvocationTargetException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									}
 									break;
@@ -2020,7 +2016,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					case LIST:
 						List<?> values = (List<?>) invokeGetter(p);
 						if (values != null) {
-							List<?> valuesToClone = new ArrayList<Object>(values);
+							List<?> valuesToClone = new ArrayList<>(values);
 							/*System.out.println("Cloning of property " + p);
 							System.out.println("Values to clone are: ");
 							for (Object value : valuesToClone) {

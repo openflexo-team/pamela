@@ -44,7 +44,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.List;
-
 import org.openflexo.connie.binding.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
@@ -57,6 +56,7 @@ import org.openflexo.model.annotations.DeletionCondition;
 import org.openflexo.model.annotations.Embedded;
 import org.openflexo.model.annotations.Getter;
 import org.openflexo.model.annotations.Getter.Cardinality;
+import org.openflexo.model.annotations.Initialize;
 import org.openflexo.model.annotations.PastingPoint;
 import org.openflexo.model.annotations.Remover;
 import org.openflexo.model.annotations.ReturnedValue;
@@ -86,6 +86,7 @@ public class ModelProperty<I> {
 	private final Embedded embedded;
 	private final ComplexEmbedded complexEmbedded;
 	private final CloningStrategy cloningStrategy;
+	private final Initialize initialize;
 
 	private PastingPoint setPastingPoint;
 	private PastingPoint addPastingPoint;
@@ -116,6 +117,7 @@ public class ModelProperty<I> {
 		CloningStrategy cloningStrategy = null;
 		PastingPoint setPastingPoint = null;
 		PastingPoint addPastingPoint = null;
+		Initialize initialize = null;
 		Method getterMethod = null;
 		Method setterMethod = null;
 		Method adderMethod = null;
@@ -158,6 +160,7 @@ public class ModelProperty<I> {
 						returnedValue = m.getAnnotation(ReturnedValue.class);
 						cloningStrategy = m.getAnnotation(CloningStrategy.class);
 						embedded = m.getAnnotation(Embedded.class);
+						initialize = m.getAnnotation(Initialize.class);
 						complexEmbedded = m.getAnnotation(ComplexEmbedded.class);
 					}
 				}
@@ -196,12 +199,12 @@ public class ModelProperty<I> {
 			}
 		}
 		return new ModelProperty<>(modelEntity, propertyIdentifier, getter, setter, adder, remover, xmlAttribute, xmlElement, returnedValue,
-				embedded, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod, setterMethod, adderMethod,
+				embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod, setterMethod, adderMethod,
 				removerMethod);
 	}
 
 	protected ModelProperty(ModelEntity<I> modelEntity, String propertyIdentifier, Getter getter, Setter setter, Adder adder,
-			Remover remover, XMLAttribute xmlAttribute, XMLElement xmlElement, ReturnedValue returnedValue, Embedded embedded,
+			Remover remover, XMLAttribute xmlAttribute, XMLElement xmlElement, ReturnedValue returnedValue, Embedded embedded, Initialize initialize,
 			ComplexEmbedded complexEmbedded, CloningStrategy cloningStrategy, PastingPoint setPastingPoint, PastingPoint addPastingPoint,
 			Method getterMethod, Method setterMethod, Method adderMethod, Method removerMethod) throws ModelDefinitionException {
 		this.modelEntity = modelEntity;
@@ -222,6 +225,7 @@ public class ModelProperty<I> {
 		this.setterMethod = setterMethod;
 		this.adderMethod = adderMethod;
 		this.removerMethod = removerMethod;
+		this.initialize = initialize;
 		if (setterMethod != null) {
 			PastingPoint pastingPoint = setterMethod.getAnnotation(PastingPoint.class);
 			if (pastingPoint != null) {
@@ -463,6 +467,10 @@ public class ModelProperty<I> {
 				}
 			}
 		}
+		if (getInitialize() != property.getInitialize()) {
+			return "Initialize conditions aren't compatible";
+		}
+
 		if (getEmbedded() != null) {
 			if (property.getEmbedded() != null) {
 				if (!Arrays.equals(getEmbedded().closureConditions(), property.getEmbedded().closureConditions())) {
@@ -613,6 +621,7 @@ public class ModelProperty<I> {
 		XMLElement xmlElement = null;
 		ReturnedValue returnedValue = null;
 		Embedded embedded = null;
+		Initialize initialize = this.initialize;
 		ComplexEmbedded complexEmbedded = null;
 		CloningStrategy cloningStrategy = null;
 		// PastingPoint setPastingPoint = null;
@@ -838,7 +847,7 @@ public class ModelProperty<I> {
 		}
 
 		return new ModelProperty<>(getModelEntity(), getPropertyIdentifier(), getter, setter, adder, remover, xmlAttribute, xmlElement,
-				returnedValue, embedded, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod, setterMethod,
+				returnedValue, embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod, setterMethod,
 				adderMethod, removerMethod);
 	}
 
@@ -982,6 +991,10 @@ public class ModelProperty<I> {
 
 	public Embedded getEmbedded() {
 		return embedded;
+	}
+
+	public Initialize getInitialize() {
+		return initialize;
 	}
 
 	public ComplexEmbedded getComplexEmbedded() {

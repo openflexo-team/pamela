@@ -779,6 +779,10 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return properties.values().iterator();
 	}
 
+	public Iterable<ModelProperty<? super I>> getPropertyIterable() {
+		return Collections.unmodifiableCollection(properties.values());
+	}
+
 	/**
 	 * Return an iterator for {@link ModelProperty} objects<br>
 	 * Order respect {@link CloningStrategy#cloneAfterProperty()} annotation
@@ -1211,4 +1215,5 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	public static boolean isModelEntity(Class<?> type) {
 		return type.isAnnotationPresent(org.openflexo.model.annotations.ModelEntity.class);
 	}
+
 }

@@ -218,6 +218,14 @@ public class ModelFactory implements IObjectGraphFactory {
 					}
 				}
 			}
+
+			// looks for property to initialize
+			for (ModelProperty<? super I> property : modelEntity.getPropertyIterable()) {
+				if (property.getInitialize() != null) {
+					handler.invokeSetter(property, ModelFactory.this.newInstance(property.getType()));
+				}
+			}
+
 			objectHasBeenCreated(returned, modelEntity.getImplementedInterface());
 			return returned;
 		}
