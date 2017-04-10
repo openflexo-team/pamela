@@ -211,7 +211,7 @@ public class ModelFactory implements IObjectGraphFactory {
 							if (sb.length() > 0) {
 								sb.append(',');
 							}
-							sb.append(c.getName());
+							sb.append(c != null ? c.getName() : "<null>");
 
 						}
 						throw new NoSuchMethodException("Could not find any initializer with args " + sb.toString());
@@ -492,7 +492,6 @@ public class ModelFactory implements IObjectGraphFactory {
 	 * Supplied context is used to determine the closure of objects graph being constructed during this operation.
 	 * 
 	 * @param root
-	 * @param context
 	 * @return
 	 */
 	public List<Object> getEmbeddedObjects(Object root, EmbeddingType embeddingType) {
