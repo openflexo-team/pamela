@@ -83,16 +83,21 @@ public class ModelContext {
 		}
 
 		public List<String> getDeprecatedTags() {
+			List<String> returned = new ArrayList<>();
 			if (accessedEntity.getXMLElement() != null && StringUtils.isNotEmpty(accessedEntity.getXMLElement().deprecatedXMLTags())) {
-				List<String> returned = new ArrayList<>();
 				StringTokenizer st = new StringTokenizer(accessedEntity.getXMLElement().deprecatedXMLTags(), ",");
 				while (st.hasMoreTokens()) {
 					String nextTag = st.nextToken();
 					returned.add(property.getXMLContext() + nextTag);
 				}
-				return returned;
 			}
-			return null;
+			if (getProperty().getXMLElement() != null && StringUtils.isNotEmpty(getProperty().getXMLElement().deprecatedContext())) {
+				returned.add(getProperty().getXMLElement().deprecatedContext() + accessedEntity.getXMLTag());
+			}
+			if (returned.size() == 0) {
+				return null;
+			}
+			return returned;
 		}
 
 		public ModelProperty<? super I> getProperty() {

@@ -69,7 +69,20 @@ public @interface XMLElement {
 	 */
 	String deprecatedXMLTags() default DEFAULT_XML_TAG;
 
+	/**
+	 * String context to be appended at the beginning of XML tag of element to deserialize for this property
+	 * 
+	 * @return
+	 */
 	String context() default NO_CONTEXT;
+
+	/**
+	 * String context to be appended at the beginning of XML tag of element to deserialize for this property (used to deserialize only, with
+	 * the aim of migrating data from old format)
+	 * 
+	 * @return
+	 */
+	String deprecatedContext() default NO_CONTEXT;
 
 	String namespace() default NO_NAME_SPACE;
 
@@ -79,6 +92,7 @@ public @interface XMLElement {
 		private String xmlTag;
 		private String deprecatedXMLTags;
 		private String context;
+		private String deprecatedContext;
 		private String namespace;
 		private boolean primary;
 
@@ -107,6 +121,11 @@ public @interface XMLElement {
 		@Override
 		public String context() {
 			return context;
+		}
+
+		@Override
+		public String deprecatedContext() {
+			return deprecatedContext;
 		}
 
 		@Override
