@@ -1470,9 +1470,19 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				return objects;
 			}
 			else {
-				for (Object o : (Iterable<?>) collection) {
-					if (isObjectAttributeEquals(o, attribute, value)) {
-						return o;
+				// Prevent ConcurrentModificationException
+				if (collection instanceof Collection) {
+					for (Object o : new ArrayList<>((Collection<?>) collection)) {
+						if (isObjectAttributeEquals(o, attribute, value)) {
+							return o;
+						}
+					}
+				}
+				else {
+					for (Object o : (Iterable<?>) collection) {
+						if (isObjectAttributeEquals(o, attribute, value)) {
+							return o;
+						}
 					}
 				}
 				return null;
