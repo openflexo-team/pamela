@@ -65,7 +65,6 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * @author sguerin
  * 
  */
-@SuppressWarnings("serial")
 public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 	private static final Logger logger = Logger.getLogger(ValidationModel.class.getPackage().getName());

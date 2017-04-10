@@ -57,7 +57,6 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * @param <V>
  *            type of Validable
  */
-@SuppressWarnings("serial")
 public class ValidationRuleSet<V extends Validable> implements HasPropertyChangeSupport {
 
 	private static final Logger logger = Logger.getLogger(ValidationRuleSet.class.getPackage().getName());
