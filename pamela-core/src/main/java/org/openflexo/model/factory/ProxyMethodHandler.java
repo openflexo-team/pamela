@@ -934,6 +934,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	}
 
 	private Object internallyInvokeGetter(ModelProperty<? super I> property) throws ModelDefinitionException {
+		if (property == null) {
+			throw new ModelExecutionException("null property while calling getter");
+		}
+		if (property.getCardinality() == null) {
+			throw new ModelExecutionException("Invalid null cardinality for " + property);
+		}
 		switch (property.getCardinality()) {
 			case SINGLE:
 				return invokeGetterForSingleCardinality(property);
