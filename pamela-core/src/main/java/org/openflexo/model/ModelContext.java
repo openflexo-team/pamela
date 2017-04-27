@@ -50,9 +50,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-
 import javax.annotation.Nonnull;
-
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.toolbox.StringUtils;
@@ -155,11 +153,11 @@ public class ModelContext {
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
 	}
 
-	public ModelContext(Class<?>... baseClasses) throws ModelDefinitionException {
+	public ModelContext(List<Class<?>> baseClasses) throws ModelDefinitionException {
 		this(null, makeModelContextList(baseClasses));
 	}
 
-	private static List<ModelContext> makeModelContextList(Class<?>... baseClasses) throws ModelDefinitionException {
+	private static List<ModelContext> makeModelContextList(List<Class<?>> baseClasses) throws ModelDefinitionException {
 		List<ModelContext> returned = new ArrayList<>();
 		for (Class<?> c : baseClasses) {
 			returned.add(ModelContextLibrary.getModelContext(c));

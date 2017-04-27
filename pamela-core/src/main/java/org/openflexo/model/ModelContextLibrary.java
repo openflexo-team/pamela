@@ -42,9 +42,9 @@ package org.openflexo.model;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.openflexo.model.exceptions.ModelDefinitionException;
 
 public class ModelContextLibrary {
@@ -64,17 +64,21 @@ public class ModelContextLibrary {
 		return contexts.get(baseClass) != null;
 	}
 
-	public static ModelContext getCompoundModelContext(Class<?>... classes) throws ModelDefinitionException {
-		if (classes.length == 1) {
-			return getModelContext(classes[0]);
+	public static ModelContext getCompoundModelContext(List<Class<?>> classes) throws ModelDefinitionException {
+		if (classes.size() == 1) {
+			return getModelContext(classes.get(0));
 		}
 
-		Set<Class<?>> set = new HashSet<>(Arrays.asList(classes));
+		Set<Class<?>> set = new HashSet<>(classes);
 		ModelContext context = setContexts.get(set);
 		if (context == null) {
 			setContexts.put(set, context = new ModelContext(classes));
 		}
 		return context;
+	}
+
+	public static ModelContext getCompoundModelContext(Class<?>... classes) throws ModelDefinitionException {
+		return getCompoundModelContext(Arrays.asList(classes));
 	}
 
 	public static ModelContext getCompoundModelContext(Class<?> baseClass, Class<?>[] classes) throws ModelDefinitionException {
