@@ -105,7 +105,12 @@ public class TypeConverter extends Converter<Type> {
 					Type[] parameters = new Type[typesAsString.size()];
 					for (int i = 0; i < typesAsString.size(); i++) {
 						String typeAsString = typesAsString.get(i);
-						parameters[i] = convertFromString(typeAsString, factory);
+						try {
+							parameters[i] = convertFromString(typeAsString, factory);
+						} catch (InvalidDataException typeNotFound) {
+							// In this case, we don't try to retrieve the type
+							parameters[i] = new WilcardTypeImpl();
+						}
 					}
 					return new ParameterizedTypeImpl(customTypeClass, parameters);
 				}
