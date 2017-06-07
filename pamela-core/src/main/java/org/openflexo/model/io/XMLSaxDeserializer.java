@@ -106,7 +106,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	private final DeserializationPolicy policy;
 
-	private String currentConvertibleString = null;
+	private StringBuilder currentConvertibleString = new StringBuilder();
 
 	private LinkedList<TransformedObjectInfo> stack = new LinkedList<>();
 
@@ -237,7 +237,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		currentConvertibleString = new String(ch, start, length);
+		currentConvertibleString.append(new String(ch, start, length));
 	}
 
 	@Override
@@ -247,9 +247,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		if (info != null) {
 			if (info.isConvertible()) {
 				// transforms string to object and construct new info
-				info.setFromString(currentConvertibleString);
+				info.setFromString(currentConvertibleString.toString());
 				info.initializeDeserialization();
-				currentConvertibleString = null;
 			}
 
 			if (info.isResolved()) {
@@ -257,6 +256,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			}
 		}
 
+		currentConvertibleString = new StringBuilder();
 	}
 
 	private void connectObject(TransformedObjectInfo info) throws SAXException {
