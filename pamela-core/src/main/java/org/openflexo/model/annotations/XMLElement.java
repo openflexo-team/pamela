@@ -51,20 +51,33 @@ import java.lang.annotation.Target;
 @Target(value = { ElementType.METHOD, ElementType.TYPE })
 public @interface XMLElement {
 
-	public static final String DEFAULT_XML_TAG = "";
-	public static final String NO_CONTEXT = "";
-	public static final String NO_NAME_SPACE = "";
+	String DEFAULT_XML_TAG = "";
+	String NO_CONTEXT = "";
+	String NO_NAME_SPACE = "";
 
-	public String xmlTag() default DEFAULT_XML_TAG;
+	/**
+	 * Name to be used in XMLElement serialized data
+	 * 
+	 * @return
+	 */
+	String xmlTag() default DEFAULT_XML_TAG;
 
-	public String context() default NO_CONTEXT;
+	/**
+	 * Comma separated deprecated XML tags (used to deserialize only, with the aim of migrating data from old format)
+	 * 
+	 * @return
+	 */
+	String deprecatedXMLTags() default DEFAULT_XML_TAG;
 
-	public String namespace() default NO_NAME_SPACE;
+	String context() default NO_CONTEXT;
+
+	String namespace() default NO_NAME_SPACE;
 
 	boolean primary() default false;
 
-	public static class XMLElementImpl implements XMLElement {
+	class XMLElementImpl implements XMLElement {
 		private String xmlTag;
+		private String deprecatedXMLTags;
 		private String context;
 		private String namespace;
 		private boolean primary;
@@ -84,6 +97,11 @@ public @interface XMLElement {
 		@Override
 		public String xmlTag() {
 			return xmlTag;
+		}
+
+		@Override
+		public String deprecatedXMLTags() {
+			return deprecatedXMLTags;
 		}
 
 		@Override

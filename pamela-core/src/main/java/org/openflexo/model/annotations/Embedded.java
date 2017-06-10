@@ -75,7 +75,7 @@ public @interface Embedded {
 	 * @return the list of model properties of the corresponding model property value that must be embedded in order to consider this model
 	 *         property to be embedded.
 	 */
-	public String[] closureConditions() default {};
+    String[] closureConditions() default {};
 
 	/**
 	 * The list of model properties that must be included in order to also delete this property. <br/>
@@ -100,5 +100,5 @@ public @interface Embedded {
 	 * @return the list of model properties of the corresponding model property value that must be embedded in order to consider this model
 	 *         property to be deleted.
 	 */
-	public String[] deletionConditions() default {};
+    String[] deletionConditions() default {};
 }

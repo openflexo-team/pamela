@@ -1,7 +1,5 @@
 package org.flexo.model;
 
-import java.util.List;
-
 import org.flexo.model.impl.FlexoProcessImpl;
 import org.openflexo.model.annotations.Adder;
 import org.openflexo.model.annotations.CloningStrategy;
@@ -23,6 +21,8 @@ import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.XMLAttribute;
 import org.openflexo.model.annotations.XMLElement;
 
+import java.util.List;
+
 @ModelEntity
 @ImplementationClass(FlexoProcessImpl.class)
 @XMLElement(xmlTag = "FlexoProcess")
@@ -30,42 +30,42 @@ import org.openflexo.model.annotations.XMLElement;
 @Imports({ @Import(ActivityNode.class), @Import(StartNode.class), @Import(EndNode.class), @Import(TokenEdge.class) })
 public interface FlexoProcess extends WKFObject {
 
-	public static final String FOO = "foo";
-	public static final String NODES = "nodes";
+	String FOO = "foo";
+	String NODES = "nodes";
 
 	@Override
 	@Initializer
-	public TestModelObject init(String flexoId);
+    TestModelObject init(String flexoId);
 
 	@Getter(value = FOO, defaultValue = "4")
 	@XMLAttribute(xmlTag = FOO)
-	public int getFoo();
+    int getFoo();
 
 	@Setter(FOO)
-	public void setFoo(int foo);
+    void setFoo(int foo);
 
 	@Getter(value = NODES, cardinality = Cardinality.LIST, inverse = WKFObject.PROCESS)
 	@XMLElement(primary = true)
 	@CloningStrategy(StrategyType.CLONE)
 	@Embedded
-	public List<AbstractNode> getNodes();
+    List<AbstractNode> getNodes();
 
 	@Setter(NODES)
-	public void setNodes(List<AbstractNode> nodes);
+    void setNodes(List<AbstractNode> nodes);
 
 	@Adder(NODES)
 	@PastingPoint
-	public void addToNodes(AbstractNode node);
+    void addToNodes(AbstractNode node);
 
 	@Remover(NODES)
-	public void removeFromNodes(AbstractNode node);
+    void removeFromNodes(AbstractNode node);
 
 	@Finder(attribute = AbstractNode.NAME, collection = NODES)
-	public AbstractNode getNodeNamed(String name);
+    AbstractNode getNodeNamed(String name);
 
 	@Finder(attribute = AbstractNode.NAME, collection = NODES, isMultiValued = true)
-	public List<AbstractNode> getNodesNamed(String name);
+    List<AbstractNode> getNodesNamed(String name);
 
-	public Edge getEdgeNamed(String name);
+	Edge getEdgeNamed(String name);
 
 }

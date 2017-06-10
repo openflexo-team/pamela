@@ -37,30 +37,11 @@
  * 
  */
 
-
 package org.openflexo.model.factory;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
-
 import org.jdom2.JDOMException;
 import org.openflexo.IObjectGraphFactory;
 import org.openflexo.model.ModelContext;
@@ -78,6 +59,23 @@ import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.io.XMLDeserializer;
 import org.openflexo.model.io.XMLSerializer;
 import org.openflexo.model.undo.CreateCommand;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 /**
  * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
@@ -148,7 +146,8 @@ public class ModelFactory implements IObjectGraphFactory {
 		public Class<?> getOverridingSuperClass() {
 			if (overridingSuperClass) {
 				return getSuperclass();
-			} else {
+			}
+			else {
 				return null;
 			}
 		}
@@ -157,8 +156,8 @@ public class ModelFactory implements IObjectGraphFactory {
 		public void setSuperclass(Class clazz) {
 			if (getSuperclass() != clazz) {
 				if (locked) {
-					throw new IllegalStateException("ProxyFactory for " + modelEntity
-							+ " is locked. Super-class can no longer be modified.");
+					throw new IllegalStateException(
+							"ProxyFactory for " + modelEntity + " is locked. Super-class can no longer be modified.");
 				}
 			}
 			overridingSuperClass = true;
@@ -193,7 +192,8 @@ public class ModelFactory implements IObjectGraphFactory {
 					if (isProxyObject(o)) {
 						ModelEntity<?> modelEntity = getModelEntityForInstance(o);
 						types[i] = modelEntity.getImplementedInterface();
-					} else {
+					}
+					else {
 						types[i] = o != null ? o.getClass() : null;
 					}
 				}
@@ -206,7 +206,8 @@ public class ModelFactory implements IObjectGraphFactory {
 						handler.initializing = false;
 						handler.initialized = true;
 					}
-				} else {
+				}
+				else {
 					if (args.length > 0) {
 						StringBuilder sb = new StringBuilder();
 						for (Class<?> c : types) {
@@ -260,7 +261,6 @@ public class ModelFactory implements IObjectGraphFactory {
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
 			I returned = proxyFactory.newInstance(args);
 			if (getEditingContext() != null) {
-				getEditingContext().register(returned);
 				if (getEditingContext().getUndoManager() != null) {
 					getEditingContext().getUndoManager().addEdit(new CreateCommand<I>(returned, proxyFactory.getModelEntity(), this));
 				}
@@ -296,7 +296,6 @@ public class ModelFactory implements IObjectGraphFactory {
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true, useExtended);
 			I returned = proxyFactory.newInstance(args);
 			if (getEditingContext() != null) {
-				getEditingContext().register(returned);
 				if (getEditingContext().getUndoManager() != null) {
 					getEditingContext().getUndoManager().addEdit(new CreateCommand<I>(returned, proxyFactory.getModelEntity(), this));
 				}
@@ -338,7 +337,8 @@ public class ModelFactory implements IObjectGraphFactory {
 			ModelEntity<I> entity;
 			if (useExtended) {
 				entity = getExtendedContext().getModelEntity(implementedInterface);
-			} else {
+			}
+			else {
 				entity = getModelContext().getModelEntity(implementedInterface);
 			}
 			if (entity == null) {
@@ -350,7 +350,8 @@ public class ModelFactory implements IObjectGraphFactory {
 				}
 				throw new ModelExecutionException("Unknown entity '" + implementedInterface.getName()
 						+ "'! Did you forget to import it or to annotated it with @ModelEntity?");
-			} else {
+			}
+			else {
 				if (create) {
 					proxyFactories.put(implementedInterface, proxyFactory = new PAMELAProxyFactory<I>(entity));
 				}
@@ -537,7 +538,8 @@ public class ModelFactory implements IObjectGraphFactory {
 					// Closure is fine and object is not already present, add
 					// object
 					returned.set(i, ((ConditionalPresence) o).object);
-				} else {
+				}
+				else {
 					// Discard object
 					discardedObjects.add(o);
 				}
@@ -573,14 +575,14 @@ public class ModelFactory implements IObjectGraphFactory {
 
 		boolean append = false;
 		switch (embeddingType) {
-		case CLOSURE:
-			append = p.getEmbedded() != null && p.getEmbedded().closureConditions().length == 0 || p.getComplexEmbedded() != null
-					&& p.getComplexEmbedded().closureConditions().length == 0;
-			break;
-		case DELETION:
-			append = p.getEmbedded() != null && p.getEmbedded().deletionConditions().length == 0 || p.getComplexEmbedded() != null
-					&& p.getComplexEmbedded().deletionConditions().length == 0;
-			break;
+			case CLOSURE:
+				append = p.getEmbedded() != null && p.getEmbedded().closureConditions().length == 0
+						|| p.getComplexEmbedded() != null && p.getComplexEmbedded().closureConditions().length == 0;
+				break;
+			case DELETION:
+				append = p.getEmbedded() != null && p.getEmbedded().deletionConditions().length == 0
+						|| p.getComplexEmbedded() != null && p.getComplexEmbedded().deletionConditions().length == 0;
+				break;
 		}
 
 		if (append) {
@@ -590,35 +592,37 @@ public class ModelFactory implements IObjectGraphFactory {
 				list.add(child);
 				appendEmbeddedObjects(child, list, embeddingType);
 			}
-		} else {
+		}
+		else {
 			List<Object> requiredPresence = new ArrayList<Object>();
 			if (p.getEmbedded() != null) {
 				switch (embeddingType) {
-				case CLOSURE:
-					for (String c : p.getEmbedded().closureConditions()) {
-						ModelEntity closureConditionEntity = getModelEntityForInstance(child);
-						ModelProperty closureConditionProperty = closureConditionEntity.getModelProperty(c);
-						Object closureConditionRequiredObject = getHandler(child).invokeGetter(closureConditionProperty);
-						if (closureConditionRequiredObject != null) {
-							requiredPresence.add(closureConditionRequiredObject);
+					case CLOSURE:
+						for (String c : p.getEmbedded().closureConditions()) {
+							ModelEntity closureConditionEntity = getModelEntityForInstance(child);
+							ModelProperty closureConditionProperty = closureConditionEntity.getModelProperty(c);
+							Object closureConditionRequiredObject = getHandler(child).invokeGetter(closureConditionProperty);
+							if (closureConditionRequiredObject != null) {
+								requiredPresence.add(closureConditionRequiredObject);
+							}
 						}
-					}
-					break;
-				case DELETION:
-					for (String c : p.getEmbedded().deletionConditions()) {
-						ModelEntity deletionConditionEntity = getModelEntityForInstance(child);
-						ModelProperty deletionConditionProperty = deletionConditionEntity.getModelProperty(c);
-						Object deletionConditionRequiredObject = getHandler(child).invokeGetter(deletionConditionProperty);
-						if (deletionConditionRequiredObject != null) {
-							requiredPresence.add(deletionConditionRequiredObject);
+						break;
+					case DELETION:
+						for (String c : p.getEmbedded().deletionConditions()) {
+							ModelEntity deletionConditionEntity = getModelEntityForInstance(child);
+							ModelProperty deletionConditionProperty = deletionConditionEntity.getModelProperty(c);
+							Object deletionConditionRequiredObject = getHandler(child).invokeGetter(deletionConditionProperty);
+							if (deletionConditionRequiredObject != null) {
+								requiredPresence.add(deletionConditionRequiredObject);
+							}
 						}
-					}
-					break;
+						break;
 				}
 				if (requiredPresence.size() > 0) {
 					ConditionalPresence conditionalPresence = new ConditionalPresence(child, requiredPresence);
 					list.add(conditionalPresence);
-				} else {
+				}
+				else {
 					if (!list.contains(child)) {
 						// System.out.println("Embedded in "+father+" because of "+p+" : "+child);
 						list.add(child);
@@ -638,20 +642,20 @@ public class ModelFactory implements IObjectGraphFactory {
 		while (properties.hasNext()) {
 			ModelProperty<?> p = properties.next();
 			switch (p.getCardinality()) {
-			case SINGLE:
-				Object oValue = handler.invokeGetter(p);
-				appendEmbedded(p, father, list, oValue, embeddingType);
-				break;
-			case LIST:
-				List<?> values = (List<?>) handler.invokeGetter(p);
-				if (values != null) {
-					for (Object o : values) {
-						appendEmbedded(p, father, list, o, embeddingType);
+				case SINGLE:
+					Object oValue = handler.invokeGetter(p);
+					appendEmbedded(p, father, list, oValue, embeddingType);
+					break;
+				case LIST:
+					List<?> values = (List<?>) handler.invokeGetter(p);
+					if (values != null) {
+						for (Object o : values) {
+							appendEmbedded(p, father, list, o, embeddingType);
+						}
 					}
-				}
-				break;
-			default:
-				break;
+					break;
+				default:
+					break;
 			}
 		}
 	}
@@ -697,8 +701,8 @@ public class ModelFactory implements IObjectGraphFactory {
 	 * @throws ModelDefinitionException
 	 * @throws CloneNotSupportedException
 	 */
-	public Object paste(Clipboard clipboard, Object context) throws ModelExecutionException, ModelDefinitionException,
-			CloneNotSupportedException {
+	public Object paste(Clipboard clipboard, Object context)
+			throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
 		if (!isProxyObject(context)) {
 			throw new ClipboardOperationException("Cannot paste here: context is not valid: " + context);
 		}
@@ -718,8 +722,8 @@ public class ModelFactory implements IObjectGraphFactory {
 	 * @throws ModelDefinitionException
 	 * @throws CloneNotSupportedException
 	 */
-	public Object paste(Clipboard clipboard, ModelProperty<?> modelProperty, Object context) throws ModelExecutionException,
-			ModelDefinitionException, CloneNotSupportedException {
+	public Object paste(Clipboard clipboard, ModelProperty<?> modelProperty, Object context)
+			throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
 		if (!isProxyObject(context)) {
 			throw new ClipboardOperationException("Cannot paste here: context is not valid");
 		}
@@ -760,13 +764,13 @@ public class ModelFactory implements IObjectGraphFactory {
 		return baos.toString();
 	}
 
-	public void serialize(Object object, OutputStream os) throws IOException, IllegalArgumentException, IllegalAccessException,
-			InvocationTargetException, ModelDefinitionException {
+	public void serialize(Object object, OutputStream os)
+			throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		serialize(object, os, SerializationPolicy.PERMISSIVE, true);
 	}
 
-	public void serialize(Object object, OutputStream os, SerializationPolicy policy, boolean resetModifiedStatus) throws IOException,
-			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+	public void serialize(Object object, OutputStream os, SerializationPolicy policy, boolean resetModifiedStatus)
+			throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		XMLSerializer serializer = new XMLSerializer(this, policy);
 		serializer.serializeDocument(object, os, resetModifiedStatus);
 	}
@@ -776,8 +780,8 @@ public class ModelFactory implements IObjectGraphFactory {
 		return deserialize(is, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public Object deserialize(InputStream is, DeserializationPolicy policy) throws IOException, JDOMException, InvalidDataException,
-			ModelDefinitionException {
+	public Object deserialize(InputStream is, DeserializationPolicy policy)
+			throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
 		XMLDeserializer deserializer = new XMLDeserializer(this, policy);
 		return deserializer.deserializeDocument(is);
 	}
@@ -787,8 +791,8 @@ public class ModelFactory implements IObjectGraphFactory {
 		return deserialize(input, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public Object deserialize(String input, DeserializationPolicy policy) throws IOException, JDOMException, InvalidDataException,
-			ModelDefinitionException {
+	public Object deserialize(String input, DeserializationPolicy policy)
+			throws IOException, JDOMException, InvalidDataException, ModelDefinitionException {
 		XMLDeserializer deserializer = new XMLDeserializer(this, policy);
 		return deserializer.deserializeDocument(input);
 	}

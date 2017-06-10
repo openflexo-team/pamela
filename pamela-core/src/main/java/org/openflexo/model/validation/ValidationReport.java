@@ -38,6 +38,9 @@
 
 package org.openflexo.model.validation;
 
+import org.openflexo.toolbox.ChainedCollection;
+import org.openflexo.toolbox.HasPropertyChangeSupport;
+
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,9 +51,6 @@ import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import org.openflexo.toolbox.ChainedCollection;
-import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
  * A {@link ValidationReport} contains all issues regarding to the validation of a whole objects tree computed from a root object.<br>
@@ -124,7 +124,6 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		if (issues.size() == 0) {
 			addToValidationIssues(new InformationIssue(rootObject, "consistency_check_ok"));
 		}
-
 	}
 
 	@Override
@@ -241,8 +240,8 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		try {
 			issue = rule.getIsEnabled() ? rule.applyValidation(next) : null;
 		} catch (Exception e) {
-			logger.warning("Exception occured during validation: " + e.getMessage() + " object was " + next + " deleted="
-					+ next.isDeleted());
+			logger.warning(
+					"Exception occured during validation: " + e.getMessage() + " object was " + next + " deleted=" + next.isDeleted());
 			e.printStackTrace();
 		}
 		if (issue != null) {
@@ -259,7 +258,8 @@ public class ValidationReport implements HasPropertyChangeSupport {
 					((ProblemIssue<R, V>) issue).getFixProposals().get(0).apply(false);
 					addToValidationIssues(new InformationIssue<R, V>(next, "fixed_automatically:" + " " + issue.getMessage() + " : "
 							+ (((ProblemIssue<R, V>) issue).getFixProposals()).get(0).getMessage()));
-				} else if (issue instanceof CompoundIssue) {
+				}
+				else if (issue instanceof CompoundIssue) {
 					for (ValidationIssue<R, V> containedIssue : ((CompoundIssue<R, V>) issue).getContainedIssues()) {
 						if (containedIssue instanceof ProblemIssue && ((ProblemIssue) containedIssue).getFixProposals().size() == 1) {
 							addToValidationIssues(containedIssue);
@@ -267,9 +267,9 @@ public class ValidationReport implements HasPropertyChangeSupport {
 								logger.info("Fixing automatically...");
 							}
 							((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).apply(false);
-							addToValidationIssues(new InformationIssue<R, V>(containedIssue.getValidable(), "fixed_automatically:" + " "
-									+ containedIssue.getMessage() + " : "
-									+ ((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).getMessage()));
+							addToValidationIssues(new InformationIssue<R, V>(containedIssue.getValidable(),
+									"fixed_automatically:" + " " + containedIssue.getMessage() + " : "
+											+ ((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).getMessage()));
 						}
 					}
 				}
@@ -356,14 +356,14 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	public List<? extends ValidationIssue<?, ?>> getFilteredIssues() {
 		switch (mode) {
-		case ALL:
-			return allIssues;
-		case ERRORS:
-			return errors;
-		case WARNINGS:
-			return warnings;
-		default:
-			return allIssues;
+			case ALL:
+				return allIssues;
+			case ERRORS:
+				return errors;
+			case WARNINGS:
+				return warnings;
+			default:
+				return allIssues;
 		}
 	}
 
@@ -404,7 +404,8 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			for (ValidationIssue<?, ?> anIssue : ((CompoundIssue<?, ?>) issue).getContainedIssues()) {
 				addToValidationIssues(anIssue);
 			}
-		} else {
+		}
+		else {
 			issue.setValidationReport(this);
 			allIssues.add(issue);
 			if (issue instanceof InformationIssue) {
@@ -449,7 +450,8 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			for (ValidationIssue<?, ?> anIssue : ((CompoundIssue<?, ?>) issue).getContainedIssues()) {
 				removeFromValidationIssues(anIssue);
 			}
-		} else {
+		}
+		else {
 			issue.setValidationReport(null);
 			allIssues.remove(issue);
 			if (issue instanceof InformationIssue) {
@@ -492,7 +494,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	public Collection<ValidationIssue<?, ?>> issuesRegarding(Validable object) {
 
-		ChainedCollection<ValidationIssue<?, ?>> returned = new ChainedCollection<ValidationIssue<?, ?>>();
+		ChainedCollection<ValidationIssue<?, ?>> returned = new ChainedCollection<>();
 		List<InformationIssue<?, ?>> infoIssuesList = infoIssuesMap.get(object);
 		if (infoIssuesList != null && infoIssuesList.size() > 0) {
 			returned.add(infoIssuesList);

@@ -45,20 +45,20 @@ import org.openflexo.model.annotations.Setter;
 @ModelEntity
 public interface A {
 
-	public static final String FOO = "foo";
-	public static final String FOO2 = "foo2";
+	String FOO = "foo";
+	String FOO2 = "foo2";
 
 	@Getter(value = FOO)
-	public String getFoo();
+    String getFoo();
 
 	@Setter(value = FOO)
-	public void setFoo(String foo);
+    void setFoo(String foo);
 
 	@Getter(value = FOO2)
-	public String getFoo2();
+    String getFoo2();
 
 	@Setter(value = FOO2)
-	public void setFoo2(String foo);
+    void setFoo2(String foo);
 
-	public void methodExecution();
+    void methodExecution();
 }

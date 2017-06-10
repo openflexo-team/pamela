@@ -49,14 +49,14 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface XMLAttribute {
 
-	public static final String DEFAULT_XML_TAG = "";
-	public static final String DEFAULT_NAMESPACE = "";
+	String DEFAULT_XML_TAG = "";
+	String DEFAULT_NAMESPACE = "";
 
-	public String xmlTag() default DEFAULT_XML_TAG;
+	String xmlTag() default DEFAULT_XML_TAG;
 
-	public String namespace() default DEFAULT_NAMESPACE;
+	String namespace() default DEFAULT_NAMESPACE;
 
-	public static class XMLAttributeImpl implements XMLAttribute {
+	class XMLAttributeImpl implements XMLAttribute {
 		private final String xmlTag;
 		private final String namespace;
 

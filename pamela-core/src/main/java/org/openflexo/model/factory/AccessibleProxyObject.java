@@ -80,6 +80,18 @@ public interface AccessibleProxyObject extends HasPropertyChangeSupport, KeyValu
 	public void performSuperAdder(String propertyIdentifier, Object value);
 
 	/**
+	 * Invokes the adder for the property with the given <code>propertyIdentifier</code>. Object will be inserted at supplied index
+	 * 
+	 * @param propertyIdentifier
+	 *            the identifier of the property
+	 * @param value
+	 *            the value to add
+	 * @param index
+	 *            index where to add the object
+	 */
+	public void performSuperAdder(String propertyIdentifier, Object value, int index);
+
+	/**
 	 * Invokes the remover for the property with the given <code>propertyIdentifier</code>.
 	 * 
 	 * @param propertyIdentifier

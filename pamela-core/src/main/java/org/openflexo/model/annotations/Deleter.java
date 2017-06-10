@@ -50,10 +50,10 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface Deleter {
 
-	public static final String UNDEFINED = "";
+	String UNDEFINED = "";
 
-	public String[] embedded() default {};
+    String[] embedded() default {};
 
-	public String deletedProperty() default UNDEFINED;
+    String deletedProperty() default UNDEFINED;
 
 }

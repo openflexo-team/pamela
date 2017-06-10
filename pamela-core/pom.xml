@@ -8,6 +8,10 @@
 	</parent>
 	<artifactId>pamela-core</artifactId>
 	<name>Pamela-core</name>
+	<properties>
+		<changes.componentfilter>AND component=pamela-core</changes.componentfilter>
+	</properties>
+	<description>Modelling framework core component.</description>
 	<build>
 		<plugins>
 			<plugin>
@@ -19,10 +23,10 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<includes>
- 						<include>**/Test*.java</include>
-					    <include>**/*Test.java</include>
- 						<include>**/*TestCase.java</include>
- 						<include>**/*Test*.java</include>
+						<include>**/Test*.java</include>
+						<include>**/*Test.java</include>
+						<include>**/*TestCase.java</include>
+						<include>**/*Test*.java</include>
 					</includes>
 				</configuration>
 			</plugin>
@@ -59,6 +63,12 @@
 			<artifactId>flexoutils</artifactId>
 			<classifier>tests</classifier>
 			<scope>test</scope>
+		</dependency>
+	    <dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+			<version>${junit.version}</version>
 		</dependency>
 	</dependencies>
 	<description>Modelling framework core component.</description>

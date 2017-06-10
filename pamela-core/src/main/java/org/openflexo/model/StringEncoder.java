@@ -77,7 +77,8 @@ public class StringEncoder {
 		Converter converter = converterForClass(aClass);
 		if (converter != null) {
 			return converter.convertToString(object);
-		} else {
+		}
+		else {
 			if (object instanceof Enum) {
 				return ((Enum) object).name();
 			}
@@ -89,17 +90,22 @@ public class StringEncoder {
 		if (value == null) {
 			return null;
 		}
+		if (type == null) {
+			return null;
+		}
 		Converter<T> converter = converterForClass(type);
 		if (converter != null) {
 			return converter.convertFromString(value, modelFactory);
-		} else if (type.isEnum()) {
+		}
+		else if (type.isEnum()) {
 			try {
 				return (T) Enum.valueOf((Class) type, value);
 			} catch (IllegalArgumentException e) {
 				System.err.println("Could not decode " + value + " as a " + type);
 				return null;
 			}
-		} else {
+		}
+		else {
 			throw new InvalidDataException("Supplied value has no converter for type " + type.getName());
 		}
 	}
@@ -136,15 +142,15 @@ public class StringEncoder {
 	public static <T> Converter<T> converterForClass(Class<T> objectType, Map<Class<?>, Converter<?>> convertersMap) {
 		Converter<?> returned;
 		Class<?> candidate = objectType;
-		//do {
-			//returned = convertersMap.get(candidate);
-			returned = TypeUtils.objectForClass(candidate, convertersMap,false);
-			/*if (candidate.equals(Object.class)) {
-				candidate = null;
-			} else {
-				candidate = candidate.getSuperclass();
-			}*/
-		//} while (returned == null && candidate != null);
+		// do {
+		// returned = convertersMap.get(candidate);
+		returned = TypeUtils.objectForClass(candidate, convertersMap, false);
+		/*if (candidate.equals(Object.class)) {
+			candidate = null;
+		} else {
+			candidate = candidate.getSuperclass();
+		}*/
+		// } while (returned == null && candidate != null);
 		return (Converter<T>) returned;
 	}
 

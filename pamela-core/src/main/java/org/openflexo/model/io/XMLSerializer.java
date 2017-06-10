@@ -36,7 +36,6 @@
  * 
  */
 
-
 package org.openflexo.model.io;
 
 import java.io.IOException;
@@ -49,8 +48,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-
-import javassist.util.proxy.ProxyObject;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -71,6 +68,8 @@ import org.openflexo.model.factory.PAMELAConstants;
 import org.openflexo.model.factory.ProxyMethodHandler;
 import org.openflexo.model.factory.SerializationPolicy;
 import org.openflexo.toolbox.StringUtils;
+
+import javassist.util.proxy.ProxyObject;
 
 public class XMLSerializer {
 
@@ -108,8 +107,8 @@ public class XMLSerializer {
 		return modelFactory.getStringEncoder();
 	}
 
-	public Document serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus) throws IOException,
-			IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+	public Document serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus)
+			throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Document builtDocument = new Document();
 		id = 0;
 		objectReferences = new HashMap<Object, ObjectReference>();
@@ -146,8 +145,8 @@ public class XMLSerializer {
 		return String.valueOf(id++);
 	}
 
-	private <I> Element serializeElement(Object object, XMLElement context, boolean resetModifiedStatus) throws IllegalArgumentException,
-			IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+	private <I> Element serializeElement(Object object, XMLElement context, boolean resetModifiedStatus)
+			throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Element returned;
 		if (object instanceof ProxyObject) {
 			ProxyMethodHandler<I> handler = (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
@@ -159,33 +158,35 @@ public class XMLSerializer {
 			if (modelFactory.getModelContext().getModelEntity(implementedInterface) == null) {
 				serializeModelEntityName = true;
 				switch (policy) {
-				case EXTENSIVE:
-					List<ModelEntity<?>> upperEntities = modelFactory.getModelContext().getUpperEntities(object);
-					if (upperEntities.size() == 0) {
-						throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
-								+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
-					} else if (upperEntities.size() > 1) {
-						throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
-								+ ". More than one entities are known in this model mapping.");
-					}
-					ModelEntity e = upperEntities.get(0);
-					xmlTag = e.getXMLTag();
-					modelEntity = ModelContextLibrary.getModelContext(implementedInterface).getModelEntity(implementedInterface);
-					break;
-				case PERMISSIVE:
-					upperEntities = modelFactory.getModelContext().getUpperEntities(object);
-					if (upperEntities.size() == 0) {
-						throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
-								+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
-					} else if (upperEntities.size() > 1) {
-						throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
-								+ ". More than one entities are known in this model mapping.");
-					}
-					modelEntity = (ModelEntity<I>) upperEntities.get(0);
-					break;
-				case RESTRICTIVE:
-					throw new RestrictiveSerializationException("Entity of type " + implementedInterface.getName()
-							+ " cannot be serialized in this model context");
+					case EXTENSIVE:
+						List<ModelEntity<?>> upperEntities = modelFactory.getModelContext().getUpperEntities(object);
+						if (upperEntities.size() == 0) {
+							throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
+									+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
+						}
+						else if (upperEntities.size() > 1) {
+							throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
+									+ ". More than one entities are known in this model mapping.");
+						}
+						ModelEntity e = upperEntities.get(0);
+						xmlTag = e.getXMLTag();
+						modelEntity = ModelContextLibrary.getModelContext(implementedInterface).getModelEntity(implementedInterface);
+						break;
+					case PERMISSIVE:
+						upperEntities = modelFactory.getModelContext().getUpperEntities(object);
+						if (upperEntities.size() == 0) {
+							throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
+									+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
+						}
+						else if (upperEntities.size() > 1) {
+							throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
+									+ ". More than one entities are known in this model mapping.");
+						}
+						modelEntity = (ModelEntity<I>) upperEntities.get(0);
+						break;
+					case RESTRICTIVE:
+						throw new RestrictiveSerializationException(
+								"Entity of type " + implementedInterface.getName() + " cannot be serialized in this model context");
 				}
 			}
 			String contextString = context != null ? context.context() : "";
@@ -210,8 +211,8 @@ public class XMLSerializer {
 						returned = new Element(elementName, namespace);
 						returned.setAttribute(ID, reference.toString());
 						if (serializeModelEntityName) {
-							returned.setAttribute(PAMELAConstants.MODEL_ENTITY_ATTRIBUTE, handler.getModelEntity()
-									.getImplementedInterface().getName(), PAMELAConstants.NAMESPACE);
+							returned.setAttribute(PAMELAConstants.MODEL_ENTITY_ATTRIBUTE,
+									handler.getModelEntity().getImplementedInterface().getName(), PAMELAConstants.NAMESPACE);
 							if (handler.getOverridingSuperClass() != null) {
 								returned.setAttribute(PAMELAConstants.CLASS_ATTRIBUTE, handler.getOverridingSuperClass().getName(),
 										PAMELAConstants.NAMESPACE);
@@ -222,7 +223,18 @@ public class XMLSerializer {
 							ModelProperty<? super I> p = properties.next();
 							if (p.getXMLAttribute() != null) {
 								Object oValue = handler.invokeGetter(p);
-								if (oValue != null) {
+								boolean ignoreProperty = false;
+								try {
+									if (oValue != null && oValue.equals(p.getDefaultValue(modelFactory))) {
+										// This is the default value, no need to
+										// serialize this
+										ignoreProperty = true;
+									}
+								} catch (InvalidDataException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+								if (oValue != null && !ignoreProperty) {
 									String value;
 									try {
 										value = getStringEncoder().toString(oValue);
@@ -235,57 +247,65 @@ public class XMLSerializer {
 										throw new ModelExecutionException(e);
 									}
 								}
-							} else if (p.getXMLElement() != null) {
+							}
+							else if (p.getXMLElement() != null) {
 								XMLElement propertyXMLElement = p.getXMLElement();
 								switch (p.getCardinality()) {
-								case SINGLE:
-									Object oValue = handler.invokeGetter(p);
-									if (oValue != null) {
-										Element propertyElement = serializeElement(oValue, propertyXMLElement, resetModifiedStatus);
-										returned.addContent(propertyElement);
-									}
-									break;
-								case LIST:
-									List<?> values = (List<?>) handler.invokeGetter(p);
-									// NPE if list not initialized
-									if (values !=null){
-										for (Object o : values) {
-											if (o != null) {
-												Element propertyElement2 = serializeElement(o, propertyXMLElement, resetModifiedStatus);
-												returned.addContent(propertyElement2);
+									case SINGLE:
+										Object oValue = handler.invokeGetter(p);
+										if (oValue != null) {
+											Element propertyElement = serializeElement(oValue, propertyXMLElement, resetModifiedStatus);
+											returned.addContent(propertyElement);
+										}
+										break;
+									case LIST:
+										List<?> values = (List<?>) handler.invokeGetter(p);
+										// NPE if list not initialized
+										if (values != null) {
+											for (Object o : values) {
+												if (o != null) {
+													Element propertyElement2 = serializeElement(o, propertyXMLElement, resetModifiedStatus);
+													returned.addContent(propertyElement2);
+												}
 											}
 										}
-									}
-									break;
-								case MAP:
-									throw new UnsupportedOperationException("Cannot serialize maps for now");
-								default:
-									break;
+										break;
+									case MAP:
+										throw new UnsupportedOperationException("Cannot serialize maps for now");
+									default:
+										break;
 								}
 							}
 						}
-					} else if (getStringEncoder().isConvertable(modelEntity.getImplementedInterface())) {
+					}
+					else if (getStringEncoder().isConvertable(modelEntity.getImplementedInterface())) {
 						try {
 							returned = new Element(elementName, namespace);
 							returned.setText(getStringEncoder().toString(object));
 							returned.setAttribute(ID, reference.toString());
 						} catch (InvalidDataException e) {
-							// This should not happen. If it does, then it is likely that the StringEncoder class is messed up by saying
+							// This should not happen. If it does, then it is
+							// likely that the StringEncoder class is messed up
+							// by saying
 							// that a
-							// given type is convertable but does not convert it when asked
+							// given type is convertable but does not convert it
+							// when asked
 							throw new ModelDefinitionException(
 									"Hu hoh, really don't know how you got into this state: your object is string convertable but conversion could not be performed",
 									e);
 						}
-					} else {
-						throw new ModelDefinitionException("No XML element for " + modelEntity.getImplementedInterface() + " modelEntity="
-								+ modelEntity);
+					}
+					else {
+						throw new ModelDefinitionException(
+								"No XML element for " + modelEntity.getImplementedInterface() + " modelEntity=" + modelEntity);
 					}
 				} finally {
 					handler.setSerializing(false, resetModifiedStatus);
 				}
-			} else {
-				// This object was already serialized somewhere, only put an idref
+			}
+			else {
+				// This object was already serialized somewhere, only put an
+				// idref
 				// Debugging.debug ("This object has already been serialized
 				// somewhere "+anObject);
 
@@ -297,18 +317,21 @@ public class XMLSerializer {
 			ObjectReference ref = objectReferences.get(object);
 			if (ref != null) {
 				ref.notifyNewElementReference(xmlElement, context, returned);
-			} else {
+			}
+			else {
 				ref = new ObjectReference(object, xmlElement, context, returned);
 				objectReferences.put(object, ref);
 			}
 			return returned;
-		} else if (getStringEncoder().isConvertable(object.getClass())) {
+		}
+		else if (getStringEncoder().isConvertable(object.getClass())) {
 			try {
 				if (StringUtils.isNotEmpty(context.xmlTag())) {
 					returned = new Element(context.xmlTag(), context.namespace());
 					returned.setText(getStringEncoder().toString(object));
 					return returned;
-				} else {
+				}
+				else {
 					throw new ModelDefinitionException("No XML tag defined for " + context + " while serializing " + object);
 				}
 			} catch (InvalidDataException e) {
@@ -316,7 +339,8 @@ public class XMLSerializer {
 						"Hu hoh, really don't know how you got into this state: your object is string convertable but conversion could not be performed",
 						e);
 			}
-		} else {
+		}
+		else {
 			throw new ModelDefinitionException("Cannot serialize non-proxy object " + object);
 		}
 
@@ -333,7 +357,8 @@ public class XMLSerializer {
 			}
 			if (newRequiredSwaps == requiredSwaps) {
 				requiredSwaps = 0; // To avoid infinite loop
-			} else {
+			}
+			else {
 				requiredSwaps = newRequiredSwaps;
 			}
 		}
@@ -371,22 +396,31 @@ public class XMLSerializer {
 		/*
 		 * protected int getId() { return id; }
 		 * 
-		 * protected void changeId(int newId) { // System.out.println("changeId() to "+newId+" for "+primaryElement.element); if
-		 * ((primaryElement != null) && (primaryElement.element != null)) changeIdForElement(newId,primaryElement.element); for (Enumeration
-		 * en=referenceElements.elements(); en.hasMoreElements();) { ElementReference next = (ElementReference)en.nextElement(); if
+		 * protected void changeId(int newId) { //
+		 * System.out.println("changeId() to "
+		 * +newId+" for "+primaryElement.element); if ((primaryElement != null)
+		 * && (primaryElement.element != null))
+		 * changeIdForElement(newId,primaryElement.element); for (Enumeration
+		 * en=referenceElements.elements(); en.hasMoreElements();) {
+		 * ElementReference next = (ElementReference)en.nextElement(); if
 		 * (next.element != null) changeIdForElement(newId,next.element); } }
 		 * 
-		 * protected void changeIdForElement(int newId, Element element) { if (element.getAttribute(ID) != null) {
-		 * element.setAttribute(ID,encodeInteger(newId)); } else if (element.getAttribute(ID_REF) != null) {
+		 * protected void changeIdForElement(int newId, Element element) { if
+		 * (element.getAttribute(ID) != null) {
+		 * element.setAttribute(ID,encodeInteger(newId)); } else if
+		 * (element.getAttribute(ID_REF) != null) {
 		 * element.setAttribute(ID_REF,encodeInteger(newId)); } }
 		 */
 
 		private void addElementReference(ElementReference elementReference) {
 			if (isFullyDescribed(elementReference.element)) {
-				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+" PRIMARY "+outputter.outputString(elementReference.element));
+				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+" PRIMARY
+				// "+outputter.outputString(elementReference.element));
 				primaryElement = elementReference;
-			} else {
-				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+"         "+outputter.outputString(elementReference.element));
+			}
+			else {
+				// System.out.println("object: "+serializedObject.getClass().getName()+"/"+serializedObject.hashCode()+"
+				// "+outputter.outputString(elementReference.element));
 				referenceElements.add(elementReference);
 			}
 		}
@@ -401,16 +435,19 @@ public class XMLSerializer {
 			// System.out.println("***** postProcess("+this+")");
 			// System.out.println("PRIMARY= (primary="+primaryElement.isPrimary()+") "+primaryElement.element);
 			/*
-			 * for (ElementReference ref : referenceElements) { System.out.println("REFERENCE= (primary="+ref.isPrimary()+") "+ref.element);
-			 * }
+			 * for (ElementReference ref : referenceElements) {
+			 * System.out.println
+			 * ("REFERENCE= (primary="+ref.isPrimary()+") "+ref.element); }
 			 */
 
 			if (done) {
 				return true;
 			}
-			if (primaryElement.context != null && primaryElement.context.primary()) { // That's OK
+			if (primaryElement.context != null && primaryElement.context.primary()) { // That's
+				// OK
 				return done = true;
-			} else { // It might be NOK
+			}
+			else { // It might be NOK
 				for (ElementReference ref : referenceElements) {
 					if (ref.context != null && ref.context.primary()) {
 						return setAsNewPrimaryElement(ref);
@@ -428,7 +465,8 @@ public class XMLSerializer {
 				referenceElements.add(primaryElement);
 				primaryElement = newElementReference;
 				return done = true;
-			} else {
+			}
+			else {
 				return false;
 			}
 		}
@@ -441,10 +479,12 @@ public class XMLSerializer {
 			if (isAncestorOf(element1, element2)) {
 				// In this case, do nothing and try later (in another loop)
 				return false;
-			} else if (isAncestorOf(element2, element1)) {
+			}
+			else if (isAncestorOf(element2, element1)) {
 				// In this case, do nothing and try later (in another loop)
 				return false;
-			} else {
+			}
+			else {
 				int index1 = father1.indexOf(element1);
 				father1.removeContent(index1);
 				int index2 = father2.indexOf(element2);
@@ -461,8 +501,10 @@ public class XMLSerializer {
 		}
 
 		/*
-		 * private int idForElement(Element el) { int returned = decodeAsInteger(el.getAttributeValue(ID)); if (returned == -1) returned =
-		 * decodeAsInteger(el.getAttributeValue(ID_REF)); return returned; }
+		 * private int idForElement(Element el) { int returned =
+		 * decodeAsInteger(el.getAttributeValue(ID)); if (returned == -1)
+		 * returned = decodeAsInteger(el.getAttributeValue(ID_REF)); return
+		 * returned; }
 		 */
 
 		private boolean isAncestorOf(Element e1, Element e2) {

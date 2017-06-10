@@ -59,6 +59,7 @@ public class AddCommand<I> extends AtomicEdit<I> {
 	private I updatedObject;
 	private Object addedValue;
 	private ModelProperty<? super I> modelProperty;
+	private final int index;
 
 	public AddCommand(I updatedObject, ModelEntity<I> modelEntity, ModelProperty<? super I> modelProperty, Object addedValue,
 			ModelFactory modelFactory) {
@@ -66,6 +67,16 @@ public class AddCommand<I> extends AtomicEdit<I> {
 		this.updatedObject = updatedObject;
 		this.modelProperty = modelProperty;
 		this.addedValue = addedValue;
+		this.index = -1;
+	}
+
+	public AddCommand(I updatedObject, ModelEntity<I> modelEntity, ModelProperty<? super I> modelProperty, Object addedValue, int index,
+			ModelFactory modelFactory) {
+		super(modelEntity, modelFactory);
+		this.updatedObject = updatedObject;
+		this.modelProperty = modelProperty;
+		this.addedValue = addedValue;
+		this.index = index;
 	}
 
 	@Override
@@ -124,4 +135,9 @@ public class AddCommand<I> extends AtomicEdit<I> {
 	public String getType() {
 		return "ADD";
 	}
+
+	public int getIndex() {
+		return index;
+	}
+
 }
