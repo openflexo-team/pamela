@@ -79,6 +79,7 @@ import org.openflexo.model.annotations.ComplexEmbedded;
 import org.openflexo.model.annotations.Embedded;
 import org.openflexo.model.annotations.Finder;
 import org.openflexo.model.annotations.Getter;
+import org.openflexo.model.annotations.Getter.Cardinality;
 import org.openflexo.model.annotations.Initializer;
 import org.openflexo.model.annotations.PastingPoint;
 import org.openflexo.model.annotations.Remover;
@@ -715,19 +716,28 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		List<Object> embeddedObjects = getModelFactory().getEmbeddedObjects(getObject(), EmbeddingType.DELETION,
 				objects.toArray(new Object[objects.size()]));
 		objects.addAll(embeddedObjects);
+
 		context = objects.toArray(new Object[objects.size()]);
 
 		// We iterate on all properties conform to PAMELA meta-model
 		Iterator<ModelProperty<? super I>> i = modelEntity.getProperties();
 		while (i.hasNext()) {
 			ModelProperty<? super I> property = i.next();
+
 			if (property.getType().isPrimitive()) {
 				// Primitive do not need to be nullified
 				// Do nothing
 			}
 			else {
+
 				// We retrieve and store old value for a potential undelete
 				Object oldValue = invokeGetter(property);
+
+				List<Object> oldValuesList = null;
+				if (property.getCardinality() == Cardinality.LIST) {
+					oldValuesList = new ArrayList<>((List) oldValue);
+				}
+
 				oldValues.put(property.getPropertyIdentifier(), oldValue);
 				// Otherwise nullify using setter
 				if (property.getSetterMethod() != null) {
@@ -736,11 +746,27 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				else {
 					internallyInvokeSetter(property, null, true);
 				}
-				if ((oldValue instanceof DeletableProxyObject) && embeddedObjects.contains(oldValue)) {
-					// By the way, this object was embedded, delete it
-					((DeletableProxyObject) oldValue).delete(context);
-					embeddedObjects.remove(oldValue);
+
+				if (property.getCardinality() == Cardinality.SINGLE) {
+					if ((oldValue instanceof DeletableProxyObject) && embeddedObjects.contains(oldValue)) {
+						// By the way, this object was embedded, delete it
+						((DeletableProxyObject) oldValue).delete(context);
+						embeddedObjects.remove(oldValue);
+					}
 				}
+
+				else if (property.getCardinality() == Cardinality.LIST) {
+					if (oldValuesList != null) {
+						for (Object toBeDeleted : oldValuesList) {
+							if ((toBeDeleted instanceof DeletableProxyObject) && embeddedObjects.contains(toBeDeleted)) {
+								// By the way, this object was embedded, delete it
+								((DeletableProxyObject) toBeDeleted).delete(context);
+								embeddedObjects.remove(toBeDeleted);
+							}
+						}
+					}
+				}
+
 			}
 		}
 
@@ -1521,17 +1547,15 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	/*private Object cloneObject() throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException
 	{
-		System.out.println("Tiens je clone "+getObject());
+	System.out.println("Tiens je clone "+getObject());
 	
-		if (!(getObject() instanceof CloneableProxyObject)) throw new CloneNotSupportedException();
+	if (!(getObject() instanceof CloneableProxyObject)) throw new CloneNotSupportedException();
 	
-		Hashtable<CloneableProxyObject,Object> clonedObjects = new Hashtable<>();
-		Object returned = performClone(clonedObjects);
-		for (CloneableProxyObject o : clonedObjects.keySet()) {
-			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(o);
-			clonedObjectHandler.finalizeClone(clonedObjects);
-		}
-		return returned;
+	Hashtable<CloneableProxyObject,Object> clonedObjects = new Hashtable<>();
+	Object returned = performClone(clonedObjects);
+	for (CloneableProxyObject o : clonedObjects.keySet()) {
+		ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(o);
+		clonedObjectHandler.finalizeClone(clonedObjects);
 	}
 	
 	private Object appendToClonedObjects(Hashtable<CloneableProxyObject,Object> clonedObjects, CloneableProxyObject objectToCloneOrReference) throws ModelExecutionException, ModelDefinitionException
@@ -1618,7 +1642,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	
 		System.out.println("Tiens je finalise le clone pour "+getObject()+" le clone c'est "+clonedObject);
 	
-		ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(clonedObject);
+	ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(clonedObject);
 	
 		Enumeration<ModelProperty<? super I>> properties = getModelEntity().getProperties();
 	
