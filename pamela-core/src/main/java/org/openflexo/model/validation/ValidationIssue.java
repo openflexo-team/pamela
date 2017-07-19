@@ -53,8 +53,8 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * @author sylvain
  * 
  */
-public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends Validable> implements HasPropertyChangeSupport,
-		PropertyChangeListener {
+public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends Validable>
+		implements HasPropertyChangeSupport, PropertyChangeListener {
 
 	public static final String DELETED_PROPERTY = "deleted";
 
