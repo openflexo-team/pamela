@@ -179,14 +179,14 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 
 	/**
 	 * Return detailed informations for this issue<br>
-	 * Default behaviour is to return rule's description
+	 * Default behaviour is to return null
 	 * 
 	 * @return
 	 */
 	public String getDetailedInformations() {
-		if (getCause() != null) {
+		/*if (getCause() != null) {
 			return getCause().getRuleDescription();
-		}
+		}*/
 		return null;
 	}
 }
