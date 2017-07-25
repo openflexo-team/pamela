@@ -41,6 +41,7 @@ package org.openflexo.model.validation;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -100,7 +101,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	protected ReportMode mode = ReportMode.ALL;
 
-	protected ValidationReport(ValidationModel validationModel, Validable rootObject) throws InterruptedException {
+	public ValidationReport(ValidationModel validationModel, Validable rootObject) throws InterruptedException {
 		super();
 
 		pcSupport = new PropertyChangeSupport(this);
@@ -381,6 +382,42 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		return infoIssues;
 	}
 
+	private void internallyRegisterIssue(ValidationIssue<?, ?> issue) {
+		if (issue instanceof InformationIssue) {
+			infoIssues.add((InformationIssue<?, ?>) issue);
+			List<InformationIssue<?, ?>> l = infoIssuesMap.get(issue.getValidable());
+			if (l == null) {
+				l = new ArrayList<>();
+				infoIssuesMap.put(issue.getValidable(), l);
+			}
+			l.add((InformationIssue<?, ?>) issue);
+			getPropertyChangeSupport().firePropertyChange("infosCount", getInfosCount() - 1, getInfosCount());
+		}
+		if (issue instanceof ValidationWarning) {
+			warnings.add((ValidationWarning<?, ?>) issue);
+			List<ValidationWarning<?, ?>> l = warningsMap.get(issue.getValidable());
+			if (l == null) {
+				l = new ArrayList<>();
+				warningsMap.put(issue.getValidable(), l);
+			}
+			l.add((ValidationWarning<?, ?>) issue);
+			getPropertyChangeSupport().firePropertyChange("warningsCount", getWarningsCount() - 1, getWarningsCount());
+		}
+		if (issue instanceof ValidationError) {
+			errors.add((ValidationError<?, ?>) issue);
+			List<ValidationError<?, ?>> l = errorsMap.get(issue.getValidable());
+			if (l == null) {
+				l = new ArrayList<>();
+				errorsMap.put(issue.getValidable(), l);
+			}
+			l.add((ValidationError<?, ?>) issue);
+			getPropertyChangeSupport().firePropertyChange("errorsCount", getErrorsCount() - 1, getErrorsCount());
+		}
+		getPropertyChangeSupport().firePropertyChange("issuesCount", getIssuesCount() - 1, getIssuesCount());
+		getPropertyChangeSupport().firePropertyChange("allIssues", null, getAllIssues());
+		getPropertyChangeSupport().firePropertyChange("filteredIssues", null, getFilteredIssues());
+	}
+
 	protected void addToValidationIssues(ValidationIssue<?, ?> issue) {
 		if (issue instanceof CompoundIssue) {
 			for (ValidationIssue<?, ?> anIssue : ((CompoundIssue<?, ?>) issue).getContainedIssues()) {
@@ -390,40 +427,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		else {
 			issue.setValidationReport(this);
 			allIssues.add(issue);
-			if (issue instanceof InformationIssue) {
-				infoIssues.add((InformationIssue<?, ?>) issue);
-				List<InformationIssue<?, ?>> l = infoIssuesMap.get(issue.getValidable());
-				if (l == null) {
-					l = new ArrayList<>();
-					infoIssuesMap.put(issue.getValidable(), l);
-				}
-				l.add((InformationIssue<?, ?>) issue);
-				getPropertyChangeSupport().firePropertyChange("infosCount", getInfosCount() - 1, getInfosCount());
-			}
-			if (issue instanceof ValidationWarning) {
-				warnings.add((ValidationWarning<?, ?>) issue);
-				List<ValidationWarning<?, ?>> l = warningsMap.get(issue.getValidable());
-				if (l == null) {
-					l = new ArrayList<>();
-					warningsMap.put(issue.getValidable(), l);
-				}
-				l.add((ValidationWarning<?, ?>) issue);
-				getPropertyChangeSupport().firePropertyChange("warningsCount", getWarningsCount() - 1, getWarningsCount());
-			}
-			if (issue instanceof ValidationError) {
-				errors.add((ValidationError<?, ?>) issue);
-				List<ValidationError<?, ?>> l = errorsMap.get(issue.getValidable());
-				if (l == null) {
-					l = new ArrayList<>();
-					errorsMap.put(issue.getValidable(), l);
-				}
-				l.add((ValidationError<?, ?>) issue);
-				getPropertyChangeSupport().firePropertyChange("errorsCount", getErrorsCount() - 1, getErrorsCount());
-			}
-			getPropertyChangeSupport().firePropertyChange("issuesCount", getIssuesCount() - 1, getIssuesCount());
-			getPropertyChangeSupport().firePropertyChange("allIssues", null, getAllIssues());
-			getPropertyChangeSupport().firePropertyChange("filteredIssues", null, getFilteredIssues());
-
+			internallyRegisterIssue(issue);
 		}
 	}
 
@@ -490,6 +494,27 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			returned.add(errorsList);
 		}
 		return returned;
+	}
+
+	public List<InformationIssue<?, ?>> infoIssuesRegarding(Validable object) {
+		if (infoIssuesMap.get(object) != null) {
+			return infoIssuesMap.get(object);
+		}
+		return Collections.emptyList();
+	}
+
+	public List<ValidationError<?, ?>> errorIssuesRegarding(Validable object) {
+		if (errorsMap.get(object) != null) {
+			return errorsMap.get(object);
+		}
+		return Collections.emptyList();
+	}
+
+	public List<ValidationWarning<?, ?>> warningIssuesRegarding(Validable object) {
+		if (warningsMap.get(object) != null) {
+			return warningsMap.get(object);
+		}
+		return Collections.emptyList();
 	}
 
 	// TODO: perf issues
