@@ -39,9 +39,7 @@
 package org.openflexo.model.validation;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.openflexo.toolbox.HasPropertyChangeSupport;
@@ -86,6 +84,14 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 				addToFixProposals(fp);
 			}
 		}
+	}
+
+	@Override
+	public void delete() {
+		relatedValidableObjects.clear();
+		fixProposals.clear();
+		validationRule = null;
+		super.delete();
 	}
 
 	public List<FixProposal<R, V>> getFixProposals() {
@@ -146,14 +152,14 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 		getPropertyChangeSupport().firePropertyChange(RELATED_VALIDABLES_PROPERTY, relatedValidable, null);
 	}
 
-	@Override
+	/*@Override
 	public void revalidateAfterFixing() {
 		ValidationReport validationReport = getValidationReport();
-
+	
 		if (validationReport == null) {
 			return;
 		}
-
+	
 		Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getValidable());
 		for (Validable relatedValidable : getRelatedValidableObjects()) {
 			allIssuesToRemove.addAll(validationReport.issuesRegarding(relatedValidable));
@@ -167,21 +173,21 @@ public abstract class ProblemIssue<R extends ValidationRule<R, V>, V extends Val
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("Remove related issues");
 		}
-
+	
 		for (ValidationIssue<?, ?> issue : new ArrayList<>(allIssuesToRemove)) {
 			validationReport.removeFromValidationIssues(issue);
 		}
-
+	
 		if (!getValidable().isDeleted()) {
 			validationReport.revalidate(getValidable());
 		}
-
+	
 		for (Validable relatedValidable : getRelatedValidableObjects()) {
 			if (!relatedValidable.isDeleted()) {
 				validationReport.revalidate(relatedValidable);
 			}
 		}
-	}
+	}*/
 
 	@Override
 	public boolean isProblemIssue() {

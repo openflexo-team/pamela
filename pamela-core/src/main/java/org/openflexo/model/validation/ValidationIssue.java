@@ -41,7 +41,6 @@ package org.openflexo.model.validation;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -157,7 +156,14 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 			return;
 		}
 
-		Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getValidable());
+		try {
+			validationReport.revalidate(getValidable());
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		/*Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getValidable());
 		Collection<Validable> allEmbeddedValidableObjects = validationReport.retrieveAllEmbeddedValidableObjects(getValidable());
 		if (allEmbeddedValidableObjects != null) {
 			for (Validable embeddedValidable : allEmbeddedValidableObjects) {
@@ -167,10 +173,10 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 		for (ValidationIssue<?, ?> issue : allIssuesToRemove) {
 			validationReport.removeFromValidationIssues(issue);
 		}
-
+		
 		if (!getValidable().isDeleted()) {
 			validationReport.revalidate(getValidable());
-		}
+		}*/
 	}
 
 	public boolean isProblemIssue() {
