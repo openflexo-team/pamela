@@ -1,6 +1,5 @@
 package org.openflexo;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openflexo.model.AbstractNode;
@@ -16,11 +15,6 @@ import org.openflexo.model.factory.EditingContextImpl;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model.undo.CompoundEdit;
 import org.openflexo.model.undo.UndoManager;
-
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 
 /**
  * Class of test to check if the undo/redo behavior is correct.

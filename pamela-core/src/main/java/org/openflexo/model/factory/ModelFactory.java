@@ -77,6 +77,7 @@ import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
+
 /**
  * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
  * 
@@ -590,6 +591,7 @@ public class ModelFactory implements IObjectGraphFactory {
 
 				append = p.getEmbedded() != null && p.getEmbedded().closureConditions().length == 0 || p.getComplexEmbedded() != null
 						&& p.getComplexEmbedded().closureConditions().length == 0;
+
 				break;
 			case DELETION:
 				append = p.getEmbedded() != null && p.getEmbedded().deletionConditions().length == 0
@@ -776,7 +778,6 @@ public class ModelFactory implements IObjectGraphFactory {
 		return baos.toString();
 	}
 
-
 	public ModelSerializer getModelSerializer() {
 		return modelSerializer;
 	}
@@ -784,6 +785,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	public void setModelSerializer(ModelSerializer modelSerializer) {
 		this.modelSerializer = modelSerializer;
 	}
+
 
 
 	public void serialize(Object object, OutputStream os)

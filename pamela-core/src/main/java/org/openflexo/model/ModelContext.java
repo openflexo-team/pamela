@@ -147,7 +147,7 @@ public class ModelContext {
 		}
 		if (baseClass != null) {
 			ModelEntity<?> modelEntity = ModelEntityLibrary.importEntity(baseClass);
-			appendEntity(modelEntity, new HashSet<>());
+			appendEntity(modelEntity, new HashSet<ModelEntity<?>>());
 		}
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);

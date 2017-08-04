@@ -784,7 +784,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return Collections.unmodifiableCollection(properties.values());
 	}
 
-	/**
+/**
 	 * Return an iterator for {@link ModelProperty} objects<br>
 	 * Order respect {@link CloningStrategy#cloneAfterProperty()} annotation
 	 * 
