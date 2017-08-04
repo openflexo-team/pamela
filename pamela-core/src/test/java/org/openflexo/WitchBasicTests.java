@@ -46,6 +46,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.model.ModelContext;
+import org.openflexo.model.ModelContextLibrary;
 import org.openflexo.model.factory.EditingContext;
 import org.openflexo.model.factory.EditingContextImpl;
 import org.openflexo.model.factory.ModelFactory;
@@ -77,7 +78,8 @@ public class WitchBasicTests extends AbstractPAMELATest {
 	@Before
 	public void setUp() throws Exception {
 		new File("/tmp").mkdirs();
-		modelContext = new ModelContext(PhysicalObject.class, Person.class, Duck.class, WoodenObject.class);
+		
+		modelContext = ModelContextLibrary.getCompoundModelContext(PhysicalObject.class, Person.class, Duck.class, WoodenObject.class);
 		factory = new ModelFactory(modelContext);
 
 		editingContext = new EditingContextImpl();

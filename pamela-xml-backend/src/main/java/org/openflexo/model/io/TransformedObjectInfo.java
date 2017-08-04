@@ -35,9 +35,14 @@
 
 package org.openflexo.model.io;
 
+import java.lang.reflect.Method;
+
+import org.openflexo.model.DeserializationFinalizer;
+import org.openflexo.model.DeserializationInitializer;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
 import org.openflexo.model.exceptions.InvalidDataException;
+import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.ModelFactory;
 import org.xml.sax.SAXException;
 
@@ -46,30 +51,32 @@ import org.xml.sax.SAXException;
  */
 public class TransformedObjectInfo {
 
-	private final boolean convertible;
+	private static final Object[] EMPTY_ARGS = new Object[0];
+
+	private final ModelFactory factory;
+
 	private final Object parent;
-	private final Object object;
 	private final ModelProperty<Object> leadingProperty;
 	private final ModelEntity<Object> modelEntity;
+	private final Class<Object> implementedInterface;
 
-	public TransformedObjectInfo(Object object, ModelProperty<Object> leadingProperty, Object parent, ModelEntity<Object> modelEntity) {
-		this(false, object, leadingProperty, parent, modelEntity);
-	}
+	private boolean resolved = false;
+	private Object object;
 
-	public TransformedObjectInfo(ModelProperty<Object> leadingProperty, Object parent, ModelEntity<Object> modelEntity) {
-		this(true, null, leadingProperty, parent, modelEntity);
-	}
-
-	private TransformedObjectInfo(boolean convertible, Object object, ModelProperty<Object> leadingProperty, Object parent, ModelEntity<Object> modelEntity) {
-		this.convertible = convertible;
+	public TransformedObjectInfo(
+			ModelFactory factory, Object parent, ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity
+	) {
+		this.factory = factory;
 		this.parent = parent;
-		this.object = object;
 		this.leadingProperty = leadingProperty;
-		this.modelEntity = modelEntity;
-	}
-
-	public boolean isConvertible() {
-		return convertible;
+		if (modelEntity != null) {
+			this.modelEntity = modelEntity;
+			this.implementedInterface = modelEntity.getImplementedInterface();
+		}
+		else {
+			this.implementedInterface = (Class<Object>) leadingProperty.getType();
+			this.modelEntity = factory.getModelContext().getModelEntity(implementedInterface);
+		}
 	}
 
 	public Object getParent() {
@@ -80,6 +87,23 @@ public class TransformedObjectInfo {
 		return object;
 	}
 
+	public void setObject(Object object) {
+		this.object = object;
+		this.resolved = true;
+	}
+
+	public boolean isResolved() {
+		return resolved;
+	}
+
+	public void setFromString(String source) throws SAXException {
+		try {
+			setObject(factory.getStringEncoder().fromString(implementedInterface, source));
+		} catch (InvalidDataException e) {
+			throw new SAXException(e);
+		}
+	}
+
 	public ModelProperty<Object> getLeadingProperty() {
 		return leadingProperty;
 	}
@@ -88,13 +112,55 @@ public class TransformedObjectInfo {
 		return modelEntity;
 	}
 
-	public TransformedObjectInfo convert(ModelFactory factory, String source) throws SAXException {
-		try {
-			Class<Object> implementedInterface = modelEntity.getImplementedInterface();
-			Object object = factory.getStringEncoder().fromString(implementedInterface, source);
-			return new TransformedObjectInfo(object, leadingProperty, parent, modelEntity);
-		} catch (InvalidDataException e) {
-			throw new SAXException(e);
+	public boolean isConvertible() {
+		return factory.getStringEncoder().isConvertable(implementedInterface);
+	}
+
+	public void initializeDeserialization() throws SAXException {
+		if (object != null) {
+			factory.objectIsBeeingDeserialized(object, implementedInterface);
+
+			if (modelEntity != null) {
+				factory.getHandler(object).setDeserializing(true);
+
+				try {
+					DeserializationInitializer deserializationInitializer = modelEntity.getDeserializationInitializer();
+					if (deserializationInitializer != null) {
+						Method deserializationInitializerMethod = deserializationInitializer.getDeserializationInitializerMethod();
+						if (deserializationInitializerMethod.getParameterTypes().length == 0) {
+							deserializationInitializerMethod.invoke(object, EMPTY_ARGS);
+						}
+						else if (deserializationInitializerMethod.getParameterTypes().length == 1) {
+							deserializationInitializerMethod.invoke(object, factory);
+						}
+						else {
+							String message = "Wrong number of argument for deserialization initializer " + deserializationInitializerMethod;
+							throw new ModelDefinitionException(message);
+						}
+					}
+				} catch (Exception e) {
+					throw new SAXException(e);
+				}
+			}
 		}
 	}
+
+	public void finalizeDeserialization() throws SAXException {
+		if (modelEntity != null && object != null) {
+			// closes status
+			factory.getHandler(object).setDeserializing(false);
+
+			// calls ended
+			try {
+				DeserializationFinalizer deserializationFinalizer = modelEntity.getDeserializationFinalizer();
+				if (deserializationFinalizer != null) {
+					deserializationFinalizer.getDeserializationFinalizerMethod().invoke(object, EMPTY_ARGS);
+				}
+			} catch (Exception e) {
+				throw new SAXException(e);
+			}
+		}
+		factory.objectHasBeenDeserialized(object, implementedInterface);
+	}
+
 }

@@ -227,7 +227,18 @@ public class JDOMXMLSerializer extends AbstractModelSerializer {
 							ModelProperty<? super I> p = properties.next();
 							if (p.getXMLAttribute() != null) {
 								Object oValue = handler.invokeGetter(p);
-								if (oValue != null) {
+								boolean ignoreProperty = false;
+								try {
+									if (oValue != null && oValue.equals(p.getDefaultValue(modelFactory))) {
+										// This is the default value, no need to
+										// serialize this
+										ignoreProperty = true;
+									}
+								} catch (InvalidDataException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+								if (oValue != null && !ignoreProperty) {
 									String value;
 									try {
 										value = getStringEncoder().toString(oValue);
