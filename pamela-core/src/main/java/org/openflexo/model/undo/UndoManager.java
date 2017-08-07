@@ -40,6 +40,7 @@ package org.openflexo.model.undo;
 
 import java.beans.PropertyChangeSupport;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -82,6 +83,8 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  */
 @SuppressWarnings("serial")
 public class UndoManager extends javax.swing.undo.UndoManager implements HasPropertyChangeSupport {
+
+	private static final Logger logger = Logger.getLogger(UndoManager.class.getPackage().getName());
 
 	public static final String ENABLED = "enabled";
 	public static final String START_RECORDING = "startRecording";
@@ -196,7 +199,8 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 			return null;
 		}
 		if (currentEdition == null) {
-			(new Exception("UndoManager exception: was not recording")).printStackTrace();
+			logger.warning("UndoManager exception: was not recording");
+			// (new Exception("UndoManager exception: was not recording")).printStackTrace();
 			return null;
 		}
 		else if (currentEdition != edit) {
