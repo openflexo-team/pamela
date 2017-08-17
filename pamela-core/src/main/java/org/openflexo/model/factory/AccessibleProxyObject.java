@@ -227,9 +227,22 @@ public interface AccessibleProxyObject extends HasPropertyChangeSupport, KeyValu
 	 * Return whether supplied object is equals to this, regarding persistant properties defined as PAMELA model
 	 * 
 	 * @param obj
+	 *            object to compare with, which should be of same type (otherwise return false)
 	 * @return
 	 */
 	public boolean equalsObject(Object obj);
+
+	/**
+	 * Called to update current object while comparing it to opposite object, (which must be of right type!), examining each property
+	 * values.<br>
+	 * Collections are handled while trying to match updated objects with a given strategy<br>
+	 * Perform required changes on this object so that at the end of the call, equalsObject(object) should return true<br>
+	 * Also perform required notifications, so that it is safe to call that method in a deployed environment
+	 * 
+	 * @param obj
+	 *            object to update with, which must be of same type
+	 */
+	public void updateWith(Object obj);
 
 	/**
 	 * Destroy current object<br>

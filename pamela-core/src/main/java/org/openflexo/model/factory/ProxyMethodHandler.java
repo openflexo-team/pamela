@@ -97,6 +97,7 @@ import org.openflexo.model.undo.RemoveCommand;
 import org.openflexo.model.undo.SetCommand;
 import org.openflexo.model.undo.UndoManager;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
+import org.openflexo.toolbox.StringUtils;
 
 import com.google.common.base.Defaults;
 import com.google.common.base.Predicate;
@@ -161,6 +162,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	public static Method UNDELETE_OBJECT;
 	public static Method IS_DELETED;
 	public static Method EQUALS_OBJECT;
+	public static Method UPDATE_WITH_OBJECT;
 	public static Method DESTROY;
 	public static Method HAS_KEY;
 	public static Method OBJECT_FOR_KEY;
@@ -209,6 +211,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			IS_CREATED_BY_CLONING = CloneableProxyObject.class.getMethod("isCreatedByCloning");
 			IS_BEING_CLONED = CloneableProxyObject.class.getMethod("isBeingCloned");
 			EQUALS_OBJECT = AccessibleProxyObject.class.getMethod("equalsObject", Object.class);
+			UPDATE_WITH_OBJECT = AccessibleProxyObject.class.getMethod("updateWith", Object.class);
 			DESTROY = AccessibleProxyObject.class.getMethod("destroy");
 			HAS_KEY = KeyValueCoding.class.getMethod("hasKey", String.class);
 			OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("objectForKey", String.class);
@@ -529,6 +532,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, EQUALS_OBJECT)) {
 			return equalsObject(args[0]);
+		}
+		else if (PamelaUtils.methodIsEquivalentTo(method, UPDATE_WITH_OBJECT)) {
+			return updateWith(args[0]);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, IS_DELETED)) {
 			return deleted;
@@ -1542,80 +1548,82 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		if (oldValue == newValue) {
 			return true;
 		}
+		if (oldValue instanceof AccessibleProxyObject && newValue instanceof AccessibleProxyObject) {
+			return ((AccessibleProxyObject) oldValue).equalsObject(newValue);
+		}
+		if (oldValue instanceof List && newValue instanceof List) {
+			List<Object> l1 = (List<Object>) oldValue;
+			List<Object> l2 = (List<Object>) newValue;
+			if (l1.size() != l2.size()) {
+				return false;
+			}
+			for (int i = 0; i < l1.size(); i++) {
+				Object v1 = l1.get(i);
+				Object v2 = l2.get(i);
+				if (!isEqual(v1, v2)) {
+					return false;
+				}
+			}
+			return true;
+		}
 		return oldValue.equals(newValue);
+
 	}
 
 	/*private Object cloneObject() throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException
-	{
-	System.out.println("Tiens je clone "+getObject());
+		{
+		System.out.println("Tiens je clone "+getObject());
 	
-	if (!(getObject() instanceof CloneableProxyObject)) throw new CloneNotSupportedException();
+		if (!(getObject() instanceof CloneableProxyObject)) throw new CloneNotSupportedException();
 	
-	Hashtable<CloneableProxyObject,Object> clonedObjects = new Hashtable<>();
-	Object returned = performClone(clonedObjects);
-	for (CloneableProxyObject o : clonedObjects.keySet()) {
-		ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(o);
-		clonedObjectHandler.finalizeClone(clonedObjects);
-	}
-	
-	private Object appendToClonedObjects(Hashtable<CloneableProxyObject,Object> clonedObjects, CloneableProxyObject objectToCloneOrReference) throws ModelExecutionException, ModelDefinitionException
-	{
-		Object returned = clonedObjects.get(objectToCloneOrReference);
-		if (returned != null) return returned;
-		ProxyMethodHandler<?> clonedValueHandler = getModelFactory().getHandler(objectToCloneOrReference);
-		returned = clonedValueHandler.performClone(clonedObjects);
-		System.out.println("for "+objectToCloneOrReference+" clone is "+returned);
-		return returned;
-	}
-	
-	private Object performClone(Hashtable<CloneableProxyObject,Object> clonedObjects) throws ModelExecutionException, ModelDefinitionException
-	{
-		System.out.println("******* performClone "+getObject());
-	
-		Object returned = null;
-		try {
-			returned = getModelEntity().newInstance();
-		} catch (IllegalArgumentException e) {
-			throw new ModelExecutionException(e);
-		} catch (NoSuchMethodException e) {
-			throw new ModelExecutionException(e);
-		} catch (InstantiationException e) {
-			throw new ModelExecutionException(e);
-		} catch (IllegalAccessException e) {
-			throw new ModelExecutionException(e);
-		} catch (InvocationTargetException e) {
-			throw new ModelExecutionException(e);
+		Hashtable<CloneableProxyObject,Object> clonedObjects = new Hashtable<>();
+		Object returned = performClone(clonedObjects);
+		for (CloneableProxyObject o : clonedObjects.keySet()) {
+			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(o);
+			clonedObjectHandler.finalizeClone(clonedObjects);
 		}
-		clonedObjects.put((CloneableProxyObject)getObject(),returned);
 	
-		ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(returned);
-		Enumeration<ModelProperty<? super I>> properties = getModelEntity().getProperties();
-		while(properties.hasMoreElements()) {
-			ModelProperty p = properties.nextElement();
-			switch (p.getCardinality()) {
-			case SINGLE:
-				Object singleValue = invokeGetter(p);
-				switch (p.getCloningStrategy()) {
-				case CLONE:
-					if (getModelFactory().isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
-						appendToClonedObjects(clonedObjects, (CloneableProxyObject)singleValue);
-					}
-					break;
-				case REFERENCE:
-					break;
-				case FACTORY:
-					break;
-				case IGNORE:
-					break;
-				}
-				break;
-			case LIST:
-				List values = (List)invokeGetter(p);
-				for (Object value : values) {
+		private Object appendToClonedObjects(Hashtable<CloneableProxyObject,Object> clonedObjects, CloneableProxyObject objectToCloneOrReference) throws ModelExecutionException, ModelDefinitionException
+		{
+			Object returned = clonedObjects.get(objectToCloneOrReference);
+			if (returned != null) return returned;
+			ProxyMethodHandler<?> clonedValueHandler = getModelFactory().getHandler(objectToCloneOrReference);
+			returned = clonedValueHandler.performClone(clonedObjects);
+			System.out.println("for "+objectToCloneOrReference+" clone is "+returned);
+			return returned;
+		}
+	
+		private Object performClone(Hashtable<CloneableProxyObject,Object> clonedObjects) throws ModelExecutionException, ModelDefinitionException
+		{
+			System.out.println("******* performClone "+getObject());
+	
+			Object returned = null;
+			try {
+				returned = getModelEntity().newInstance();
+			} catch (IllegalArgumentException e) {
+				throw new ModelExecutionException(e);
+			} catch (NoSuchMethodException e) {
+				throw new ModelExecutionException(e);
+			} catch (InstantiationException e) {
+				throw new ModelExecutionException(e);
+			} catch (IllegalAccessException e) {
+				throw new ModelExecutionException(e);
+			} catch (InvocationTargetException e) {
+				throw new ModelExecutionException(e);
+			}
+			clonedObjects.put((CloneableProxyObject)getObject(),returned);
+	
+			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(returned);
+			Enumeration<ModelProperty<? super I>> properties = getModelEntity().getProperties();
+			while(properties.hasMoreElements()) {
+				ModelProperty p = properties.nextElement();
+				switch (p.getCardinality()) {
+				case SINGLE:
+					Object singleValue = invokeGetter(p);
 					switch (p.getCloningStrategy()) {
 					case CLONE:
-						if (getModelFactory().isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
-							appendToClonedObjects(clonedObjects, (CloneableProxyObject)value);
+						if (getModelFactory().isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
+							appendToClonedObjects(clonedObjects, (CloneableProxyObject)singleValue);
 						}
 						break;
 					case REFERENCE:
@@ -1625,89 +1633,70 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					case IGNORE:
 						break;
 					}
+					break;
+				case LIST:
+					List values = (List)invokeGetter(p);
+					for (Object value : values) {
+						switch (p.getCloningStrategy()) {
+						case CLONE:
+							if (getModelFactory().isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
+								appendToClonedObjects(clonedObjects, (CloneableProxyObject)value);
+							}
+							break;
+						case REFERENCE:
+							break;
+						case FACTORY:
+							break;
+						case IGNORE:
+							break;
+						}
+					}
+					break;
+				default:
+					break;
 				}
-				break;
-			default:
-				break;
+	
 			}
 	
+			return returned;
 		}
 	
-		return returned;
-	}
+		private Object finalizeClone(Hashtable<CloneableProxyObject,Object> clonedObjects) throws ModelExecutionException, ModelDefinitionException
+		{
+			Object clonedObject = clonedObjects.get(getObject());
 	
-	private Object finalizeClone(Hashtable<CloneableProxyObject,Object> clonedObjects) throws ModelExecutionException, ModelDefinitionException
-	{
-		Object clonedObject = clonedObjects.get(getObject());
+			System.out.println("Tiens je finalise le clone pour "+getObject()+" le clone c'est "+clonedObject);
 	
-		System.out.println("Tiens je finalise le clone pour "+getObject()+" le clone c'est "+clonedObject);
+		ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(clonedObject);
 	
-	ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(clonedObject);
+			Enumeration<ModelProperty<? super I>> properties = getModelEntity().getProperties();
 	
-		Enumeration<ModelProperty<? super I>> properties = getModelEntity().getProperties();
-	
-		while(properties.hasMoreElements()) {
-			ModelProperty p = properties.nextElement();
-			switch (p.getCardinality()) {
-			case SINGLE:
-				Object singleValue = invokeGetter(p);
-				switch (p.getCloningStrategy()) {
-				case CLONE:
-					if (getModelFactory().getStringEncoder().isConvertable(p.getType())) {
-						Object clonedValue = null;
-						try {
-							String clonedValueAsString = getModelFactory().getStringEncoder().toString(singleValue);
-							clonedValue = getModelFactory().getStringEncoder().fromString(p.getType(),clonedValueAsString);
-						} catch (InvalidDataException e) {
-							throw new ModelExecutionException(e);
-						}
-						clonedObjectHandler.invokeSetter(p,clonedValue);
-					}
-					else if (getModelFactory().isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
-						Object clonedValue = clonedObjects.get(singleValue);
-						clonedObjectHandler.invokeSetter(p,clonedValue);
-					}
-					break;
-				case REFERENCE:
-					Object referenceValue = (singleValue != null ? clonedObjects.get(singleValue) : null);
-					if (referenceValue == null) referenceValue = singleValue;
-					clonedObjectHandler.invokeSetter(p,referenceValue);
-					break;
-				case FACTORY:
-					// TODO Not implemented
-					break;
-				case IGNORE:
-					break;
-				}
-				break;
-			case LIST:
-				List values = (List)invokeGetter(p);
-				System.out.println("values:"+values.hashCode()+" "+values);
-				List valuesToClone = new ArrayList<>(values);
-				for (Object value : valuesToClone) {
+			while(properties.hasMoreElements()) {
+				ModelProperty p = properties.nextElement();
+				switch (p.getCardinality()) {
+				case SINGLE:
+					Object singleValue = invokeGetter(p);
 					switch (p.getCloningStrategy()) {
 					case CLONE:
 						if (getModelFactory().getStringEncoder().isConvertable(p.getType())) {
 							Object clonedValue = null;
 							try {
-								String clonedValueAsString = getModelFactory().getStringEncoder().toString(value);
+								String clonedValueAsString = getModelFactory().getStringEncoder().toString(singleValue);
 								clonedValue = getModelFactory().getStringEncoder().fromString(p.getType(),clonedValueAsString);
 							} catch (InvalidDataException e) {
 								throw new ModelExecutionException(e);
 							}
-							List l = (List)clonedObjectHandler.invokeGetter(p);
-							System.out.println("l:"+l.hashCode()+" "+l);
-							clonedObjectHandler.invokeAdder(p,clonedValue);
+							clonedObjectHandler.invokeSetter(p,clonedValue);
 						}
-						else if (getModelFactory().isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
-							Object clonedValue = clonedObjects.get(value);
-							clonedObjectHandler.invokeAdder(p,clonedValue);
+						else if (getModelFactory().isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
+							Object clonedValue = clonedObjects.get(singleValue);
+							clonedObjectHandler.invokeSetter(p,clonedValue);
 						}
 						break;
 					case REFERENCE:
-						Object referenceValue = (value != null ? clonedObjects.get(value) : null);
-						if (referenceValue == null) referenceValue = value;
-						clonedObjectHandler.invokeAdder(p,referenceValue);
+						Object referenceValue = (singleValue != null ? clonedObjects.get(singleValue) : null);
+						if (referenceValue == null) referenceValue = singleValue;
+						clonedObjectHandler.invokeSetter(p,referenceValue);
 						break;
 					case FACTORY:
 						// TODO Not implemented
@@ -1715,17 +1704,53 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					case IGNORE:
 						break;
 					}
+					break;
+				case LIST:
+					List values = (List)invokeGetter(p);
+					System.out.println("values:"+values.hashCode()+" "+values);
+					List valuesToClone = new ArrayList<>(values);
+					for (Object value : valuesToClone) {
+						switch (p.getCloningStrategy()) {
+						case CLONE:
+							if (getModelFactory().getStringEncoder().isConvertable(p.getType())) {
+								Object clonedValue = null;
+								try {
+									String clonedValueAsString = getModelFactory().getStringEncoder().toString(value);
+									clonedValue = getModelFactory().getStringEncoder().fromString(p.getType(),clonedValueAsString);
+								} catch (InvalidDataException e) {
+									throw new ModelExecutionException(e);
+								}
+								List l = (List)clonedObjectHandler.invokeGetter(p);
+								System.out.println("l:"+l.hashCode()+" "+l);
+								clonedObjectHandler.invokeAdder(p,clonedValue);
+							}
+							else if (getModelFactory().isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
+								Object clonedValue = clonedObjects.get(value);
+								clonedObjectHandler.invokeAdder(p,clonedValue);
+							}
+							break;
+						case REFERENCE:
+							Object referenceValue = (value != null ? clonedObjects.get(value) : null);
+							if (referenceValue == null) referenceValue = value;
+							clonedObjectHandler.invokeAdder(p,referenceValue);
+							break;
+						case FACTORY:
+							// TODO Not implemented
+							break;
+						case IGNORE:
+							break;
+						}
 	
+					}
+					break;
+				default:
+					break;
 				}
-				break;
-			default:
-				break;
+	
 			}
 	
-		}
-	
-		return clonedObject;
-	}*/
+			return clonedObject;
+		}*/
 
 	public boolean equalsObject(Object obj) {
 		if (getObject() == obj) {
@@ -1751,20 +1776,297 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
-			// switch (p.getCardinality()) {
-			// case SINGLE:
-			Object singleValue = invokeGetter(p);
-			Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
-			if (!isEqual(singleValue, oppositeValue)) {
-				return false;
-			}
-			/*		break;
+			switch (p.getCardinality()) {
+				case SINGLE:
+					Object singleValue = invokeGetter(p);
+					Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
+					if (!isEqual(singleValue, oppositeValue)) {
+						return false;
+					}
+					break;
+				case LIST:
+					List<Object> values = invokeGetterForListCardinality(p);
+					List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
+					if (!isEqual(values, oppositeValues)) {
+						return false;
+					}
+					/*if (values == null || oppositeValues == null) {
+						if (values != oppositeValues) {
+							return false;
+						}
+					}
+					else {
+						if (values.size() != oppositeValues.size()) {
+							return false;
+						}
+						for (int i = 0; i < values.size(); i++) {
+							Object v1 = values.get(i);
+							Object v2 = oppositeValues.get(i);
+							if (!isEqual(v1, v2)) {
+								return false;
+							}
+						}
+					}*/
+
+					break;
 				default:
 					break;
-				}*/
+			}
 		}
 		// System.out.println("ok, equals return true for " + getObject() + " and " + object);
 		return true;
+	}
+
+	/**
+	 * Called to update current object while comparing it to opposite object, (which must be of right type!), examining each property
+	 * values.<br>
+	 * Collections are handled while trying to match updated objects with a given strategy<br>
+	 * Perform required changes on this object so that at the end of the call, equalsObject(object) shoud return true<br>
+	 * Also perform required notifications, so that it is safe to call that method in a deployed environment
+	 * 
+	 * @param obj
+	 *            object to update with, which must be of same type
+	 * @return boolean indicating if update was successfull
+	 */
+	public boolean updateWith(Object obj) {
+		if (getObject() == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		ProxyMethodHandler<?> oppositeObjectHandler = getModelFactory().getHandler(obj);
+		if (oppositeObjectHandler == null) {
+			// Other object is not handled by the same factory
+			return false;
+		}
+		if (getModelEntity() != oppositeObjectHandler.getModelEntity()) {
+			return false;
+		}
+
+		// System.out.println("Distance: " + getDistance(obj));
+
+		Iterator<ModelProperty<? super I>> properties;
+		try {
+			properties = getModelEntity().getProperties();
+		} catch (ModelDefinitionException e) {
+			return false;
+		}
+		while (properties.hasNext()) {
+			ModelProperty p = properties.next();
+			switch (p.getCardinality()) {
+				case SINGLE:
+					Object singleValue = invokeGetter(p);
+					Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
+					if (!isEqual(singleValue, oppositeValue)) {
+						// System.out.println("La pte " + p + " change de " + singleValue + " a " + oppositeValue);
+						try {
+							if (p.getAccessedEntity() != null && singleValue instanceof AccessibleProxyObject) {
+								((AccessibleProxyObject) singleValue).updateWith(oppositeValue);
+							}
+							else {
+								invokeSetter(p, oppositeValue);
+							}
+						} catch (ModelDefinitionException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+					break;
+				case LIST:
+					List<Object> values = invokeGetterForListCardinality(p);
+					List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
+					ListMatching matching = match(values, oppositeValues);
+					System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
+					for (Matched m : matching.matchedList) {
+						Object o1 = values.get(m.idx1);
+						Object o2 = oppositeValues.get(m.idx2);
+						if (o1 instanceof AccessibleProxyObject) {
+							((AccessibleProxyObject) o1).updateWith(o2);
+						}
+						// TODO: update reindex !
+					}
+					for (Removed r : matching.removed) {
+						Object removedObject = values.get(r.removedIndex);
+						invokeRemover(p, removedObject);
+					}
+					for (Added a : matching.added) {
+						Object addedObject = oppositeValues.get(a.originalIndex);
+						invokeAdder(p, addedObject);
+						// TODO: handle insertion index
+					}
+					break;
+				case MAP:
+					System.err.println("Not implemented: MAP support for updateWith()");
+					break;
+				default:
+					break;
+			}
+		}
+
+		// System.out.println("ok, equals return true for " + getObject() + " and " + object);
+		return true;
+	}
+
+	/**
+	 * Compute the distance (double value between 0.0 and 1.0) between this object and an opposite object (which must be of right type!) If
+	 * two objects are equals, return 0. If two objects are totally differents, return 1.
+	 * 
+	 * @param object
+	 * @return
+	 */
+	public double getDistance(Object obj) {
+		if (getObject() == obj) {
+			return 0.0;
+		}
+		if (obj == null) {
+			return 1.0;
+		}
+		ProxyMethodHandler oppositeObjectHandler = getModelFactory().getHandler(obj);
+		if (oppositeObjectHandler == null) {
+			// Other object is not handled by the same factory
+			return 1.0;
+		}
+		if (getModelEntity() != oppositeObjectHandler.getModelEntity()) {
+			return 1.0;
+		}
+
+		Iterator<ModelProperty<? super I>> properties;
+		try {
+			properties = getModelEntity().getProperties();
+		} catch (ModelDefinitionException e) {
+			return 1.0;
+		}
+
+		double distance = 0.0;
+		double totalPonderation = 0.0;
+
+		while (properties.hasNext()) {
+			ModelProperty p = properties.next();
+			double propertyPonderation = 1.0;
+
+			switch (p.getCardinality()) {
+				case SINGLE:
+					Object singleValue = invokeGetter(p);
+					Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
+					propertyPonderation = getPropertyPonderation(p);
+					if (singleValue != null || oppositeValue != null) {
+						totalPonderation += propertyPonderation;
+						if (!isEqual(singleValue, oppositeValue)) {
+							double valueDistance = getDistanceBetweenValues(singleValue, oppositeValue);
+							distance = distance + valueDistance * propertyPonderation;
+							// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + " ponderation="
+							// + propertyPonderation);
+						}
+						else {
+							// System.out.println(
+							// "Property " + p.getPropertyIdentifier() + " distance=0.0" + " ponderation=" + propertyPonderation);
+						}
+					}
+					else {
+						// null values are ignored and not taken under account
+					}
+					break;
+				case LIST:
+					List<Object> values = invokeGetterForListCardinality(p);
+					List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
+					propertyPonderation = Math.max(values != null ? values.size() : 0, oppositeValues != null ? oppositeValues.size() : 0);
+					if ((values != null && values.size() > 0) || (oppositeValues != null && oppositeValues.size() > 0)) {
+						totalPonderation += propertyPonderation;
+						if (!isEqual(values, oppositeValues)) {
+							double valueDistance = getDistanceBetweenListValues(values, oppositeValues);
+							distance = distance + valueDistance * propertyPonderation;
+							// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + " ponderation="
+							// + propertyPonderation);
+						}
+						else {
+							// System.out.println(
+							// "Property " + p.getPropertyIdentifier() + " distance=0.0" + " ponderation=" + propertyPonderation);
+						}
+					}
+					else {
+						// null values are ignored and not taken under account
+					}
+					break;
+				case MAP:
+					System.err.println("Not implemented: MAP support for getDistance()");
+					break;
+				default:
+					break;
+			}
+		}
+
+		if (totalPonderation > 0) {
+			return distance / totalPonderation;
+		}
+
+		return 0.0;
+	}
+
+	private double getPropertyPonderation(ModelProperty<?> p) {
+		double propertyPonderation = 1.0;
+		if (TypeUtils.isPrimitive(p.getType()) || p.getType().equals(String.class) || p.isStringConvertable()) {
+			propertyPonderation = 1.0;
+		}
+		try {
+			if (p.getAccessedEntity() != null) {
+				propertyPonderation = p.getAccessedEntity().getPropertiesSize();
+			}
+		} catch (ModelDefinitionException e) {
+			e.printStackTrace();
+		}
+		// System.out.println("Ponderation for property: " + p.getPropertyIdentifier() + " " + propertyPonderation);
+		return propertyPonderation;
+	}
+
+	public double getDistanceBetweenValues(Object v1, Object v2) {
+		if (v1 == null) {
+			return (v2 == null ? 0.0 : 1.0);
+		}
+		if (v2 == null) {
+			return (v1 == null ? 0.0 : 1.0);
+		}
+		if (v1 == v2) {
+			return 0;
+		}
+		if (v1.equals(v2)) {
+			return 0;
+		}
+		if (TypeUtils.isPrimitive(v1.getClass()) || v1 instanceof String) {
+			String s1 = v1.toString();
+			String s2 = v2.toString();
+			return (double) StringUtils.levenshteinDistance(s1, s2) / (double) Math.max(s1.length(), s2.length());
+		}
+		if (v1 instanceof AccessibleProxyObject && v2 instanceof AccessibleProxyObject) {
+			ProxyMethodHandler<?> handler = getModelFactory().getHandler(v1);
+			return handler.getDistance(v2);
+		}
+		return 1.0;
+	}
+
+	private double getDistanceBetweenListValues(List<Object> l1, List<Object> l2) {
+		if (l1 == null) {
+			return (l2 == null ? 0.0 : 1.0);
+		}
+		if (l2 == null) {
+			return (l1 == null ? 0.0 : 1.0);
+		}
+		if (l1 == l2) {
+			return 0;
+		}
+		if (l1.equals(l2)) {
+			return 0;
+		}
+		ListMatching matching = match(l1, l2);
+		System.out.println("Matching=" + matching);
+		double total = matching.added.size() + matching.removed.size() + matching.matchedList.size();
+		double score = matching.added.size() + matching.removed.size();
+		for (Matched m : matching.matchedList) {
+			Object o1 = l1.get(m.idx1);
+			Object o2 = l2.get(m.idx2);
+			score += getDistanceBetweenValues(o1, o2);
+		}
+		return score / total;
 	}
 
 	/**
@@ -1784,9 +2086,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	protected I cloneObject(Object... context) throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
 
 		/*System.out.println("Cloning " + getObject());
-		for (Object o : context) {
-			System.out.println("Context: " + o);
-		}*/
+			for (Object o : context) {
+				System.out.println("Context: " + o);
+			}*/
 
 		if (context != null && context.length == 1 && context[0].getClass().isArray()) {
 			context = (Object[]) context[0];
@@ -1870,9 +2172,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 									else {
 										if (singleValue != null) {
 											/*if (singleValue instanceof String) {
-												clonedObjectHandler.invokeSetter(p, new String((String) singleValue));
-											}
-											else*/ if (singleValue instanceof DataBinding) {
+														clonedObjectHandler.invokeSetter(p, new String((String) singleValue));
+													}
+													else*/ if (singleValue instanceof DataBinding) {
 												clonedObjectHandler.invokeSetter(p, ((DataBinding<?>) singleValue).clone());
 											}
 											else {
@@ -1925,8 +2227,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 												}
 											} // SGU: removed this code i think it's wrong
 											/*else {
-											clonedObjectHandler.invokeAdder(p, value);
-											}*/
+													clonedObjectHandler.invokeAdder(p, value);
+													}*/
 											break;
 										case REFERENCE:
 											clonedObjectHandler.invokeAdder(p, value);
@@ -1997,20 +2299,20 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 									else if (ModelEntity.isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
 										// boolean debug = false;
 										/*if (p.getPropertyIdentifier().equals("startShape")) {
-										System.out.println("Tiens, pour startShape, singleValue=" + singleValue);
-										debug = true;
-										}*/
+												System.out.println("Tiens, pour startShape, singleValue=" + singleValue);
+												debug = true;
+												}*/
 										Object clonedValue = clonedObjects.get(singleValue);
 										/*if (debug) {
-										System.out.println("clonedValue=" + clonedValue + " singleValue=" + singleValue);
-										System.out.println("context=" + context);
-										System.out.println("isPartOfContext=" + isPartOfContext(singleValue, EmbeddingType.CLOSURE, context));
-										}*/
+												System.out.println("clonedValue=" + clonedValue + " singleValue=" + singleValue);
+												System.out.println("context=" + context);
+												System.out.println("isPartOfContext=" + isPartOfContext(singleValue, EmbeddingType.CLOSURE, context));
+												}*/
 										if (!isPartOfContext(singleValue, EmbeddingType.CLOSURE, context)) {
 											clonedValue = null;
 											/*if (debug) {
-											System.out.println("mais pas dans le contexte !!!");
-											}*/
+													System.out.println("mais pas dans le contexte !!!");
+													}*/
 										}
 										clonedObjectHandler.invokeSetter(p, clonedValue);
 										// clonedObjectHandler.internallyInvokeSetter(p, clonedValue);
@@ -2058,10 +2360,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						if (values != null) {
 							List<?> valuesToClone = new ArrayList<>(values);
 							/*System.out.println("Cloning of property " + p);
-							System.out.println("Values to clone are: ");
-							for (Object value : valuesToClone) {
-							System.out.println("* " + value);
-							}*/
+									System.out.println("Values to clone are: ");
+									for (Object value : valuesToClone) {
+									System.out.println("* " + value);
+									}*/
 							for (Object value : valuesToClone) {
 								switch (p.getCloningStrategy()) {
 									case CLONE:
@@ -2509,6 +2811,177 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			this.modified = modified;
 			firePropertyChange(MODIFIED, !modified, modified);
 		}
+	}
+
+	static class Matched {
+		int idx1 = -1;
+		int idx2 = -1;
+
+		public Matched(int idx1, int idx2) {
+			super();
+			this.idx1 = idx1;
+			this.idx2 = idx2;
+		}
+
+		@Override
+		public String toString() {
+			return "Matched(" + idx1 + "," + idx2 + ")";
+		}
+	}
+
+	static class Added {
+		// Index of object in new list
+		int originalIndex = -1;
+		int insertedIndex = -1;
+
+		public Added(int originalIndex, int insertedIndex) {
+			super();
+			this.originalIndex = originalIndex;
+			this.insertedIndex = insertedIndex;
+		}
+
+		@Override
+		public String toString() {
+			return "Added(" + originalIndex + "," + insertedIndex + ")";
+		}
+	}
+
+	static class Removed {
+		// Index of object in initial list
+		int removedIndex = -1;
+
+		public Removed(int removedIndex) {
+			super();
+			this.removedIndex = removedIndex;
+		}
+
+		@Override
+		public String toString() {
+			return "Removed(" + removedIndex + ")";
+		}
+	}
+
+	static class ListMatching {
+		List<Removed> removed = new ArrayList<>();
+		List<Added> added = new ArrayList<>();
+		List<Matched> matchedList = new ArrayList<>();
+
+		public Matched getMatchedForList2Index(int index) {
+			for (Matched m : matchedList) {
+				if (m.idx2 == index) {
+					return m;
+				}
+			}
+			return null;
+		}
+
+		public Matched getMatchedForList1Index(int index) {
+			for (Matched m : matchedList) {
+				if (m.idx1 == index) {
+					return m;
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public String toString() {
+			StringBuffer sb = new StringBuffer();
+			sb.append("Matched:" + matchedList);
+			sb.append(" Added:" + added);
+			sb.append(" Removed:" + removed);
+			return sb.toString();
+		}
+	}
+
+	private ListMatching match(List<Object> l1, List<Object> l2) {
+		return bruteForceMatch(l1, l2);
+	}
+
+	private ListMatching bruteForceMatch(List<Object> l1, List<Object> l2) {
+		ListMatching returned = new ListMatching();
+
+		List<Object> list1 = new ArrayList<>(l1);
+		List<Object> list2 = new ArrayList<>(l2);
+
+		while (list1.size() > 0 && list2.size() > 0) {
+			Matched matched = getBestMatch(list1, list2);
+			Object o1 = list1.get(matched.idx1);
+			Object o2 = list2.get(matched.idx2);
+			matched.idx1 = l1.indexOf(list1.get(matched.idx1));
+			matched.idx2 = l2.indexOf(list2.get(matched.idx2));
+			// System.out.println(
+			// "Matched " + getModelFactory().stringRepresentation(o1) + " and " + getModelFactory().stringRepresentation(o2));
+			returned.matchedList.add(matched);
+			list1.remove(o1);
+			list2.remove(o2);
+		}
+
+		if (list1.size() > 0) {
+			// Removed
+			for (int i = 0; i < list1.size(); i++) {
+				returned.removed.add(new Removed(l1.indexOf(list1.get(i))));
+			}
+		}
+
+		if (list2.size() > 0) {
+			// Added
+			for (int i = 0; i < list2.size(); i++) {
+				int insertionIndex = 0;
+				int originalIndex = l2.indexOf(list2.get(i));
+				int current = originalIndex - 1;
+				while (insertionIndex == -1 && current >= 0) {
+					Matched m = returned.getMatchedForList2Index(originalIndex);
+					if (m != null) {
+						insertionIndex = m.idx1 + 1;
+					}
+					current--;
+				}
+				returned.added.add(new Added(l2.indexOf(list2.get(i)), insertionIndex));
+			}
+		}
+
+		return returned;
+	}
+
+	private Matched getBestMatch(List<Object> l1, List<Object> l2) {
+		Matched returned = null;
+		double bestDistance = Double.POSITIVE_INFINITY;
+		for (int i = 0; i < l1.size(); i++) {
+			Object o1 = l1.get(i);
+			for (int j = 0; j < l2.size(); j++) {
+				Object o2 = l2.get(j);
+				double d = getDistanceBetweenValues(o1, o2);
+				if (d < bestDistance) {
+					returned = new Matched(i, j);
+					bestDistance = d;
+				}
+			}
+		}
+		return returned;
+	}
+
+	private ListMatching stupidMatch(List<Object> l1, List<Object> l2) {
+		System.out.println("On matche les deux listes " + l1 + " et " + l2);
+		ListMatching returned = new ListMatching();
+		if (l1.size() <= l2.size()) {
+			for (int i = 0; i < l1.size(); i++) {
+				returned.matchedList.add(new Matched(i, i));
+			}
+			for (int i = l1.size(); i < l2.size(); i++) {
+				returned.added.add(new Added(i, i));
+			}
+		}
+		else if (l1.size() > l2.size()) {
+			for (int i = 0; i < l1.size(); i++) {
+				returned.matchedList.add(new Matched(i, i));
+			}
+			for (int i = l2.size(); i < l1.size(); i++) {
+				returned.removed.add(new Removed(i));
+			}
+		}
+		System.out.println("Return " + returned);
+		return returned;
 	}
 
 }
