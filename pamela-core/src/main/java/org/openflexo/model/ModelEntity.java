@@ -52,7 +52,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.annotation.Nonnull;
+
 import org.openflexo.connie.binding.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
@@ -1083,11 +1085,21 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			return true;
 		}
 		else {
-			if (method.isDefault()) { return true; }
-			if (method.getAnnotation(Getter.class) != null) { return true; }
-			if (method.getAnnotation(Setter.class) != null) { return true; }
-			if (method.getAnnotation(Finder.class) != null) { return true; }
-			if (method.getAnnotation(Initializer.class) != null) { return true; }
+			if (method.isDefault()) {
+				return true;
+			}
+			if (method.getAnnotation(Getter.class) != null) {
+				return true;
+			}
+			if (method.getAnnotation(Setter.class) != null) {
+				return true;
+			}
+			if (method.getAnnotation(Finder.class) != null) {
+				return true;
+			}
+			if (method.getAnnotation(Initializer.class) != null) {
+				return true;
+			}
 
 			// This has not been recognized as a property
 			if (HasPropertyChangeSupport.class.isAssignableFrom(getImplementedInterface())) {
@@ -1117,6 +1129,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.SET_MODIFIED)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SET_MODIFIED)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DESTROY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UPDATE_WITH_OBJECT)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.EQUALS_OBJECT)) {
 					return true;
 				}
