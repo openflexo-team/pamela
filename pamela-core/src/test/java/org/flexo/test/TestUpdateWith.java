@@ -274,7 +274,7 @@ public class TestUpdateWith implements PropertyChangeListener {
 	}
 
 	/**
-	 * No structural modification of compared lists
+	 * We try to match lists with a value to be added at the top of the list
 	 * 
 	 * @throws Exception
 	 */
@@ -303,9 +303,9 @@ public class TestUpdateWith implements PropertyChangeListener {
 		ConceptB b2 = a2.getConceptB();
 
 		ConceptC c22 = a2.getConceptCs().get(0);
+		c22.setV1("Tom2");
 		ConceptC c23 = a2.getConceptCs().get(1);
-		// a2.removeFromConceptCs(c22);
-		// a2.removeFromConceptCs(c23);
+		c23.setV2("Julien2");
 
 		ConceptC c21 = factory.newInstance(ConceptC.class);
 		c21.setV1("Riri");
@@ -313,15 +313,10 @@ public class TestUpdateWith implements PropertyChangeListener {
 		c21.setV3("Loulou");
 		a2.addToConceptCs(c21);
 		a2.moveConceptCToIndex(c21, 0);
-		// a2.addToConceptCs(c22);
-		// a2.addToConceptCs(c23);
-
-		System.out.println("a1=" + factory.stringRepresentation(a1));
-		System.out.println("a2=" + factory.stringRepresentation(a2));
 
 		assertFalse(a1.equalsObject(a2));
 
-		assertEquals(0.166, getDistance(a1, a2), 0.01);
+		assertEquals(0.195, getDistance(a1, a2), 0.01);
 
 		// We track events on a1
 		a1.getPropertyChangeSupport().addPropertyChangeListener(this);
@@ -329,21 +324,382 @@ public class TestUpdateWith implements PropertyChangeListener {
 		c12.getPropertyChangeSupport().addPropertyChangeListener(this);
 		c13.getPropertyChangeSupport().addPropertyChangeListener(this);
 
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
 		a1.updateWith(a2);
 
-		System.out.println("a1=" + factory.stringRepresentation(a1));
-		System.out.println("a2=" + factory.stringRepresentation(a2));
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
 
 		assertEquals(3, a1.getConceptCs().size());
 		ConceptC c11 = a1.getConceptCs().get(0);
 		assertTrue(a1.equalsObject(a2));
 		assertTrue(c11.equalsObject(c21));
 
-		assertEquals(2, evts.size());
+		assertEquals(4, evts.size());
 
 		assertPropertyNotified(a1, ConceptA.CONCEPT_C, null, c11); // Creation of c11
 		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 2, 0); // Index move
+		assertPropertyNotified(c12, ConceptC.V1, "Tom", "Tom2"); // Modification of v1
+		assertPropertyNotified(c13, ConceptC.V2, "Julien", "Julien2"); // Modification of v2
 
 	}
 
+	/**
+	 * We try to match lists with a value to be added in the middle of the list
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testUpdatingWithMultipleEmbeddingAddingMiddle() throws Exception {
+
+		assertEquals(0, evts.size());
+
+		ConceptA a1 = factory.newInstance(ConceptA.class);
+		ConceptB b1 = factory.newInstance(ConceptB.class);
+		a1.setValue("Hello");
+		b1.setU1("Bonjour");
+		b1.setU2("Le monde !");
+		a1.setConceptB(b1);
+		ConceptC c11 = factory.newInstance(ConceptC.class);
+		ConceptC c13 = factory.newInstance(ConceptC.class);
+		c11.setV1("Riri");
+		c11.setV2("Fifi");
+		c11.setV3("Loulou");
+		c13.setV1("XTof");
+		c13.setV2("Julien");
+		c13.setV3("Sylvain");
+		a1.addToConceptCs(c11);
+		a1.addToConceptCs(c13);
+
+		ConceptA a2 = (ConceptA) a1.cloneObject();
+		ConceptB b2 = a2.getConceptB();
+
+		ConceptC c21 = a2.getConceptCs().get(0);
+		c21.setV1("Riri2");
+		ConceptC c23 = a2.getConceptCs().get(1);
+		c23.setV2("Julien2");
+
+		ConceptC c22 = factory.newInstance(ConceptC.class);
+		c22.setV1("Tom");
+		c22.setV2("Jerry");
+		a2.addToConceptCs(c22);
+		a2.moveConceptCToIndex(c22, 1);
+
+		assertFalse(a1.equalsObject(a2));
+
+		assertEquals(0.195, getDistance(a1, a2), 0.01);
+
+		// We track events on a1
+		a1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		b1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c11.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c13.getPropertyChangeSupport().addPropertyChangeListener(this);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		a1.updateWith(a2);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		assertEquals(3, a1.getConceptCs().size());
+		ConceptC c12 = a1.getConceptCs().get(1);
+		assertTrue(a1.equalsObject(a2));
+		assertTrue(c12.equalsObject(c22));
+
+		assertEquals(4, evts.size());
+
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, null, c12); // Creation of c12
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 2, 1); // Index move
+		assertPropertyNotified(c11, ConceptC.V1, "Riri", "Riri2"); // Modification of v1
+		assertPropertyNotified(c13, ConceptC.V2, "Julien", "Julien2"); // Modification of v2
+
+	}
+
+	/**
+	 * We try to match lists with a value to be added at the end of the list
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testUpdatingWithMultipleEmbeddingAddingEnd() throws Exception {
+
+		assertEquals(0, evts.size());
+
+		ConceptA a1 = factory.newInstance(ConceptA.class);
+		ConceptB b1 = factory.newInstance(ConceptB.class);
+		a1.setValue("Hello");
+		b1.setU1("Bonjour");
+		b1.setU2("Le monde !");
+		a1.setConceptB(b1);
+		ConceptC c11 = factory.newInstance(ConceptC.class);
+		ConceptC c12 = factory.newInstance(ConceptC.class);
+		c11.setV1("Riri");
+		c11.setV2("Fifi");
+		c11.setV3("Loulou");
+		c12.setV1("Tom");
+		c12.setV2("Jerry");
+		a1.addToConceptCs(c11);
+		a1.addToConceptCs(c12);
+
+		ConceptA a2 = (ConceptA) a1.cloneObject();
+		ConceptB b2 = a2.getConceptB();
+
+		ConceptC c21 = a2.getConceptCs().get(0);
+		c21.setV1("Riri2");
+		ConceptC c22 = a2.getConceptCs().get(1);
+		c22.setV2("Jerry2");
+
+		ConceptC c23 = factory.newInstance(ConceptC.class);
+		c23.setV1("XTof");
+		c23.setV2("Julien");
+		c23.setV3("Sylvain");
+		a2.addToConceptCs(c23);
+
+		assertFalse(a1.equalsObject(a2));
+
+		assertEquals(0.191, getDistance(a1, a2), 0.01);
+
+		// We track events on a1
+		a1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		b1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c11.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c12.getPropertyChangeSupport().addPropertyChangeListener(this);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		a1.updateWith(a2);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		assertEquals(3, a1.getConceptCs().size());
+		ConceptC c13 = a1.getConceptCs().get(2);
+		assertTrue(a1.equalsObject(a2));
+		assertTrue(c13.equalsObject(c23));
+
+		assertEquals(3, evts.size());
+
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, null, c13); // Creation of c13
+		assertPropertyNotified(c11, ConceptC.V1, "Riri", "Riri2"); // Modification of v1
+		assertPropertyNotified(c12, ConceptC.V2, "Jerry", "Jerry2"); // Modification of v2
+
+	}
+
+	/**
+	 * We try to match lists with a value to be removed at the top of the list
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testUpdatingWithMultipleEmbeddingRemovingFirst() throws Exception {
+
+		assertEquals(0, evts.size());
+
+		ConceptA a1 = factory.newInstance(ConceptA.class);
+		ConceptB b1 = factory.newInstance(ConceptB.class);
+		a1.setValue("Hello");
+		b1.setU1("Bonjour");
+		b1.setU2("Le monde !");
+		a1.setConceptB(b1);
+		ConceptC c11 = factory.newInstance(ConceptC.class);
+		ConceptC c12 = factory.newInstance(ConceptC.class);
+		ConceptC c13 = factory.newInstance(ConceptC.class);
+		c11.setV1("Riri");
+		c11.setV2("Fifi");
+		c11.setV3("Loulou");
+		c12.setV1("Tom");
+		c12.setV2("Jerry");
+		c13.setV1("XTof");
+		c13.setV2("Julien");
+		c13.setV3("Sylvain");
+		a1.addToConceptCs(c11);
+		a1.addToConceptCs(c12);
+		a1.addToConceptCs(c13);
+
+		ConceptA a2 = (ConceptA) a1.cloneObject();
+		ConceptB b2 = a2.getConceptB();
+
+		ConceptC c21 = a2.getConceptCs().get(0);
+		ConceptC c22 = a2.getConceptCs().get(1);
+		ConceptC c23 = a2.getConceptCs().get(2);
+
+		a2.removeFromConceptCs(c21);
+		c22.setV1("Tom2");
+		c23.setV2("Julien2");
+
+		assertFalse(a1.equalsObject(a2));
+
+		assertEquals(0.195, getDistance(a1, a2), 0.01);
+
+		// We track events on a1
+		a1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		b1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c12.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c13.getPropertyChangeSupport().addPropertyChangeListener(this);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		a1.updateWith(a2);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		assertEquals(2, a1.getConceptCs().size());
+		assertTrue(a1.equalsObject(a2));
+
+		assertEquals(3, evts.size());
+
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, c11, null); // Deletion of c11
+		assertPropertyNotified(c12, ConceptC.V1, "Tom", "Tom2"); // Modification of v1
+		assertPropertyNotified(c13, ConceptC.V2, "Julien", "Julien2"); // Modification of v2
+
+	}
+
+	/**
+	 * We try to match lists with a value to be removed in the middle of the list
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testUpdatingWithMultipleEmbeddingRemovingMiddle() throws Exception {
+
+		assertEquals(0, evts.size());
+
+		ConceptA a1 = factory.newInstance(ConceptA.class);
+		ConceptB b1 = factory.newInstance(ConceptB.class);
+		a1.setValue("Hello");
+		b1.setU1("Bonjour");
+		b1.setU2("Le monde !");
+		a1.setConceptB(b1);
+		ConceptC c11 = factory.newInstance(ConceptC.class);
+		ConceptC c12 = factory.newInstance(ConceptC.class);
+		ConceptC c13 = factory.newInstance(ConceptC.class);
+		c11.setV1("Riri");
+		c11.setV2("Fifi");
+		c11.setV3("Loulou");
+		c12.setV1("Tom");
+		c12.setV2("Jerry");
+		c13.setV1("XTof");
+		c13.setV2("Julien");
+		c13.setV3("Sylvain");
+		a1.addToConceptCs(c11);
+		a1.addToConceptCs(c12);
+		a1.addToConceptCs(c13);
+
+		ConceptA a2 = (ConceptA) a1.cloneObject();
+		ConceptB b2 = a2.getConceptB();
+
+		ConceptC c21 = a2.getConceptCs().get(0);
+		ConceptC c22 = a2.getConceptCs().get(1);
+		ConceptC c23 = a2.getConceptCs().get(2);
+
+		a2.removeFromConceptCs(c22);
+		c21.setV1("Riri2");
+		c23.setV2("Julien2");
+
+		assertFalse(a1.equalsObject(a2));
+
+		assertEquals(0.195, getDistance(a1, a2), 0.01);
+
+		// We track events on a1
+		a1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		b1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c11.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c13.getPropertyChangeSupport().addPropertyChangeListener(this);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		a1.updateWith(a2);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		assertEquals(2, a1.getConceptCs().size());
+		assertTrue(a1.equalsObject(a2));
+
+		assertEquals(3, evts.size());
+
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, c12, null); // Deletion of c12
+		assertPropertyNotified(c11, ConceptC.V1, "Riri", "Riri2"); // Modification of v1
+		assertPropertyNotified(c13, ConceptC.V2, "Julien", "Julien2"); // Modification of v2
+
+	}
+
+	/**
+	 * We try to match lists with a value to be removed at the end of the list
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testUpdatingWithMultipleEmbeddingRemovingEnd() throws Exception {
+
+		assertEquals(0, evts.size());
+
+		ConceptA a1 = factory.newInstance(ConceptA.class);
+		ConceptB b1 = factory.newInstance(ConceptB.class);
+		a1.setValue("Hello");
+		b1.setU1("Bonjour");
+		b1.setU2("Le monde !");
+		a1.setConceptB(b1);
+		ConceptC c11 = factory.newInstance(ConceptC.class);
+		ConceptC c12 = factory.newInstance(ConceptC.class);
+		ConceptC c13 = factory.newInstance(ConceptC.class);
+		c11.setV1("Riri");
+		c11.setV2("Fifi");
+		c11.setV3("Loulou");
+		c12.setV1("Tom");
+		c12.setV2("Jerry");
+		c13.setV1("XTof");
+		c13.setV2("Julien");
+		c13.setV3("Sylvain");
+		a1.addToConceptCs(c11);
+		a1.addToConceptCs(c12);
+		a1.addToConceptCs(c13);
+
+		ConceptA a2 = (ConceptA) a1.cloneObject();
+		ConceptB b2 = a2.getConceptB();
+
+		ConceptC c21 = a2.getConceptCs().get(0);
+		ConceptC c22 = a2.getConceptCs().get(1);
+		ConceptC c23 = a2.getConceptCs().get(2);
+
+		a2.removeFromConceptCs(c23);
+		c21.setV1("Riri2");
+		c22.setV1("Tom2");
+
+		assertFalse(a1.equalsObject(a2));
+
+		assertEquals(0.198, getDistance(a1, a2), 0.01);
+
+		// We track events on a1
+		a1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		b1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c11.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c12.getPropertyChangeSupport().addPropertyChangeListener(this);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		a1.updateWith(a2);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		assertEquals(2, a1.getConceptCs().size());
+		assertTrue(a1.equalsObject(a2));
+
+		assertEquals(3, evts.size());
+
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, c13, null); // Deletion of c13
+		assertPropertyNotified(c11, ConceptC.V1, "Riri", "Riri2"); // Modification of v1
+		assertPropertyNotified(c12, ConceptC.V1, "Tom", "Tom2"); // Modification of v1
+
+	}
 }

@@ -1479,20 +1479,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
 			getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
 		}
-		/*switch (property.getCardinality()) {
-			case SINGLE:
-				throw new ModelExecutionException(
-						"Cannot invoke REMOVER on " + property.getPropertyIdentifier() + ": Invalid cardinality SINGLE");
-			case LIST:
-				invokeRemoverForListCardinality(property, value);
-				break;
-			case MAP:
-				invokeRemoverForMapCardinality(property, value);
-				break;
-			default:
-				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
-		}*/
-		System.out.println("Prout, faudrait deplacer l'item " + value + " dans la pte " + property + " a l'index " + index);
 
 		List list = (List) invokeGetter(property);
 		int oldIndex = list.indexOf(value);
@@ -3008,15 +2994,18 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		if (list2.size() > 0) {
 			// Added
 			for (int i = 0; i < list2.size(); i++) {
-				int insertionIndex = 0;
+				int insertionIndex = -1;
 				int originalIndex = l2.indexOf(list2.get(i));
 				int current = originalIndex - 1;
 				while (insertionIndex == -1 && current >= 0) {
-					Matched m = returned.getMatchedForList2Index(originalIndex);
+					Matched m = returned.getMatchedForList2Index(current);
 					if (m != null) {
 						insertionIndex = m.idx1 + 1;
 					}
 					current--;
+				}
+				if (insertionIndex == -1) {
+					insertionIndex = 0;
 				}
 				returned.added.add(new Added(l2.indexOf(list2.get(i)), insertionIndex));
 			}
