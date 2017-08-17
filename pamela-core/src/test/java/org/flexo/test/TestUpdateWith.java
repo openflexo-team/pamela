@@ -64,14 +64,29 @@ public class TestUpdateWith implements PropertyChangeListener {
 		evts.add(evt);
 	}
 
+	private static boolean isEqual(Object oldValue, Object newValue) {
+		if (oldValue == null) {
+			return newValue == null;
+		}
+		if (oldValue == newValue) {
+			return true;
+		}
+		return oldValue.equals(newValue);
+
+	}
+
 	private void assertPropertyNotified(Object source, String propertyName, Object oldValue, Object newValue) {
 		for (PropertyChangeEvent evt : evts) {
-			if (evt.getSource().equals(source) && evt.getPropertyName().equals(propertyName) && evt.getOldValue().equals(oldValue)
-					&& evt.getNewValue().equals(newValue)) {
+			if (evt.getSource().equals(source) && evt.getPropertyName().equals(propertyName) && isEqual(evt.getOldValue(), oldValue)
+					&& isEqual(evt.getNewValue(), newValue)) {
 				return;
 			}
 		}
 		fail("Property notification " + propertyName + " from " + oldValue + " to " + newValue + " not fired !");
+	}
+
+	private double getDistance(Object o1, Object o2) {
+		return factory.getHandler(o1).getDistance(o2);
 	}
 
 	@Test
@@ -289,16 +304,17 @@ public class TestUpdateWith implements PropertyChangeListener {
 
 		ConceptC c22 = a2.getConceptCs().get(0);
 		ConceptC c23 = a2.getConceptCs().get(1);
-		a2.removeFromConceptCs(c22);
-		a2.removeFromConceptCs(c23);
+		// a2.removeFromConceptCs(c22);
+		// a2.removeFromConceptCs(c23);
 
 		ConceptC c21 = factory.newInstance(ConceptC.class);
 		c21.setV1("Riri");
 		c21.setV2("Fifi");
-		c21.setV1("Loulou");
+		c21.setV3("Loulou");
 		a2.addToConceptCs(c21);
-		a2.addToConceptCs(c22);
-		a2.addToConceptCs(c23);
+		a2.moveConceptCToIndex(c21, 0);
+		// a2.addToConceptCs(c22);
+		// a2.addToConceptCs(c23);
 
 		System.out.println("a1=" + factory.stringRepresentation(a1));
 		System.out.println("a2=" + factory.stringRepresentation(a2));
@@ -319,16 +335,15 @@ public class TestUpdateWith implements PropertyChangeListener {
 		System.out.println("a2=" + factory.stringRepresentation(a2));
 
 		assertEquals(3, a1.getConceptCs().size());
+		ConceptC c11 = a1.getConceptCs().get(0);
 		assertTrue(a1.equalsObject(a2));
+		assertTrue(c11.equalsObject(c21));
 
-		assertEquals(1, evts.size());
+		assertEquals(2, evts.size());
 
-		assertPropertyNotified(a1, "conceptCs", null, c21);
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, null, c11); // Creation of c11
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 2, 0); // Index move
 
-	}
-
-	private double getDistance(Object o1, Object o2) {
-		return factory.getHandler(o1).getDistance(o2);
 	}
 
 }

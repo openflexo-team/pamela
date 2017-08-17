@@ -82,6 +82,7 @@ import org.openflexo.model.annotations.Getter;
 import org.openflexo.model.annotations.Getter.Cardinality;
 import org.openflexo.model.annotations.Initializer;
 import org.openflexo.model.annotations.PastingPoint;
+import org.openflexo.model.annotations.Reindexer;
 import org.openflexo.model.annotations.Remover;
 import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.exceptions.InvalidDataException;
@@ -431,6 +432,13 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return null;
 		}
 
+		Reindexer reindexer = method.getAnnotation(Reindexer.class);
+		if (reindexer != null) {
+			String id = reindexer.value();
+			internallyInvokerReindexer(id, args);
+			return null;
+		}
+
 		Finder finder = method.getAnnotation(Finder.class);
 		if (finder != null) {
 			return internallyInvokeFinder(finder, args);
@@ -685,6 +693,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		internallyInvokeRemover(property, args[0], true);
 	}
 
+	private void internallyInvokerReindexer(String id, Object[] args) throws ModelDefinitionException {
+		ModelProperty<? super I> property = getModelEntity().getModelProperty(id);
+		internallyInvokeReindexer(property, args[0], (Integer) args[1], true);
+	}
+
 	/**
 	 * Deletes the current object and all its embedded properties as defined by the {@link Embedded} and {@link ComplexEmbedded}
 	 * annotations. Moreover, the provided <code>context</code> represents a list of objects that will also be eventually deleted and which
@@ -928,6 +941,25 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
+	public void invokeReindexer(ModelProperty<? super I> property, Object value, int index) {
+		try {
+			if (property.getReindexerMethod() != null) {
+				property.getReindexerMethod().invoke(getObject(), value, index);
+			}
+			else {
+				internallyInvokeReindexer(property, value, index, true);
+			}
+		} catch (IllegalArgumentException e) {
+			throw new ModelExecutionException(e);
+		} catch (IllegalAccessException e) {
+			throw new ModelExecutionException(e);
+		} catch (InvocationTargetException e) {
+			throw new ModelExecutionException(e);
+		} catch (ModelDefinitionException e) {
+			throw new ModelExecutionException(e);
+		}
+	}
+
 	public void invokeDeleter(Object... context) {
 		// TODO manage with deleter
 		if (getObject() instanceof DeletableProxyObject) {
@@ -963,6 +995,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	public void invokeRemover(String propertyIdentifier, Object value) throws ModelDefinitionException {
 		invokeRemover(getModelEntity().getModelProperty(propertyIdentifier), value);
+	}
+
+	public void invokeReindexer(String propertyIdentifier, Object value, int index) throws ModelDefinitionException {
+		invokeReindexer(getModelEntity().getModelProperty(propertyIdentifier), value, index);
 	}
 
 	private Object internallyInvokeGetter(ModelProperty<? super I> property) throws ModelDefinitionException {
@@ -1436,6 +1472,51 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
+	private void internallyInvokeReindexer(ModelProperty<? super I> property, Object value, int index, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		// System.out.println("Invoke REINDEXER "+property.getPropertyIdentifier());
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
+			getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
+		}
+		/*switch (property.getCardinality()) {
+			case SINGLE:
+				throw new ModelExecutionException(
+						"Cannot invoke REMOVER on " + property.getPropertyIdentifier() + ": Invalid cardinality SINGLE");
+			case LIST:
+				invokeRemoverForListCardinality(property, value);
+				break;
+			case MAP:
+				invokeRemoverForMapCardinality(property, value);
+				break;
+			default:
+				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
+		}*/
+		System.out.println("Prout, faudrait deplacer l'item " + value + " dans la pte " + property + " a l'index " + index);
+
+		List list = (List) invokeGetter(property);
+		int oldIndex = list.indexOf(value);
+
+		if (oldIndex > -1) {
+			if (oldIndex != index) {
+				list.remove(value);
+				if (index == -1) {
+					list.add(value);
+				}
+				else {
+					list.add(index, value);
+				}
+				firePropertyChange(property.getPropertyIdentifier(), oldIndex, index);
+			}
+			else {
+				// Index is already correct
+			}
+		}
+		else {
+			System.err.println("Inconsistant data: could not find object: " + value);
+		}
+	}
+
 	private void invokeRemoverForListCardinality(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
 		if (property.getRemover() == null) {
 			throw new ModelExecutionException("Remover is not defined for property " + property);
@@ -1893,7 +1974,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					for (Added a : matching.added) {
 						Object addedObject = oppositeValues.get(a.originalIndex);
 						invokeAdder(p, addedObject);
-						// TODO: handle insertion index
+						invokeReindexer(p, addedObject, a.insertedIndex);
 					}
 					break;
 				case MAP:

@@ -68,6 +68,7 @@ import org.openflexo.model.annotations.Import;
 import org.openflexo.model.annotations.Imports;
 import org.openflexo.model.annotations.Initializer;
 import org.openflexo.model.annotations.Modify;
+import org.openflexo.model.annotations.Reindexer;
 import org.openflexo.model.annotations.Remover;
 import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.StringConverter;
@@ -736,6 +737,10 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			}
 			Remover aRemover = m.getAnnotation(Remover.class);
 			if (aRemover != null && aRemover.value().equals(propertyIdentifier)) {
+				return true;
+			}
+			Reindexer aReindexer = m.getAnnotation(Reindexer.class);
+			if (aReindexer != null && aReindexer.value().equals(propertyIdentifier)) {
 				return true;
 			}
 		}

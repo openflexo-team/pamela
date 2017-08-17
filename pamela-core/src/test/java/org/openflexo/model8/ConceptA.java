@@ -44,6 +44,7 @@ import org.openflexo.model.annotations.Embedded;
 import org.openflexo.model.annotations.Getter;
 import org.openflexo.model.annotations.Getter.Cardinality;
 import org.openflexo.model.annotations.ModelEntity;
+import org.openflexo.model.annotations.Reindexer;
 import org.openflexo.model.annotations.Remover;
 import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.XMLAttribute;
@@ -56,7 +57,7 @@ import org.openflexo.model.factory.CloneableProxyObject;
 public interface ConceptA extends AccessibleProxyObject, CloneableProxyObject {
 
 	static final String CONCEPT_B = "conceptB";
-	static final String CONCEPT_C = "conceptC";
+	static final String CONCEPT_C = "conceptCs";
 	static final String VALUE = "value";
 
 	@Getter(VALUE)
@@ -87,7 +88,7 @@ public interface ConceptA extends AccessibleProxyObject, CloneableProxyObject {
 	@Remover(CONCEPT_C)
 	public void removeFromConceptCs(ConceptC c);
 
-	// @Reindexer(CONCEPT_C)
-	// public void moveConceptCToIndex(ConceptC c, int index);
+	@Reindexer(CONCEPT_C)
+	public void moveConceptCToIndex(ConceptC c, int index);
 
 }
