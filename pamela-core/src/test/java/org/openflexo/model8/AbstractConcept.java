@@ -35,58 +35,13 @@
 
 package org.openflexo.model8;
 
-import java.util.List;
-
-import org.openflexo.model.annotations.Adder;
-import org.openflexo.model.annotations.CloningStrategy;
-import org.openflexo.model.annotations.CloningStrategy.StrategyType;
-import org.openflexo.model.annotations.Embedded;
-import org.openflexo.model.annotations.Getter;
-import org.openflexo.model.annotations.Getter.Cardinality;
 import org.openflexo.model.annotations.ModelEntity;
-import org.openflexo.model.annotations.Reindexer;
-import org.openflexo.model.annotations.Remover;
-import org.openflexo.model.annotations.Setter;
-import org.openflexo.model.annotations.XMLAttribute;
 import org.openflexo.model.annotations.XMLElement;
+import org.openflexo.model.factory.AccessibleProxyObject;
+import org.openflexo.model.factory.CloneableProxyObject;
 
 @ModelEntity
 @XMLElement
-public interface ConceptA extends AbstractConcept {
-
-	static final String CONCEPT_B = "conceptB";
-	static final String CONCEPT_C = "conceptCs";
-	static final String VALUE = "value";
-
-	@Getter(VALUE)
-	@XMLAttribute
-	String getValue();
-
-	@Setter(VALUE)
-	public void setValue(String value);
-
-	@Getter(CONCEPT_B)
-	@Embedded
-	@CloningStrategy(StrategyType.CLONE)
-	@XMLElement
-	ConceptB getConceptB();
-
-	@Setter(CONCEPT_B)
-	void setConceptB(ConceptB value);
-
-	@Getter(value = CONCEPT_C, cardinality = Cardinality.LIST)
-	@Embedded
-	@CloningStrategy(StrategyType.CLONE)
-	@XMLElement
-	public List<ConceptC> getConceptCs();
-
-	@Adder(CONCEPT_C)
-	public void addToConceptCs(ConceptC c);
-
-	@Remover(CONCEPT_C)
-	public void removeFromConceptCs(ConceptC c);
-
-	@Reindexer(CONCEPT_C)
-	public void moveConceptCToIndex(ConceptC c, int index);
+public interface AbstractConcept extends AccessibleProxyObject, CloneableProxyObject {
 
 }

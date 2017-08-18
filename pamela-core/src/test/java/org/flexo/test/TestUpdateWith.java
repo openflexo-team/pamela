@@ -20,6 +20,8 @@ import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model8.ConceptA;
 import org.openflexo.model8.ConceptB;
 import org.openflexo.model8.ConceptC;
+import org.openflexo.model8.ConceptC1;
+import org.openflexo.model8.ConceptC2;
 
 /**
  * Test PAMELA updateWith(Object) feature
@@ -36,15 +38,19 @@ public class TestUpdateWith implements PropertyChangeListener {
 	public void testFactory() {
 
 		try {
-			factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(ConceptA.class));
+			factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(ConceptA.class, ConceptC1.class, ConceptC2.class));
 
 			ModelEntity<ConceptA> conceptAEntity = factory.getModelContext().getModelEntity(ConceptA.class);
 			ModelEntity<ConceptB> conceptBEntity = factory.getModelContext().getModelEntity(ConceptB.class);
 			ModelEntity<ConceptC> conceptCEntity = factory.getModelContext().getModelEntity(ConceptC.class);
+			ModelEntity<ConceptC1> conceptC1Entity = factory.getModelContext().getModelEntity(ConceptC1.class);
+			ModelEntity<ConceptC2> conceptC2Entity = factory.getModelContext().getModelEntity(ConceptC2.class);
 
 			assertNotNull(conceptAEntity);
 			assertNotNull(conceptBEntity);
 			assertNotNull(conceptCEntity);
+			assertNotNull(conceptC1Entity);
+			assertNotNull(conceptC2Entity);
 
 		} catch (ModelDefinitionException e) {
 			e.printStackTrace();
@@ -324,18 +330,22 @@ public class TestUpdateWith implements PropertyChangeListener {
 		c12.getPropertyChangeSupport().addPropertyChangeListener(this);
 		c13.getPropertyChangeSupport().addPropertyChangeListener(this);
 
-		// System.out.println("a1=" + factory.stringRepresentation(a1));
-		// System.out.println("a2=" + factory.stringRepresentation(a2));
+		System.out.println("a1=" + factory.stringRepresentation(a1));
+		System.out.println("a2=" + factory.stringRepresentation(a2));
 
 		a1.updateWith(a2);
 
-		// System.out.println("a1=" + factory.stringRepresentation(a1));
-		// System.out.println("a2=" + factory.stringRepresentation(a2));
+		System.out.println("a1=" + factory.stringRepresentation(a1));
+		System.out.println("a2=" + factory.stringRepresentation(a2));
 
 		assertEquals(3, a1.getConceptCs().size());
 		ConceptC c11 = a1.getConceptCs().get(0);
 		assertTrue(a1.equalsObject(a2));
 		assertTrue(c11.equalsObject(c21));
+
+		for (PropertyChangeEvent evt : evts) {
+			System.out.println(" > " + evt);
+		}
 
 		assertEquals(4, evts.size());
 
@@ -702,4 +712,201 @@ public class TestUpdateWith implements PropertyChangeListener {
 		assertPropertyNotified(c12, ConceptC.V1, "Tom", "Tom2"); // Modification of v1
 
 	}
+
+	/**
+	 * We try to match lists with heterogeneous types
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testUpdatingAvoidUpdatingWithDifferentTypes() throws Exception {
+
+		assertEquals(0, evts.size());
+
+		ConceptA a1 = factory.newInstance(ConceptA.class);
+		a1.setValue("Hello");
+
+		ConceptC1 i1 = factory.newInstance(ConceptC1.class);
+		i1.setV1("First instance");
+		i1.setV5("Hello world !");
+		a1.addToConceptCs(i1);
+
+		ConceptA a2 = factory.newInstance(ConceptA.class);
+		a2.setValue("Hello guy !");
+
+		ConceptC2 i2 = factory.newInstance(ConceptC2.class);
+		i2.setV1("Second instance");
+		i2.setV6("A specific value for ConceptC2");
+		a2.addToConceptCs(i2);
+
+		assertFalse(a1.equalsObject(a2));
+
+		assertEquals(0.772, getDistance(a1, a2), 0.01);
+
+		// We track events on a1
+		a1.getPropertyChangeSupport().addPropertyChangeListener(this);
+
+		System.out.println("a1=" + factory.stringRepresentation(a1));
+		System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		a1.updateWith(a2);
+
+		System.out.println("a1=" + factory.stringRepresentation(a1));
+		System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		assertEquals(1, a1.getConceptCs().size());
+		assertTrue(a1.equalsObject(a2));
+
+		assertEquals(3, evts.size());
+
+		System.out.println("evts=" + evts);
+
+		assertPropertyNotified(a1, ConceptA.VALUE, "Hello", "Hello guy !"); // Updating of value
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, i1, null); // Deletion of i1
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, null, i2); // Adding of i2
+
+	}
+
+	/**
+	 * We try to match lists with heterogeneous types
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testUpdatingReorder() throws Exception {
+
+		assertEquals(0, evts.size());
+
+		ConceptA a1 = factory.newInstance(ConceptA.class);
+		a1.setValue("Hello");
+
+		ConceptC1 i1 = factory.newInstance(ConceptC1.class);
+		i1.setV1("First instance");
+		i1.setV5("Hello world !");
+		a1.addToConceptCs(i1);
+
+		ConceptC2 i2 = factory.newInstance(ConceptC2.class);
+		i2.setV1("Second instance");
+		i2.setV6("A specific value for ConceptC2");
+		a1.addToConceptCs(i2);
+
+		ConceptA a2 = factory.newInstance(ConceptA.class);
+		a2.setValue("Hello guy !");
+
+		ConceptC2 j2 = factory.newInstance(ConceptC2.class);
+		j2.setV1("Second instance");
+		j2.setV6("A specific value for ConceptC2");
+		a2.addToConceptCs(j2);
+
+		ConceptC1 j1 = factory.newInstance(ConceptC1.class);
+		j1.setV1("First instance");
+		j1.setV5("Hello world !");
+		a2.addToConceptCs(j1);
+
+		assertFalse(a1.equalsObject(a2));
+
+		assertEquals(0.181, getDistance(a1, a2), 0.01);
+
+		// We track events on a1
+		a1.getPropertyChangeSupport().addPropertyChangeListener(this);
+
+		System.out.println("a1=" + factory.stringRepresentation(a1));
+		System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		a1.updateWith(a2);
+
+		System.out.println("a1=" + factory.stringRepresentation(a1));
+		System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		assertTrue(a1.equalsObject(a2));
+
+		assertEquals(2, evts.size());
+
+		System.out.println("evts=" + evts);
+
+		assertPropertyNotified(a1, ConceptA.VALUE, "Hello", "Hello guy !"); // Updating of value
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 0, 1); // Move index
+
+	}
+
+	/**
+	 * We try to match lists with heterogeneous types
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testUpdatingWithMultipleEmbeddingHeterogeneousContext() throws Exception {
+
+		assertEquals(0, evts.size());
+
+		ConceptA a1 = factory.newInstance(ConceptA.class);
+		a1.setValue("Hello");
+
+		ConceptC1 i1 = factory.newInstance(ConceptC1.class);
+		i1.setV1("First instance");
+		i1.setV5("Hello world !");
+		a1.addToConceptCs(i1);
+
+		ConceptC2 i2 = factory.newInstance(ConceptC2.class);
+		i2.setV1("Second instance");
+		i2.setV6("A specific value for ConceptC2");
+		a1.addToConceptCs(i2);
+
+		ConceptC2 i3 = factory.newInstance(ConceptC2.class);
+		i3.setV1("Third instance");
+		i3.setV6("Another specific value for ConceptC2");
+		a1.addToConceptCs(i3);
+
+		ConceptC1 i4 = factory.newInstance(ConceptC1.class);
+		i4.setV1("Fourth instance");
+		i4.setV5("Nice weather today");
+		a1.addToConceptCs(i4);
+
+		ConceptC1 i5 = factory.newInstance(ConceptC1.class);
+		i5.setV1("Fifth instance");
+		i5.setV5("Hello");
+		a1.addToConceptCs(i5);
+
+		ConceptC1 i6 = factory.newInstance(ConceptC1.class);
+		i6.setV1("Sixth instance");
+		i6.setV5("Coucou");
+		a1.addToConceptCs(i6);
+
+		ConceptC2 i7 = factory.newInstance(ConceptC2.class);
+		i7.setV1("Seventh instance");
+		i7.setV6("Another specific value for ConceptC2");
+		a1.addToConceptCs(i7);
+
+		ConceptA a2 = factory.newInstance(ConceptA.class);
+		a2.setValue("Hello guy !");
+
+		assertFalse(a1.equalsObject(a2));
+
+		// assertEquals(0.198, getDistance(a1, a2), 0.01);
+
+		// We track events on a1
+		a1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		/*b1.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c11.getPropertyChangeSupport().addPropertyChangeListener(this);
+		c12.getPropertyChangeSupport().addPropertyChangeListener(this);*/
+
+		System.out.println("a1=" + factory.stringRepresentation(a1));
+		System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		// a1.updateWith(a2);
+
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		/*assertEquals(2, a1.getConceptCs().size());
+		assertTrue(a1.equalsObject(a2));
+		
+		assertEquals(3, evts.size());
+		
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, c13, null); // Deletion of c13
+		assertPropertyNotified(c11, ConceptC.V1, "Riri", "Riri2"); // Modification of v1
+		assertPropertyNotified(c12, ConceptC.V1, "Tom", "Tom2"); // Modification of v1
+		*/
+	}
+
 }

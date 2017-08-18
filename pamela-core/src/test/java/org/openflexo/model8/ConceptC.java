@@ -40,12 +40,10 @@ import org.openflexo.model.annotations.ModelEntity;
 import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.XMLAttribute;
 import org.openflexo.model.annotations.XMLElement;
-import org.openflexo.model.factory.AccessibleProxyObject;
-import org.openflexo.model.factory.CloneableProxyObject;
 
 @ModelEntity
 @XMLElement
-public interface ConceptC extends AccessibleProxyObject, CloneableProxyObject {
+public interface ConceptC extends AbstractConcept {
 
 	String V1 = "v1";
 	String V2 = "v2";

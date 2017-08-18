@@ -318,6 +318,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	public Object _invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 
+		// System.out.println("_invoke " + method);
+
 		// First, we iterate on all delegate implementations to look for eventual partial implementation (in this case, prioritar)
 		for (DelegateImplementation<? super I> delegateImplementation : delegateImplementations) {
 			if (delegateImplementation.handleMethod(method)) {
@@ -1843,26 +1845,27 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
-			switch (p.getCardinality()) {
-				case SINGLE:
-					Object singleValue = invokeGetter(p);
-					Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
-					if (!isEqual(singleValue, oppositeValue)) {
-						return false;
-					}
-					break;
-				case LIST:
-					List<Object> values = invokeGetterForListCardinality(p);
-					List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
-					if (!isEqual(values, oppositeValues)) {
-						return false;
-					}
-					/*if (values == null || oppositeValues == null) {
+			if (p.isSerializable()) {
+				switch (p.getCardinality()) {
+					case SINGLE:
+						Object singleValue = invokeGetter(p);
+						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
+						if (!isEqual(singleValue, oppositeValue)) {
+							return false;
+						}
+						break;
+					case LIST:
+						List<Object> values = invokeGetterForListCardinality(p);
+						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
+						if (!isEqual(values, oppositeValues)) {
+							return false;
+						}
+						/*if (values == null || oppositeValues == null) {
 						if (values != oppositeValues) {
 							return false;
 						}
-					}
-					else {
+						}
+						else {
 						if (values.size() != oppositeValues.size()) {
 							return false;
 						}
@@ -1873,11 +1876,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 								return false;
 							}
 						}
-					}*/
+						}*/
 
-					break;
-				default:
-					break;
+						break;
+					default:
+						break;
+				}
 			}
 		}
 		// System.out.println("ok, equals return true for " + getObject() + " and " + object);
@@ -1896,6 +1900,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * @return boolean indicating if update was successfull
 	 */
 	public boolean updateWith(Object obj) {
+
+		// System.out.println("updateWith between " + getObject() + " and " + obj);
+
 		if (getObject() == obj) {
 			return true;
 		}
@@ -1921,53 +1928,81 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
-			switch (p.getCardinality()) {
-				case SINGLE:
-					Object singleValue = invokeGetter(p);
-					Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
-					if (!isEqual(singleValue, oppositeValue)) {
-						// System.out.println("La pte " + p + " change de " + singleValue + " a " + oppositeValue);
-						try {
-							if (p.getAccessedEntity() != null && singleValue instanceof AccessibleProxyObject) {
-								((AccessibleProxyObject) singleValue).updateWith(oppositeValue);
+
+			if (p.isSerializable()) {
+				// System.out.println("[" + Thread.currentThread().getName() + "] Propriete " + p.getPropertyIdentifier());
+
+				switch (p.getCardinality()) {
+					case SINGLE:
+						Object singleValue = invokeGetter(p);
+						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
+						// System.out.println("[" + Thread.currentThread().getName() + "] Ici-1 avec " + p.getPropertyIdentifier());
+						if (!isEqual(singleValue, oppositeValue)) {
+							// System.out.println("La pte " + p + " change de " + singleValue + " a " + oppositeValue);
+							// System.out.println("[" + Thread.currentThread().getName() + "] Ici-2 avec " + p.getPropertyIdentifier());
+							try {
+								if (p.getAccessedEntity() != null && singleValue instanceof AccessibleProxyObject) {
+									// System.out
+									// .println("[" + Thread.currentThread().getName() + "] Ici-3 avec " + p.getPropertyIdentifier());
+									((AccessibleProxyObject) singleValue).updateWith(oppositeValue);
+								}
+								else {
+									// System.out
+									// .println("[" + Thread.currentThread().getName() + "] Ici-4 avec " + p.getPropertyIdentifier());
+									invokeSetter(p, oppositeValue);
+								}
+							} catch (ModelDefinitionException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
 							}
-							else {
-								invokeSetter(p, oppositeValue);
+						}
+						break;
+					case LIST:
+						Map<Object, Integer> reindex = new HashMap<>();
+						List<Object> values = invokeGetterForListCardinality(p);
+						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
+						ListMatching matching = match(values, oppositeValues);
+						System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
+						for (Matched m : matching.matchedList) {
+							Object o1 = values.get(m.idx1);
+							Object o2 = oppositeValues.get(m.idx2);
+							if (o1 instanceof AccessibleProxyObject) {
+								((AccessibleProxyObject) o1).updateWith(o2);
 							}
-						} catch (ModelDefinitionException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							// set the index
+							System.out.println("On vient de faire un set de " + getModelFactory().stringRepresentation(o1));
+							System.out.println("Matched: " + m);
+							// invokeReindexer(p, o1, m.idx2);
+							if (values.indexOf(o1) != m.idx2) {
+								// System.out.println("Tiens faudrait faire un move de " + values.indexOf(o1) + " a " + m.idx2);
+								reindex.put(o1, m.idx2);
+							}
 						}
-					}
-					break;
-				case LIST:
-					List<Object> values = invokeGetterForListCardinality(p);
-					List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
-					ListMatching matching = match(values, oppositeValues);
-					System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
-					for (Matched m : matching.matchedList) {
-						Object o1 = values.get(m.idx1);
-						Object o2 = oppositeValues.get(m.idx2);
-						if (o1 instanceof AccessibleProxyObject) {
-							((AccessibleProxyObject) o1).updateWith(o2);
+						for (Removed r : matching.removed) {
+							Object removedObject = values.get(r.removedIndex);
+							invokeRemover(p, removedObject);
 						}
-						// TODO: update reindex !
-					}
-					for (Removed r : matching.removed) {
-						Object removedObject = values.get(r.removedIndex);
-						invokeRemover(p, removedObject);
-					}
-					for (Added a : matching.added) {
-						Object addedObject = oppositeValues.get(a.originalIndex);
-						invokeAdder(p, addedObject);
-						invokeReindexer(p, addedObject, a.insertedIndex);
-					}
-					break;
-				case MAP:
-					System.err.println("Not implemented: MAP support for updateWith()");
-					break;
-				default:
-					break;
+						for (Added a : matching.added) {
+							Object addedObject = oppositeValues.get(a.originalIndex);
+							invokeAdder(p, addedObject);
+							reindex.put(addedObject, a.insertedIndex);
+							// invokeReindexer(p, addedObject, a.insertedIndex);
+						}
+						for (Object o : reindex.keySet()) {
+							int idx = reindex.get(o);
+							if (values.indexOf(o) != idx) {
+								System.out.println("Tiens faudrait faire un move de " + values.indexOf(o) + " a " + idx);
+								invokeReindexer(p, o, idx);
+							}
+						}
+
+						break;
+					case MAP:
+						System.err.println("Not implemented: MAP support for updateWith()");
+						break;
+					default:
+						break;
+				}
 			}
 		}
 
@@ -2010,56 +2045,63 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
-			double propertyPonderation = 1.0;
 
-			switch (p.getCardinality()) {
-				case SINGLE:
-					Object singleValue = invokeGetter(p);
-					Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
-					propertyPonderation = getPropertyPonderation(p);
-					if (singleValue != null || oppositeValue != null) {
-						totalPonderation += propertyPonderation;
-						if (!isEqual(singleValue, oppositeValue)) {
-							double valueDistance = getDistanceBetweenValues(singleValue, oppositeValue);
-							distance = distance + valueDistance * propertyPonderation;
-							// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + " ponderation="
-							// + propertyPonderation);
+			if (p.isSerializable()) {
+
+				double propertyPonderation = 1.0;
+
+				switch (p.getCardinality()) {
+					case SINGLE:
+						Object singleValue = invokeGetter(p);
+						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
+						propertyPonderation = getPropertyPonderation(p);
+						if (singleValue != null || oppositeValue != null) {
+							totalPonderation += propertyPonderation;
+							if (!isEqual(singleValue, oppositeValue)) {
+								double valueDistance = getDistanceBetweenValues(singleValue, oppositeValue);
+								distance = distance + valueDistance * propertyPonderation;
+								// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + "
+								// ponderation="
+								// + propertyPonderation);
+							}
+							else {
+								// System.out.println(
+								// "Property " + p.getPropertyIdentifier() + " distance=0.0" + " ponderation=" + propertyPonderation);
+							}
 						}
 						else {
-							// System.out.println(
-							// "Property " + p.getPropertyIdentifier() + " distance=0.0" + " ponderation=" + propertyPonderation);
+							// null values are ignored and not taken under account
 						}
-					}
-					else {
-						// null values are ignored and not taken under account
-					}
-					break;
-				case LIST:
-					List<Object> values = invokeGetterForListCardinality(p);
-					List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
-					propertyPonderation = Math.max(values != null ? values.size() : 0, oppositeValues != null ? oppositeValues.size() : 0);
-					if ((values != null && values.size() > 0) || (oppositeValues != null && oppositeValues.size() > 0)) {
-						totalPonderation += propertyPonderation;
-						if (!isEqual(values, oppositeValues)) {
-							double valueDistance = getDistanceBetweenListValues(values, oppositeValues);
-							distance = distance + valueDistance * propertyPonderation;
-							// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + " ponderation="
-							// + propertyPonderation);
+						break;
+					case LIST:
+						List<Object> values = invokeGetterForListCardinality(p);
+						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
+						propertyPonderation = Math.max(values != null ? values.size() : 0,
+								oppositeValues != null ? oppositeValues.size() : 0);
+						if ((values != null && values.size() > 0) || (oppositeValues != null && oppositeValues.size() > 0)) {
+							totalPonderation += propertyPonderation;
+							if (!isEqual(values, oppositeValues)) {
+								double valueDistance = getDistanceBetweenListValues(values, oppositeValues);
+								distance = distance + valueDistance * propertyPonderation;
+								// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + "
+								// ponderation="
+								// + propertyPonderation);
+							}
+							else {
+								// System.out.println(
+								// "Property " + p.getPropertyIdentifier() + " distance=0.0" + " ponderation=" + propertyPonderation);
+							}
 						}
 						else {
-							// System.out.println(
-							// "Property " + p.getPropertyIdentifier() + " distance=0.0" + " ponderation=" + propertyPonderation);
+							// null values are ignored and not taken under account
 						}
-					}
-					else {
-						// null values are ignored and not taken under account
-					}
-					break;
-				case MAP:
-					System.err.println("Not implemented: MAP support for getDistance()");
-					break;
-				default:
-					break;
+						break;
+					case MAP:
+						System.err.println("Not implemented: MAP support for getDistance()");
+						break;
+					default:
+						break;
+				}
 			}
 		}
 
@@ -2961,10 +3003,25 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
+	/**
+	 * Compute optimal matching between two lists of objects
+	 * 
+	 * @param l1
+	 * @param l2
+	 * @return
+	 */
 	private ListMatching match(List<Object> l1, List<Object> l2) {
-		return bruteForceMatch(l1, l2);
+		ListMatching returned = bruteForceMatch(l1, l2);
+		return returned;
 	}
 
+	/**
+	 * A functional algorithm, but not really optimal
+	 * 
+	 * @param l1
+	 * @param l2
+	 * @return
+	 */
 	private ListMatching bruteForceMatch(List<Object> l1, List<Object> l2) {
 		ListMatching returned = new ListMatching();
 
@@ -2973,6 +3030,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		while (list1.size() > 0 && list2.size() > 0) {
 			Matched matched = getBestMatch(list1, list2);
+			if (matched == null) {
+				break;
+			}
 			Object o1 = list1.get(matched.idx1);
 			Object o2 = list2.get(matched.idx2);
 			matched.idx1 = l1.indexOf(list1.get(matched.idx1));
@@ -3014,23 +3074,46 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return returned;
 	}
 
+	/**
+	 * Retrieve best match between the two lists.<br>
+	 * Best match is represented by a couple of objects (one in each list) of exactely same type, whose distance is the minimal found.<br>
+	 * A minimal distance is required as a threshold (here 0.7)
+	 * 
+	 * @param l1
+	 * @param l2
+	 * @return
+	 */
 	private Matched getBestMatch(List<Object> l1, List<Object> l2) {
 		Matched returned = null;
-		double bestDistance = Double.POSITIVE_INFINITY;
+		double bestDistance = 0.7; // Double.POSITIVE_INFINITY;
 		for (int i = 0; i < l1.size(); i++) {
 			Object o1 = l1.get(i);
 			for (int j = 0; j < l2.size(); j++) {
 				Object o2 = l2.get(j);
-				double d = getDistanceBetweenValues(o1, o2);
-				if (d < bestDistance) {
-					returned = new Matched(i, j);
-					bestDistance = d;
+				if (o1 instanceof AccessibleProxyObject && o2 instanceof AccessibleProxyObject) {
+					ProxyMethodHandler<?> h1 = getModelFactory().getHandler(o1);
+					ProxyMethodHandler<?> h2 = getModelFactory().getHandler(o1);
+					if (h1.getModelEntity() == h2.getModelEntity()) {
+						// Matching is possible only for exact same type
+						double d = getDistanceBetweenValues(o1, o2);
+						if (d < bestDistance) {
+							returned = new Matched(i, j);
+							bestDistance = d;
+						}
+					}
 				}
 			}
 		}
 		return returned;
 	}
 
+	/**
+	 * Stupid implementation, do not use it in production
+	 * 
+	 * @param l1
+	 * @param l2
+	 * @return
+	 */
 	private ListMatching stupidMatch(List<Object> l1, List<Object> l2) {
 		System.out.println("On matche les deux listes " + l1 + " et " + l2);
 		ListMatching returned = new ListMatching();
