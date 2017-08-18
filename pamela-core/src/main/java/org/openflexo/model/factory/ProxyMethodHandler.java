@@ -1962,21 +1962,15 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						List<Object> values = invokeGetterForListCardinality(p);
 						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
 						ListMatching matching = match(values, oppositeValues);
-						System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
+						// System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
 						for (Matched m : matching.matchedList) {
 							Object o1 = values.get(m.idx1);
 							Object o2 = oppositeValues.get(m.idx2);
 							if (o1 instanceof AccessibleProxyObject) {
 								((AccessibleProxyObject) o1).updateWith(o2);
 							}
-							// set the index
-							System.out.println("On vient de faire un set de " + getModelFactory().stringRepresentation(o1));
-							System.out.println("Matched: " + m);
-							// invokeReindexer(p, o1, m.idx2);
-							if (values.indexOf(o1) != m.idx2) {
-								// System.out.println("Tiens faudrait faire un move de " + values.indexOf(o1) + " a " + m.idx2);
-								reindex.put(o1, m.idx2);
-							}
+							// Store desired index
+							reindex.put(o1, m.idx2);
 						}
 						for (Removed r : matching.removed) {
 							Object removedObject = values.get(r.removedIndex);
@@ -1985,13 +1979,14 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						for (Added a : matching.added) {
 							Object addedObject = oppositeValues.get(a.originalIndex);
 							invokeAdder(p, addedObject);
+							// Store desired index
 							reindex.put(addedObject, a.insertedIndex);
-							// invokeReindexer(p, addedObject, a.insertedIndex);
 						}
+						// Now handle eventual reindexing of property values
 						for (Object o : reindex.keySet()) {
 							int idx = reindex.get(o);
 							if (values.indexOf(o) != idx) {
-								System.out.println("Tiens faudrait faire un move de " + values.indexOf(o) + " a " + idx);
+								// System.out.println("Moving " + values.indexOf(o) + " to " + idx);
 								invokeReindexer(p, o, idx);
 							}
 						}
