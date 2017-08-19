@@ -36,7 +36,6 @@
  * 
  */
 
-
 package org.openflexo.model.io;
 
 import java.io.BufferedInputStream;
@@ -51,8 +50,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelContext.ModelPropertyXMLTag;
 import org.openflexo.model.ModelEntity;
@@ -78,10 +79,9 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	public static final String ID_REF = "idref";
 	public static final String CLASS_NAME = "className";
 
-	public static final Set<String> IGNORED_ATTRIBUTES = Stream.of(
-			ID, ID_REF, CLASS_NAME, "xmlns:p", PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.Q_CLASS_ATTRIBUTE
-		).collect(Collectors.toSet());
-
+	public static final Set<String> IGNORED_ATTRIBUTES = Stream
+			.of(ID, ID_REF, CLASS_NAME, "xmlns:p", PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.Q_CLASS_ATTRIBUTE)
+			.collect(Collectors.toSet());
 
 	@FunctionalInterface
 	private interface Resolver {
@@ -151,8 +151,10 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 			return rootInfo.getObject();
 		} catch (SAXException e) {
-			if (e.getCause() instanceof Exception) throw (Exception) e.getCause();
-			else throw new InvalidDataException(e.getMessage());
+			if (e.getCause() instanceof Exception)
+				throw (Exception) e.getCause();
+			else
+				throw new InvalidDataException(e.getMessage());
 		}
 	}
 
@@ -172,7 +174,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		Object parent = null;
 		if (stackEmpty()) {
 			modelEntity = (ModelEntity<Object>) factory.getModelContext().getModelEntity(qName);
-		} else {
+		}
+		else {
 			try {
 				TransformedObjectInfo parentInfo = peekInfo();
 				if (parentInfo != null) {
@@ -185,7 +188,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 							leadingProperty = modelPropertyXMLTag.getProperty();
 						}
 						else if (policy == DeserializationPolicy.RESTRICTIVE) {
-							throw new RestrictiveDeserializationException("Element with name does not fit any properties within entity " + parentModelEntity);
+							throw new RestrictiveDeserializationException(
+									"Element with name does not fit any properties within entity " + parentModelEntity);
 						}
 					}
 				}
@@ -193,15 +197,17 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				throw new SAXException(e);
 			}
 		}
-		return leadingProperty != null || modelEntity != null ? new TransformedObjectInfo(factory, parent, leadingProperty, modelEntity) : null;
+		return leadingProperty != null || modelEntity != null ? new TransformedObjectInfo(factory, parent, leadingProperty, modelEntity)
+				: null;
 	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+
 		final TransformedObjectInfo info = constructMetaInformations(qName);
 		String id = attributes.getValue(ID);
 
-		if (info != null ) {
+		if (info != null) {
 			// if modelEntity is convertible from start, a
 			if (!info.isConvertible()) {
 				String idref = attributes.getValue(ID_REF);
@@ -210,7 +216,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 					Object referenceObject = objectsWithId.get(idref);
 					if (referenceObject != null) {
 						info.setObject(referenceObject);
-					} else {
+					}
+					else {
 						// it needs to be resolved later
 						List<Resolver> forwards = forwardReferences.computeIfAbsent(idref, (v) -> new ArrayList<>());
 						forwards.add((target) -> {
@@ -227,8 +234,9 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				}
 			}
 
-		} else if (policy == DeserializationPolicy.RESTRICTIVE) {
-			throw new SAXException(new InvalidDataException("Could not find ModelEntity for " +  qName));
+		}
+		else if (policy == DeserializationPolicy.RESTRICTIVE) {
+			throw new SAXException(new InvalidDataException("Could not find ModelEntity for " + qName));
 		}
 		// push current state to stack
 		pushInfo(info);
@@ -262,7 +270,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	private void connectObject(TransformedObjectInfo info) throws SAXException {
 		// don't set a null object
-		if (info.getObject() == null) return;
+		if (info.getObject() == null)
+			return;
 
 		// adds object to its parent if needed
 		ModelProperty<Object> property = info.getLeadingProperty();
@@ -289,9 +298,11 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	/**
 	 * Constructs an object from it's attributes
+	 * 
 	 * @return true if an object was built, false other wise
 	 */
-	private boolean buildObjectFromAttributes(String name, String id, TransformedObjectInfo info, Attributes attributes) throws SAXException {
+	private boolean buildObjectFromAttributes(String name, String id, TransformedObjectInfo info, Attributes attributes)
+			throws SAXException {
 		// if it's the case, the serialization has problems
 		if (id != null && objectsWithId.containsKey(id)) {
 			// No need to go further: i've got my object
@@ -318,14 +329,14 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				try {
 					implementedInterface = (Class<Object>) Class.forName(className);
 				} catch (ClassNotFoundException e) {
-					throw new InvalidDataException("Class not found "+ e.getMessage());
+					throw new InvalidDataException("Class not found " + e.getMessage());
 				}
 			}
 			else if (entityName != null) {
 				try {
 					implementedInterface = (Class<Object>) Class.forName(entityName);
 				} catch (ClassNotFoundException e) {
-					throw new InvalidDataException("Class not found "+ e.getMessage());
+					throw new InvalidDataException("Class not found " + e.getMessage());
 				}
 				if (entityName != null && policy == DeserializationPolicy.EXTENSIVE) {
 					concreteEntity = factory.importClass(implementedInterface);
@@ -333,13 +344,15 @@ public class XMLSaxDeserializer extends DefaultHandler {
 						try {
 							implementingClass = (Class<Object>) Class.forName(className);
 							if (implementedInterface.isAssignableFrom(implementingClass)) {
-								factory.setImplementingClassForInterface((Class) implementingClass, implementedInterface, policy == DeserializationPolicy.EXTENSIVE);
+								factory.setImplementingClassForInterface((Class) implementingClass, implementedInterface,
+										policy == DeserializationPolicy.EXTENSIVE);
 							}
 							else {
-								throw new ModelExecutionException(className + " does not implement " + implementedInterface + " for node " + name);
+								throw new ModelExecutionException(
+										className + " does not implement " + implementedInterface + " for node " + name);
 							}
 						} catch (ClassNotFoundException e) {
-							throw new InvalidDataException("Class not found "+ e.getMessage());
+							throw new InvalidDataException("Class not found " + e.getMessage());
 						}
 					}
 				}
@@ -365,7 +378,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			// End of the strange code
 			// ----- Warning -----
 
-
 			// Creates object instance
 			Class<Object> entityClass = concreteEntity.getImplementedInterface();
 			Object returned = factory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
@@ -383,7 +395,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				if (property == null) {
 					if (policy == DeserializationPolicy.RESTRICTIVE) {
 						throw new RestrictiveDeserializationException("No attribute found for the attribute named: " + attributeName);
-					} else {
+					}
+					else {
 						continue;
 					}
 				}
@@ -398,7 +411,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 			return true;
 		} catch (Exception e) {
-			if (e instanceof SAXException) throw (SAXException) e;
+			if (e instanceof SAXException)
+				throw (SAXException) e;
 			throw new SAXException(e);
 		}
 	}
@@ -423,7 +437,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	}
 
 	private void pushInfo(TransformedObjectInfo info) {
-		if (stack.isEmpty()) rootInfo = info;
+		if (stack.isEmpty())
+			rootInfo = info;
 		stack.push(info);
 	}
 
