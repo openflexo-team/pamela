@@ -88,6 +88,10 @@ public @interface XMLElement {
 
 	boolean primary() default false;
 
+	String NO_ID_FACTORY = "";
+
+	String idFactory() default NO_ID_FACTORY;
+
 	class XMLElementImpl implements XMLElement {
 		private String xmlTag;
 		private String deprecatedXMLTags;
@@ -95,12 +99,14 @@ public @interface XMLElement {
 		private String deprecatedContext;
 		private String namespace;
 		private boolean primary;
+		private String idFactory;
 
-		public XMLElementImpl(String xmlTag, String context, String namespace, boolean primary) {
+		public XMLElementImpl(String xmlTag, String context, String namespace, boolean primary, String idFactory) {
 			this.xmlTag = xmlTag;
 			this.context = context;
 			this.namespace = namespace;
 			this.primary = primary;
+			this.idFactory = idFactory;
 		}
 
 		@Override
@@ -136,6 +142,11 @@ public @interface XMLElement {
 		@Override
 		public boolean primary() {
 			return primary;
+		}
+
+		@Override
+		public String idFactory() {
+			return idFactory;
 		}
 
 	}

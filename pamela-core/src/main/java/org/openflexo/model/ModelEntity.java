@@ -112,7 +112,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	/**
 	 * The {@link XMLElement} annotation, if any
 	 */
-	private final XMLElement xmlElement;
+	private XMLElement xmlElement;
 
 	/**
 	 * The properties of this entity. The key is the identifier of the property
@@ -192,7 +192,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		embeddedEntities = new HashSet<>();
 		entityAnnotation = implementedInterface.getAnnotation(org.openflexo.model.annotations.ModelEntity.class);
 		implementationClass = implementedInterface.getAnnotation(ImplementationClass.class);
-		xmlElement = implementedInterface.getAnnotation(XMLElement.class);
+		// xmlElement = implementedInterface.getAnnotation(XMLElement.class);
 		modify = implementedInterface.getAnnotation(Modify.class);
 		isAbstract = entityAnnotation.isAbstract();
 		// We resolve here the model super interface
@@ -759,14 +759,82 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return implementationClass;
 	}
 
+	private boolean xmlElementHasBeenRetrieved = false;
+
+	/**
+	 * Return {@link XMLElement} by combining all super entities declarations
+	 * 
+	 * @return
+	 */
 	public XMLElement getXMLElement() {
+
+		if (!xmlElementHasBeenRetrieved) {
+
+			xmlElementHasBeenRetrieved = true;
+
+			xmlElement = implementedInterface.getAnnotation(XMLElement.class);
+
+			String xmlTag = XMLElement.DEFAULT_XML_TAG;
+			String context = XMLElement.NO_CONTEXT;
+			String namespace = XMLElement.NO_NAME_SPACE;
+			String idFactory = XMLElement.NO_ID_FACTORY;
+			boolean primary = false;
+
+			if (xmlElement != null) {
+				xmlTag = xmlElement.xmlTag();
+				if (xmlTag == null || xmlTag.equals(XMLElement.DEFAULT_XML_TAG)) {
+					xmlTag = getImplementedInterface().getSimpleName();
+				}
+			}
+
+			try {
+				if (getDirectSuperEntities() != null) {
+					for (ModelEntity<?> superEntity : getDirectSuperEntities()) {
+						if (superEntity.getXMLElement() != null) {
+							if (superEntity.getXMLElement() != null) {
+								if (xmlElement == null) {
+									xmlElement = superEntity.getXMLElement();
+								}
+								else {
+									if (!superEntity.getXMLElement().context().equals(XMLElement.NO_CONTEXT)) {
+										context = superEntity.getXMLElement().context();
+									}
+									else {
+										context = xmlElement.context();
+									}
+									if (!superEntity.getXMLElement().namespace().equals(XMLElement.NO_NAME_SPACE)) {
+										namespace = superEntity.getXMLElement().namespace();
+									}
+									else {
+										namespace = xmlElement.namespace();
+									}
+									if (!superEntity.getXMLElement().idFactory().equals(XMLElement.NO_ID_FACTORY)) {
+										idFactory = superEntity.getXMLElement().idFactory();
+									}
+									else {
+										idFactory = xmlElement.idFactory();
+									}
+									primary |= superEntity.getXMLElement().primary();
+									primary |= xmlElement.primary();
+									xmlElement = new XMLElement.XMLElementImpl(xmlTag, context, namespace, primary, idFactory);
+								}
+							}
+						}
+					}
+				}
+			} catch (ModelDefinitionException e) {
+				e.printStackTrace();
+			}
+
+		}
+
 		return xmlElement;
 	}
 
 	public String getXMLTag() {
 		if (xmlTag == null) {
-			if (xmlElement != null) {
-				xmlTag = xmlElement.xmlTag();
+			if (getXMLElement() != null) {
+				xmlTag = getXMLElement().xmlTag();
 			}
 			if (xmlTag == null || xmlTag.equals(XMLElement.DEFAULT_XML_TAG)) {
 				xmlTag = getImplementedInterface().getSimpleName();

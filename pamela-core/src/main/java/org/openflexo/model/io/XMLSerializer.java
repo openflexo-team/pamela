@@ -54,6 +54,7 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.LineSeparator;
 import org.jdom2.output.XMLOutputter;
+import org.openflexo.connie.BindingEvaluator;
 import org.openflexo.model.ModelContextLibrary;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
@@ -141,7 +142,18 @@ public class XMLSerializer {
 		return writer.toString();
 	}
 
-	private String generateReference(Object o) {
+	private String generateReference(Object o, XMLElement xmlElement) {
+
+		if (!xmlElement.idFactory().equals(XMLElement.NO_ID_FACTORY)) {
+			Object computedValue;
+			try {
+				computedValue = BindingEvaluator.evaluateBinding(xmlElement.idFactory(), o);
+				return computedValue.toString();
+			} catch (Exception e) {
+				System.err.println("Could not evaluate " + xmlElement.idFactory() + " for " + o);
+			}
+		}
+
 		return String.valueOf(id++);
 	}
 
@@ -204,7 +216,7 @@ public class XMLSerializer {
 					handler.setSerializing(true, resetModifiedStatus);
 
 					// Put this object in alreadySerialized objects
-					reference = generateReference(object);
+					reference = generateReference(object, xmlElement);
 					alreadySerialized.put(object, reference);
 
 					if (xmlElement != null) {

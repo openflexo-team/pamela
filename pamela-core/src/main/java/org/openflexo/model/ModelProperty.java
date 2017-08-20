@@ -848,6 +848,7 @@ public class ModelProperty<I> {
 			String xmlTag = XMLElement.DEFAULT_XML_TAG;
 			String context = XMLElement.NO_CONTEXT;
 			String namespace = XMLElement.NO_NAME_SPACE;
+			String idFactory = XMLElement.NO_ID_FACTORY;
 			boolean primary = false;
 			if (getXMLElement() != null) {
 				if (property.getXMLElement() != null) {
@@ -869,9 +870,15 @@ public class ModelProperty<I> {
 					else {
 						namespace = property.getXMLElement().namespace();
 					}
+					if (!getXMLElement().idFactory().equals(XMLElement.NO_ID_FACTORY)) {
+						idFactory = getXMLElement().idFactory();
+					}
+					else {
+						idFactory = property.getXMLElement().idFactory();
+					}
 					primary |= getXMLElement().primary();
 					primary |= property.getXMLElement().primary();
-					xmlElement = new XMLElement.XMLElementImpl(xmlTag, context, namespace, primary);
+					xmlElement = new XMLElement.XMLElementImpl(xmlTag, context, namespace, primary, idFactory);
 				}
 				else {
 					xmlElement = getXMLElement();
