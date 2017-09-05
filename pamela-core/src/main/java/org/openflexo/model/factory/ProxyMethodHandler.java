@@ -42,6 +42,9 @@
 
 package org.openflexo.model.factory;
 
+import com.google.common.base.Defaults;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -60,9 +63,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyObject;
 import javax.annotation.Nonnull;
-
 import org.openflexo.connie.BindingEvaluator;
 import org.openflexo.connie.DataBinding;
 import org.openflexo.connie.exception.NullReferenceException;
@@ -99,13 +102,6 @@ import org.openflexo.model.undo.SetCommand;
 import org.openflexo.model.undo.UndoManager;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 import org.openflexo.toolbox.StringUtils;
-
-import com.google.common.base.Defaults;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyObject;
 
 public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListener {
 
@@ -1183,7 +1179,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		Object oldValue = internallyInvokeGetter(property);
 
 		// Is it a real change ?
-		if (!isEqual(oldValue, value)) {
+		if (!isEqual(oldValue, value, new HashSet<>())) {
 			// System.out.println("Change for " + oldValue + " to " + value);
 			boolean hasInverse = property.hasInverseProperty();
 
@@ -1602,7 +1598,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		ProxyMethodHandler<?> handler = getModelFactory().getHandler(o);
 		if (handler != null) {
 			Object attributeValue = handler.invokeGetter(attribute);
-			return isEqual(attributeValue, value);
+			return isEqual(attributeValue, value, new HashSet<>());
 		}
 		else {
 			throw new ModelDefinitionException(
@@ -1610,7 +1606,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	private static boolean isEqual(Object oldValue, Object newValue) {
+	private static boolean isEqual(Object oldValue, Object newValue, Set<Object> seen) {
+		seen.add(oldValue);
 		if (oldValue == null) {
 			return newValue == null;
 		}
@@ -1629,7 +1626,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			for (int i = 0; i < l1.size(); i++) {
 				Object v1 = l1.get(i);
 				Object v2 = l2.get(i);
-				if (!isEqual(v1, v2)) {
+				if (seen.contains(v1)) continue;
+
+				if (!isEqual(v1, v2, seen)) {
 					return false;
 				}
 			}
@@ -1850,14 +1849,14 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					case SINGLE:
 						Object singleValue = invokeGetter(p);
 						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
-						if (!isEqual(singleValue, oppositeValue)) {
+						if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
 							return false;
 						}
 						break;
 					case LIST:
 						List<Object> values = invokeGetterForListCardinality(p);
 						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
-						if (!isEqual(values, oppositeValues)) {
+						if (!isEqual(values, oppositeValues, new HashSet<>())) {
 							return false;
 						}
 						/*if (values == null || oppositeValues == null) {
@@ -1937,7 +1936,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						Object singleValue = invokeGetter(p);
 						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
 						// System.out.println("[" + Thread.currentThread().getName() + "] Ici-1 avec " + p.getPropertyIdentifier());
-						if (!isEqual(singleValue, oppositeValue)) {
+						if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
 							// System.out.println("La pte " + p + " change de " + singleValue + " a " + oppositeValue);
 							// System.out.println("[" + Thread.currentThread().getName() + "] Ici-2 avec " + p.getPropertyIdentifier());
 							try {
@@ -2052,7 +2051,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						propertyPonderation = getPropertyPonderation(p);
 						if (singleValue != null || oppositeValue != null) {
 							totalPonderation += propertyPonderation;
-							if (!isEqual(singleValue, oppositeValue)) {
+							if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
 								double valueDistance = getDistanceBetweenValues(singleValue, oppositeValue);
 								distance = distance + valueDistance * propertyPonderation;
 								// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + "
@@ -2075,7 +2074,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 								oppositeValues != null ? oppositeValues.size() : 0);
 						if ((values != null && values.size() > 0) || (oppositeValues != null && oppositeValues.size() > 0)) {
 							totalPonderation += propertyPonderation;
-							if (!isEqual(values, oppositeValues)) {
+							if (!isEqual(values, oppositeValues, new HashSet<>())) {
 								double valueDistance = getDistanceBetweenListValues(values, oppositeValues);
 								distance = distance + valueDistance * propertyPonderation;
 								// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + "
