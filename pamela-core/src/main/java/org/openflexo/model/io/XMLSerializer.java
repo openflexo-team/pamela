@@ -48,7 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-
+import javassist.util.proxy.ProxyObject;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -69,8 +69,6 @@ import org.openflexo.model.factory.PAMELAConstants;
 import org.openflexo.model.factory.ProxyMethodHandler;
 import org.openflexo.model.factory.SerializationPolicy;
 import org.openflexo.toolbox.StringUtils;
-
-import javassist.util.proxy.ProxyObject;
 
 public class XMLSerializer {
 
@@ -144,7 +142,7 @@ public class XMLSerializer {
 
 	private String generateReference(Object o, XMLElement xmlElement) {
 
-		if (!xmlElement.idFactory().equals(XMLElement.NO_ID_FACTORY)) {
+		if (xmlElement != null && !xmlElement.idFactory().equals(XMLElement.NO_ID_FACTORY)) {
 			Object computedValue;
 			try {
 				computedValue = BindingEvaluator.evaluateBinding(xmlElement.idFactory(), o);
