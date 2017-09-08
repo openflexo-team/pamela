@@ -52,9 +52,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nonnull;
-
 import org.openflexo.connie.binding.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
@@ -174,7 +172,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	private boolean initialized;
 
-	private final Map<String, ModelProperty<I>> declaredModelProperties;
+	public final Map<String, ModelProperty<I>> declaredModelProperties;
 
 	private Set<ModelEntity<?>> embeddedEntities;
 
@@ -856,6 +854,10 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	public Iterable<ModelProperty<? super I>> getPropertyIterable() {
 		return Collections.unmodifiableCollection(properties.values());
+	}
+
+	public Collection<ModelProperty<I>> getDeclaredProperties() {
+		return declaredModelProperties.values();
 	}
 
 	/**
