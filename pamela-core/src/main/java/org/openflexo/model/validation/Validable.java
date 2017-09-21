@@ -103,7 +103,7 @@ public interface Validable {
 	 * 
 	 * @return a Vector of Validable objects
 	 */
-	public Collection<? extends Validable> getEmbeddedValidableObjects();
+	public Collection<Validable> getEmbeddedValidableObjects();
 
 	/**
 	 * Return by deep recursion (see {@link #getEmbeddedValidableObjects()} a collection containing all validable objects contained in this

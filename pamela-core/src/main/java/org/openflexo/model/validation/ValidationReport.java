@@ -172,9 +172,9 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		// Gets all the objects to validate and removes duplicated objects
 		Set<Validable> objectsToValidate = new LinkedHashSet<>(retrieveAllEmbeddedValidableObjects(rootObject));
 
-		//System.out.println("On trouve " + objectsToValidate.size() + " a valider");
+		// System.out.println("On trouve " + objectsToValidate.size() + " a valider");
 
-		//long start = System.currentTimeMillis();
+		// long start = System.currentTimeMillis();
 
 		// Compute validation steps and notify validation initialization
 		long validationStepToNotify = objectsToValidate.stream().filter(validationModel::shouldNotifyValidation)
@@ -196,8 +196,8 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		}
 
-		//long end = System.currentTimeMillis();
-		//System.out.println("Pour valider mes " + objectsToValidate.size() + " objects, j'ai mis " + (end - start) + " milliseconds");
+		// long end = System.currentTimeMillis();
+		// System.out.println("Pour valider mes " + objectsToValidate.size() + " objects, j'ai mis " + (end - start) + " milliseconds");
 
 		// Notify validation is finished
 		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_END, null, rootObject);
@@ -402,7 +402,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	private void appendAllEmbeddedValidableObjects(Validable o, Collection<Validable> c) {
 		if (o != null && !c.contains(o)) {
 			c.add(o);
-			Collection<? extends Validable> embeddedObjects = o.getEmbeddedValidableObjects();
+			Collection<Validable> embeddedObjects = o.getEmbeddedValidableObjects();
 			if (embeddedObjects != null) {
 				for (Validable o2 : embeddedObjects) {
 					appendAllEmbeddedValidableObjects(o2, c);
