@@ -278,17 +278,23 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		if (property != null) {
 			try {
 				ProxyMethodHandler parent = factory.getHandler(info.getParent());
-				switch (property.getCardinality()) {
-					case SINGLE:
-						parent.invokeSetterForDeserialization(property, info.getObject());
-						break;
-					case LIST:
-						parent.invokeAdderForDeserialization(property, info.getObject());
-						break;
-					case MAP:
-						throw new UnsupportedOperationException("Cannot deserialize maps for now");
-					default:
-						break;
+
+				if (parent != null) {
+					switch (property.getCardinality()) {
+						case SINGLE:
+							parent.invokeSetterForDeserialization(property, info.getObject());
+							break;
+						case LIST:
+							parent.invokeAdderForDeserialization(property, info.getObject());
+							break;
+						case MAP:
+							throw new UnsupportedOperationException("Cannot deserialize maps for now");
+						default:
+							break;
+					}
+				}
+				else {
+					System.err.println("Cound not find parent for " + info + " object=" + info.getObject() + " parent=" + info.getParent());
 				}
 			} catch (ModelDefinitionException e) {
 				throw new SAXException(e);
