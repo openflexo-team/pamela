@@ -1,5 +1,7 @@
 package org.flexo.model;
 
+import java.util.List;
+
 import org.flexo.model.impl.FlexoProcessImpl;
 import org.openflexo.model.annotations.Adder;
 import org.openflexo.model.annotations.CloningStrategy;
@@ -21,13 +23,12 @@ import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.XMLAttribute;
 import org.openflexo.model.annotations.XMLElement;
 
-import java.util.List;
-
 @ModelEntity
 @ImplementationClass(FlexoProcessImpl.class)
 @XMLElement(xmlTag = "FlexoProcess")
 @IntegrityConstraints({ @IntegrityConstraint("foo > 0"), @IntegrityConstraint("name != null") })
-@Imports({ @Import(ActivityNode.class), @Import(StartNode.class), @Import(EndNode.class), @Import(TokenEdge.class) })
+@Imports({ @Import(ActivityNode.class), @Import(StartNode.class), @Import(EndNode.class), @Import(TokenEdge.class),
+		@Import(WKFAnnotation.class) })
 public interface FlexoProcess extends WKFObject {
 
 	String FOO = "foo";
