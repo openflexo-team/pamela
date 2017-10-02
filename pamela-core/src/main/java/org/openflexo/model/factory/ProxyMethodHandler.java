@@ -2161,7 +2161,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return 0;
 		}
 		ListMatching matching = match(l1, l2);
-		System.out.println("Matching=" + matching);
+		//System.out.println("Matching=" + matching);
 		double total = matching.added.size() + matching.removed.size() + matching.matchedList.size();
 		double score = matching.added.size() + matching.removed.size();
 		for (Matched m : matching.matchedList) {
