@@ -219,9 +219,6 @@ public class TestUpdateWith {
 		assertFalse(c11.equalsObject(c21));
 		assertFalse(a1.equalsObject(a2));
 
-		System.out.println("a1=" + factory.stringRepresentation(a1));
-		System.out.println("a2=" + factory.stringRepresentation(a2));
-
 		assertEquals(0.066, getDistance(factory, c11, c21), 0.01);
 		assertEquals(0.0, getDistance(factory, b1, b2), 0.01);
 		assertEquals(0.011, getDistance(factory, a1, a2), 0.01);
@@ -298,6 +295,9 @@ public class TestUpdateWith {
 
 		assertEquals(0.195, getDistance(factory, a1, a2), 0.01);
 
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
 		// We track events on a1
 		TestChangeListener listener = new TestChangeListener();
 		a1.getPropertyChangeSupport().addPropertyChangeListener(listener);
@@ -312,20 +312,11 @@ public class TestUpdateWith {
 		assertTrue(a1.equalsObject(a2));
 		assertTrue(c11.equalsObject(c21));
 
-		/*System.out.println("---------> Logs for failing test");
-		for (PropertyChangeEvent event : listener.events) {
-			System.out.println("Event " + event.getPropertyName() + " old=" + event.getOldValue() + " new=" + event.getNewValue()
-					+ " source=" + event.getSource());
-		}*/
-
-		// Fails on jenkins, but success on local
-		// Anyone has an idea ???
-		// TODO: check this when possible
-		// (i just commented out this following line of code)
-		// assertEquals(6, listener.events.size());
+		assertEquals(5, listener.events.size());
 
 		assertPropertyNotified(a1, ConceptA.CONCEPT_C, null, c11, listener); // Creation of c11
-		// assertPropertyNotified(a1, ConceptA.CONCEPT_C, 2, 0, listener); // Index move
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 1, 2, listener); // Index move
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 0, 1, listener); // Index move
 		assertPropertyNotified(c12, ConceptC.V1, "Tom", "Tom2", listener); // Modification of v1
 		assertPropertyNotified(c13, ConceptC.V2, "Julien", "Julien2", listener); // Modification of v2
 
@@ -391,7 +382,7 @@ public class TestUpdateWith {
 		assertEquals(4, listener.events.size());
 
 		assertPropertyNotified(a1, ConceptA.CONCEPT_C, null, c12, listener); // Creation of c12
-		// assertPropertyNotified(a1, ConceptA.CONCEPT_C, 2, 1, listener); // Index move
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 1, 2, listener); // Index move
 		assertPropertyNotified(c11, ConceptC.V1, "Riri", "Riri2", listener); // Modification of v1
 		assertPropertyNotified(c13, ConceptC.V2, "Julien", "Julien2", listener); // Modification of v2
 
@@ -747,7 +738,7 @@ public class TestUpdateWith {
 		assertEquals(2, listener.events.size());
 
 		assertPropertyNotified(a1, ConceptA.VALUE, "Hello", "Hello guy !", listener); // Updating of value
-		// assertPropertyNotified(a1, ConceptA.CONCEPT_C, 0, 1, listener); // Move index
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 0, 1, listener); // Move index
 
 	}
 
@@ -800,28 +791,70 @@ public class TestUpdateWith {
 		ConceptA a2 = factory.newInstance(ConceptA.class);
 		a2.setValue("Hello guy !");
 
+		ConceptC2 j3 = factory.newInstance(ConceptC2.class);
+		j3.setV1("A Third instance");
+		j3.setV6("Another specific value for ConceptC2");
+		a2.addToConceptCs(j3);
+
+		ConceptC1 j4 = factory.newInstance(ConceptC1.class);
+		j4.setV1("Fourth instance bis");
+		j4.setV5("Nice weather today");
+		a2.addToConceptCs(j4);
+
+		ConceptC1 j5 = factory.newInstance(ConceptC1.class);
+		j5.setV1("Fifth instance bis");
+		j5.setV5("Hello");
+		a2.addToConceptCs(j5);
+
+		ConceptC1 j8 = factory.newInstance(ConceptC1.class);
+		j8.setV1("Height instance");
+		j8.setV5("Hello world");
+		a2.addToConceptCs(j8);
+
 		assertFalse(a1.equalsObject(a2));
 
-		// assertEquals(0.198, getDistance(factory,a1, a2), 0.01);
+		// System.out.println("a1=" + factory.stringRepresentation(a1));
+		// System.out.println("a2=" + factory.stringRepresentation(a2));
+
+		assertEquals(0.504, getDistance(factory, a1, a2), 0.01);
 
 		// We track events on a1
 		TestChangeListener listener = new TestChangeListener();
 		a1.getPropertyChangeSupport().addPropertyChangeListener(listener);
-		/*b1.getPropertyChangeSupport().addPropertyChangeListener(listener);
-		c11.getPropertyChangeSupport().addPropertyChangeListener(listener);
-		c12.getPropertyChangeSupport().addPropertyChangeListener(listener);*/
+		i1.getPropertyChangeSupport().addPropertyChangeListener(listener);
+		i2.getPropertyChangeSupport().addPropertyChangeListener(listener);
+		i3.getPropertyChangeSupport().addPropertyChangeListener(listener);
+		i4.getPropertyChangeSupport().addPropertyChangeListener(listener);
+		i5.getPropertyChangeSupport().addPropertyChangeListener(listener);
+		i6.getPropertyChangeSupport().addPropertyChangeListener(listener);
+		i7.getPropertyChangeSupport().addPropertyChangeListener(listener);
 
-		// a1.updateWith(a2);
+		a1.updateWith(a2);
 
-		/*assertEquals(2, a1.getConceptCs().size());
+		assertEquals(4, a1.getConceptCs().size());
 		assertTrue(a1.equalsObject(a2));
-		
-		assertEquals(3, events.size());
-		
-		assertPropertyNotified(a1, ConceptA.CONCEPT_C, c13, null); // Deletion of c13
-		assertPropertyNotified(c11, ConceptC.V1, "Riri", "Riri2"); // Modification of v1
-		assertPropertyNotified(c12, ConceptC.V1, "Tom", "Tom2"); // Modification of v1
-		*/
+
+		/*System.out.println("---------> Logs for failing test");
+		for (PropertyChangeEvent event : listener.events) {
+			System.out.println("Event " + event.getPropertyName() + " old=" + event.getOldValue() + " new=" + event.getNewValue()
+					+ " source=" + event.getSource());
+		}*/
+
+		assertEquals(12, listener.events.size());
+
+		assertPropertyNotified(a1, ConceptA.VALUE, "Hello", "Hello guy !", listener); // Updating of value
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, i2, null, listener); // Deletion of i2
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, i6, null, listener); // Deletion of i6
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, i7, null, listener); // Deletion of i7
+		assertPropertyNotified(i3, ConceptC2.V1, "Third instance", "A Third instance", listener); // Change of V1
+		assertPropertyNotified(i4, ConceptC1.V1, "Fourth instance", "Fourth instance bis", listener); // Change of V1
+		assertPropertyNotified(i5, ConceptC1.V1, "Fifth instance", "Fifth instance bis", listener); // Change of V1
+		assertPropertyNotified(i1, ConceptC1.V5, "Hello world !", "Hello world", listener); // Change of V5
+		assertPropertyNotified(i1, ConceptC1.V1, "First instance", "Height instance", listener); // Change of V1
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 1, 0, listener); // reindex
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 2, 1, listener); // reindex
+		assertPropertyNotified(a1, ConceptA.CONCEPT_C, 3, 2, listener); // reindex
+
 	}
 
 }

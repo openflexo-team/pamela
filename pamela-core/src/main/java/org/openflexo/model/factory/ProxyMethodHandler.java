@@ -42,9 +42,6 @@
 
 package org.openflexo.model.factory;
 
-import com.google.common.base.Defaults;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -59,13 +56,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyObject;
+
 import javax.annotation.Nonnull;
+
 import org.openflexo.connie.BindingEvaluator;
 import org.openflexo.connie.DataBinding;
 import org.openflexo.connie.exception.NullReferenceException;
@@ -102,6 +100,13 @@ import org.openflexo.model.undo.SetCommand;
 import org.openflexo.model.undo.UndoManager;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 import org.openflexo.toolbox.StringUtils;
+
+import com.google.common.base.Defaults;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
+
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.ProxyObject;
 
 public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListener {
 
@@ -1626,7 +1631,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			for (int i = 0; i < l1.size(); i++) {
 				Object v1 = l1.get(i);
 				Object v2 = l2.get(i);
-				if (seen.contains(v1)) continue;
+				if (seen.contains(v1))
+					continue;
 
 				if (!isEqual(v1, v2, seen)) {
 					return false;
@@ -1957,12 +1963,13 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						}
 						break;
 					case LIST:
-						Map<Object, Integer> reindex = new HashMap<>();
+						Map<Object, Integer> reindex = new LinkedHashMap<>();
 						List<Object> values = invokeGetterForListCardinality(p);
 						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
 						ListMatching matching = match(values, oppositeValues);
 						// System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
 						for (Matched m : matching.matchedList) {
+							// System.out.println("match " + m.idx1 + " with " + m.idx2);
 							Object o1 = values.get(m.idx1);
 							Object o2 = oppositeValues.get(m.idx2);
 							if (o1 instanceof AccessibleProxyObject) {
@@ -1971,7 +1978,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							// Store desired index
 							reindex.put(o1, m.idx2);
 						}
-						for (Removed r : matching.removed) {
+						// Do it in reverse order to avoid IndexOutOfBoundException !!!
+						for (int i = matching.removed.size() - 1; i >= 0; i--) {
+							Removed r = matching.removed.get(i);
 							Object removedObject = values.get(r.removedIndex);
 							invokeRemover(p, removedObject);
 						}
@@ -2161,7 +2170,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return 0;
 		}
 		ListMatching matching = match(l1, l2);
-		//System.out.println("Matching=" + matching);
+		// System.out.println("Matching=" + matching);
 		double total = matching.added.size() + matching.removed.size() + matching.matchedList.size();
 		double score = matching.added.size() + matching.removed.size();
 		for (Matched m : matching.matchedList) {
@@ -3080,6 +3089,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	private Matched getBestMatch(List<Object> l1, List<Object> l2) {
 		Matched returned = null;
 		double bestDistance = 0.7; // Double.POSITIVE_INFINITY;
+		int m1 = 0, m2 = 0;
 		for (int i = 0; i < l1.size(); i++) {
 			Object o1 = l1.get(i);
 			for (int j = 0; j < l2.size(); j++) {
@@ -3093,6 +3103,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						if (d < bestDistance) {
 							returned = new Matched(i, j);
 							bestDistance = d;
+							m1 = i;
+							m2 = j;
 						}
 					}
 				}
