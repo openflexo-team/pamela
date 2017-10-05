@@ -158,7 +158,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				logger.fine("Validating " + object.toString());
 			}
 
-			System.out.println("Validating " + object);
+			// System.out.println("Validating " + object);
 
 			if (getValidationModel().shouldNotifyValidation(object)) {
 				getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_OBJECT, null, object);
@@ -279,12 +279,6 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			if (allIssues == null) {
 				allIssues = new ChainedCollection<ValidationIssue<?, ? super V>>(getAllInfoIssues(), getAllErrors(), getAllWarnings());
 				allIssues.setDebugName("AllIssuesFor" + object);
-				if (rootNode == ValidationNode.this) {
-					System.out.println("Je viens de creer " + allIssues.hashCode() + " avec ");
-					for (Collection c : allIssues.getCollections()) {
-						System.out.println("> " + c.hashCode() + " : " + c);
-					}
-				}
 			}
 			return allIssues;
 		}
