@@ -38,7 +38,9 @@
 
 package org.openflexo.model.validation;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Implemented by an object on which validation is available<br>
@@ -54,7 +56,7 @@ public interface Validable {
 	 * 
 	 * @return a Vector of Validable objects
 	 */
-	public Collection<Validable> getEmbeddedValidableObjects();
+	public Collection<? extends Validable> getEmbeddedValidableObjects();
 
 	/**
 	 * Return a flag indicating if this object was deleted
@@ -62,4 +64,43 @@ public interface Validable {
 	 * @return
 	 */
 	public boolean isDeleted();
+
+	/**
+	 * Return the count of all objects that will be validated, given a root {@link Validable} object<br>
+	 * Deep exploration will be performed using {@link #getEmbeddedValidableObjects()} links
+	 * 
+	 * @param o
+	 *            root object from where starts the exploration
+	 * @return
+	 */
+	public static int countAllEmbeddedValidableObjects(Validable o) {
+		return retrieveAllEmbeddedValidableObjects(o).size();
+	}
+
+	/**
+	 * Return a collection containing all objects that will be validated, given a root {@link Validable} object<br>
+	 * Deep exploration will be performed using {@link #getEmbeddedValidableObjects()} links
+	 * 
+	 * @param o
+	 *            root object from where starts the exploration
+	 * @return
+	 */
+	public static Collection<? extends Validable> retrieveAllEmbeddedValidableObjects(Validable o) {
+		List<Validable> returned = new ArrayList<>();
+		appendAllEmbeddedValidableObjects(o, returned);
+		return returned;
+	}
+
+	public static void appendAllEmbeddedValidableObjects(Validable o, Collection<Validable> c) {
+		if (o != null && !c.contains(o)) {
+			c.add(o);
+			Collection<? extends Validable> embeddedObjects = o.getEmbeddedValidableObjects();
+			if (embeddedObjects != null) {
+				for (Validable o2 : embeddedObjects) {
+					appendAllEmbeddedValidableObjects(o2, c);
+				}
+			}
+		}
+	}
+
 }

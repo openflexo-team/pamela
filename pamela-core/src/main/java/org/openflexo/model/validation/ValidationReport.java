@@ -43,11 +43,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
+import org.openflexo.connie.annotations.NotificationUnsafe;
 import org.openflexo.toolbox.ChainedCollection;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 import org.openflexo.toolbox.StringUtils;
@@ -81,19 +85,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	private static final Logger logger = Logger.getLogger(ValidationReport.class.getPackage().getName());
 
-	// private final Validable rootObject;
-
 	private final PropertyChangeSupport pcSupport;
-
-	// private final ValidationIssueVector _validationIssues;
-
-	/*private final List<ValidationIssue<?, ?>> allIssues;
-	private final List<InformationIssue<?, ?>> infoIssues;
-	private final List<ValidationError<?, ?>> errors;
-	private final List<ValidationWarning<?, ?>> warnings;
-	private final Map<Validable, List<InformationIssue<?, ?>>> infoIssuesMap;
-	private final Map<Validable, List<ValidationError<?, ?>>> errorsMap;
-	private final Map<Validable, List<ValidationWarning<?, ?>>> warningsMap;*/
 
 	private final ValidationModel validationModel;
 
@@ -132,29 +124,11 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			return childNodes;
 		}
 
-		/*public Collection<Validable> retrieveAllEmbeddedValidableObjects(Validable o) {
-			List<Validable> returned = new ArrayList<>();
-			appendAllEmbeddedValidableObjects(o, returned);
-			return returned;
-		}
-		
-		private void appendAllEmbeddedValidableObjects(Validable o, Collection<Validable> c) {
-			if (o != null && !c.contains(o)) {
-				c.add(o);
-				Collection<Validable> embeddedObjects = o.getEmbeddedValidableObjects();
-				if (embeddedObjects != null) {
-					for (Validable o2 : embeddedObjects) {
-						appendAllEmbeddedValidableObjects(o2, c);
-					}
-				}
-			}
-		}*/
-
 		private void validate() {
 
 			_performValidate();
 
-			Collection<Validable> embeddedValidableObjects = object.getEmbeddedValidableObjects();
+			Collection<? extends Validable> embeddedValidableObjects = object.getEmbeddedValidableObjects();
 
 			if (embeddedValidableObjects != null) {
 				for (Validable embeddedValidable : embeddedValidableObjects) {
@@ -186,6 +160,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 			System.out.println("Validating " + object);
 
+			if (getValidationModel().shouldNotifyValidation(object)) {
+				getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_OBJECT, null, object);
+			}
+
 			if (getValidationModel().shouldNotifyValidationRules()) {
 				getValidationModel().getPropertyChangeSupport().firePropertyChange(OBJECT_VALIDATION_START, 0, ruleSet.getRulesCount());
 			}
@@ -200,13 +178,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 					getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATE_WITH_RULE, null, rule);
 				}
 
-				/*ValidationIssue<?, ? super V> issue =*/ performRuleValidation((ValidationRule) rule);
-				// rulesNb++;
-
-				/*if (issue != null) {
-					System.out.println("Found issue " + issue + " in " + object);
-					addToValidationIssues(issue);
-				}*/
+				performRuleValidation((ValidationRule) rule);
 			}
 
 		}
@@ -382,8 +354,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		}
 
 		private void internallyRegisterIssue(ValidationIssue<?, ? super V> issue) {
-			System.out.println("Registering in " + object + " issue > " + issue);
-			// Thread.dumpStack();
+			// System.out.println("Registering in " + object + " issue > " + issue);
 			issue.setValidationReport(ValidationReport.this);
 			if (issue instanceof InformationIssue) {
 				infoIssues.add((InformationIssue<?, ? super V>) issue);
@@ -421,58 +392,24 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	}
 
-	// protected long startTime2;
-	// protected long intermediateTime2;
-	// protected long endTime2;
-	// protected long rulesNb;
-
 	public ValidationReport(ValidationModel validationModel, Validable rootObject) throws InterruptedException {
 		super();
 
 		pcSupport = new PropertyChangeSupport(this);
 
 		this.validationModel = validationModel;
-		/*this.rootObject = rootObject;
-		
-		allIssues = new ArrayList<>();
-		
-		infoIssues = new ArrayList<>();
-		errors = new ArrayList<>();
-		warnings = new ArrayList<>();
-		
-		infoIssuesMap = new HashMap<>();
-		errorsMap = new HashMap<>();
-		warningsMap = new HashMap<>();*/
 
-		/*startTime2 = System.currentTimeMillis();
-		
-		if (this.getClass().getSimpleName().contains("FMLValidationReport")) {
-			DataBinding.dbValidated = 0;
-		}*/
-
-		System.out.println("On cree le root node");
 		rootNode = new ValidationNode<Validable>(rootObject);
 		nodes.put(rootObject, rootNode);
-		System.out.println(">>>>>>>> START validation");
+		// System.out.println(">>>>>>>> START validation");
 		rootNode.validate();
-		System.out.println(">>>>>>>> STOP validation");
-		System.out.println("All: " + getAllIssues().size() + " : " + getAllIssues());
-		System.out.println("Errors: " + getAllErrors().size() + " : " + getAllErrors());
-		System.out.println("Warnings: " + getAllWarnings().size() + " : " + getAllWarnings());
-		System.out.println("InfoIssues: " + getAllInfoIssues().size() + " : " + getAllInfoIssues());
+		// System.out.println(">>>>>>>> STOP validation");
+		// System.out.println("All: " + getAllIssues().size() + " : " + getAllIssues());
+		// System.out.println("Errors: " + getAllErrors().size() + " : " + getAllErrors());
+		// System.out.println("Warnings: " + getAllWarnings().size() + " : " + getAllWarnings());
+		// System.out.println("InfoIssues: " + getAllInfoIssues().size() + " : " + getAllInfoIssues());
 
-		System.out.println(rootNode.debug(0));
-
-		Collection aVoir = getAllIssues();
-		System.out.println("On regarde");
-
-		// List<ValidationIssue<?, ?>> issues = performDeepValidation(rootObject);
-
-		// intermediateTime2 = System.currentTimeMillis();
-
-		/*if (rootNode.getAllIssues().size() == 0) {
-			addToValidationIssues(new InformationIssue<>(rootObject, "consistency_check_ok"));
-		}*/
+		// System.out.println(rootNode.debug(0));
 
 	}
 
@@ -499,132 +436,6 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		}
 	}
 
-	/*private List<ValidationIssue<?, ?>> performDeepValidation(Validable rootObject) throws InterruptedException {
-	
-		// rulesNb = 0;
-	
-		List<ValidationIssue<?, ?>> returned = new ArrayList<>();
-	
-		// Gets all the objects to validate and removes duplicated objects
-		Set<Validable> objectsToValidate = new LinkedHashSet<>(retrieveAllEmbeddedValidableObjects(rootObject));
-	
-		// System.out.println("On trouve " + objectsToValidate.size() + " a valider");
-	
-		// long start = System.currentTimeMillis();
-	
-		// Compute validation steps and notify validation initialization
-		long validationStepToNotify = objectsToValidate.stream().filter(validationModel::shouldNotifyValidation)
-				.collect(Collectors.counting());
-		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_START, rootObject, validationStepToNotify);
-	
-		// Perform the validation
-		for (Validable validable : objectsToValidate) {
-			if (validationModel.shouldNotifyValidation(validable)) {
-				getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_OBJECT, null, validable);
-			}
-	
-			if (!validable.isDeleted()) {
-				returned.addAll(performValidation(validable));
-			}
-	
-			// Following allows task to be cancelled by throwing an InterruptedException
-			Thread.sleep(0);
-	
-		}
-	
-		// long end = System.currentTimeMillis();
-		// System.out.println("Pour valider mes " + objectsToValidate.size() + " objects, j'ai mis " + (end - start) + " milliseconds");
-	
-		// Notify validation is finished
-		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_END, null, rootObject);
-	
-		getPropertyChangeSupport().firePropertyChange("allIssues", null, getAllIssues());
-		getPropertyChangeSupport().firePropertyChange("filteredIssues", null, getFilteredIssues());
-		getPropertyChangeSupport().firePropertyChange("errors", null, getErrors());
-		getPropertyChangeSupport().firePropertyChange("warnings", null, getWarnings());
-		getPropertyChangeSupport().firePropertyChange("infoIssues", null, getInfoIssues());
-	
-		return returned;
-	
-	}*/
-
-	/*private <V extends Validable> List<ValidationIssue<?, ?>> performValidation(V validable) {
-		List<ValidationIssue<?, ?>> returned = new ArrayList<>();
-	
-		ValidationRuleSet<? super V> ruleSet = getValidationModel().getRuleSet(validable);
-	
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("Validating " + validable.toString() + " " + validable.toString());
-		}
-	
-		if (getValidationModel().shouldNotifyValidationRules()) {
-			getValidationModel().getPropertyChangeSupport().firePropertyChange(OBJECT_VALIDATION_START, 0, ruleSet.getRulesCount());
-		}
-	
-		for (int i = 0; i < ruleSet.getRulesCount(); i++) {
-			ValidationRule<?, ? super V> rule = ruleSet.getRuleAt(i);
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Applying rule " + rule.getRuleName() + " for " + validable);
-			}
-	
-			if (getValidationModel().shouldNotifyValidationRules()) {
-				getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATE_WITH_RULE, null, rule);
-			}
-	
-			ValidationIssue<?, ?> issue = performRuleValidation((ValidationRule) rule, validable);
-			// rulesNb++;
-	
-			if (issue != null) {
-				returned.add(issue);
-			}
-		}
-	
-		return returned;
-	}*/
-
-	/*private <R extends ValidationRule<R, V>, V extends Validable> ValidationIssue<R, V> performRuleValidation(R rule, V next) {
-		ValidationIssue<R, V> issue = null;
-		try {
-			issue = rule.getIsEnabled() ? rule.applyValidation(next) : null;
-		} catch (Exception e) {
-			logger.warning(
-					"Exception occured during validation: " + e.getMessage() + " object was " + next + " deleted=" + next.isDeleted());
-			e.printStackTrace();
-		}
-		if (issue != null) {
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Adding issue " + issue);
-			}
-			issue.setCause(rule);
-			addToValidationIssues(issue);
-			if (getValidationModel().fixAutomaticallyIfOneFixProposal()) {
-				if (issue instanceof ProblemIssue && ((ProblemIssue<R, V>) issue).getFixProposals().size() == 1) {
-					if (logger.isLoggable(Level.INFO)) {
-						logger.info("Fixing automatically...");
-					}
-					((ProblemIssue<R, V>) issue).getFixProposals().get(0).apply(false);
-					addToValidationIssues(new InformationIssue<>(next, "fixed_automatically:" + " " + issue.getMessage() + " : "
-							+ (((ProblemIssue<R, V>) issue).getFixProposals()).get(0).getMessage()));
-				}
-				else if (issue instanceof CompoundIssue) {
-					for (ValidationIssue<R, V> containedIssue : ((CompoundIssue<R, V>) issue).getContainedIssues()) {
-						if (containedIssue instanceof ProblemIssue && ((ProblemIssue<?, ?>) containedIssue).getFixProposals().size() == 1) {
-							addToValidationIssues(containedIssue);
-							if (logger.isLoggable(Level.INFO)) {
-								logger.info("Fixing automatically...");
-							}
-							((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).apply(false);
-							addToValidationIssues(new InformationIssue<>(containedIssue.getValidable(),
-									"fixed_automatically:" + " " + containedIssue.getMessage() + " : "
-											+ ((ProblemIssue<R, V>) containedIssue).getFixProposals().get(0).getMessage()));
-						}
-					}
-				}
-			}
-		}
-		return issue;
-	}*/
-
 	protected <V extends Validable> ValidationNode<V> getValidationNode(V object) {
 		return (ValidationNode<V>) nodes.get(object);
 	}
@@ -639,26 +450,19 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	 */
 	public void revalidate() throws InterruptedException {
 
+		// Gets all the objects to validate and removes duplicated objects
+		Set<Validable> objectsToValidate = new LinkedHashSet(Validable.retrieveAllEmbeddedValidableObjects(getRootObject()));
+
+		// Compute validation steps and notify validation initialization
+		long validationStepToNotify = objectsToValidate.stream().filter(validationModel::shouldNotifyValidation)
+				.collect(Collectors.counting());
+		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_START, getRootObject(), validationStepToNotify);
+
 		rootNode.revalidate();
 
-		/*for (ValidationIssue<?, ?> issue : new ArrayList<>(allIssues)) {
-			issue.delete();
-		}*/
+		// Notify validation is finished
+		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_END, null, getRootObject());
 
-		/*allIssues.clear();
-		
-		infoIssues.clear();
-		errors.clear();
-		warnings.clear();
-		
-		infoIssuesMap.clear();
-		errorsMap.clear();
-		warningsMap.clear();
-		
-		List<ValidationIssue<?, ?>> issues = performDeepValidation(rootObject);
-		if (issues.size() == 0) {
-			addToValidationIssues(new InformationIssue<>(rootObject, "consistency_check_ok"));
-		}*/
 	}
 
 	/**
@@ -675,103 +479,12 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		if (validationNode != null) {
 			validationNode.revalidate();
 		}
-
-		/*Collection<ValidationIssue<?, ?>> allIssuesToRemove = issuesRegarding(validable);
-		Collection<Validable> allEmbeddedValidableObjects = retrieveAllEmbeddedValidableObjects(validable);
-		if (allEmbeddedValidableObjects != null) {
-			for (Validable embeddedValidable : allEmbeddedValidableObjects) {
-				allIssuesToRemove.addAll(issuesRegarding(embeddedValidable));
-			}
-		}
-		for (ValidationIssue<?, ?> issue : new ArrayList<>(allIssuesToRemove)) {
-			removeFromValidationIssues(issue);
-		}
-		
-		if (!validable.isDeleted()) {
-			performDeepValidation(validable);
-		}*/
-
 	}
-
-	/*public void revalidateAfterFixing(boolean isDeleteAction) {
-		Vector<ValidationIssue> allIssuesToRemove = getValidationReport().issuesRegarding(getObject());
-		for (Validable relatedValidable : getRelatedValidableObjects()) {
-			allIssuesToRemove.addAll(getValidationReport().issuesRegarding(relatedValidable));
-		}
-		Collection<Validable> allEmbeddedValidableObjects = getValidationReport().getValidationModel().retrieveAllEmbeddedValidableObjects(
-				getObject());
-		if (allEmbeddedValidableObjects != null) {
-			for (Validable embeddedValidable : allEmbeddedValidableObjects) {
-				allIssuesToRemove.addAll(getValidationReport().issuesRegarding(embeddedValidable));
-			}
-		}
-		if (logger.isLoggable(Level.FINE)) {
-			logger.fine("Remove related issues");
-		}
-		getValidationReport().removeFromValidationIssues(allIssuesToRemove);
-		if (!isDeleteAction) {
-			if (logger.isLoggable(Level.FINE)) {
-				logger.fine("Revalidate");
-			}
-			ValidationReport newReportForThisObject = getObject().validate(getValidationReport().getValidationModel());
-			if (logger.isLoggable(Level.FINE)) {
-				logger.finer("Found " + newReportForThisObject.getValidationIssues().size() + " new issues for this revalidated object");
-			}
-			for (Enumeration e = newReportForThisObject.getValidationIssues().elements(); e.hasMoreElements();) {
-				ValidationIssue newIssue = (ValidationIssue) e.nextElement();
-				getValidationReport().addToValidationIssues(newIssue);
-			}
-		}
-		for (Validable relatedValidable : getRelatedValidableObjects()) {
-			if (!(relatedValidable instanceof DeletableObject && ((DeletableObject) relatedValidable).isDeleted())) {
-				if (logger.isLoggable(Level.FINE)) {
-					logger.fine("Revalidate related");
-				}
-				ValidationReport newReportForRelatedObject = relatedValidable.validate(getValidationReport().getValidationModel());
-				if (logger.isLoggable(Level.FINE)) {
-					logger.finer("Found " + newReportForRelatedObject.getValidationIssues().size()
-							+ " new issues for this revalidated related object");
-				}
-				for (Enumeration e2 = newReportForRelatedObject.getValidationIssues().elements(); e2.hasMoreElements();) {
-					ValidationIssue newIssue = (ValidationIssue) e2.nextElement();
-					getValidationReport().addToValidationIssues(newIssue);
-				}
-			}
-		}
-	}*/
-
-	/*public Collection<Validable> retrieveAllEmbeddedValidableObjects(Validable o) {
-		List<Validable> returned = new ArrayList<>();
-		appendAllEmbeddedValidableObjects(o, returned);
-		return returned;
-	}
-	
-	private void appendAllEmbeddedValidableObjects(Validable o, Collection<Validable> c) {
-		if (o != null && !c.contains(o)) {
-			c.add(o);
-			Collection<Validable> embeddedObjects = o.getEmbeddedValidableObjects();
-			if (embeddedObjects != null) {
-				for (Validable o2 : embeddedObjects) {
-					appendAllEmbeddedValidableObjects(o2, c);
-				}
-			}
-		}
-	}*/
 
 	public Collection<? extends ValidationIssue<?, ?>> getFilteredIssues() {
-		// System.out.println("On retourne les filtered pour mode=" + mode);
 		switch (mode) {
 			case ALL:
-				/*System.out.println("On retourne " + getAllIssues() + " size=" + getAllIssues().size());
-				System.out.println("Alors que errors=" + getAllErrors().hashCode() + " : " + getAllErrors());
-				System.out.println("Alors que warnings=" + getAllWarnings().hashCode() + " : " + getAllWarnings());
-				System.out.println("Alors que infos=" + getAllInfoIssues().hashCode() + " : " + getAllInfoIssues());
-				ChainedCollection<?> cc = (ChainedCollection) getAllIssues();
-				for (Collection c : cc.getCollections()) {
-					System.out.println("> " + c.hashCode() + " : " + c);
-				}*/
 				return getAllIssues();
-			// return getAllWarnings();
 			case ERRORS:
 				return getAllErrors();
 			case WARNINGS:
@@ -809,6 +522,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		return rootNode.getObject();
 	}
 
+	@NotificationUnsafe
 	public <V extends Validable> Collection<ValidationIssue<?, ? super V>> issuesRegarding(V object) {
 
 		ValidationNode<V> validationNode = getValidationNode(object);
@@ -818,6 +532,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		return Collections.emptyList();
 	}
 
+	@NotificationUnsafe
 	public <V extends Validable> Collection<InformationIssue<?, ? super V>> infoIssuesRegarding(V object) {
 		ValidationNode<V> validationNode = getValidationNode(object);
 		if (validationNode != null) {
@@ -826,6 +541,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		return Collections.emptyList();
 	}
 
+	@NotificationUnsafe
 	public <V extends Validable> Collection<ValidationError<?, ? super V>> errorIssuesRegarding(V object) {
 		ValidationNode<V> validationNode = getValidationNode(object);
 		if (validationNode != null) {
@@ -834,6 +550,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		return Collections.emptyList();
 	}
 
+	@NotificationUnsafe
 	public <V extends Validable> Collection<ValidationWarning<?, ? super V>> warningIssuesRegarding(V object) {
 		ValidationNode<V> validationNode = getValidationNode(object);
 		if (validationNode != null) {
@@ -874,10 +591,4 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	}
 
-	/*public String localizedForKey(String key) {
-		if (validationModel != null) {
-			return validationModel.localizedForKey(key);
-		}
-		return key;
-	}*/
 }
