@@ -60,9 +60,10 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
  * Used to store and manage a set of {@link ValidationRule} associated to some types<br>
- * {@link ValidationRule} discovering is based on PAMELA models annotated with {@link DefineValidationRule} annotations
+ * {@link ValidationRule} discovering is based on PAMELA models annotated with {@link DefineValidationRule} annotations<br>
+ * Note that class inheritance is supported
  * 
- * @author sguerin
+ * @author sylvain
  * 
  */
 public abstract class ValidationModel implements HasPropertyChangeSupport {
@@ -170,7 +171,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 	 */
 	public boolean isValid(Validable object) {
 		try {
-			return validate(object).getErrorsCount() == 0;
+			return validate(object).getAllErrors().size() == 0;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;

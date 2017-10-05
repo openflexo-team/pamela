@@ -50,68 +50,11 @@ import java.util.Collection;
 public interface Validable {
 
 	/**
-	 * Return default validation model for this object
-	 * 
-	 * @return ValidationModel
-	 */
-	// public ValidationModel getDefaultValidationModel();
-
-	/**
-	 * Returns a flag indicating if this object is valid according to default validation model
-	 * 
-	 * @return boolean
-	 */
-	// public boolean isValid();
-
-	/**
-	 * Returns a flag indicating if this object is valid according to specified validation model
-	 * 
-	 * @return boolean
-	 */
-	// public boolean isValid(ValidationModel validationModel);
-
-	/**
-	 * Validates this object by building new ValidationReport object Default validation model is used to perform this validation.
-	 */
-	// public ValidationReport validate();
-
-	/**
-	 * Validates this object by building new ValidationReport object Supplied validation model is used to perform this validation.
-	 */
-	// public ValidationReport validate(ValidationModel validationModel);
-
-	/**
-	 * Validates this object by appending eventual issues to supplied ValidationReport. Default validation model is used to perform this
-	 * validation.
-	 * 
-	 * @param report
-	 *            , a ValidationReport object on which found issues are appened
-	 */
-	// public void validate(ValidationReport report);
-
-	/**
-	 * Validates this object by appending eventual issues to supplied ValidationReport. Supplied validation model is used to perform this
-	 * validation.
-	 * 
-	 * @param report
-	 *            , a ValidationReport object on which found issues are appened
-	 */
-	// public void validate(ValidationReport report, ValidationModel validationModel);
-
-	/**
 	 * Return an collection of all embedded objects on which the validation is to be performed
 	 * 
 	 * @return a Vector of Validable objects
 	 */
 	public Collection<Validable> getEmbeddedValidableObjects();
-
-	/**
-	 * Return by deep recursion (see {@link #getEmbeddedValidableObjects()} a collection containing all validable objects contained in this
-	 * Validable object
-	 * 
-	 * @return
-	 */
-	// public Collection<? extends Validable> getAllEmbeddedValidableObjects();
 
 	/**
 	 * Return a flag indicating if this object was deleted
