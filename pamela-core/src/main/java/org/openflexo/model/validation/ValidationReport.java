@@ -214,7 +214,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				childNode.revalidate();
 			}
 
-			if (getAllIssues().size() == 0) {
+			if (getObject() == getRootObject() && getAllIssues().size() == 0) {
 				addToValidationIssues(new InformationIssue<>(object, "consistency_check_ok"));
 			}
 		}
@@ -457,6 +457,17 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		// Notify validation is finished
 		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_END, null, getRootObject());
 
+		getPropertyChangeSupport().firePropertyChange("filteredIssues", null, getFilteredIssues());
+		getPropertyChangeSupport().firePropertyChange("allErrors", null, getAllErrors());
+		getPropertyChangeSupport().firePropertyChange("allWarnings", null, getAllWarnings());
+		getPropertyChangeSupport().firePropertyChange("allInfoIssues", null, getAllInfoIssues());
+		getPropertyChangeSupport().firePropertyChange("allIssues", null, getAllIssues());
+
+		getPropertyChangeSupport().firePropertyChange("issuesRegarding(V)", false, true);
+		getPropertyChangeSupport().firePropertyChange("infoIssuesRegarding(V)", false, true);
+		getPropertyChangeSupport().firePropertyChange("errorIssuesRegarding(V)", false, true);
+		getPropertyChangeSupport().firePropertyChange("warningIssuesRegarding(V)", false, true);
+
 	}
 
 	/**
@@ -473,6 +484,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		if (validationNode != null) {
 			validationNode.revalidate();
 		}
+
 	}
 
 	public Collection<? extends ValidationIssue<?, ?>> getFilteredIssues() {
