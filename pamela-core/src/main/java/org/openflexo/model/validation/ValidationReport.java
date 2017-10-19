@@ -38,6 +38,8 @@
 
 package org.openflexo.model.validation;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -95,7 +97,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	private final Map<Validable, ValidationNode<?>> nodes = new HashMap<>();
 
-	public class ValidationNode<V extends Validable> {
+	public class ValidationNode<V extends Validable> implements PropertyChangeListener {
 
 		private final V object;
 
@@ -108,12 +110,44 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		private ChainedCollection<ValidationWarning<?, ? super V>> allWarnings = null;
 		private ChainedCollection<InformationIssue<?, ? super V>> allInfoIssues = null;
 
+		private ValidationNode<?> parentNode;
 		private final List<ValidationNode<?>> childNodes;
 
-		public ValidationNode(V object) {
+		public ValidationNode(V object, ValidationNode<?> parentNode) {
 			this.object = object;
+			this.parentNode = parentNode;
 			childNodes = new ArrayList<>();
 			nodes.put(object, this);
+			if (object instanceof HasPropertyChangeSupport) {
+				((HasPropertyChangeSupport) object).getPropertyChangeSupport().addPropertyChangeListener(this);
+			}
+		}
+
+		private boolean isDeleted = false;
+
+		public void delete() {
+			if (isDeleted) {
+				return;
+			}
+			isDeleted = true;
+			if (object instanceof HasPropertyChangeSupport) {
+				((HasPropertyChangeSupport) object).getPropertyChangeSupport().removePropertyChangeListener(this);
+			}
+			clear();
+			for (ValidationNode<?> childNode : childNodes) {
+				childNode.delete();
+			}
+			if (parentNode != null) {
+				parentNode.childNodes.remove(this);
+				parentNode.clearIssuesAfterStructuralModifications();
+			}
+		}
+
+		@Override
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (evt.getPropertyName().equals(((HasPropertyChangeSupport) object).getDeletedProperty())) {
+				delete();
+			}
 		}
 
 		public V getObject() {
@@ -128,6 +162,18 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 			_performValidate();
 
+			_updateChildren();
+
+			allIssues = null;
+			allErrors = null;
+			allWarnings = null;
+			allInfoIssues = null;
+
+		}
+
+		private boolean _updateChildren() {
+
+			boolean childrenWereAdded = false;
 			Collection<? extends Validable> embeddedValidableObjects = object.getEmbeddedValidableObjects();
 
 			if (embeddedValidableObjects != null) {
@@ -135,19 +181,16 @@ public class ValidationReport implements HasPropertyChangeSupport {
 					ValidationNode<?> childNode = getValidationNode(embeddedValidable);
 					if (childNode == null) {
 						// System.out.println("Validate " + embeddedValidable + " in " + object);
-						childNode = new ValidationNode<Validable>(embeddedValidable);
+						childNode = new ValidationNode<Validable>(embeddedValidable, this);
 						childNodes.add(childNode);
 						nodes.put(embeddedValidable, childNode);
 						childNode.validate();
+						childrenWereAdded = true;
 					}
 				}
 			}
 
-			allIssues = null;
-			allErrors = null;
-			allWarnings = null;
-			allInfoIssues = null;
-
+			return childrenWereAdded;
 		}
 
 		private void _performValidate() {
@@ -209,6 +252,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			clear();
 
 			_performValidate();
+
+			if (_updateChildren()) {
+				clearIssuesAfterStructuralModifications();
+			}
 
 			for (ValidationNode<?> childNode : childNodes) {
 				childNode.revalidate();
@@ -273,6 +320,16 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		public Collection<ValidationWarning<?, ? super V>> getWarnings() {
 			return warnings;
+		}
+
+		private void clearIssuesAfterStructuralModifications() {
+			allIssues = null;
+			allErrors = null;
+			allWarnings = null;
+			allInfoIssues = null;
+			if (parentNode != null) {
+				parentNode.clearIssuesAfterStructuralModifications();
+			}
 		}
 
 		public Collection<ValidationIssue<?, ? super V>> getAllIssues() {
@@ -393,7 +450,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		this.validationModel = validationModel;
 
-		rootNode = new ValidationNode<Validable>(rootObject);
+		rootNode = new ValidationNode<Validable>(rootObject, null);
 		nodes.put(rootObject, rootNode);
 		// System.out.println(">>>>>>>> START validation");
 		rootNode.validate();
