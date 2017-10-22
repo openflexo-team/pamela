@@ -134,9 +134,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				((HasPropertyChangeSupport) object).getPropertyChangeSupport().removePropertyChangeListener(this);
 			}
 			clear();
-			for (ValidationNode<?> childNode : childNodes) {
+			for (ValidationNode<?> childNode : new ArrayList<>(childNodes)) {
 				childNode.delete();
 			}
+			childNodes.clear();
 			if (parentNode != null) {
 				parentNode.childNodes.remove(this);
 				parentNode.clearIssuesAfterStructuralModifications();
