@@ -47,7 +47,7 @@ import java.util.logging.Logger;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
- * Represents a validation issue embedded in a validation report
+ * Represents a validation issue embedded in a {@link ValidationReport}
  * 
  * @author sylvain
  * 
@@ -138,7 +138,6 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 		if (validable instanceof HasPropertyChangeSupport) {
 			((HasPropertyChangeSupport) validable).getPropertyChangeSupport().removePropertyChangeListener(this);
 		}
-		validationReport.removeFromValidationIssues(this);
 		if (getPropertyChangeSupport() != null) {
 			getPropertyChangeSupport().firePropertyChange(DELETED_PROPERTY, this, null);
 		}
