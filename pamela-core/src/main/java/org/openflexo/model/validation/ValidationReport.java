@@ -275,6 +275,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				logger.warning("Exception occured during validation: " + e.getMessage() + " object was " + object + " deleted="
 						+ object.isDeleted());
 				e.printStackTrace();
+				issue = new ValidationError(rule, object, "Unexpected exception: " + e.getMessage());
 			}
 			if (issue != null) {
 				if (logger.isLoggable(Level.FINE)) {
