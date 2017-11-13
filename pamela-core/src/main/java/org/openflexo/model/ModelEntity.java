@@ -52,7 +52,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.annotation.Nonnull;
+
 import org.openflexo.connie.binding.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
@@ -1111,11 +1113,18 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		if (isAbstract()) {
 			return;
 		}
+
+		MissingImplementationException thrown = null;
 		for (Method method : getNotOverridenMethods()) {
 			if (!checkMethodImplementation(method, factory)) {
 				System.err.println("NOT FOUND: " + method + " in " + getImplementedInterface());
-				throw new MissingImplementationException(this, method, factory);
+				if (thrown == null) {
+					thrown = new MissingImplementationException(this, method, factory);
+				}
 			}
+		}
+		if (thrown != null) {
+			throw thrown;
 		}
 	}
 
