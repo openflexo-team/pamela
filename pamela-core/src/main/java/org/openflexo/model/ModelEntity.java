@@ -1184,6 +1184,9 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			if (method.getAnnotation(Initializer.class) != null) {
 				return true;
 			}
+			if (method.getAnnotation(Reindexer.class) != null) {
+				return true;
+			}
 
 			// This has not been recognized as a property
 			if (HasPropertyChangeSupport.class.isAssignableFrom(getImplementedInterface())) {
