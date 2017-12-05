@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -908,6 +909,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	}
 
 	public void invokeSetter(ModelProperty<? super I> property, Object value) {
+
+		if (property.getSetterMethod() == null) {
+			System.err.println("Inconsistent data: cannot find setter for " + property);
+			return;
+		}
 
 		try {
 			property.getSetterMethod().invoke(getObject(), value);
@@ -2632,10 +2638,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			}
 			else if (pastingPointProperties.size() > 1) {
 				// Ambiguous pasting operations: several properties are compatible for pasting type
-				System.out.println("Ambiguous pasting operations: several properties declared as pasting point found for " + type + " in "
-						+ modelEntity);
-				System.out.println("Found: " + pastingPointProperties);
-				return false;
+				// System.out.println("Ambiguous pasting operations: several properties declared as pasting point found for " + type + " in
+				// "
+				// + modelEntity);
+				return true;
 			}
 		}
 
@@ -2689,6 +2695,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							return arg0.getAddPastingPoint() != null || arg0.getSetPastingPoint() != null;
 						}
 					});
+
+			ModelProperty<? super I> pastingProperty;
+
 			if (pastingPointProperties.size() == 0) {
 				throw new ClipboardOperationException("Pasting operation: no property is compatible with pasting type " + type);
 				// System.out.println("modelEntity=" + getModelEntity());
@@ -2698,22 +2707,35 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 			}
 			else if (pastingPointProperties.size() > 1) {
-				throw new ClipboardOperationException(
-						"Ambiguous pasting operations: several properties are compatible for pasting type " + type);
+
+				List<ModelProperty<? super I>> list = new ArrayList<>(pastingPointProperties);
+				Collections.sort(list, new Comparator<ModelProperty<? super I>>() {
+					@Override
+					public int compare(ModelProperty<? super I> o1, ModelProperty<? super I> o2) {
+						int p1 = o1.getAddPastingPoint() != null ? o1.getAddPastingPoint().priority() : o1.getSetPastingPoint().priority();
+						int p2 = o2.getAddPastingPoint() != null ? o2.getAddPastingPoint().priority() : o2.getSetPastingPoint().priority();
+						return p1 - p2;
+					}
+				});
+				// Take the most prioritar
+				pastingProperty = list.get(0);
+				// throw new ClipboardOperationException(
+				// "Ambiguous pasting operations: several properties are compatible for pasting type " + type);
 			}
 			else {
-				ModelProperty<? super I> pastingProperty = pastingPointProperties.iterator().next();
-				// System.out.println("Paste for property " + pastingProperty);
-				Object pastedContents = paste(clipboard, pastingProperty);
-				if (clipboard.isSingleObject()) {
-					clipboard.consume();
-					return pastedContents;
-				}
-				else if (pastedContents != null) {
-					returned.addAll((List) pastedContents);
-					somethingWasPasted = true;
-				}
+				pastingProperty = pastingPointProperties.iterator().next();
 			}
+
+			Object pastedContents = paste(clipboard, pastingProperty);
+			if (clipboard.isSingleObject()) {
+				clipboard.consume();
+				return pastedContents;
+			}
+			else if (pastedContents != null) {
+				returned.addAll((List) pastedContents);
+				somethingWasPasted = true;
+			}
+
 		}
 
 		if (!somethingWasPasted) {
