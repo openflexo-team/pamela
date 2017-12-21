@@ -42,13 +42,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-import javassist.util.proxy.ProxyObject;
+
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -69,6 +70,8 @@ import org.openflexo.model.factory.PAMELAConstants;
 import org.openflexo.model.factory.ProxyMethodHandler;
 import org.openflexo.model.factory.SerializationPolicy;
 import org.openflexo.toolbox.StringUtils;
+
+import javassist.util.proxy.ProxyObject;
 
 public class XMLSerializer {
 
@@ -272,7 +275,7 @@ public class XMLSerializer {
 										List<?> values = (List<?>) handler.invokeGetter(p);
 										// NPE if list not initialized
 										if (values != null) {
-											for (Object o : values) {
+											for (Object o : new ArrayList<>(values)) {
 												if (o != null) {
 													Element propertyElement2 = serializeElement(o, propertyXMLElement, resetModifiedStatus);
 													returned.addContent(propertyElement2);
