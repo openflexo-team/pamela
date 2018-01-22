@@ -178,7 +178,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			Collection<? extends Validable> embeddedValidableObjects = object.getEmbeddedValidableObjects();
 
 			if (embeddedValidableObjects != null) {
-				for (Validable embeddedValidable : embeddedValidableObjects) {
+				for (Validable embeddedValidable : new ArrayList<>(embeddedValidableObjects)) {
 					ValidationNode<?> childNode = getValidationNode(embeddedValidable);
 					if (childNode == null) {
 						// System.out.println("Validate " + embeddedValidable + " in " + object);
