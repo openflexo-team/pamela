@@ -386,7 +386,14 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 			// Creates object instance
 			Class<Object> entityClass = concreteEntity.getImplementedInterface();
-			Object returned = factory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
+			Object returned = null;
+			try {
+				returned = factory._newInstance(entityClass, policy == DeserializationPolicy.EXTENSIVE);
+			} catch (NullPointerException e) {
+				System.err.println("!!! Unexpected exception " + e);
+				System.err.println("!!! while deserializing " + name + " id=" + id + " attributes=" + attributes);
+				System.err.println("!!! entityClass="+entityClass);
+			}
 			info.setObject(returned);
 			info.initializeDeserialization();
 
