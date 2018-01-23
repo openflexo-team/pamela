@@ -18,7 +18,7 @@ public class TestJavassist {
 		Object obj = clazz.newInstance();
 		Class[] formalParams = new Class[] { double.class };
 		Method meth = clazz.getDeclaredMethod("eval", formalParams);
-		Object[] actualParams = new Object[] { new Double(17) };
+		Object[] actualParams = new Object[] { Double.valueOf(17) };
 		double result = ((Double) meth.invoke(obj, actualParams)).doubleValue();
 		System.out.println(result);
 	}
