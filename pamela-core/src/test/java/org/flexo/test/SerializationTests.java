@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
+
 import org.apache.commons.io.IOUtils;
 import org.flexo.model.AbstractNode;
 import org.flexo.model.FlexoProcess;
@@ -22,14 +23,13 @@ import org.openflexo.model.factory.SerializationPolicy;
 import org.openflexo.toolbox.Duration;
 import org.openflexo.toolbox.Duration.DurationUnit;
 import org.openflexo.toolbox.FileFormat;
-import org.openflexo.toolbox.FileFormat.BinaryFileFormat;
 
 public class SerializationTests extends AbstractPAMELATest {
 
 	private static final String NODE_NAME = "aNode";
 	private static final String PROPERTY_VALUE = "aValue";
 	private static final Duration DURATION_VALUE = new Duration(10, DurationUnit.SECONDS);
-	private static final FileFormat FILEFORMAT_VALUE = BinaryFileFormat.JAR;
+	private static final FileFormat FILEFORMAT_VALUE = FileFormat.JAR;
 	private File file;
 	private ModelFactory factory;
 	private ModelFactory factory2;
@@ -58,9 +58,9 @@ public class SerializationTests extends AbstractPAMELATest {
 		FlexoProcess process = (FlexoProcess) factory.newInstance(FlexoProcess.class).init();
 		MyNode node = (MyNode) factory2.newInstance(MyNode.class).init(NODE_NAME);
 		node.setMyProperty(PROPERTY_VALUE);
-        node.setMyDuration(DURATION_VALUE);
-        node.setMyFileformat(FILEFORMAT_VALUE);
-        node.setMyLevel(Level.ALL);
+		node.setMyDuration(DURATION_VALUE);
+		node.setMyFileformat(FILEFORMAT_VALUE);
+		node.setMyLevel(Level.ALL);
 		process.addToNodes(node);
 		FileOutputStream fos = null;
 		try {
