@@ -61,7 +61,7 @@ public class DurationConverter extends Converter<Duration> {
 		}
 	}
 
-	private Duration tryToConvertFromString(String aValue) throws ParseException {
+	private static Duration tryToConvertFromString(String aValue) throws ParseException {
 		for (DurationUnit unit : DurationUnit.values()) {
 			String unitSymbol = unit.getSymbol();
 			if (aValue.endsWith(unitSymbol)) {

@@ -28,7 +28,7 @@ import org.openflexo.model8.ConceptC2;
  */
 public class TestUpdateWith {
 
-	private ModelFactory createFactory() {
+	private static ModelFactory createFactory() {
 		try {
 			return new ModelFactory(ModelContextLibrary.getCompoundModelContext(ConceptA.class, ConceptC1.class, ConceptC2.class));
 		} catch (ModelDefinitionException e) {
@@ -60,7 +60,8 @@ public class TestUpdateWith {
 
 	}
 
-	private void assertPropertyNotified(Object source, String propertyName, Object oldValue, Object newValue, TestChangeListener listener) {
+	private static void assertPropertyNotified(Object source, String propertyName, Object oldValue, Object newValue,
+			TestChangeListener listener) {
 		for (PropertyChangeEvent evt : listener.events) {
 			if (evt.getSource().equals(source) && evt.getPropertyName().equals(propertyName) && isEqual(evt.getOldValue(), oldValue)
 					&& isEqual(evt.getNewValue(), newValue)) {
@@ -70,7 +71,7 @@ public class TestUpdateWith {
 		fail("Property notification " + propertyName + " from " + oldValue + " to " + newValue + " not fired !");
 	}
 
-	private double getDistance(ModelFactory factory, Object o1, Object o2) {
+	private static double getDistance(ModelFactory factory, Object o1, Object o2) {
 		return factory.getHandler(o1).getDistance(o2);
 	}
 

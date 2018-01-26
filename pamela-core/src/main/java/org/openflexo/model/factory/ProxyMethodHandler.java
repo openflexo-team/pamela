@@ -2121,7 +2121,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return 0.0;
 	}
 
-	private double getPropertyPonderation(ModelProperty<?> p) {
+	private static double getPropertyPonderation(ModelProperty<?> p) {
 		double propertyPonderation = 1.0;
 		if (TypeUtils.isPrimitive(p.getType()) || p.getType().equals(String.class) || p.isStringConvertable()) {
 			propertyPonderation = 1.0;

@@ -316,7 +316,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	}
 
-	private String getPropertyIdentifier(Method m) {
+	private static String getPropertyIdentifier(Method m) {
 		String propertyIdentifier = null;
 		Getter aGetter = m.getAnnotation(Getter.class);
 		if (aGetter != null) {

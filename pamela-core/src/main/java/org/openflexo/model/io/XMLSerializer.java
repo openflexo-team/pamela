@@ -484,7 +484,7 @@ public class XMLSerializer {
 			}
 		}
 
-		private boolean exchange(ElementReference ref1, ElementReference ref2) {
+		private static boolean exchange(ElementReference ref1, ElementReference ref2) {
 			Element element1 = ref1.element;
 			Element element2 = ref2.element;
 			Element father1 = element1.getParentElement();
@@ -520,7 +520,7 @@ public class XMLSerializer {
 		 * returned; }
 		 */
 
-		private boolean isAncestorOf(Element e1, Element e2) {
+		private static boolean isAncestorOf(Element e1, Element e2) {
 			return e1.isAncestor(e2);
 		}
 
