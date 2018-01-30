@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.model.ModelContext;
-import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.UnitializedEntityException;
 import org.openflexo.model.factory.AccessibleProxyObject;
 import org.openflexo.model.factory.Clipboard;
@@ -259,25 +258,20 @@ public class BasicTests extends AbstractPAMELATest {
 		file.delete();
 	}
 
-	private FlexoProcess loadProcessFromFile(File file) throws ModelDefinitionException {
-
+	private FlexoProcess loadProcessFromFile(File file) {
 		FlexoProcess process = null;
 
-		FileOutputStream fos = null;
-		try {
-			FileInputStream fis = new FileInputStream(file);
-			try {
-				process = (FlexoProcess) factory.deserialize(fis);
-			} finally {
-				IOUtils.closeQuietly(fis);
-			}
-			System.out.println("Read: " + process);
-			fos = new FileOutputStream(file);
+		try (FileInputStream fis = new FileInputStream(file)) {
+			process = (FlexoProcess) factory.deserialize(fis);
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+		System.out.println("Read: " + process);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
+
 			factory.serialize(process, fos);
 		} catch (Exception e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 		return process;
 	}
