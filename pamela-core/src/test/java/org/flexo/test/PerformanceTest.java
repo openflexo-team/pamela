@@ -253,7 +253,7 @@ public class PerformanceTest {
 	 *            the TestRunnable to run
 	 * @return the TestResult, ie, time execution, memory footprint and the root object of the model
 	 */
-	private TestRunnableResult runRunnable(ModelFactory factory, TestRunnable runnable) {
+	private static TestRunnableResult runRunnable(ModelFactory factory, TestRunnable runnable) {
 		TestRunnableResult result = new TestRunnableResult();
 		long startMem, endMem, start, end;
 		startMem = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
@@ -275,7 +275,7 @@ public class PerformanceTest {
 	 * @param factory
 	 *            the factory to pass to the TestRunnable when using pamela objects. Cannot be null
 	 */
-	private void testModel(TestRunnable runnable, ModelFactory factory, ModelFactory factory2) {
+	private static void testModel(TestRunnable runnable, ModelFactory factory, ModelFactory factory2) {
 		long proxyTime = 0, proxyMem = 0, regularTime = 0, regularMem = 0;
 		for (int i = 0; i < 10; i++) {
 			TestRunnableResult result = runRunnable(factory2, runnable);

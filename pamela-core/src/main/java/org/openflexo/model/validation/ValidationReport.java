@@ -182,7 +182,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 					ValidationNode<?> childNode = getValidationNode(embeddedValidable);
 					if (childNode == null) {
 						// System.out.println("Validate " + embeddedValidable + " in " + object);
-						childNode = new ValidationNode<Validable>(embeddedValidable, this);
+						childNode = new ValidationNode<>(embeddedValidable, this);
 						childNodes.add(childNode);
 						nodes.put(embeddedValidable, childNode);
 						childNode.validate();
@@ -336,7 +336,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		public Collection<ValidationIssue<?, ? super V>> getAllIssues() {
 			if (allIssues == null) {
-				allIssues = new ChainedCollection<ValidationIssue<?, ? super V>>(getAllInfoIssues(), getAllErrors(), getAllWarnings());
+				allIssues = new ChainedCollection<>(getAllInfoIssues(), getAllErrors(), getAllWarnings());
 				allIssues.setDebugName("AllIssuesFor" + object);
 			}
 			return allIssues;
@@ -452,7 +452,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		this.validationModel = validationModel;
 
-		rootNode = new ValidationNode<Validable>(rootObject, null);
+		rootNode = new ValidationNode<>(rootObject, null);
 		nodes.put(rootObject, rootNode);
 		// System.out.println(">>>>>>>> START validation");
 		rootNode.validate();

@@ -194,7 +194,7 @@ public class TypeConverter extends Converter<Type> {
 	 * @param s
 	 * @return
 	 */
-	private List<String> tokenizeAsTypeList(String s) {
+	private static List<String> tokenizeAsTypeList(String s) {
 		List<String> returned = new ArrayList<>();
 		String current = "";
 		int level = 0;

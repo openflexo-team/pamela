@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.naming.spi.Resolver;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -60,7 +61,6 @@ import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
 import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
-import org.openflexo.model.exceptions.ModelExecutionException;
 import org.openflexo.model.exceptions.RestrictiveDeserializationException;
 import org.openflexo.model.factory.DeserializationPolicy;
 import org.openflexo.model.factory.ModelFactory;
@@ -344,23 +344,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				} catch (ClassNotFoundException e) {
 					throw new InvalidDataException("Class not found " + e.getMessage());
 				}
-				if (entityName != null && policy == DeserializationPolicy.EXTENSIVE) {
+				if (policy == DeserializationPolicy.EXTENSIVE) {
 					concreteEntity = factory.importClass(implementedInterface);
-					if (className != null) {
-						try {
-							implementingClass = (Class<Object>) Class.forName(className);
-							if (implementedInterface.isAssignableFrom(implementingClass)) {
-								factory.setImplementingClassForInterface((Class) implementingClass, implementedInterface,
-										policy == DeserializationPolicy.EXTENSIVE);
-							}
-							else {
-								throw new ModelExecutionException(
-										className + " does not implement " + implementedInterface + " for node " + name);
-							}
-						} catch (ClassNotFoundException e) {
-							throw new InvalidDataException("Class not found " + e.getMessage());
-						}
-					}
 				}
 			}
 
@@ -376,9 +361,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 				if (entityName != null) {
 					throw new RestrictiveDeserializationException("Entity " + entityName + " is not part of this model context");
 				}
-				else {
-					throw new RestrictiveDeserializationException("No entity found for tag " + name);
-				}
+				throw new RestrictiveDeserializationException("No entity found for tag " + name);
 			}
 			// ----- Warning -----
 			// End of the strange code
@@ -392,7 +375,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			} catch (NullPointerException e) {
 				System.err.println("!!! Unexpected exception " + e);
 				System.err.println("!!! while deserializing " + name + " id=" + id + " attributes=" + attributes);
-				System.err.println("!!! entityClass="+entityClass);
+				System.err.println("!!! entityClass=" + entityClass);
 			}
 			info.setObject(returned);
 			info.initializeDeserialization();
