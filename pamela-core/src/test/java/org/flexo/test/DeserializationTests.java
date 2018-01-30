@@ -8,7 +8,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.apache.commons.io.IOUtils;
 import org.jdom2.JDOMException;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -71,14 +70,10 @@ public class DeserializationTests {
 		childNode23.setName("Node23");
 		childNode2.addToNodes(childNode23);
 
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(rootNode, fos, SerializationPolicy.EXTENSIVE, true);
 		} catch (Exception e) {
 			Assert.fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 
 		System.out.println(factory.stringRepresentation(rootNode));
@@ -87,17 +82,12 @@ public class DeserializationTests {
 	@Test
 	@TestOrder(2)
 	public void testDeserialize() {
-
-		FileInputStream fis = null;
 		Node rootNode = null;
 
-		try {
-			fis = new FileInputStream(file);
+		try (FileInputStream fis = new FileInputStream(file)) {
 			rootNode = (Node) factory.deserialize(fis, DeserializationPolicy.EXTENSIVE);
 		} catch (Exception e) {
 			Assert.fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fis);
 		}
 
 		assertNotNull(rootNode);
