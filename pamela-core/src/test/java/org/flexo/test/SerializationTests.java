@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 
-import org.apache.commons.io.IOUtils;
 import org.flexo.model.AbstractNode;
 import org.flexo.model.FlexoProcess;
 import org.flexo.model.MyNode;
@@ -62,50 +61,35 @@ public class SerializationTests extends AbstractPAMELATest {
 		node.setMyFileformat(FILEFORMAT_VALUE);
 		node.setMyLevel(Level.ALL);
 		process.addToNodes(node);
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(process, fos, SerializationPolicy.RESTRICTIVE, true);
 			Assert.fail("Restrictive serialization should not allow the serialization of a " + MyNode.class.getName());
 		} catch (RestrictiveSerializationException e) {
 			// Yes this is what we wanted
 		} catch (Exception e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(process, fos, SerializationPolicy.EXTENSIVE, true);
 		} catch (RestrictiveSerializationException e) {
 			Assert.fail("Extensive serialization should allow the serialization of a " + MyNode.class.getName());
 		} catch (Exception e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 		// Just to make sure
 		process = null;
 		factory = new ModelFactory(FlexoProcess.class);
-		FileInputStream fis = null;
-
-		try {
-			fis = new FileInputStream(file);
+		try (FileInputStream fis = new FileInputStream(file)) {
 			process = (FlexoProcess) factory.deserialize(fis, DeserializationPolicy.RESTRICTIVE);
 			Assert.fail("Restrictive deserialization should not allow the deserialization of a " + MyNode.class.getName());
 		} catch (RestrictiveDeserializationException e) {
 			// Yes this is what we wanted
-		} finally {
-			IOUtils.closeQuietly(fis);
 		}
 
-		try {
-			fis = new FileInputStream(file);
+		try (FileInputStream fis = new FileInputStream(file)) {
 			process = (FlexoProcess) factory.deserialize(fis, DeserializationPolicy.EXTENSIVE);
 		} catch (RestrictiveDeserializationException e) {
 			Assert.fail("Extensive deserialization should allow the deserialization of a " + MyNode.class.getName());
-		} finally {
-			IOUtils.closeQuietly(fis);
 		}
 		Assert.assertEquals(1, process.getNodes().size());
 		AbstractNode aNode = process.getNodeNamed(NODE_NAME);
@@ -114,24 +98,18 @@ public class SerializationTests extends AbstractPAMELATest {
 
 		// The next block is necessary to ensure that serialization remains consistent when using EXTENSIVE policy (ie, class names and
 		// stuffs remain serialized)
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(process, fos, SerializationPolicy.EXTENSIVE, true);
 		} catch (RestrictiveSerializationException e) {
 			Assert.fail("Extensive serialization should allow the serialization of a " + MyNode.class.getName());
 		} catch (Exception e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 		factory = new ModelFactory(FlexoProcess.class);
-		try {
-			fis = new FileInputStream(file);
+		try (FileInputStream fis = new FileInputStream(file)) {
 			process = (FlexoProcess) factory.deserialize(fis, DeserializationPolicy.EXTENSIVE);
 		} catch (RestrictiveDeserializationException e) {
 			Assert.fail("Extensive deserialization should allow the deserialization of a " + MyNode.class.getName());
-		} finally {
-			IOUtils.closeQuietly(fis);
 		}
 		Assert.assertEquals(1, process.getNodes().size());
 		aNode = process.getNodeNamed(NODE_NAME);

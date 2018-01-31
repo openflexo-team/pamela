@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.flexo.model.AbstractNode;
 import org.flexo.model.ActivityNode;
 import org.flexo.model.Edge;
@@ -129,11 +128,9 @@ public class BasicTests extends AbstractPAMELATest {
 		System.out.println("edge2=" + edge2);
 		assertEquals(process, edge2.getProcess());
 
-		try {
-			FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml");
+		try (FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml")) {
 			factory.serialize(process, fos);
 			fos.flush();
-			fos.close();
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
@@ -174,16 +171,12 @@ public class BasicTests extends AbstractPAMELATest {
 		startNode.setMasterAnnotation(annotation1);
 		startNode.addToOtherAnnotations(annotation2);
 
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 		String xml1 = FileUtils.fileContents(file);
 
@@ -193,15 +186,12 @@ public class BasicTests extends AbstractPAMELATest {
 		assertEquals(2, startNode.getOutgoingEdges().size());
 		assertEquals(0, activityNode.getOutgoingEdges().size());
 
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 
 		activityNode.addToOutgoingEdges(edge2);
@@ -211,15 +201,12 @@ public class BasicTests extends AbstractPAMELATest {
 		assertEquals(1, startNode.getOutgoingEdges().size());
 		assertEquals(1, activityNode.getOutgoingEdges().size());
 
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 
 		String xml3 = FileUtils.fileContents(file, "UTF-8");
@@ -397,19 +384,15 @@ public class BasicTests extends AbstractPAMELATest {
 
 		assertNotSame(edge1, edge1Copy);
 		assertNotSame(edge2, edge2Copy);
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(processCopy, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
 		} finally {
-			IOUtils.closeQuietly(fos);
 			file.delete();
 		}
-
 	}
 
 	/**
@@ -514,18 +497,13 @@ public class BasicTests extends AbstractPAMELATest {
 		ActivityNode newNode = (ActivityNode) pasted;
 		assertEquals(0, newNode.getIncomingEdges().size());
 		assertEquals(0, newNode.getOutgoingEdges().size());
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream("/tmp/TestFile.xml");
+		try (FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml")) {
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
-
 	}
 
 	/**
@@ -591,16 +569,12 @@ public class BasicTests extends AbstractPAMELATest {
 		assertEquals(0, newStartNode.getIncomingEdges().size());
 		assertEquals(1, newStartNode.getOutgoingEdges().size());
 		assertSame(newStartNode.getOutgoingEdges().get(0), newActivity.getIncomingEdges().get(0));
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream("/tmp/TestFile.xml");
+		try (FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml")) {
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 	}
 
