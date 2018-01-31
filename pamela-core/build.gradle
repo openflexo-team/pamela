@@ -1,7 +1,7 @@
 dependencies {
   compile flexoUtils()
   compile connie()
-
+  compile group: 'org.jdom', name: 'jdom2', version: '2.0.6'
   compile group: 'org.javassist', name: 'javassist', version: '3.22.0-GA'
 
   testCompile testUtils()
