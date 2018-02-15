@@ -225,7 +225,7 @@ public class ModelProperty<I> {
 			Remover remover, Reindexer reindexer, XMLAttribute xmlAttribute, XMLElement xmlElement, ReturnedValue returnedValue,
 			Embedded embedded, Initialize initialize, ComplexEmbedded complexEmbedded, CloningStrategy cloningStrategy,
 			PastingPoint setPastingPoint, PastingPoint addPastingPoint, Method getterMethod, Method setterMethod, Method adderMethod,
-			Method removerMethod, Method reindexerMethod) throws ModelDefinitionException {
+			Method removerMethod, Method reindexerMethod) {
 		this.modelEntity = modelEntity;
 		this.propertyIdentifier = propertyIdentifier;
 		this.getter = getter;
@@ -1042,7 +1042,7 @@ public class ModelProperty<I> {
 		return "ModelProperty[" + getModelEntity() + "." + getPropertyIdentifier() + "]";
 	}
 
-	public ModelEntity<?> getAccessedEntity() throws ModelDefinitionException {
+	public ModelEntity<?> getAccessedEntity() {
 		return ModelEntityLibrary.get(getType());
 	}
 

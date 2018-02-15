@@ -54,7 +54,6 @@ import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.annotations.DefineValidationRule;
-import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
@@ -86,11 +85,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 		ruleSets = new HashMap<>();
 
-		try {
-			searchAndRegisterValidationRules(modelContext);
-		} catch (ModelDefinitionException e) {
-			e.printStackTrace();
-		}
+		searchAndRegisterValidationRules(modelContext);
 	}
 
 	@Override
@@ -104,7 +99,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void searchAndRegisterValidationRules(ModelContext modelContext) throws ModelDefinitionException {
+	private void searchAndRegisterValidationRules(ModelContext modelContext) {
 
 		validationModelFactory = new ModelFactory(modelContext);
 

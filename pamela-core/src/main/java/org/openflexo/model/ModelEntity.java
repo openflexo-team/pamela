@@ -578,7 +578,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return propertyMethods.get(new ModelMethod(method));
 	}
 
-	public ModelProperty<? super I> getPropertyForXMLAttributeName(String name) throws ModelDefinitionException {
+	public ModelProperty<? super I> getPropertyForXMLAttributeName(String name) {
 		if (modelPropertiesByXMLAttributeName == null) {
 			synchronized (this) {
 				if (modelPropertiesByXMLAttributeName == null) {
@@ -1267,9 +1267,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						// We have found a non-abtract method which implements searched API method
 						return true;
 					}
-				} catch (SecurityException e) {
-				} catch (NoSuchMethodException e) {
-				}
+				} catch (SecurityException e) {} catch (NoSuchMethodException e) {}
 			}
 		}
 
@@ -1294,9 +1292,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						// We have found a non-abtract method which implements searched API method
 						return true;
 					}
-				} catch (SecurityException e) {
-				} catch (NoSuchMethodException e) {
-				}
+				} catch (SecurityException e) {} catch (NoSuchMethodException e) {}
 			}
 		}
 		// May be in parent entitities ?

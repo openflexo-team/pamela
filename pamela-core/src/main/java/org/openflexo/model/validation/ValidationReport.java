@@ -445,7 +445,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	}
 
-	public ValidationReport(ValidationModel validationModel, Validable rootObject) throws InterruptedException {
+	public ValidationReport(ValidationModel validationModel, Validable rootObject) {
 		super();
 
 		pcSupport = new PropertyChangeSupport(this);

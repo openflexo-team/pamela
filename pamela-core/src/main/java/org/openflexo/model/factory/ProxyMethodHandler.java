@@ -964,8 +964,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			throw new ModelExecutionException(e);
 		} catch (InvocationTargetException e) {
 			throw new ModelExecutionException(e);
-		} catch (ModelDefinitionException e) {
-			throw new ModelExecutionException(e);
 		}
 	}
 
@@ -1481,8 +1479,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	private void internallyInvokeReindexer(ModelProperty<? super I> property, Object value, int index, boolean trackAtomicEdit)
-			throws ModelDefinitionException {
+	private void internallyInvokeReindexer(ModelProperty<? super I> property, Object value, int index, boolean trackAtomicEdit) {
 		// System.out.println("Invoke REINDEXER "+property.getPropertyIdentifier());
 		if (trackAtomicEdit && getUndoManager() != null) {
 			getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
@@ -1949,22 +1946,15 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
 						// System.out.println("[" + Thread.currentThread().getName() + "] Ici-1 avec " + p.getPropertyIdentifier());
 						if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
-							// System.out.println("La pte " + p + " change de " + singleValue + " a " + oppositeValue);
-							// System.out.println("[" + Thread.currentThread().getName() + "] Ici-2 avec " + p.getPropertyIdentifier());
-							try {
-								if (p.getAccessedEntity() != null && singleValue instanceof AccessibleProxyObject) {
-									// System.out
-									// .println("[" + Thread.currentThread().getName() + "] Ici-3 avec " + p.getPropertyIdentifier());
-									((AccessibleProxyObject) singleValue).updateWith(oppositeValue);
-								}
-								else {
-									// System.out
-									// .println("[" + Thread.currentThread().getName() + "] Ici-4 avec " + p.getPropertyIdentifier());
-									invokeSetter(p, oppositeValue);
-								}
-							} catch (ModelDefinitionException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+							if (p.getAccessedEntity() != null && singleValue instanceof AccessibleProxyObject) {
+								// System.out
+								// .println("[" + Thread.currentThread().getName() + "] Ici-3 avec " + p.getPropertyIdentifier());
+								((AccessibleProxyObject) singleValue).updateWith(oppositeValue);
+							}
+							else {
+								// System.out
+								// .println("[" + Thread.currentThread().getName() + "] Ici-4 avec " + p.getPropertyIdentifier());
+								invokeSetter(p, oppositeValue);
 							}
 						}
 						break;
@@ -2126,12 +2116,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		if (TypeUtils.isPrimitive(p.getType()) || p.getType().equals(String.class) || p.isStringConvertable()) {
 			propertyPonderation = 1.0;
 		}
-		try {
-			if (p.getAccessedEntity() != null) {
-				propertyPonderation = p.getAccessedEntity().getPropertiesSize();
-			}
-		} catch (ModelDefinitionException e) {
-			e.printStackTrace();
+		if (p.getAccessedEntity() != null) {
+			propertyPonderation = p.getAccessedEntity().getPropertiesSize();
 		}
 		// System.out.println("Ponderation for property: " + p.getPropertyIdentifier() + " " + propertyPonderation);
 		return propertyPonderation;

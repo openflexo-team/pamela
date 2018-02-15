@@ -8,14 +8,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.jdom2.JDOMException;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openflexo.model.ModelEntityLibrary;
-import org.openflexo.model.exceptions.InvalidDataException;
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.DeserializationPolicy;
 import org.openflexo.model.factory.ModelFactory;
@@ -45,7 +43,7 @@ public class DeserializationTests {
 
 	@Test
 	@TestOrder(1)
-	public void testInitializeAModel() throws IOException, ModelDefinitionException, JDOMException, InvalidDataException {
+	public void testInitializeAModel() {
 
 		Assert.assertNotNull(factory.getModelContext().getModelEntity(Node.class));
 
