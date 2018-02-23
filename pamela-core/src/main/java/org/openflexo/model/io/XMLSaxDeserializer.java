@@ -318,7 +318,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			// search concrete model entity
 			ModelEntity<Object> concreteEntity = info.getModelEntity();
 			Class<Object> implementedInterface = null;
-			Class<Object> implementingClass = null;
+			// Unused Class<Object> implementingClass = null;
 
 			String entityName = attributes.getValue(PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE);
 			String className = attributes.getValue(CLASS_NAME);

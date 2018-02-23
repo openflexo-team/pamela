@@ -329,10 +329,11 @@ public class ModelFactory implements IObjectGraphFactory {
 		}
 	}
 
-	private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I> implementedInterface) throws ModelDefinitionException {
-		return getProxyFactory(implementedInterface, true);
-	}
-
+	/* Unused
+		private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I> implementedInterface) throws ModelDefinitionException {
+			return getProxyFactory(implementedInterface, true);
+		}
+	*/
 	private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I> implementedInterface, boolean create) throws ModelDefinitionException {
 		return getProxyFactory(implementedInterface, create, false);
 	}

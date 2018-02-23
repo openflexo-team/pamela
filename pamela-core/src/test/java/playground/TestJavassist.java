@@ -1,4 +1,5 @@
 package playground;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -14,9 +15,9 @@ public class TestJavassist {
 		ClassPool pool = ClassPool.getDefault();
 		CtClass evalClass = pool.makeClass("Eval");
 		evalClass.addMethod(CtNewMethod.make("public double eval (double x) { return (" + args[0] + ") ; }", evalClass));
-		Class clazz = evalClass.toClass();
+		Class<?> clazz = evalClass.toClass();
 		Object obj = clazz.newInstance();
-		Class[] formalParams = new Class[] { double.class };
+		Class<?>[] formalParams = new Class[] { double.class };
 		Method meth = clazz.getDeclaredMethod("eval", formalParams);
 		Object[] actualParams = new Object[] { Double.valueOf(17) };
 		double result = ((Double) meth.invoke(obj, actualParams)).doubleValue();

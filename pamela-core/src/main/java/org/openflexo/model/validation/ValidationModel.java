@@ -236,7 +236,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		}
 	}
 
-	private class ClassComparator implements Comparator<Class> {
+	private class ClassComparator implements Comparator<Class<?>> {
 		private final Collator collator;
 
 		ClassComparator() {
@@ -244,7 +244,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		}
 
 		@Override
-		public int compare(Class o1, Class o2) {
+		public int compare(Class<?> o1, Class<?> o2) {
 			String className1 = null;
 			String className2 = null;
 			StringTokenizer st1 = new StringTokenizer(o1.getName(), ".");
