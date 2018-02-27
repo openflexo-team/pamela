@@ -504,7 +504,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	public void revalidate() throws InterruptedException {
 
 		// Gets all the objects to validate and removes duplicated objects
-		Set<Validable> objectsToValidate = new LinkedHashSet(Validable.retrieveAllEmbeddedValidableObjects(getRootObject()));
+		Set<Validable> objectsToValidate = new LinkedHashSet<>(Validable.retrieveAllEmbeddedValidableObjects(getRootObject()));
 
 		// Compute validation steps and notify validation initialization
 		long validationStepToNotify = objectsToValidate.stream().filter(validationModel::shouldNotifyValidation)
