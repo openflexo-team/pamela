@@ -102,9 +102,7 @@ public class Clipboard {
 			if (lastReferenceObject == lastReferenceContents[0]) {
 				return getSingleContents();
 			}
-			else {
-				return null;
-			}
+			return null;
 		}
 		for (int index = 0; index < lastReferenceContents.length; index++) {
 			if (lastReferenceContents[index] == lastReferenceObject) {
@@ -192,7 +190,7 @@ public class Clipboard {
 			}
 		}
 		else {
-			List contentsList = (List) contents;
+			List<?> contentsList = (List<?>) contents;
 			for (Object object : contentsList) {
 				returned.append("------------------- " + object + " -------------------\n");
 				List<Object> embeddedList = modelFactory.getEmbeddedObjects(object, EmbeddingType.CLOSURE, contentsList.toArray());
@@ -219,11 +217,12 @@ public class Clipboard {
 			contents = modelFactory.getHandler(contents).cloneObject(contents);
 		}
 		else {
-			lastReferenceContents = new Object[((List) contents).size()];
-			for (int i = 0; i < ((List) contents).size(); i++) {
-				lastReferenceContents[i] = ((List) contents).get(i);
+			List<?> contentsList = (List<?>) contents;
+			lastReferenceContents = new Object[contentsList.size()];
+			for (int i = 0; i < contentsList.size(); i++) {
+				lastReferenceContents[i] = contentsList.get(i);
 			}
-			contents = modelFactory.getHandler(((List) contents).get(0)).cloneObjects(((List) contents).toArray());
+			contents = modelFactory.getHandler(contentsList.get(0)).cloneObjects(contentsList.toArray());
 		}
 	}
 
