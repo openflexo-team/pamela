@@ -212,8 +212,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 				getValidationModel().getPropertyChangeSupport().firePropertyChange(OBJECT_VALIDATION_START, 0, ruleSet.getRulesCount());
 			}
 
-			for (int i = 0; i < ruleSet.getRulesCount(); i++) {
-				ValidationRule<?, ? super V> rule = ruleSet.getRuleAt(i);
+			for (ValidationRule<?, ? super V> rule : ruleSet) {
 				if (logger.isLoggable(Level.FINE)) {
 					logger.fine("Applying rule " + rule.getRuleName() + " for " + object);
 				}
