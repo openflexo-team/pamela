@@ -16,3 +16,7 @@ subprojects {
 		jvmArgs += ["-Djava.awt.headless=true"]
     }
 }
+task gitPull(type: Exec) {
+    description 'Pulls git.'
+    commandLine "git", "pull"
+}
