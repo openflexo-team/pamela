@@ -286,8 +286,7 @@ public class PerformanceTest {
 			System.gc();
 			try {
 				Thread.sleep(200);
-			} catch (InterruptedException e) {
-			}
+			} catch (InterruptedException e) {}
 
 			result = runRunnable(factory, runnable);
 			if (i > 0) {
@@ -298,8 +297,7 @@ public class PerformanceTest {
 			System.gc();
 			try {
 				Thread.sleep(200);
-			} catch (InterruptedException e) {
-			}
+			} catch (InterruptedException e) {}
 
 		}
 		System.err.println("Test " + runnable.getClass().getSimpleName());
@@ -312,14 +310,13 @@ public class PerformanceTest {
 	}
 
 	public static void main(String[] args) throws ModelDefinitionException {
-		PerformanceTest test = new PerformanceTest();
 		ModelContext mapping = new ModelContext(ModelObject.class);
 		ModelFactory factory = new ModelFactory(mapping);
 		factory.setListImplementationClass(ArrayList.class);
 		ModelFactory factory2 = new ModelFactory(mapping);
 		factory.setListImplementationClass(Vector.class);
-		test.testModel(new DumbModelRunnable(), factory, factory2);
-		test.testModel(new BuildBasicModelRunnable(), factory, factory2);
-		test.testModel(new ManipulateBasicModelRunnable(), factory, factory2);
+		PerformanceTest.testModel(new DumbModelRunnable(), factory, factory2);
+		PerformanceTest.testModel(new BuildBasicModelRunnable(), factory, factory2);
+		PerformanceTest.testModel(new ManipulateBasicModelRunnable(), factory, factory2);
 	}
 }
