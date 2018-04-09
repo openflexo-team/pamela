@@ -2441,16 +2441,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 												clonedObject /*getObject()*/);
 										clonedObjectHandler.invokeSetter(p, computedValue);
 									} catch (InvalidKeyValuePropertyException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									} catch (TypeMismatchException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									} catch (NullReferenceException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									} catch (InvocationTargetException e1) {
-										// TODO Auto-generated catch block
 										e1.printStackTrace();
 									}
 									break;

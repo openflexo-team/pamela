@@ -858,55 +858,46 @@ public class ModelFactory implements IObjectGraphFactory {
 
 	@Override
 	public void setContext(Object objectGraph) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void resetContext() {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void addToRootNodes(Object anObject) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void setContextProperty(String propertyName, Object value) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public Object getInstanceOf(Type aType, String name) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean objectHasAttributeNamed(Object object, String attrName) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public void addAttributeValueForObject(Object object, String attrName, Object value) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void addChildToObject(Object child, Object container) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public Type getAttributeType(Object currentContainer, String localName) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

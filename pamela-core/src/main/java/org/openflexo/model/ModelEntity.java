@@ -1097,7 +1097,6 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	}
 
 	public Finder getFinder(String string) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

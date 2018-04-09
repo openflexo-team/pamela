@@ -244,7 +244,6 @@ public class XMLSerializer {
 										ignoreProperty = true;
 									}
 								} catch (InvalidDataException e1) {
-									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
 								if (oValue != null && !ignoreProperty) {

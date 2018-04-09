@@ -158,7 +158,6 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 		try {
 			validationReport.revalidate(getValidable());
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
