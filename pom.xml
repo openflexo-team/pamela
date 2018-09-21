@@ -25,7 +25,7 @@
     </issueManagement>
     <modules>
         <module>pamela-core</module>
-        <module>pamela-editor</module>
+        <!--  <module>pamela-editor</module> -->
     </modules>
     <!-- ************
 	Properties
