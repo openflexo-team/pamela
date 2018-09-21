@@ -131,12 +131,6 @@
             </dependency>
             <dependency>
                 <groupId>org.openflexo</groupId>
-                <artifactId>flexoutils</artifactId>
-                <classifier>tests</classifier>
-                <version>${connie.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.openflexo</groupId>
                 <artifactId>testutils</artifactId>
                 <version>${connie.version}</version>
             </dependency>
