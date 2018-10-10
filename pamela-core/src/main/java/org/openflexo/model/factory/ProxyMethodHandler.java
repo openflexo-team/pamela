@@ -1863,29 +1863,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						}
 						break;
 					case LIST:
-						List<Object> values = invokeGetterForListCardinality(p);
-						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
+						List<Object> values = (List) invokeGetter(p);
+						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
 						if (!isEqual(values, oppositeValues, new HashSet<>())) {
 							return false;
 						}
-						/*if (values == null || oppositeValues == null) {
-						if (values != oppositeValues) {
-							return false;
-						}
-						}
-						else {
-						if (values.size() != oppositeValues.size()) {
-							return false;
-						}
-						for (int i = 0; i < values.size(); i++) {
-							Object v1 = values.get(i);
-							Object v2 = oppositeValues.get(i);
-							if (!isEqual(v1, v2)) {
-								return false;
-							}
-						}
-						}*/
-
 						break;
 					default:
 						break;
