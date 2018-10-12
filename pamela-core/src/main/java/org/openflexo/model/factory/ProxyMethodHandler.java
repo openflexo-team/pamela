@@ -1414,7 +1414,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		List list = (List) invokeGetter(property);
 
-		if (!list.contains(value)) {
+		if (property.getAllowsMultipleOccurences() || !list.contains(value)) {
 			if (index == -1) {
 				list.add(value);
 			}
