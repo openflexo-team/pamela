@@ -662,6 +662,8 @@ public class ModelProperty<I> {
 			String defaultValue = null;
 			boolean stringConvertable;
 			boolean ignoreType;
+			boolean allowsMultipleOccurences;
+
 			if (getGetter() != null) {
 				cardinality = getGetter().cardinality();
 			}
@@ -683,12 +685,15 @@ public class ModelProperty<I> {
 			if (getGetter() == null) {
 				stringConvertable = property.getGetter().isStringConvertable();
 				ignoreType = property.getGetter().ignoreType();
+				allowsMultipleOccurences = property.getGetter().allowsMultipleOccurences();
 			}
 			else {
 				stringConvertable = getGetter().isStringConvertable();
 				ignoreType = getGetter().ignoreType();
+				allowsMultipleOccurences = getGetter().allowsMultipleOccurences();
 			}
-			getter = new Getter.GetterImpl(propertyIdentifier, cardinality, inverse, defaultValue, stringConvertable, ignoreType);
+			getter = new Getter.GetterImpl(propertyIdentifier, cardinality, inverse, defaultValue, stringConvertable, ignoreType,
+					allowsMultipleOccurences);
 		}
 		if (rulingProperty != null && rulingProperty.getSetter() != null) {
 			setter = rulingProperty.getSetter();
@@ -1016,6 +1021,13 @@ public class ModelProperty<I> {
 			cardinality = getGetter().cardinality();
 		}
 		return cardinality;
+	}
+
+	final public boolean getAllowsMultipleOccurences() {
+		if (getGetter() != null) {
+			return getGetter().allowsMultipleOccurences();
+		}
+		return false;
 	}
 
 	public boolean hasInverseProperty() {
