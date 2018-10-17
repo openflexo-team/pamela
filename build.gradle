@@ -4,13 +4,14 @@ buildscript {
         maven { url uri('https://maven.openflexo.org/artifactory/openflexo-deps/') }
     }
     dependencies {
-        classpath group: 'org.openflexo', name: 'buildplugin', version: '0.2-SNAPSHOT'
-        classpath group: 'org.openflexo', name: 'buildconfig', version: '2.0.0-SNAPSHOT'
+        classpath group: 'org.openflexo', name: 'buildplugin', version: '0.2'
+        classpath group: 'org.openflexo', name: 'buildconfig', version: '2.0.0'
     }
 }
 
+version = "1.5"
 apply plugin: 'org.openflexo.buildconfig'
-allprojects { version = "1.5-SNAPSHOT" }
+
 subprojects {
 	tasks.withType(Test) {
 		jvmArgs += ["-Djava.awt.headless=true"]
