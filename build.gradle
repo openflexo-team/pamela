@@ -9,8 +9,9 @@ buildscript {
     }
 }
 
+version = "1.4.1"
 apply plugin: 'org.openflexo.buildconfig'
-allprojects { version = "1.4.1-SNAPSHOT" }
+
 subprojects {
 	tasks.withType(Test) {
 		jvmArgs += ["-Djava.awt.headless=true"]
