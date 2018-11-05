@@ -1,11 +1,20 @@
 *.class
 
 # Package Files #
-*.jar
+
 *.war
 *.ear
 .classpath
 .project
 .settings
-/pom.xml~
+/.pmd
+/.gitignore
+/.DS_Store
+/basic.xml
+.gradle
+target/
+build/
 *.iml
+**/out/
+/bugs.txt
+/infer-out/
