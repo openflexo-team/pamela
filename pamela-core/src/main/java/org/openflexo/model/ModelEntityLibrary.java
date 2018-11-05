@@ -48,9 +48,9 @@ import org.openflexo.model.exceptions.ModelDefinitionException;
 
 public class ModelEntityLibrary {
 
-	private static Map<Class<?>, ModelEntity<?>> entities = new Hashtable<Class<?>, ModelEntity<?>>();
+	private static Map<Class<?>, ModelEntity<?>> entities = new Hashtable<>();
 
-	private static List<ModelEntity<?>> newEntities = new ArrayList<ModelEntity<?>>();
+	private static List<ModelEntity<?>> newEntities = new ArrayList<>();
 
 	static synchronized <I> ModelEntity<I> importEntity(Class<I> implementedInterface) throws ModelDefinitionException {
 		ModelEntity<I> modelEntity = (ModelEntity<I>) entities.get(implementedInterface);
@@ -71,7 +71,7 @@ public class ModelEntityLibrary {
 				throw new ModelDefinitionException("Class " + implementedInterface + " is not a ModelEntity.");
 			}
 			synchronized (ModelEntityLibrary.class) {
-				entities.put(implementedInterface, modelEntity = new ModelEntity<I>(implementedInterface));
+				entities.put(implementedInterface, modelEntity = new ModelEntity<>(implementedInterface));
 				modelEntity.init();
 				newEntities.add(modelEntity);
 			}

@@ -50,7 +50,8 @@ import org.openflexo.model.exceptions.ModelExecutionException;
  * 
  * This is the serialization of objects beeing pasted or cut.<br>
  * <code>originalContents</code> are the copied contents, in their original context<br>
- * <code>lastReferenceContents</code> are the last reference contents, in multiple paste context (if you copy, then paste and paste again)<br>
+ * <code>lastReferenceContents</code> are the last reference contents, in multiple paste context (if you copy, then paste and paste
+ * again)<br>
  * Note that for the first copy operation, originalContents are the referenceContents
  */
 public class Clipboard {
@@ -63,8 +64,8 @@ public class Clipboard {
 
 	private Object copyContext;
 
-	protected Clipboard(ModelFactory modelFactory, Object... objects) throws ModelExecutionException, ModelDefinitionException,
-			CloneNotSupportedException {
+	protected Clipboard(ModelFactory modelFactory, Object... objects)
+			throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
 		this.modelFactory = modelFactory;
 
 		this.originalContents = objects;
@@ -79,12 +80,13 @@ public class Clipboard {
 			Object object = objects[0];
 
 			if (modelFactory.getHandler(object) == null) {
-				throw new ModelExecutionException("Object has no handler in supplied ModelFactory, object=" + object + " modelFactory="
-						+ modelFactory);
+				throw new ModelExecutionException(
+						"Object has no handler in supplied ModelFactory, object=" + object + " modelFactory=" + modelFactory);
 			}
 
 			contents = modelFactory.getHandler(object).cloneObject(objects);
-		} else {
+		}
+		else {
 			contents = modelFactory.getHandler(objects[0]).cloneObjects(objects);
 		}
 	}
@@ -99,9 +101,8 @@ public class Clipboard {
 		if (isSingleObject()) {
 			if (lastReferenceObject == lastReferenceContents[0]) {
 				return getSingleContents();
-			} else {
-				return null;
 			}
+			return null;
 		}
 		for (int index = 0; index < lastReferenceContents.length; index++) {
 			if (lastReferenceContents[index] == lastReferenceObject) {
@@ -154,8 +155,9 @@ public class Clipboard {
 		if (isSingleObject()) {
 			returned = new Class[1];
 			returned[0] = getSingleContents().getClass();
-		} else {
-			List<Class<?>> allTypes = new ArrayList<Class<?>>();
+		}
+		else {
+			List<Class<?>> allTypes = new ArrayList<>();
 			for (Object o : getMultipleContents()) {
 				Class<?> type = o.getClass();
 				if (!allTypes.contains(type)) {
@@ -186,8 +188,9 @@ public class Clipboard {
 			for (Object e : embeddedList) {
 				returned.append(Integer.toHexString(e.hashCode()) + " Embedded: " + e + "\n");
 			}
-		} else {
-			List contentsList = (List) contents;
+		}
+		else {
+			List<?> contentsList = (List<?>) contents;
 			for (Object object : contentsList) {
 				returned.append("------------------- " + object + " -------------------\n");
 				List<Object> embeddedList = modelFactory.getEmbeddedObjects(object, EmbeddingType.CLOSURE, contentsList.toArray());
@@ -212,12 +215,14 @@ public class Clipboard {
 			lastReferenceContents = new Object[1];
 			lastReferenceContents[0] = contents;
 			contents = modelFactory.getHandler(contents).cloneObject(contents);
-		} else {
-			lastReferenceContents = new Object[((List) contents).size()];
-			for (int i = 0; i < ((List) contents).size(); i++) {
-				lastReferenceContents[i] = ((List) contents).get(i);
+		}
+		else {
+			List<?> contentsList = (List<?>) contents;
+			lastReferenceContents = new Object[contentsList.size()];
+			for (int i = 0; i < contentsList.size(); i++) {
+				lastReferenceContents[i] = contentsList.get(i);
 			}
-			contents = modelFactory.getHandler(((List) contents).get(0)).cloneObjects(((List) contents).toArray());
+			contents = modelFactory.getHandler(contentsList.get(0)).cloneObjects(contentsList.toArray());
 		}
 	}
 

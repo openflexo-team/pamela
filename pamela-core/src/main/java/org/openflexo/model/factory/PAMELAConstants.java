@@ -39,6 +39,9 @@
 
 package org.openflexo.model.factory;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jdom2.Namespace;
 
 public class PAMELAConstants {
@@ -47,4 +50,13 @@ public class PAMELAConstants {
 	public static final Namespace NAMESPACE = Namespace.getNamespace(NAMESPACE_PREFIX, NS);
 	public static final String CLASS_ATTRIBUTE = "class";
 	public static final String MODEL_ENTITY_ATTRIBUTE = "modelEntity";
+
+	public static final String Q_CLASS_ATTRIBUTE = NAMESPACE_PREFIX + ":" + CLASS_ATTRIBUTE;
+	public static final String Q_MODEL_ENTITY_ATTRIBUTE = NAMESPACE_PREFIX + ":" + MODEL_ENTITY_ATTRIBUTE;
+
+	public static final Set<String> PAMELA_ATTRIBUTES = Stream.of(CLASS_ATTRIBUTE, MODEL_ENTITY_ATTRIBUTE).collect(Collectors.toSet());
+
+	public static boolean isPamelaAttribute(String namespace, String name) {
+		return PAMELAConstants.NS.equals(namespace) && PAMELAConstants.PAMELA_ATTRIBUTES.contains(name);
+	}
 }

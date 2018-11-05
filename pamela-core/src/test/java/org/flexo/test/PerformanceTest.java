@@ -138,7 +138,7 @@ public class PerformanceTest {
 		@Override
 		public void addToChildren(ModelObject child) {
 			if (children == null) {
-				children = new ArrayList<PerformanceTest.ModelObject>();
+				children = new ArrayList<>();
 			}
 			if (!children.contains(child)) {
 				children.add(child);
@@ -182,7 +182,7 @@ public class PerformanceTest {
 
 		private void removeAndReaddChildren(ModelObject object) {
 			if (object.getChildren() != null && object.getChildren().size() > 0) {
-				List<ModelObject> children = new ArrayList<PerformanceTest.ModelObject>(object.getChildren());
+				List<ModelObject> children = new ArrayList<>(object.getChildren());
 				for (ModelObject child : children) {
 					object.removeFromChildren(child);
 					removeAndReaddChildren(child);
@@ -230,8 +230,9 @@ public class PerformanceTest {
 	public static ModelObject buildModel(int numberOfChildren, int depth, ModelFactory factory) {
 		ModelObject object;
 		if (factory != null) {
-			object = factory.newInstance(ModelObject.class, null);
-		} else {
+			object = factory.newInstance(ModelObject.class);
+		}
+		else {
 			object = new ModelObjectImpl();
 		}
 		if (depth > 0) {
@@ -252,7 +253,7 @@ public class PerformanceTest {
 	 *            the TestRunnable to run
 	 * @return the TestResult, ie, time execution, memory footprint and the root object of the model
 	 */
-	private TestRunnableResult runRunnable(ModelFactory factory, TestRunnable runnable) {
+	private static TestRunnableResult runRunnable(ModelFactory factory, TestRunnable runnable) {
 		TestRunnableResult result = new TestRunnableResult();
 		long startMem, endMem, start, end;
 		startMem = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
@@ -274,7 +275,7 @@ public class PerformanceTest {
 	 * @param factory
 	 *            the factory to pass to the TestRunnable when using pamela objects. Cannot be null
 	 */
-	private void testModel(TestRunnable runnable, ModelFactory factory, ModelFactory factory2) {
+	private static void testModel(TestRunnable runnable, ModelFactory factory, ModelFactory factory2) {
 		long proxyTime = 0, proxyMem = 0, regularTime = 0, regularMem = 0;
 		for (int i = 0; i < 10; i++) {
 			TestRunnableResult result = runRunnable(factory2, runnable);
@@ -285,8 +286,7 @@ public class PerformanceTest {
 			System.gc();
 			try {
 				Thread.sleep(200);
-			} catch (InterruptedException e) {
-			}
+			} catch (InterruptedException e) {}
 
 			result = runRunnable(factory, runnable);
 			if (i > 0) {
@@ -297,8 +297,7 @@ public class PerformanceTest {
 			System.gc();
 			try {
 				Thread.sleep(200);
-			} catch (InterruptedException e) {
-			}
+			} catch (InterruptedException e) {}
 
 		}
 		System.err.println("Test " + runnable.getClass().getSimpleName());
@@ -311,14 +310,13 @@ public class PerformanceTest {
 	}
 
 	public static void main(String[] args) throws ModelDefinitionException {
-		PerformanceTest test = new PerformanceTest();
 		ModelContext mapping = new ModelContext(ModelObject.class);
 		ModelFactory factory = new ModelFactory(mapping);
 		factory.setListImplementationClass(ArrayList.class);
 		ModelFactory factory2 = new ModelFactory(mapping);
 		factory.setListImplementationClass(Vector.class);
-		test.testModel(new DumbModelRunnable(), factory, factory2);
-		test.testModel(new BuildBasicModelRunnable(), factory, factory2);
-		test.testModel(new ManipulateBasicModelRunnable(), factory, factory2);
+		PerformanceTest.testModel(new DumbModelRunnable(), factory, factory2);
+		PerformanceTest.testModel(new BuildBasicModelRunnable(), factory, factory2);
+		PerformanceTest.testModel(new ManipulateBasicModelRunnable(), factory, factory2);
 	}
 }

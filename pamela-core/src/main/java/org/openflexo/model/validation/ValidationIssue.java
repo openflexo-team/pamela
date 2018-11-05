@@ -41,20 +41,19 @@ package org.openflexo.model.validation;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
- * Represents a validation issue embedded in a validation report
+ * Represents a validation issue embedded in a {@link ValidationReport}
  * 
  * @author sylvain
  * 
  */
-public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends Validable> implements HasPropertyChangeSupport,
-		PropertyChangeListener {
+public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends Validable>
+		implements HasPropertyChangeSupport, PropertyChangeListener {
 
 	public static final String DELETED_PROPERTY = "deleted";
 
@@ -139,7 +138,6 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 		if (validable instanceof HasPropertyChangeSupport) {
 			((HasPropertyChangeSupport) validable).getPropertyChangeSupport().removePropertyChangeListener(this);
 		}
-		validationReport.removeFromValidationIssues(this);
 		if (getPropertyChangeSupport() != null) {
 			getPropertyChangeSupport().firePropertyChange(DELETED_PROPERTY, this, null);
 		}
@@ -157,7 +155,14 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 			return;
 		}
 
-		Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getValidable());
+		try {
+			validationReport.revalidate(getValidable());
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		/*Collection<ValidationIssue<?, ?>> allIssuesToRemove = validationReport.issuesRegarding(getValidable());
 		Collection<Validable> allEmbeddedValidableObjects = validationReport.retrieveAllEmbeddedValidableObjects(getValidable());
 		if (allEmbeddedValidableObjects != null) {
 			for (Validable embeddedValidable : allEmbeddedValidableObjects) {
@@ -167,10 +172,10 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 		for (ValidationIssue<?, ?> issue : allIssuesToRemove) {
 			validationReport.removeFromValidationIssues(issue);
 		}
-
+		
 		if (!getValidable().isDeleted()) {
 			validationReport.revalidate(getValidable());
-		}
+		}*/
 	}
 
 	public boolean isProblemIssue() {
@@ -179,14 +184,14 @@ public abstract class ValidationIssue<R extends ValidationRule<R, V>, V extends 
 
 	/**
 	 * Return detailed informations for this issue<br>
-	 * Default behaviour is to return rule's description
+	 * Default behaviour is to return null
 	 * 
 	 * @return
 	 */
 	public String getDetailedInformations() {
-		if (getCause() != null) {
+		/*if (getCause() != null) {
 			return getCause().getRuleDescription();
-		}
+		}*/
 		return null;
 	}
 }

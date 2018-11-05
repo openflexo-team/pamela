@@ -80,7 +80,7 @@ public class CompoundEdit extends AbstractUndoableEdit {
 		super();
 		this.presentationName = presentationName;
 		inProgress = true;
-		edits = new Vector<AtomicEdit<?>>();
+		edits = new Vector<>();
 	}
 
 	/**
@@ -89,7 +89,7 @@ public class CompoundEdit extends AbstractUndoableEdit {
 	@Override
 	public void undo() throws CannotUndoException {
 		super.undo();
-		//System.out.println("UNDO " + getPresentationName());
+		// System.out.println("UNDO " + getPresentationName());
 		int i = edits.size();
 		while (i-- > 0) {
 			AtomicEdit<?> e = edits.elementAt(i);
@@ -155,7 +155,8 @@ public class CompoundEdit extends AbstractUndoableEdit {
 		if (anEdit instanceof AtomicEdit) {
 			if (!inProgress) {
 				return false;
-			} else {
+			}
+			else {
 				UndoableEdit last = lastEdit();
 
 				// If this is the first subedit received, just add it.
@@ -165,7 +166,8 @@ public class CompoundEdit extends AbstractUndoableEdit {
 
 				if (last == null) {
 					edits.addElement((AtomicEdit<?>) anEdit);
-				} else if (!last.addEdit(anEdit)) {
+				}
+				else if (!last.addEdit(anEdit)) {
 					if (anEdit.replaceEdit(last)) {
 						edits.removeElementAt(edits.size() - 1);
 					}

@@ -54,7 +54,7 @@ import org.openflexo.model.factory.ProxyMethodHandler;
 import com.google.common.primitives.Primitives;
 
 public class StringEncoder {
-	private Map<Class<?>, Converter<?>> converters = new Hashtable<Class<?>, Converter<?>>();
+	private Map<Class<?>, Converter<?>> converters = new Hashtable<>();
 
 	private ModelFactory modelFactory;
 
@@ -78,14 +78,13 @@ public class StringEncoder {
 		if (converter != null) {
 			return converter.convertToString(object);
 		}
-		else {
-			if (object instanceof Enum) {
-				return ((Enum) object).name();
-			}
-			throw new InvalidDataException("Supplied value has no converter for type " + aClass.getName());
+		if (object instanceof Enum) {
+			return ((Enum<?>) object).name();
 		}
+		throw new InvalidDataException("Supplied value has no converter for type " + aClass.getName());
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public <T> T fromString(Class<T> type, String value) throws InvalidDataException {
 		if (value == null) {
 			return null;
@@ -99,7 +98,7 @@ public class StringEncoder {
 		}
 		else if (type.isEnum()) {
 			try {
-				return (T) Enum.valueOf((Class) type, value);
+				return (T) Enum.valueOf((Class<Enum>) type, value);
 			} catch (IllegalArgumentException e) {
 				System.err.println("Could not decode " + value + " as a " + type);
 				return null;

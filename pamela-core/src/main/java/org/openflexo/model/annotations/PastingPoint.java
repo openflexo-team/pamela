@@ -48,4 +48,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface PastingPoint {
 
+	/**
+	 * Return priority for this pasting point. Lesser value means more prioritar
+	 * 
+	 * @return
+	 */
+	int priority() default 1;
+
 }

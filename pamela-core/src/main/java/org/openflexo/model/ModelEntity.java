@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,6 +59,7 @@ import org.openflexo.connie.binding.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.StringConverterLibrary.Converter;
 import org.openflexo.model.annotations.Adder;
+import org.openflexo.model.annotations.CloningStrategy;
 import org.openflexo.model.annotations.Finder;
 import org.openflexo.model.annotations.Getter;
 import org.openflexo.model.annotations.Implementation;
@@ -66,6 +68,7 @@ import org.openflexo.model.annotations.Import;
 import org.openflexo.model.annotations.Imports;
 import org.openflexo.model.annotations.Initializer;
 import org.openflexo.model.annotations.Modify;
+import org.openflexo.model.annotations.Reindexer;
 import org.openflexo.model.annotations.Remover;
 import org.openflexo.model.annotations.Setter;
 import org.openflexo.model.annotations.StringConverter;
@@ -109,7 +112,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	/**
 	 * The {@link XMLElement} annotation, if any
 	 */
-	private final XMLElement xmlElement;
+	private XMLElement xmlElement;
 
 	/**
 	 * The properties of this entity. The key is the identifier of the property
@@ -171,7 +174,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	private boolean initialized;
 
-	private final Map<String, ModelProperty<I>> declaredModelProperties;
+	public final Map<String, ModelProperty<I>> declaredModelProperties;
 
 	private Set<ModelEntity<?>> embeddedEntities;
 
@@ -182,14 +185,14 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		super(implementedInterface.getName());
 
 		this.implementedInterface = implementedInterface;
-		declaredModelProperties = new HashMap<String, ModelProperty<I>>();
-		properties = new HashMap<String, ModelProperty<? super I>>();
-		propertyMethods = new HashMap<ModelMethod, ModelProperty<? super I>>();
-		initializers = new HashMap<Method, ModelInitializer>();
-		embeddedEntities = new HashSet<ModelEntity<?>>();
+		declaredModelProperties = new HashMap<>();
+		properties = new LinkedHashMap<>();
+		propertyMethods = new HashMap<>();
+		initializers = new HashMap<>();
+		embeddedEntities = new HashSet<>();
 		entityAnnotation = implementedInterface.getAnnotation(org.openflexo.model.annotations.ModelEntity.class);
 		implementationClass = implementedInterface.getAnnotation(ImplementationClass.class);
-		xmlElement = implementedInterface.getAnnotation(XMLElement.class);
+		// xmlElement = implementedInterface.getAnnotation(XMLElement.class);
 		modify = implementedInterface.getAnnotation(Modify.class);
 		isAbstract = entityAnnotation.isAbstract();
 		// We resolve here the model super interface
@@ -197,7 +200,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		for (Class<?> i : implementedInterface.getInterfaces()) {
 			if (i.isAnnotationPresent(org.openflexo.model.annotations.ModelEntity.class)) {
 				if (superImplementedInterfaces == null) {
-					superImplementedInterfaces = new ArrayList<Class<? super I>>();
+					superImplementedInterfaces = new ArrayList<>();
 				}
 				superImplementedInterfaces.add((Class<? super I>) i);
 			}
@@ -272,7 +275,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		}
 
 		// Init delegate implementations
-		delegateImplementations = new HashMap<Class<I>, Set<Method>>();
+		delegateImplementations = new HashMap<>();
 		for (Class<?> c : getImplementedInterface().getDeclaredClasses()) {
 			if (c.getAnnotation(Implementation.class) != null) {
 				if (getImplementedInterface().isAssignableFrom(c)) {
@@ -313,7 +316,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	}
 
-	private String getPropertyIdentifier(Method m) {
+	private static String getPropertyIdentifier(Method m) {
 		String propertyIdentifier = null;
 		Getter aGetter = m.getAnnotation(Getter.class);
 		if (aGetter != null) {
@@ -386,7 +389,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		// System.out.println("getDirectSuperEntities()=" + getDirectSuperEntities());
 
 		if (getDirectSuperEntities() != null) {
-			Set<Method> implementedMethods = new HashSet<Method>();
+			Set<Method> implementedMethods = new HashSet<>();
 			for (ModelEntity<? super I> parentEntity : getDirectSuperEntities()) {
 				for (Class<? super I> implClass : parentEntity.delegateImplementations.keySet()) {
 					for (Method m : parentEntity.delegateImplementations.get(implClass)) {
@@ -428,11 +431,8 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	 * @param m
 	 * @return
 	 */
-	private boolean isToBeExcludedFromImplementationClashChecking(Method m) {
-		if (m.getName().contains("jacocoInit")) {
-			return true;
-		}
-		return false;
+	private static boolean isToBeExcludedFromImplementationClashChecking(Method m) {
+		return m.getName().contains("jacocoInit");
 	}
 
 	void mergeProperties() throws ModelDefinitionException {
@@ -538,7 +538,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	public List<ModelEntity<? super I>> getDirectSuperEntities() throws ModelDefinitionException {
 		if (directSuperEntities == null && superImplementedInterfaces != null) {
-			directSuperEntities = new ArrayList<ModelEntity<? super I>>(superImplementedInterfaces.size());
+			directSuperEntities = new ArrayList<>(superImplementedInterfaces.size());
 			for (Class<? super I> superInterface : superImplementedInterfaces) {
 				ModelEntity<? super I> superEntity = ModelEntityLibrary.get(superInterface, true);
 				directSuperEntities.add(superEntity);
@@ -555,11 +555,11 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	 */
 	public List<ModelEntity<? super I>> getAllSuperEntities() throws ModelDefinitionException {
 		if (allSuperEntities == null && superImplementedInterfaces != null) {
-			allSuperEntities = new ArrayList<ModelEntity<? super I>>();
+			allSuperEntities = new ArrayList<>();
 			// 1. We add the direct ancestors of this entity
 			allSuperEntities.addAll(getDirectSuperEntities());
 			// 2. We add the indirect ancestors of this entity to have a topologically sorted array.
-			for (ModelEntity<? super I> superEntity : new ArrayList<ModelEntity<? super I>>(allSuperEntities)) {
+			for (ModelEntity<? super I> superEntity : new ArrayList<>(allSuperEntities)) {
 				allSuperEntities.addAll(superEntity.getAllSuperEntities());
 			}
 		}
@@ -578,11 +578,11 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return propertyMethods.get(new ModelMethod(method));
 	}
 
-	public ModelProperty<? super I> getPropertyForXMLAttributeName(String name) throws ModelDefinitionException {
+	public ModelProperty<? super I> getPropertyForXMLAttributeName(String name) {
 		if (modelPropertiesByXMLAttributeName == null) {
 			synchronized (this) {
 				if (modelPropertiesByXMLAttributeName == null) {
-					modelPropertiesByXMLAttributeName = new HashMap<String, ModelProperty<? super I>>();
+					modelPropertiesByXMLAttributeName = new HashMap<>();
 					for (ModelProperty<? super I> property : properties.values()) {
 						if (property.getXMLTag() != null) {
 							modelPropertiesByXMLAttributeName.put(property.getXMLTag(), property);
@@ -739,6 +739,10 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			if (aRemover != null && aRemover.value().equals(propertyIdentifier)) {
 				return true;
 			}
+			Reindexer aReindexer = m.getAnnotation(Reindexer.class);
+			if (aReindexer != null && aReindexer.value().equals(propertyIdentifier)) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -755,14 +759,82 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return implementationClass;
 	}
 
+	private boolean xmlElementHasBeenRetrieved = false;
+
+	/**
+	 * Return {@link XMLElement} by combining all super entities declarations
+	 * 
+	 * @return
+	 */
 	public XMLElement getXMLElement() {
+
+		if (!xmlElementHasBeenRetrieved) {
+
+			xmlElementHasBeenRetrieved = true;
+
+			xmlElement = implementedInterface.getAnnotation(XMLElement.class);
+
+			String xmlTag = XMLElement.DEFAULT_XML_TAG;
+			String context = XMLElement.NO_CONTEXT;
+			String namespace = XMLElement.NO_NAME_SPACE;
+			String idFactory = XMLElement.NO_ID_FACTORY;
+			boolean primary = false;
+
+			if (xmlElement != null) {
+				xmlTag = xmlElement.xmlTag();
+				if (xmlTag == null || xmlTag.equals(XMLElement.DEFAULT_XML_TAG)) {
+					xmlTag = getImplementedInterface().getSimpleName();
+				}
+			}
+
+			try {
+				if (getDirectSuperEntities() != null) {
+					for (ModelEntity<?> superEntity : getDirectSuperEntities()) {
+						if (superEntity.getXMLElement() != null) {
+							if (superEntity.getXMLElement() != null) {
+								if (xmlElement == null) {
+									xmlElement = superEntity.getXMLElement();
+								}
+								else {
+									if (!superEntity.getXMLElement().context().equals(XMLElement.NO_CONTEXT)) {
+										context = superEntity.getXMLElement().context();
+									}
+									else {
+										context = xmlElement.context();
+									}
+									if (!superEntity.getXMLElement().namespace().equals(XMLElement.NO_NAME_SPACE)) {
+										namespace = superEntity.getXMLElement().namespace();
+									}
+									else {
+										namespace = xmlElement.namespace();
+									}
+									if (!superEntity.getXMLElement().idFactory().equals(XMLElement.NO_ID_FACTORY)) {
+										idFactory = superEntity.getXMLElement().idFactory();
+									}
+									else {
+										idFactory = xmlElement.idFactory();
+									}
+									primary |= superEntity.getXMLElement().primary();
+									primary |= xmlElement.primary();
+									xmlElement = new XMLElement.XMLElementImpl(xmlTag, context, namespace, primary, idFactory);
+								}
+							}
+						}
+					}
+				}
+			} catch (ModelDefinitionException e) {
+				e.printStackTrace();
+			}
+
+		}
+
 		return xmlElement;
 	}
 
 	public String getXMLTag() {
 		if (xmlTag == null) {
-			if (xmlElement != null) {
-				xmlTag = xmlElement.xmlTag();
+			if (getXMLElement() != null) {
+				xmlTag = getXMLElement().xmlTag();
 			}
 			if (xmlTag == null || xmlTag.equals(XMLElement.DEFAULT_XML_TAG)) {
 				xmlTag = getImplementedInterface().getSimpleName();
@@ -782,9 +854,17 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return properties.values().iterator();
 	}
 
+	public Iterable<ModelProperty<? super I>> getPropertyIterable() {
+		return Collections.unmodifiableCollection(properties.values());
+	}
+
+	public Collection<ModelProperty<I>> getDeclaredProperties() {
+		return declaredModelProperties.values();
+	}
+
 	/**
 	 * Return an iterator for {@link ModelProperty} objects<br>
-	 * Order respect {@link CloningStrategy#cloneAfterProperty()) annotation
+	 * Order respect {@link CloningStrategy#cloneAfterProperty()} annotation
 	 * 
 	 * @return
 	 * @throws ModelDefinitionException
@@ -827,10 +907,10 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	}
 
 	public List<ModelEntity> getAllDescendants(ModelContext modelContext) throws ModelDefinitionException {
-		List<ModelEntity> returned = new ArrayList<ModelEntity>();
+		List<ModelEntity> returned = new ArrayList<>();
 		Iterator<ModelEntity> i = modelContext.getEntities();
 		while (i.hasNext()) {
-			ModelEntity entity = i.next();
+			ModelEntity<?> entity = i.next();
 			if (isAncestorOf(entity)) {
 				returned.add(entity);
 			}
@@ -913,7 +993,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	}
 
 	public List<ModelInitializer> getPossibleInitializers(Class<?>[] types) {
-		List<ModelInitializer> list = new ArrayList<ModelInitializer>();
+		List<ModelInitializer> list = new ArrayList<>();
 		for (ModelInitializer init : initializers.values()) {
 			int i = 0;
 			Class<?>[] parameterTypes = init.getInitializingMethod().getParameterTypes();
@@ -985,7 +1065,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	 * @return a list of model properties to which an instance of <code>type</code> can be assigned or added
 	 */
 	public Collection<ModelProperty<? super I>> getPropertiesAssignableFrom(Class<?> type) {
-		Collection<ModelProperty<? super I>> ppProperties = new ArrayList<ModelProperty<? super I>>();
+		Collection<ModelProperty<? super I>> ppProperties = new ArrayList<>();
 		for (ModelProperty<? super I> p : properties.values()) {
 			if (TypeUtils.isTypeAssignableFrom(p.getType(), type)) {
 				ppProperties.add(p);
@@ -1033,11 +1113,18 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		if (isAbstract()) {
 			return;
 		}
+
+		MissingImplementationException thrown = null;
 		for (Method method : getNotOverridenMethods()) {
 			if (!checkMethodImplementation(method, factory)) {
 				System.err.println("NOT FOUND: " + method + " in " + getImplementedInterface());
-				throw new MissingImplementationException(this, method, factory);
+				if (thrown == null) {
+					thrown = new MissingImplementationException(this, method, factory);
+				}
 			}
+		}
+		if (thrown != null) {
+			throw thrown;
 		}
 	}
 
@@ -1048,7 +1135,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	 * @return
 	 */
 	public List<Method> getNotOverridenMethods() {
-		List<Method> returned = new ArrayList<Method>();
+		List<Method> returned = new ArrayList<>();
 		for (Method m1 : getImplementedInterface().getMethods()) {
 			boolean isOverriden = false;
 			// Method overridingMethod = null;
@@ -1082,11 +1169,22 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			return true;
 		}
 		else {
+			if (method.isDefault()) {
+				return true;
+			}
+			if (method.getAnnotation(Getter.class) != null) {
+				return true;
+			}
+			if (method.getAnnotation(Setter.class) != null) {
+				return true;
+			}
 			if (method.getAnnotation(Finder.class) != null) {
 				return true;
 			}
-
 			if (method.getAnnotation(Initializer.class) != null) {
+				return true;
+			}
+			if (method.getAnnotation(Reindexer.class) != null) {
 				return true;
 			}
 
@@ -1118,6 +1216,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.SET_MODIFIED)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SET_MODIFIED)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DESTROY)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UPDATE_WITH_OBJECT)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.EQUALS_OBJECT)) {
 					return true;
 				}
@@ -1160,7 +1259,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			}
 
 			// Look up in base implementation class
-			Class implementingClassForInterface = factory.getImplementingClassForInterface(getImplementedInterface());
+			Class<?> implementingClassForInterface = factory.getImplementingClassForInterface(getImplementedInterface());
 			if (implementingClassForInterface != null) {
 				try {
 					Method m = implementingClassForInterface.getMethod(method.getName(), method.getParameterTypes());
@@ -1168,9 +1267,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						// We have found a non-abtract method which implements searched API method
 						return true;
 					}
-				} catch (SecurityException e) {
-				} catch (NoSuchMethodException e) {
-				}
+				} catch (SecurityException e) {} catch (NoSuchMethodException e) {}
 			}
 		}
 
@@ -1195,9 +1292,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						// We have found a non-abtract method which implements searched API method
 						return true;
 					}
-				} catch (SecurityException e) {
-				} catch (NoSuchMethodException e) {
-				}
+				} catch (SecurityException e) {} catch (NoSuchMethodException e) {}
 			}
 		}
 		// May be in parent entitities ?
@@ -1216,4 +1311,5 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	public static boolean isModelEntity(Class<?> type) {
 		return type.isAnnotationPresent(org.openflexo.model.annotations.ModelEntity.class);
 	}
+
 }

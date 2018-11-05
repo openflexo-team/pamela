@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -54,6 +55,7 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.LineSeparator;
 import org.jdom2.output.XMLOutputter;
+import org.openflexo.connie.BindingEvaluator;
 import org.openflexo.model.ModelContextLibrary;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.ModelProperty;
@@ -111,8 +113,8 @@ public class XMLSerializer {
 			throws IOException, IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Document builtDocument = new Document();
 		id = 0;
-		objectReferences = new HashMap<Object, ObjectReference>();
-		alreadySerialized = new HashMap<Object, Object>();
+		objectReferences = new HashMap<>();
+		alreadySerialized = new HashMap<>();
 		Element rootElement = serializeElement(object, null, resetModifiedStatus);
 		postProcess(rootElement);
 		builtDocument.setRootElement(rootElement);
@@ -141,7 +143,18 @@ public class XMLSerializer {
 		return writer.toString();
 	}
 
-	private String generateReference(Object o) {
+	private String generateReference(Object o, XMLElement xmlElement) {
+
+		if (xmlElement != null && !xmlElement.idFactory().equals(XMLElement.NO_ID_FACTORY)) {
+			Object computedValue;
+			try {
+				computedValue = BindingEvaluator.evaluateBinding(xmlElement.idFactory(), o);
+				return computedValue.toString();
+			} catch (Exception e) {
+				System.err.println("Could not evaluate " + xmlElement.idFactory() + " for " + o);
+			}
+		}
+
 		return String.valueOf(id++);
 	}
 
@@ -168,7 +181,7 @@ public class XMLSerializer {
 							throw new ModelDefinitionException("Ambiguous entity for object " + object.getClass().getName()
 									+ ". More than one entities are known in this model mapping.");
 						}
-						ModelEntity e = upperEntities.get(0);
+						ModelEntity<?> e = upperEntities.get(0);
 						xmlTag = e.getXMLTag();
 						modelEntity = ModelContextLibrary.getModelContext(implementedInterface).getModelEntity(implementedInterface);
 						break;
@@ -204,7 +217,7 @@ public class XMLSerializer {
 					handler.setSerializing(true, resetModifiedStatus);
 
 					// Put this object in alreadySerialized objects
-					reference = generateReference(object);
+					reference = generateReference(object, xmlElement);
 					alreadySerialized.put(object, reference);
 
 					if (xmlElement != null) {
@@ -262,7 +275,7 @@ public class XMLSerializer {
 										List<?> values = (List<?>) handler.invokeGetter(p);
 										// NPE if list not initialized
 										if (values != null) {
-											for (Object o : values) {
+											for (Object o : new ArrayList<>(values)) {
 												if (o != null) {
 													Element propertyElement2 = serializeElement(o, propertyXMLElement, resetModifiedStatus);
 													returned.addContent(propertyElement2);
@@ -373,7 +386,7 @@ public class XMLSerializer {
 		protected ObjectReference(Object anObject, XMLElement xmlElement, XMLElement context, Element anElement) {
 			super();
 			serializedObject = anObject;
-			referenceElements = new Vector<ElementReference>();
+			referenceElements = new Vector<>();
 			addElementReference(new ElementReference(xmlElement, context, anElement));
 		}
 
@@ -471,7 +484,7 @@ public class XMLSerializer {
 			}
 		}
 
-		private boolean exchange(ElementReference ref1, ElementReference ref2) {
+		private static boolean exchange(ElementReference ref1, ElementReference ref2) {
 			Element element1 = ref1.element;
 			Element element2 = ref2.element;
 			Element father1 = element1.getParentElement();
@@ -507,7 +520,7 @@ public class XMLSerializer {
 		 * returned; }
 		 */
 
-		private boolean isAncestorOf(Element e1, Element e2) {
+		private static boolean isAncestorOf(Element e1, Element e2) {
 			return e1.isAncestor(e2);
 		}
 

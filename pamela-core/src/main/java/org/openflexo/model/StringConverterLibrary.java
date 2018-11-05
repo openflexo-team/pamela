@@ -72,7 +72,7 @@ public class StringConverterLibrary {
 	private final Map<Class<?>, Converter<?>> unmodifiableConverters;
 
 	public StringConverterLibrary() {
-		converters = new Hashtable<Class<?>, Converter<?>>();
+		converters = new Hashtable<>();
 		unmodifiableConverters = Collections.unmodifiableMap(converters);
 		addConverter(new BooleanConverter());
 		addConverter(new IntegerConverter());
@@ -84,7 +84,7 @@ public class StringConverterLibrary {
 		addConverter(new DateConverter());
 		addConverter(new URLConverter());
 		addConverter(new FileConverter());
-		addConverter(new ClassConverter());
+		addConverter(new ClassConverter<>());
 		addConverter(new PointConverter());
 		addConverter(new ColorConverter());
 		addConverter(new FontConverter());
@@ -191,8 +191,7 @@ public class StringConverterLibrary {
 							Number returned = Double.parseDouble(value);
 							// System.out.println("Build a double: "+value);
 							return returned;
-						} catch (NumberFormatException e4) {
-						}
+						} catch (NumberFormatException e4) {}
 					}
 				}
 			}
@@ -411,9 +410,7 @@ public class StringConverterLibrary {
 			if (date != null) {
 				return _dateFormat + "," + new SimpleDateFormat(_dateFormat).format(date);
 			}
-			else {
-				return null;
-			}
+			return null;
 		}
 
 		/**
@@ -423,9 +420,7 @@ public class StringConverterLibrary {
 			if (date != null) {
 				return new SimpleDateFormat(_dateFormat).format(date);
 			}
-			else {
-				return null;
-			}
+			return null;
 		}
 
 	}
@@ -456,9 +451,7 @@ public class StringConverterLibrary {
 			if (anURL != null) {
 				return anURL.toExternalForm();
 			}
-			else {
-				return null;
-			}
+			return null;
 		}
 
 	}
@@ -484,9 +477,7 @@ public class StringConverterLibrary {
 			if (aFile != null) {
 				return aFile.getAbsolutePath();
 			}
-			else {
-				return null;
-			}
+			return null;
 		}
 
 	}
@@ -496,16 +487,17 @@ public class StringConverterLibrary {
 	 * 
 	 * @author sguerin
 	 */
-	private static class ClassConverter extends Converter<Class> {
+	private static class ClassConverter<T> extends Converter<Class<T>> {
 
 		private ClassConverter() {
 			super(Class.class);
 		}
 
+		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
-		public Class<?> convertFromString(String value, ModelFactory factory) throws InvalidDataException {
+		public Class<T> convertFromString(String value, ModelFactory factory) throws InvalidDataException {
 			try {
-				return Class.forName(value);
+				return (Class) Class.forName(value);
 			} catch (ClassNotFoundException e) {
 				// Warns about the exception
 				throw new InvalidDataException("Supplied value represents a class not found: " + value);
@@ -513,13 +505,11 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public String convertToString(Class aClass) {
+		public String convertToString(Class<T> aClass) {
 			if (aClass != null) {
 				return aClass.getName();
 			}
-			else {
-				return null;
-			}
+			return null;
 		}
 
 	}
@@ -559,9 +549,7 @@ public class StringConverterLibrary {
 			if (aPoint != null) {
 				return aPoint.x + "," + aPoint.y;
 			}
-			else {
-				return null;
-			}
+			return null;
 		}
 
 	}

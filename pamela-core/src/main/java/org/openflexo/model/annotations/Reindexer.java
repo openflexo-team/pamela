@@ -1,6 +1,7 @@
 /**
  * 
- * Copyright (c) 2014, Openflexo
+ * Copyright (c) 2013-2014, Openflexo
+ * Copyright (c) 2011-2012, AgileBirds
  * 
  * This file is part of Pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
@@ -36,10 +37,38 @@
  * 
  */
 
+package org.openflexo.model.annotations;
 
-package org.openflexo.model.io;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-class XMLSAXDeserializer {
-    // So many things to DO
+@Retention(RetentionPolicy.RUNTIME)
+@Target(value = ElementType.METHOD)
+public @interface Reindexer {
 
+	String value();
+
+	class ReindexerImpl implements Reindexer {
+
+		private final String value;
+
+		public ReindexerImpl(String value) {
+			super();
+			this.value = value;
+		}
+
+		@Override
+		public Class<? extends Annotation> annotationType() {
+			return Reindexer.class;
+		}
+
+		@Override
+		public String value() {
+			return value;
+		}
+
+	}
 }

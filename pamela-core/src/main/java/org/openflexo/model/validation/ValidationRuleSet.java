@@ -41,11 +41,12 @@ package org.openflexo.model.validation;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import org.openflexo.model.annotations.DefineValidationRule;
-import org.openflexo.toolbox.ChainedCollection;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
@@ -57,8 +58,7 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * @param <V>
  *            type of Validable
  */
-@SuppressWarnings("serial")
-public class ValidationRuleSet<V extends Validable> implements HasPropertyChangeSupport {
+public class ValidationRuleSet<V extends Validable> implements HasPropertyChangeSupport, Iterable<ValidationRule<?, ? super V>> {
 
 	private static final Logger logger = Logger.getLogger(ValidationRuleSet.class.getPackage().getName());
 
@@ -73,7 +73,7 @@ public class ValidationRuleSet<V extends Validable> implements HasPropertyChange
 
 	private final List<ValidationRuleSet<? super V>> parentRuleSets;
 
-	private ChainedCollection<ValidationRule<?, ? super V>> allRules;
+	// Unused private ChainedCollection<ValidationRule<?, ? super V>> allRules;
 
 	private final PropertyChangeSupport pcSupport;
 
@@ -83,8 +83,8 @@ public class ValidationRuleSet<V extends Validable> implements HasPropertyChange
 		pcSupport = new PropertyChangeSupport(this);
 
 		declaredType = type;
-		declaredRules = new ArrayList<ValidationRule<?, V>>();
-		parentRuleSets = new ArrayList<ValidationRuleSet<? super V>>();
+		declaredRules = new ArrayList<>();
+		parentRuleSets = new ArrayList<>();
 
 		for (Class<?> c : type.getDeclaredClasses()) {
 			DefineValidationRule annotation = c.getAnnotation(DefineValidationRule.class);
@@ -147,10 +147,13 @@ public class ValidationRuleSet<V extends Validable> implements HasPropertyChange
 	 * Does return inherited rules (This method is really costfull and should not be called in a performance context, use
 	 * getSize()/getElementAt(int) instead)
 	 * 
+	 * FD: Beware, this method is necessary due to the way some GUI component get the validation rules, in normal code I would advocate the
+	 * use of the iterator instead
+	 * 
 	 * @return
 	 */
 	public List<ValidationRule<?, ? super V>> getRules() {
-		List<ValidationRule<?, ? super V>> returned = new ArrayList<ValidationRule<?, ? super V>>();
+		List<ValidationRule<?, ? super V>> returned = new ArrayList<>();
 		for (int i = 0; i < getRulesCount(); i++) {
 			returned.add(getRuleAt(i));
 		}
@@ -179,7 +182,7 @@ public class ValidationRuleSet<V extends Validable> implements HasPropertyChange
 		return returned;
 	}
 
-	public ValidationRule<?, ? super V> getRuleAt(int index) {
+	private ValidationRule<?, ? super V> getRuleAt(int index) {
 		if (index < 0) {
 			return null;
 		}
@@ -209,4 +212,35 @@ public class ValidationRuleSet<V extends Validable> implements HasPropertyChange
 		return null;
 	}
 
+	@Override
+	public Iterator<ValidationRule<?, ? super V>> iterator() {
+		return new Iterator<ValidationRule<?, ? super V>>() {
+			private int index = 0;
+
+			@Override
+			public boolean hasNext() {
+				return this.index < getRulesCount();
+			}
+
+			@Override
+			public ValidationRule<?, ? super V> next() {
+				if (!hasNext())
+					throw new NoSuchElementException();
+				if (this.index < getDeclaredRules().size()) {
+					ValidationRule<?, ? super V> result = getDeclaredRules().get(index);
+					this.index++;
+					return result;
+				}
+				int localIndex = index - getDeclaredRules().size();
+				for (ValidationRuleSet<? super V> parentRuleSet : parentRuleSets) {
+					if (localIndex < parentRuleSet.getRulesCount()) {
+						this.index++;
+						return parentRuleSet.getRuleAt(localIndex);
+					}
+					localIndex = localIndex - parentRuleSet.getRulesCount();
+				}
+				return null;
+			}
+		};
+	}
 }

@@ -54,18 +54,17 @@ import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.model.ModelContext;
 import org.openflexo.model.ModelEntity;
 import org.openflexo.model.annotations.DefineValidationRule;
-import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
  * Used to store and manage a set of {@link ValidationRule} associated to some types<br>
- * {@link ValidationRule} discovering is based on PAMELA models annotated with {@link DefineValidationRule} annotations
+ * {@link ValidationRule} discovering is based on PAMELA models annotated with {@link DefineValidationRule} annotations<br>
+ * Note that class inheritance is supported
  * 
- * @author sguerin
+ * @author sylvain
  * 
  */
-@SuppressWarnings("serial")
 public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 	private static final Logger logger = Logger.getLogger(ValidationModel.class.getPackage().getName());
@@ -84,13 +83,9 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 		pcSupport = new PropertyChangeSupport(this);
 
-		ruleSets = new HashMap<Class<?>, ValidationRuleSet<?>>();
+		ruleSets = new HashMap<>();
 
-		try {
-			searchAndRegisterValidationRules(modelContext);
-		} catch (ModelDefinitionException e) {
-			e.printStackTrace();
-		}
+		searchAndRegisterValidationRules(modelContext);
 	}
 
 	@Override
@@ -104,7 +99,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void searchAndRegisterValidationRules(ModelContext modelContext) throws ModelDefinitionException {
+	private void searchAndRegisterValidationRules(ModelContext modelContext) {
 
 		validationModelFactory = new ModelFactory(modelContext);
 
@@ -115,7 +110,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 			// System.out.println("assertTrue(validationModel.getValidationModelFactory().getModelContext().getModelEntity("
 			// + e.getImplementedInterface().toString().substring(10) + ".class) != null);");
 			Class i = e.getImplementedInterface();
-			ruleSets.put(i, new ValidationRuleSet<Validable>(i));
+			ruleSets.put(i, new ValidationRuleSet<>(i));
 		}
 
 		// Now manage inheritance
@@ -136,7 +131,8 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 				// System.out.println("Found " + originRuleSet.getDeclaredType() + " inherits from " + superInterface);
 				originRuleSet.addParentRuleSet((ValidationRuleSet) ruleSets.get(superInterface));
 
-			} else {
+			}
+			else {
 				manageInheritanceFor(superInterface, originRuleSet);
 			}
 		}
@@ -170,7 +166,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 	 */
 	public boolean isValid(Validable object) {
 		try {
-			return validate(object).getErrorsCount() == 0;
+			return validate(object).getAllErrors().size() == 0;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			return false;
@@ -217,7 +213,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 	public List<Class<?>> getSortedClasses() {
 		if (sortedClasses == null) {
-			sortedClasses = new ArrayList<Class<?>>();
+			sortedClasses = new ArrayList<>();
 			sortedClasses.addAll(ruleSets.keySet());
 			Collections.sort(sortedClasses, new ClassComparator());
 		}
@@ -240,7 +236,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		}
 	}
 
-	private class ClassComparator implements Comparator<Class> {
+	private class ClassComparator implements Comparator<Class<?>> {
 		private final Collator collator;
 
 		ClassComparator() {
@@ -248,7 +244,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		}
 
 		@Override
-		public int compare(Class o1, Class o2) {
+		public int compare(Class<?> o1, Class<?> o2) {
 			String className1 = null;
 			String className2 = null;
 			StringTokenizer st1 = new StringTokenizer(o1.getName(), ".");
@@ -314,7 +310,8 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 			for (int i = startIndex + 2; i < localized.length(); i++) {
 				if (localized.charAt(i) == '(') {
 					p++;
-				} else if (localized.charAt(i) == ')') {
+				}
+				else if (localized.charAt(i) == ')') {
 					p--;
 				}
 				if (p == 0) {

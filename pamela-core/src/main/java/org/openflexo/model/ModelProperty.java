@@ -40,6 +40,7 @@
 package org.openflexo.model;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.List;
@@ -56,7 +57,9 @@ import org.openflexo.model.annotations.DeletionCondition;
 import org.openflexo.model.annotations.Embedded;
 import org.openflexo.model.annotations.Getter;
 import org.openflexo.model.annotations.Getter.Cardinality;
+import org.openflexo.model.annotations.Initialize;
 import org.openflexo.model.annotations.PastingPoint;
+import org.openflexo.model.annotations.Reindexer;
 import org.openflexo.model.annotations.Remover;
 import org.openflexo.model.annotations.ReturnedValue;
 import org.openflexo.model.annotations.Setter;
@@ -79,12 +82,14 @@ public class ModelProperty<I> {
 	private final Setter setter;
 	private final Adder adder;
 	private final Remover remover;
+	private final Reindexer reindexer;
 	private final XMLAttribute xmlAttribute;
 	private final XMLElement xmlElement;
 	private final ReturnedValue returnedValue;
 	private final Embedded embedded;
 	private final ComplexEmbedded complexEmbedded;
 	private final CloningStrategy cloningStrategy;
+	private final Initialize initialize;
 
 	private PastingPoint setPastingPoint;
 	private PastingPoint addPastingPoint;
@@ -93,6 +98,7 @@ public class ModelProperty<I> {
 	private final Method setterMethod;
 	private final Method adderMethod;
 	private final Method removerMethod;
+	private final Method reindexerMethod;
 
 	private Cardinality cardinality;
 
@@ -107,6 +113,7 @@ public class ModelProperty<I> {
 		Setter setter = null;
 		Adder adder = null;
 		Remover remover = null;
+		Reindexer reindexer = null;
 		XMLAttribute xmlAttribute = null;
 		XMLElement xmlElement = null;
 		ReturnedValue returnedValue = null;
@@ -115,91 +122,117 @@ public class ModelProperty<I> {
 		CloningStrategy cloningStrategy = null;
 		PastingPoint setPastingPoint = null;
 		PastingPoint addPastingPoint = null;
+		Initialize initialize = null;
 		Method getterMethod = null;
 		Method setterMethod = null;
 		Method adderMethod = null;
 		Method removerMethod = null;
+		Method reindexerMethod = null;
 		Class<I> implementedInterface = modelEntity.getImplementedInterface();
+
 		for (Method m : implementedInterface.getDeclaredMethods()) {
-			Getter aGetter = m.getAnnotation(Getter.class);
-			Setter aSetter = m.getAnnotation(Setter.class);
-			Adder anAdder = m.getAnnotation(Adder.class);
-			Remover aRemover = m.getAnnotation(Remover.class);
-			if (aGetter == null && aSetter == null && anAdder == null && aRemover == null) {
-				for (Method m1 : ReflectionUtils.getOverridenMethods(m)) {
-					aGetter = m1.getAnnotation(Getter.class);
-					aSetter = m1.getAnnotation(Setter.class);
-					anAdder = m1.getAnnotation(Adder.class);
-					aRemover = m1.getAnnotation(Remover.class);
-					if (aGetter != null || aSetter != null || anAdder != null || aRemover != null) {
-						break;
+			/* Annotations has changed in Java 8: see http://bugs.java.com/view_bug.do?bug_id=6695379
+			 * Now annotations are copied to bridge methods (see https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html 
+			 * or https://javax0.wordpress.com/2014/02/26/syntethic-and-bridge-methods).
+			 * We need to add a test if the method is a bridge (it reuses the volatile kind)
+			 * Notice that the eclipse compiler does not follow the annotation copy to bridge method for the moment (27/7/2016)
+			 */
+			if (!Modifier.isVolatile(m.getModifiers())) {
+				Getter aGetter = m.getAnnotation(Getter.class);
+				Setter aSetter = m.getAnnotation(Setter.class);
+				Adder anAdder = m.getAnnotation(Adder.class);
+				Remover aRemover = m.getAnnotation(Remover.class);
+				Reindexer aReindexer = m.getAnnotation(Reindexer.class);
+				if (aGetter == null && aSetter == null && anAdder == null && aRemover == null && aReindexer == null) {
+					for (Method m1 : ReflectionUtils.getOverridenMethods(m)) {
+						aGetter = m1.getAnnotation(Getter.class);
+						aSetter = m1.getAnnotation(Setter.class);
+						anAdder = m1.getAnnotation(Adder.class);
+						aRemover = m1.getAnnotation(Remover.class);
+						aReindexer = m1.getAnnotation(Reindexer.class);
+						if (aGetter != null || aSetter != null || anAdder != null || aRemover != null || aReindexer != null) {
+							break;
+						}
+					}
+				}
+				if (aGetter != null && aGetter.value().equals(propertyIdentifier)) {
+					if (getter != null) {
+						throw new ModelDefinitionException(
+								"Duplicate getter '" + propertyIdentifier + "' defined for " + implementedInterface);
+					}
+					else {
+						getter = aGetter;
+						getterMethod = m;
+						xmlAttribute = m.getAnnotation(XMLAttribute.class);
+						xmlElement = m.getAnnotation(XMLElement.class);
+						returnedValue = m.getAnnotation(ReturnedValue.class);
+						cloningStrategy = m.getAnnotation(CloningStrategy.class);
+						embedded = m.getAnnotation(Embedded.class);
+						initialize = m.getAnnotation(Initialize.class);
+						complexEmbedded = m.getAnnotation(ComplexEmbedded.class);
+					}
+				}
+				if (aSetter != null && aSetter.value().equals(propertyIdentifier)) {
+					if (setter != null) {
+						throw new ModelDefinitionException(
+								"Duplicate setter '" + propertyIdentifier + "' defined for " + implementedInterface);
+					}
+					else {
+						setter = aSetter;
+						setterMethod = m;
+						setPastingPoint = m.getAnnotation(PastingPoint.class);
+					}
+				}
+				if (anAdder != null && anAdder.value().equals(propertyIdentifier)) {
+					if (adder != null) {
+						throw new ModelDefinitionException(
+								"Duplicate adder '" + propertyIdentifier + "' defined for " + implementedInterface);
+					}
+					else {
+						adder = anAdder;
+						adderMethod = m;
+						addPastingPoint = m.getAnnotation(PastingPoint.class);
+					}
+				}
+				if (aRemover != null && aRemover.value().equals(propertyIdentifier)) {
+					if (remover != null) {
+						throw new ModelDefinitionException(
+								"Duplicate remover '" + propertyIdentifier + "' defined for " + implementedInterface);
+					}
+					else {
+						remover = aRemover;
+						removerMethod = m;
+					}
+				}
+				if (aReindexer != null && aReindexer.value().equals(propertyIdentifier)) {
+					if (reindexer != null) {
+						throw new ModelDefinitionException(
+								"Duplicate reindexer '" + propertyIdentifier + "' defined for " + implementedInterface);
+					}
+					else {
+						reindexer = aReindexer;
+						reindexerMethod = m;
 					}
 				}
 			}
-			if (aGetter != null && aGetter.value().equals(propertyIdentifier)) {
-				if (getter != null) {
-					throw new ModelDefinitionException(
-							"Duplicate getter '" + propertyIdentifier + "' defined for interface " + implementedInterface);
-				}
-				else {
-					getter = aGetter;
-					getterMethod = m;
-					xmlAttribute = m.getAnnotation(XMLAttribute.class);
-					xmlElement = m.getAnnotation(XMLElement.class);
-					returnedValue = m.getAnnotation(ReturnedValue.class);
-					cloningStrategy = m.getAnnotation(CloningStrategy.class);
-					embedded = m.getAnnotation(Embedded.class);
-					complexEmbedded = m.getAnnotation(ComplexEmbedded.class);
-				}
-			}
-			if (aSetter != null && aSetter.value().equals(propertyIdentifier)) {
-				if (setter != null) {
-					throw new ModelDefinitionException(
-							"Duplicate setter '" + propertyIdentifier + "' defined for interface " + implementedInterface);
-				}
-				else {
-					setter = aSetter;
-					setterMethod = m;
-					setPastingPoint = m.getAnnotation(PastingPoint.class);
-				}
-			}
-			if (anAdder != null && anAdder.value().equals(propertyIdentifier)) {
-				if (adder != null) {
-					throw new ModelDefinitionException(
-							"Duplicate adder '" + propertyIdentifier + "' defined for interface " + implementedInterface);
-				}
-				else {
-					adder = anAdder;
-					adderMethod = m;
-					addPastingPoint = m.getAnnotation(PastingPoint.class);
-				}
-			}
-			if (aRemover != null && aRemover.value().equals(propertyIdentifier)) {
-				if (remover != null) {
-					throw new ModelDefinitionException(
-							"Duplicate remover '" + propertyIdentifier + "' defined for interface " + implementedInterface);
-				}
-				else {
-					remover = aRemover;
-					removerMethod = m;
-				}
-			}
 		}
-		return new ModelProperty<I>(modelEntity, propertyIdentifier, getter, setter, adder, remover, xmlAttribute, xmlElement,
-				returnedValue, embedded, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod, setterMethod,
-				adderMethod, removerMethod);
+		return new ModelProperty<>(modelEntity, propertyIdentifier, getter, setter, adder, remover, reindexer, xmlAttribute, xmlElement,
+				returnedValue, embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod,
+				setterMethod, adderMethod, removerMethod, reindexerMethod);
 	}
 
 	protected ModelProperty(ModelEntity<I> modelEntity, String propertyIdentifier, Getter getter, Setter setter, Adder adder,
-			Remover remover, XMLAttribute xmlAttribute, XMLElement xmlElement, ReturnedValue returnedValue, Embedded embedded,
-			ComplexEmbedded complexEmbedded, CloningStrategy cloningStrategy, PastingPoint setPastingPoint, PastingPoint addPastingPoint,
-			Method getterMethod, Method setterMethod, Method adderMethod, Method removerMethod) throws ModelDefinitionException {
+			Remover remover, Reindexer reindexer, XMLAttribute xmlAttribute, XMLElement xmlElement, ReturnedValue returnedValue,
+			Embedded embedded, Initialize initialize, ComplexEmbedded complexEmbedded, CloningStrategy cloningStrategy,
+			PastingPoint setPastingPoint, PastingPoint addPastingPoint, Method getterMethod, Method setterMethod, Method adderMethod,
+			Method removerMethod, Method reindexerMethod) {
 		this.modelEntity = modelEntity;
 		this.propertyIdentifier = propertyIdentifier;
 		this.getter = getter;
 		this.setter = setter;
 		this.adder = adder;
 		this.remover = remover;
+		this.reindexer = reindexer;
 		this.xmlAttribute = xmlAttribute;
 		this.xmlElement = xmlElement;
 		this.returnedValue = returnedValue;
@@ -212,6 +245,8 @@ public class ModelProperty<I> {
 		this.setterMethod = setterMethod;
 		this.adderMethod = adderMethod;
 		this.removerMethod = removerMethod;
+		this.reindexerMethod = reindexerMethod;
+		this.initialize = initialize;
 		if (setterMethod != null) {
 			PastingPoint pastingPoint = setterMethod.getAnnotation(PastingPoint.class);
 			if (pastingPoint != null) {
@@ -453,6 +488,10 @@ public class ModelProperty<I> {
 				}
 			}
 		}
+		if (getInitialize() != property.getInitialize()) {
+			return "Initialize conditions aren't compatible";
+		}
+
 		if (getEmbedded() != null) {
 			if (property.getEmbedded() != null) {
 				if (!Arrays.equals(getEmbedded().closureConditions(), property.getEmbedded().closureConditions())) {
@@ -599,10 +638,12 @@ public class ModelProperty<I> {
 		Setter setter = null;
 		Adder adder = null;
 		Remover remover = null;
+		Reindexer reindexer = null;
 		XMLAttribute xmlAttribute = null;
 		XMLElement xmlElement = null;
 		ReturnedValue returnedValue = null;
 		Embedded embedded = null;
+		Initialize initialize = this.initialize;
 		ComplexEmbedded complexEmbedded = null;
 		CloningStrategy cloningStrategy = null;
 		// PastingPoint setPastingPoint = null;
@@ -611,6 +652,7 @@ public class ModelProperty<I> {
 		Method setterMethod = null;
 		Method adderMethod = null;
 		Method removerMethod = null;
+		Method reindexerMethod = null;
 		if (rulingProperty != null && rulingProperty.getGetter() != null) {
 			getter = rulingProperty.getGetter();
 		}
@@ -620,6 +662,8 @@ public class ModelProperty<I> {
 			String defaultValue = null;
 			boolean stringConvertable;
 			boolean ignoreType;
+			boolean allowsMultipleOccurences;
+
 			if (getGetter() != null) {
 				cardinality = getGetter().cardinality();
 			}
@@ -641,12 +685,15 @@ public class ModelProperty<I> {
 			if (getGetter() == null) {
 				stringConvertable = property.getGetter().isStringConvertable();
 				ignoreType = property.getGetter().ignoreType();
+				allowsMultipleOccurences = property.getGetter().allowsMultipleOccurences();
 			}
 			else {
 				stringConvertable = getGetter().isStringConvertable();
 				ignoreType = getGetter().ignoreType();
+				allowsMultipleOccurences = getGetter().allowsMultipleOccurences();
 			}
-			getter = new Getter.GetterImpl(propertyIdentifier, cardinality, inverse, defaultValue, stringConvertable, ignoreType);
+			getter = new Getter.GetterImpl(propertyIdentifier, cardinality, inverse, defaultValue, stringConvertable, ignoreType,
+					allowsMultipleOccurences);
 		}
 		if (rulingProperty != null && rulingProperty.getSetter() != null) {
 			setter = rulingProperty.getSetter();
@@ -679,6 +726,17 @@ public class ModelProperty<I> {
 			}
 			else if (property.getRemover() != null) {
 				remover = property.getRemover();
+			}
+		}
+		if (rulingProperty != null && rulingProperty.getReindexer() != null) {
+			reindexer = rulingProperty.getReindexer();
+		}
+		else {
+			if (getReindexer() != null) {
+				reindexer = getReindexer();
+			}
+			else if (property.getReindexer() != null) {
+				reindexer = property.getReindexer();
 			}
 		}
 
@@ -767,6 +825,18 @@ public class ModelProperty<I> {
 			}
 		}
 
+		if (rulingProperty != null && rulingProperty.getReindexerMethod() != null) {
+			reindexerMethod = rulingProperty.getReindexerMethod();
+		}
+		else {
+			if (getReindexerMethod() != null) {
+				reindexerMethod = getReindexerMethod();
+			}
+			else {
+				reindexerMethod = property.getReindexerMethod();
+			}
+		}
+
 		if (rulingProperty != null && (rulingProperty.getXMLAttribute() != null || rulingProperty.getXMLElement() != null)) {
 			xmlAttribute = rulingProperty.getXMLAttribute();
 			xmlElement = rulingProperty.getXMLElement();
@@ -783,6 +853,7 @@ public class ModelProperty<I> {
 			String xmlTag = XMLElement.DEFAULT_XML_TAG;
 			String context = XMLElement.NO_CONTEXT;
 			String namespace = XMLElement.NO_NAME_SPACE;
+			String idFactory = XMLElement.NO_ID_FACTORY;
 			boolean primary = false;
 			if (getXMLElement() != null) {
 				if (property.getXMLElement() != null) {
@@ -804,9 +875,15 @@ public class ModelProperty<I> {
 					else {
 						namespace = property.getXMLElement().namespace();
 					}
+					if (!getXMLElement().idFactory().equals(XMLElement.NO_ID_FACTORY)) {
+						idFactory = getXMLElement().idFactory();
+					}
+					else {
+						idFactory = property.getXMLElement().idFactory();
+					}
 					primary |= getXMLElement().primary();
 					primary |= property.getXMLElement().primary();
-					xmlElement = new XMLElement.XMLElementImpl(xmlTag, context, namespace, primary);
+					xmlElement = new XMLElement.XMLElementImpl(xmlTag, context, namespace, primary, idFactory);
 				}
 				else {
 					xmlElement = getXMLElement();
@@ -827,9 +904,9 @@ public class ModelProperty<I> {
 			setPastingPoint = rulingProperty.getSetPastingPoint();
 		}
 
-		return new ModelProperty<I>(getModelEntity(), getPropertyIdentifier(), getter, setter, adder, remover, xmlAttribute, xmlElement,
-				returnedValue, embedded, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod, setterMethod,
-				adderMethod, removerMethod);
+		return new ModelProperty<>(getModelEntity(), getPropertyIdentifier(), getter, setter, adder, remover, reindexer, xmlAttribute,
+				xmlElement, returnedValue, embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint,
+				getterMethod, setterMethod, adderMethod, removerMethod, reindexerMethod);
 	}
 
 	final public ModelEntity<I> getModelEntity() {
@@ -858,6 +935,10 @@ public class ModelProperty<I> {
 
 	public Remover getRemover() {
 		return remover;
+	}
+
+	public Reindexer getReindexer() {
+		return reindexer;
 	}
 
 	public XMLAttribute getXMLAttribute() {
@@ -903,6 +984,10 @@ public class ModelProperty<I> {
 		return removerMethod;
 	}
 
+	public Method getReindexerMethod() {
+		return reindexerMethod;
+	}
+
 	private Object defaultValue;
 
 	public Object getDefaultValue(ModelFactory factory) throws InvalidDataException {
@@ -938,6 +1023,13 @@ public class ModelProperty<I> {
 		return cardinality;
 	}
 
+	final public boolean getAllowsMultipleOccurences() {
+		if (getGetter() != null) {
+			return getGetter().allowsMultipleOccurences();
+		}
+		return false;
+	}
+
 	public boolean hasInverseProperty() {
 		return !getGetter().inverse().equals(Getter.UNDEFINED);
 	}
@@ -962,7 +1054,7 @@ public class ModelProperty<I> {
 		return "ModelProperty[" + getModelEntity() + "." + getPropertyIdentifier() + "]";
 	}
 
-	public ModelEntity<?> getAccessedEntity() throws ModelDefinitionException {
+	public ModelEntity<?> getAccessedEntity() {
 		return ModelEntityLibrary.get(getType());
 	}
 
@@ -972,6 +1064,10 @@ public class ModelProperty<I> {
 
 	public Embedded getEmbedded() {
 		return embedded;
+	}
+
+	public Initialize getInitialize() {
+		return initialize;
 	}
 
 	public ComplexEmbedded getComplexEmbedded() {

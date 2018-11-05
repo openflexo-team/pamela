@@ -3,12 +3,12 @@
     <parent>
         <groupId>org.openflexo</groupId>
         <artifactId>openflexo-component</artifactId>
-        <version>0.4</version>
+        <version>0.5-SNAPSHOT</version>
     </parent>
     <!-- ************
    	Component identity and specific information
       -->
-    <version>1.3-SNAPSHOT</version>
+    <version>1.4.1</version>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>pamela</artifactId>
     <name>Pamela</name>
@@ -17,7 +17,7 @@
     <scm>
         <connection>scm:git:ssh://git@github.com/openflexo-team/pamela.git</connection>
         <url>https://github.com/openflexo-team/pamela</url>
-        <tag>1.3</tag>
+        <tag>1.4.1</tag>
     </scm>
     <issueManagement>
         <system>JIRA</system>
@@ -25,13 +25,13 @@
     </issueManagement>
     <modules>
         <module>pamela-core</module>
-        <module>pamela-editor</module>
+        <!--  <module>pamela-editor</module> -->
     </modules>
     <!-- ************
 	Properties
       -->
     <properties>
-        <connie.version>1.3</connie.version>
+        <connie.version>1.4.1</connie.version>
         <javassist.version>3.18.0-GA</javassist.version>
 	    <changes.componentfilter>AND component=*</changes.componentfilter>
         <pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>
@@ -118,68 +118,28 @@
                 </configuration>
             </plugin>
         </plugins>
-	</build>
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.openflexo</groupId>
-				<artifactId>flexoutils</artifactId>
-				<version>${connie.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openflexo</groupId>
-				<artifactId>flexoutils</artifactId>
-				<version>${connie.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.openflexo</groupId>
-				<artifactId>connie-core</artifactId>
-				<version>${connie.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openflexo</groupId>
-				<artifactId>connie-core</artifactId>
-				<version>${connie.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-
-			<dependency>
-				<groupId>org.openflexo</groupId>
-				<artifactId>pamela-core</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openflexo</groupId>
-				<artifactId>pamela-core</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			<dependency>
-				<groupId>org.openflexo</groupId>
-				<artifactId>pamela-editor</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.openflexo</groupId>
-				<artifactId>pamela-editor</artifactId>
-				<version>${project.version}</version>
-				<classifier>tests</classifier>
-			</dependency>
-			
-			<dependency>
-				<groupId>org.javassist</groupId>
-				<artifactId>javassist</artifactId>
-				<version>3.18.0-GA</version>
-			</dependency>
-			
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.10</version>
-			</dependency>
-			
-			<!--<dependency>
+    </build>
+    <!-- ************
+   	dependency Management
+      -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.openflexo</groupId>
+                <artifactId>flexoutils</artifactId>
+                <version>${connie.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openflexo</groupId>
+                <artifactId>testutils</artifactId>
+                <version>${connie.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openflexo</groupId>
+                <artifactId>connie-core</artifactId>
+                <version>${connie.version}</version>
+            </dependency>
+	     <dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
 
@@ -212,7 +172,7 @@
             <distributionManagement>
                 <site>
                     <id>pamela.website</id>
-                    <url>scp://server-one.openflexo.org${sitedeploy.dir}/SNAPSHOT/</url>
+                    <url>scp://openflexo.org${sitedeploy.dir}/SNAPSHOT/</url>
                 </site>
             </distributionManagement>
         </profile>
@@ -229,7 +189,7 @@
             <distributionManagement>
                 <site>
                     <id>pamela.website</id>
-                    <url>scp://server-one.openflexo.org${sitedeploy.dir}/SNAPSHOT/</url>
+                    <url>scp://openflexo.org${sitedeploy.dir}/SNAPSHOT/</url>
                 </site>
             </distributionManagement>
         </profile>
@@ -246,7 +206,7 @@
             <distributionManagement>
                 <site>
                     <id>pamela.website</id>
-                    <url>scp://server-one.openflexo.org${sitedeploy.dir}/${project.version}/</url>
+                    <url>scp://openflexo.org${sitedeploy.dir}/${project.version}/</url>
                 </site>
             </distributionManagement>
         </profile>

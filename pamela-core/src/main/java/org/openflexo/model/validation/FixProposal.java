@@ -67,7 +67,7 @@ public abstract class FixProposal<R extends ValidationRule<R, V>, V extends Vali
 	}
 
 	/*public String getLocalizedMessage() {
-
+	
 		if (localizedMessage == null && getProblemIssue() != null && getProblemIssue().getValidationReport() != null && getObject() != null) {
 			localizedMessage = getProblemIssue().getValidationReport().localizedForKey(getMessage());
 		}
@@ -95,6 +95,7 @@ public abstract class FixProposal<R extends ValidationRule<R, V>, V extends Vali
 		if (revalidateAfterFixing) {
 			getProblemIssue().revalidateAfterFixing();
 		}
+		System.out.println("validationReport=" + validationReport);
 		validationReport.getPropertyChangeSupport().firePropertyChange("filteredIssues", null, validationReport.getFilteredIssues());
 	}
 

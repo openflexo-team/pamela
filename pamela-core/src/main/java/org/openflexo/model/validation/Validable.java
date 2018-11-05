@@ -38,7 +38,9 @@
 
 package org.openflexo.model.validation;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Implemented by an object on which validation is available<br>
@@ -50,55 +52,6 @@ import java.util.Collection;
 public interface Validable {
 
 	/**
-	 * Return default validation model for this object
-	 * 
-	 * @return ValidationModel
-	 */
-	// public ValidationModel getDefaultValidationModel();
-
-	/**
-	 * Returns a flag indicating if this object is valid according to default validation model
-	 * 
-	 * @return boolean
-	 */
-	// public boolean isValid();
-
-	/**
-	 * Returns a flag indicating if this object is valid according to specified validation model
-	 * 
-	 * @return boolean
-	 */
-	// public boolean isValid(ValidationModel validationModel);
-
-	/**
-	 * Validates this object by building new ValidationReport object Default validation model is used to perform this validation.
-	 */
-	// public ValidationReport validate();
-
-	/**
-	 * Validates this object by building new ValidationReport object Supplied validation model is used to perform this validation.
-	 */
-	// public ValidationReport validate(ValidationModel validationModel);
-
-	/**
-	 * Validates this object by appending eventual issues to supplied ValidationReport. Default validation model is used to perform this
-	 * validation.
-	 * 
-	 * @param report
-	 *            , a ValidationReport object on which found issues are appened
-	 */
-	// public void validate(ValidationReport report);
-
-	/**
-	 * Validates this object by appending eventual issues to supplied ValidationReport. Supplied validation model is used to perform this
-	 * validation.
-	 * 
-	 * @param report
-	 *            , a ValidationReport object on which found issues are appened
-	 */
-	// public void validate(ValidationReport report, ValidationModel validationModel);
-
-	/**
 	 * Return an collection of all embedded objects on which the validation is to be performed
 	 * 
 	 * @return a Vector of Validable objects
@@ -106,17 +59,48 @@ public interface Validable {
 	public Collection<? extends Validable> getEmbeddedValidableObjects();
 
 	/**
-	 * Return by deep recursion (see {@link #getEmbeddedValidableObjects()} a collection containing all validable objects contained in this
-	 * Validable object
-	 * 
-	 * @return
-	 */
-	// public Collection<? extends Validable> getAllEmbeddedValidableObjects();
-
-	/**
 	 * Return a flag indicating if this object was deleted
 	 * 
 	 * @return
 	 */
 	public boolean isDeleted();
+
+	/**
+	 * Return the count of all objects that will be validated, given a root {@link Validable} object<br>
+	 * Deep exploration will be performed using {@link #getEmbeddedValidableObjects()} links
+	 * 
+	 * @param o
+	 *            root object from where starts the exploration
+	 * @return
+	 */
+	public static int countAllEmbeddedValidableObjects(Validable o) {
+		return retrieveAllEmbeddedValidableObjects(o).size();
+	}
+
+	/**
+	 * Return a collection containing all objects that will be validated, given a root {@link Validable} object<br>
+	 * Deep exploration will be performed using {@link #getEmbeddedValidableObjects()} links
+	 * 
+	 * @param o
+	 *            root object from where starts the exploration
+	 * @return
+	 */
+	public static Collection<? extends Validable> retrieveAllEmbeddedValidableObjects(Validable o) {
+		List<Validable> returned = new ArrayList<>();
+		appendAllEmbeddedValidableObjects(o, returned);
+		return returned;
+	}
+
+	public static void appendAllEmbeddedValidableObjects(Validable o, Collection<Validable> c) {
+		if (o != null && !c.contains(o)) {
+			c.add(o);
+			Collection<? extends Validable> embeddedObjects = o.getEmbeddedValidableObjects();
+			if (embeddedObjects != null) {
+				for (Validable o2 : embeddedObjects) {
+					appendAllEmbeddedValidableObjects(o2, c);
+				}
+			}
+		}
+	}
+
 }

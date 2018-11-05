@@ -50,9 +50,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
-
 import javax.annotation.Nonnull;
-
 import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.toolbox.StringUtils;
@@ -83,16 +81,21 @@ public class ModelContext {
 		}
 
 		public List<String> getDeprecatedTags() {
+			List<String> returned = new ArrayList<>();
 			if (accessedEntity.getXMLElement() != null && StringUtils.isNotEmpty(accessedEntity.getXMLElement().deprecatedXMLTags())) {
-				List<String> returned = new ArrayList<String>();
 				StringTokenizer st = new StringTokenizer(accessedEntity.getXMLElement().deprecatedXMLTags(), ",");
 				while (st.hasMoreTokens()) {
 					String nextTag = st.nextToken();
 					returned.add(property.getXMLContext() + nextTag);
 				}
-				return returned;
 			}
-			return null;
+			if (getProperty().getXMLElement() != null && StringUtils.isNotEmpty(getProperty().getXMLElement().deprecatedContext())) {
+				returned.add(getProperty().getXMLElement().deprecatedContext() + accessedEntity.getXMLTag());
+			}
+			if (returned.size() == 0) {
+				return null;
+			}
+			return returned;
 		}
 
 		public ModelProperty<? super I> getProperty() {
@@ -110,29 +113,29 @@ public class ModelContext {
 	}
 
 	private Map<Class, ModelEntity> modelEntities;
-	private Map<String, ModelEntity> modelEntitiesByXmlTag;
-	private final Map<ModelEntity, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
+	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
+	private final Map<ModelEntity<?>, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
 	private final Class<?> baseClass;
 
 	public ModelContext(@Nonnull Class<?> baseClass) throws ModelDefinitionException {
 		this.baseClass = baseClass;
-		modelEntities = new HashMap<Class, ModelEntity>();
-		modelEntitiesByXmlTag = new HashMap<String, ModelEntity>();
-		modelPropertiesByXmlTag = new HashMap<ModelEntity, Map<String, ModelPropertyXMLTag<?>>>();
+		modelEntities = new HashMap<>();
+		modelEntitiesByXmlTag = new HashMap<>();
+		modelPropertiesByXmlTag = new HashMap<>();
 		ModelEntity<?> modelEntity = ModelEntityLibrary.importEntity(baseClass);
-		appendEntity(modelEntity, new HashSet<ModelEntity<?>>());
+		appendEntity(modelEntity, new HashSet<>());
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
 	}
 
 	public ModelContext(Class<?> baseClass, List<ModelContext> contexts) throws ModelDefinitionException {
 		this.baseClass = baseClass;
-		modelEntities = new HashMap<Class, ModelEntity>();
-		modelEntitiesByXmlTag = new HashMap<String, ModelEntity>();
-		modelPropertiesByXmlTag = new HashMap<ModelEntity, Map<String, ModelPropertyXMLTag<?>>>();
+		modelEntities = new HashMap<>();
+		modelEntitiesByXmlTag = new HashMap<>();
+		modelPropertiesByXmlTag = new HashMap<>();
 		for (ModelContext context : contexts) {
-			for (Entry<String, ModelEntity> e : context.modelEntitiesByXmlTag.entrySet()) {
-				ModelEntity entity = modelEntitiesByXmlTag.put(e.getKey(), e.getValue());
+			for (Entry<String, ModelEntity<?>> e : context.modelEntitiesByXmlTag.entrySet()) {
+				ModelEntity<?> entity = modelEntitiesByXmlTag.put(e.getKey(), e.getValue());
 				// TODO: handle properly namespaces. Different namespaces allows to have identical tags
 				// See also importModelEntity(Class<T>)
 				if (entity != null && !entity.getImplementedInterface().equals(e.getValue().getImplementedInterface())) {
@@ -144,18 +147,18 @@ public class ModelContext {
 		}
 		if (baseClass != null) {
 			ModelEntity<?> modelEntity = ModelEntityLibrary.importEntity(baseClass);
-			appendEntity(modelEntity, new HashSet<ModelEntity<?>>());
+			appendEntity(modelEntity, new HashSet<>());
 		}
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
 	}
 
-	public ModelContext(Class<?>... baseClasses) throws ModelDefinitionException {
+	public ModelContext(List<Class<?>> baseClasses) throws ModelDefinitionException {
 		this(null, makeModelContextList(baseClasses));
 	}
 
-	private static List<ModelContext> makeModelContextList(Class<?>... baseClasses) throws ModelDefinitionException {
-		List<ModelContext> returned = new ArrayList<ModelContext>();
+	private static List<ModelContext> makeModelContextList(List<Class<?>> baseClasses) throws ModelDefinitionException {
+		List<ModelContext> returned = new ArrayList<>();
 		for (Class<?> c : baseClasses) {
 			returned.add(ModelContextLibrary.getModelContext(c));
 		}
@@ -238,16 +241,16 @@ public class ModelContext {
 
 		Map<String, ModelPropertyXMLTag<?>> tags = modelPropertiesByXmlTag.get(entity);
 		if (tags == null) {
-			modelPropertiesByXmlTag.put(entity, tags = new HashMap<String, ModelContext.ModelPropertyXMLTag<?>>());
+			modelPropertiesByXmlTag.put(entity, tags = new HashMap<>());
 			Iterator<ModelProperty<? super I>> i = entity.getProperties();
 			while (i.hasNext()) {
 				ModelProperty<? super I> property = i.next();
 				if (property.getXMLElement() != null) {
-					ModelEntity accessedEntity = property.getAccessedEntity();
+					ModelEntity<?> accessedEntity = property.getAccessedEntity();
 					if (accessedEntity != null) {
 						List<ModelEntity> allDescendantsAndMe = accessedEntity.getAllDescendantsAndMe(this);
-						for (ModelEntity accessible : allDescendantsAndMe) {
-							ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<I>(property, accessible);
+						for (ModelEntity<?> accessible : allDescendantsAndMe) {
+							ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<>(property, accessible);
 							ModelPropertyXMLTag<?> put = tags.put(tag.getTag(), tag);
 							if (put != null) {
 								throw new ModelDefinitionException("Property " + property
@@ -269,7 +272,7 @@ public class ModelContext {
 						// } else if (StringConverterLibrary.getInstance().hasConverter(property.getType())) {
 					}
 					else if (modelFactory.getStringEncoder().isConvertable(property.getType())) {
-						ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<I>(property);
+						ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<>(property);
 						ModelPropertyXMLTag<?> put = tags.put(tag.getTag(), tag);
 						if (put != null) {
 							throw new ModelDefinitionException("Property " + property
@@ -283,7 +286,7 @@ public class ModelContext {
 	}
 
 	public List<ModelEntity<?>> getUpperEntities(Object object) {
-		List<ModelEntity<?>> entities = new ArrayList<ModelEntity<?>>();
+		List<ModelEntity<?>> entities = new ArrayList<>();
 		for (Class<?> i : object.getClass().getInterfaces()) {
 			appendKnownEntities(entities, i);
 		}
@@ -309,7 +312,7 @@ public class ModelContext {
 		for (ModelEntity entity : modelEntities.values()) {
 			returned.append("------------------- ").append(entity.getImplementedInterface().getSimpleName())
 					.append(" -------------------\n");
-			Iterator<ModelProperty> i;
+			Iterator<ModelProperty<?>> i;
 			try {
 				i = entity.getProperties();
 			} catch (ModelDefinitionException e) {
@@ -317,7 +320,7 @@ public class ModelContext {
 				continue;
 			}
 			while (i.hasNext()) {
-				ModelProperty property = i.next();
+				ModelProperty<?> property = i.next();
 				returned.append(property.getPropertyIdentifier()).append(" ").append(property.getCardinality()).append(" type=")
 						.append(property.getType().getSimpleName()).append("\n");
 			}

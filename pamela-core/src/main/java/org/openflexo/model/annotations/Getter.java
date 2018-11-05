@@ -39,15 +39,15 @@
 
 package org.openflexo.model.annotations;
 
-import org.openflexo.model.StringConverterLibrary.Converter;
-import org.openflexo.model.StringEncoder;
-import org.openflexo.model.factory.ModelFactory;
-
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import org.openflexo.model.StringConverterLibrary.Converter;
+import org.openflexo.model.StringEncoder;
+import org.openflexo.model.factory.ModelFactory;
 
 /**
  * Annotation for a getter
@@ -113,6 +113,15 @@ public @interface Getter {
 	 */
 	boolean ignoreType() default false;
 
+	/**
+	 * Only relevant for multiple cardinality properties. When set to true, indicates that many occurences of same object might be present
+	 * in the property (you can add the same object multiple times)<br>
+	 * Note that the equals() semantics is used here
+	 * 
+	 * @return
+	 */
+	boolean allowsMultipleOccurences() default false;
+
 	class GetterImpl implements Getter {
 		private final String value;
 		private final Cardinality cardinality;
@@ -120,15 +129,17 @@ public @interface Getter {
 		private final String defaultValue;
 		private final boolean stringConvertable;
 		private final boolean ignoreType;
+		private final boolean allowsMultipleOccurences;
 
 		public GetterImpl(String value, Cardinality cardinality, String inverse, String defaultValue, boolean stringConvertable,
-				boolean ignoreType) {
+				boolean ignoreType, boolean allowsMultipleOccurences) {
 			this.value = value;
 			this.cardinality = cardinality;
 			this.inverse = inverse;
 			this.defaultValue = defaultValue;
 			this.stringConvertable = stringConvertable;
 			this.ignoreType = ignoreType;
+			this.allowsMultipleOccurences = allowsMultipleOccurences;
 		}
 
 		@Override
@@ -164,6 +175,11 @@ public @interface Getter {
 		@Override
 		public boolean ignoreType() {
 			return ignoreType;
+		}
+
+		@Override
+		public boolean allowsMultipleOccurences() {
+			return allowsMultipleOccurences;
 		}
 	}
 }

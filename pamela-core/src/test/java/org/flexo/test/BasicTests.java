@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.flexo.model.AbstractNode;
 import org.flexo.model.ActivityNode;
 import org.flexo.model.Edge;
@@ -23,7 +22,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.model.ModelContext;
-import org.openflexo.model.exceptions.ModelDefinitionException;
 import org.openflexo.model.exceptions.UnitializedEntityException;
 import org.openflexo.model.factory.AccessibleProxyObject;
 import org.openflexo.model.factory.Clipboard;
@@ -130,11 +128,9 @@ public class BasicTests extends AbstractPAMELATest {
 		System.out.println("edge2=" + edge2);
 		assertEquals(process, edge2.getProcess());
 
-		try {
-			FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml");
+		try (FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml")) {
 			factory.serialize(process, fos);
 			fos.flush();
-			fos.close();
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
@@ -175,16 +171,12 @@ public class BasicTests extends AbstractPAMELATest {
 		startNode.setMasterAnnotation(annotation1);
 		startNode.addToOtherAnnotations(annotation2);
 
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 		String xml1 = FileUtils.fileContents(file);
 
@@ -194,15 +186,12 @@ public class BasicTests extends AbstractPAMELATest {
 		assertEquals(2, startNode.getOutgoingEdges().size());
 		assertEquals(0, activityNode.getOutgoingEdges().size());
 
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 
 		activityNode.addToOutgoingEdges(edge2);
@@ -212,15 +201,12 @@ public class BasicTests extends AbstractPAMELATest {
 		assertEquals(1, startNode.getOutgoingEdges().size());
 		assertEquals(1, activityNode.getOutgoingEdges().size());
 
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 
 		String xml3 = FileUtils.fileContents(file, "UTF-8");
@@ -259,25 +245,20 @@ public class BasicTests extends AbstractPAMELATest {
 		file.delete();
 	}
 
-	private FlexoProcess loadProcessFromFile(File file) throws ModelDefinitionException {
-
+	private FlexoProcess loadProcessFromFile(File file) {
 		FlexoProcess process = null;
 
-		FileOutputStream fos = null;
-		try {
-			FileInputStream fis = new FileInputStream(file);
-			try {
-				process = (FlexoProcess) factory.deserialize(fis);
-			} finally {
-				IOUtils.closeQuietly(fis);
-			}
-			System.out.println("Read: " + process);
-			fos = new FileOutputStream(file);
+		try (FileInputStream fis = new FileInputStream(file)) {
+			process = (FlexoProcess) factory.deserialize(fis);
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+		System.out.println("Read: " + process);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
+
 			factory.serialize(process, fos);
 		} catch (Exception e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 		return process;
 	}
@@ -403,19 +384,15 @@ public class BasicTests extends AbstractPAMELATest {
 
 		assertNotSame(edge1, edge1Copy);
 		assertNotSame(edge2, edge2Copy);
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(file);
+		try (FileOutputStream fos = new FileOutputStream(file)) {
 			factory.serialize(processCopy, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
 		} finally {
-			IOUtils.closeQuietly(fos);
 			file.delete();
 		}
-
 	}
 
 	/**
@@ -435,8 +412,10 @@ public class BasicTests extends AbstractPAMELATest {
 		process.addToNodes(startNode);
 		EndNode endNode = factory.newInstance(EndNode.class, "End");
 		process.addToNodes(endNode);
-		TokenEdge edge1 = factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
-		TokenEdge edge2 = factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
+		// Var unused TokenEdge edge1 =
+		factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
+		// Var unused TokenEdge edge2 =
+		factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
 
 		// Clone activityNode, edge1 and edge2 will be cloned as their
 		// related property @CloningStrategy is flagged as CLONE
@@ -495,8 +474,10 @@ public class BasicTests extends AbstractPAMELATest {
 		process.addToNodes(startNode);
 		EndNode endNode = factory.newInstance(EndNode.class, "End");
 		process.addToNodes(endNode);
-		TokenEdge edge1 = factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
-		TokenEdge edge2 = factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
+		// Var unused TokenEdge edge1 =
+		factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
+		// Var unused TokenEdge edge2 =
+		factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
 
 		Clipboard clipboard = factory.copy(activityNode);
 		System.out.println("Clipboard 1");
@@ -516,18 +497,13 @@ public class BasicTests extends AbstractPAMELATest {
 		ActivityNode newNode = (ActivityNode) pasted;
 		assertEquals(0, newNode.getIncomingEdges().size());
 		assertEquals(0, newNode.getOutgoingEdges().size());
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream("/tmp/TestFile.xml");
+		try (FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml")) {
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
-
 	}
 
 	/**
@@ -547,8 +523,10 @@ public class BasicTests extends AbstractPAMELATest {
 		process.addToNodes(startNode);
 		EndNode endNode = factory.newInstance(EndNode.class, "End");
 		process.addToNodes(endNode);
-		TokenEdge edge1 = factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
-		TokenEdge edge2 = factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
+		// Var unused TokenEdge edge1 =
+		factory.newInstance(TokenEdge.class, "edge1", startNode, activityNode);
+		// Var unused TokenEdge edge2 =
+		factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);
 
 		Clipboard clipboard = factory.copy(startNode, activityNode);
 		System.out.println("Clipboard");
@@ -581,7 +559,8 @@ public class BasicTests extends AbstractPAMELATest {
 		for (Object o : (List<?>) pasted) {
 			if (o instanceof ActivityNode) {
 				newActivity = (ActivityNode) o;
-			} else if (o instanceof StartNode) {
+			}
+			else if (o instanceof StartNode) {
 				newStartNode = (StartNode) o;
 			}
 		}
@@ -590,16 +569,12 @@ public class BasicTests extends AbstractPAMELATest {
 		assertEquals(0, newStartNode.getIncomingEdges().size());
 		assertEquals(1, newStartNode.getOutgoingEdges().size());
 		assertSame(newStartNode.getOutgoingEdges().get(0), newActivity.getIncomingEdges().get(0));
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream("/tmp/TestFile.xml");
+		try (FileOutputStream fos = new FileOutputStream("/tmp/TestFile.xml")) {
 			factory.serialize(process, fos);
 		} catch (FileNotFoundException e) {
 			fail(e.getMessage());
 		} catch (IOException e) {
 			fail(e.getMessage());
-		} finally {
-			IOUtils.closeQuietly(fos);
 		}
 	}
 
@@ -700,7 +675,8 @@ public class BasicTests extends AbstractPAMELATest {
 				for (Object e : inEdges) {
 					if (e == null) {
 						returned.append("null     Incoming: " + null + "\n");
-					} else {
+					}
+					else {
 						returned.append(Integer.toHexString(e.hashCode()) + " Incoming: " + e + "\n");
 					}
 				}
@@ -710,7 +686,8 @@ public class BasicTests extends AbstractPAMELATest {
 				for (Object e : outEdges) {
 					if (e == null) {
 						returned.append("null     Outgoing: " + null + "\n");
-					} else {
+					}
+					else {
 						returned.append(Integer.toHexString(e.hashCode()) + " Outgoing: " + e + "\n");
 					}
 				}
@@ -739,7 +716,7 @@ public class BasicTests extends AbstractPAMELATest {
 
 		if (o instanceof List) {
 			StringBuffer returned = new StringBuffer();
-			for (Object o2 : (List<Object>) o) {
+			for (Object o2 : (List<?>) o) {
 				returned.append(debug(o2));
 			}
 			return returned.toString();
