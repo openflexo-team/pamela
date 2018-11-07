@@ -17,7 +17,7 @@
     <scm>
         <connection>scm:git:ssh://git@github.com/openflexo-team/pamela.git</connection>
         <url>https://github.com/openflexo-team/pamela</url>
-        <tag>1.4.1</tag>
+        <tag>1.5</tag>
     </scm>
     <issueManagement>
         <system>JIRA</system>
@@ -31,7 +31,7 @@
 	Properties
       -->
     <properties>
-        <connie.version>1.4.2-SNAPSHOT</connie.version>
+        <connie.version>1.5-SNAPSHOT</connie.version>
         <javassist.version>3.18.0-GA</javassist.version>
 	    <changes.componentfilter>AND component=*</changes.componentfilter>
         <pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>
