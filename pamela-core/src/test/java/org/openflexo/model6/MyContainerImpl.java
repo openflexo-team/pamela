@@ -38,7 +38,7 @@
 
 package org.openflexo.model6;
 
-import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.pamela.factory.ModelFactory;
 
 public abstract class MyContainerImpl implements MyContainer {
 

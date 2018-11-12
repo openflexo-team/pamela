@@ -38,9 +38,9 @@
 
 package org.openflexo.model5;
 
-import org.openflexo.model.annotations.Embedded;
-import org.openflexo.model.annotations.Getter;
-import org.openflexo.model.annotations.ModelEntity;
+import org.openflexo.pamela.annotations.Embedded;
+import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.ModelEntity;
 
 @ModelEntity
 public interface MySpecializedContainer extends MyContainer<MyContents> {

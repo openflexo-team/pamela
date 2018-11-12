@@ -6,8 +6,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openflexo.model.AbstractPAMELATest;
-import org.openflexo.model.ModelContext;
-import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.resource.PAMFlexoResource;
 
 public class BasicTests2 extends AbstractPAMELATest {

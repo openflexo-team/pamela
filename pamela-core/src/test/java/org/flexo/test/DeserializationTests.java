@@ -13,13 +13,13 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.openflexo.model.ModelEntityLibrary;
-import org.openflexo.model.exceptions.ModelDefinitionException;
-import org.openflexo.model.factory.DeserializationPolicy;
-import org.openflexo.model.factory.ModelFactory;
-import org.openflexo.model.factory.SerializationPolicy;
 import org.openflexo.model4.Node;
 import org.openflexo.model4.Node.NodeImpl;
+import org.openflexo.pamela.ModelEntityLibrary;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.DeserializationPolicy;
+import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.SerializationPolicy;
 import org.openflexo.test.OrderedRunner;
 import org.openflexo.test.TestOrder;
 

@@ -38,8 +38,8 @@
 
 package org.openflexo.model3;
 
-import org.openflexo.model.annotations.Implementation;
-import org.openflexo.model.annotations.ModelEntity;
+import org.openflexo.pamela.annotations.Implementation;
+import org.openflexo.pamela.annotations.ModelEntity;
 
 @ModelEntity
 public interface MinusProcessor extends IntegerStorage {

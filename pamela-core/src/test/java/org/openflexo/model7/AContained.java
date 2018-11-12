@@ -35,8 +35,8 @@
 
 package org.openflexo.model7;
 
-import org.openflexo.model.annotations.Getter;
-import org.openflexo.model.annotations.ModelEntity;
+import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.ModelEntity;
 
 /**
  * Class Contained to test auto initialize

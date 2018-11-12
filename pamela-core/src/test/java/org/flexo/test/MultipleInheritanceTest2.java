@@ -5,11 +5,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.openflexo.model.ModelContextLibrary;
-import org.openflexo.model.ModelEntity;
-import org.openflexo.model.exceptions.ModelDefinitionException;
-import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model3.Calculator;
+import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.ModelEntity;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.ModelFactory;
 
 /**
  * Test PAMELA in multiple inheritance context<br>

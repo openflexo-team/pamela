@@ -1,14 +1,14 @@
 package org.flexo.model;
 
-import org.openflexo.model.StringConverterLibrary.Converter;
-import org.openflexo.model.annotations.Getter;
-import org.openflexo.model.annotations.Initializer;
-import org.openflexo.model.annotations.ModelEntity;
-import org.openflexo.model.annotations.Parameter;
-import org.openflexo.model.annotations.Setter;
-import org.openflexo.model.annotations.StringConverter;
-import org.openflexo.model.exceptions.InvalidDataException;
-import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.pamela.StringConverterLibrary.Converter;
+import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.Initializer;
+import org.openflexo.pamela.annotations.ModelEntity;
+import org.openflexo.pamela.annotations.Parameter;
+import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.annotations.StringConverter;
+import org.openflexo.pamela.exceptions.InvalidDataException;
+import org.openflexo.pamela.factory.ModelFactory;
 
 @ModelEntity
 public interface WKFAnnotation extends TestModelObject {

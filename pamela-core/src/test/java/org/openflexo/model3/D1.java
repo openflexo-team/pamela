@@ -38,7 +38,7 @@
 
 package org.openflexo.model3;
 
-import org.openflexo.model.annotations.ModelEntity;
+import org.openflexo.pamela.annotations.ModelEntity;
 
 @ModelEntity
 public interface D1 extends B, C {

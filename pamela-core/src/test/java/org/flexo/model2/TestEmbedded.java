@@ -1,6 +1,6 @@
 package org.flexo.model2;
 
-import org.openflexo.model.annotations.ModelEntity;
+import org.openflexo.pamela.annotations.ModelEntity;
 
 @ModelEntity
 public interface TestEmbedded {

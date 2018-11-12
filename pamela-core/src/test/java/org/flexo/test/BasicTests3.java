@@ -8,10 +8,10 @@ import org.flexo.model2.TestContainerB;
 import org.flexo.model2.TestEmbeddedA;
 import org.flexo.model2.TestEmbeddedB;
 import org.junit.Test;
-import org.openflexo.model.ModelContextLibrary;
-import org.openflexo.model.ModelEntity;
-import org.openflexo.model.exceptions.ModelDefinitionException;
-import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.ModelEntity;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.ModelFactory;
 
 /**
  * Test PAMELA in method clash context
