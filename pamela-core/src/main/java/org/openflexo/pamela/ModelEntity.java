@@ -499,13 +499,15 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 			return implementingClass;
 		}
 		if (implementationClass != null) {
-			if (implementedInterface.isAssignableFrom(implementationClass.value())) {
+			return implementingClass = implementationClass.value();
+			// This may be not required under some circumstances
+			/*if (implementedInterface.isAssignableFrom(implementationClass.value())) {
 				return implementingClass = implementationClass.value();
 			}
 			else {
 				throw new ModelDefinitionException("Class " + implementationClass.value().getName()
 						+ " is declared as an implementation class of " + this + " but does not extend " + implementedInterface.getName());
-			}
+			}*/
 		}
 		else {
 			if (getDirectSuperEntities() != null) {
@@ -1266,7 +1268,9 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						// We have found a non-abtract method which implements searched API method
 						return true;
 					}
-				} catch (SecurityException e) {} catch (NoSuchMethodException e) {}
+				} catch (SecurityException e) {
+				} catch (NoSuchMethodException e) {
+				}
 			}
 		}
 
@@ -1291,7 +1295,9 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						// We have found a non-abtract method which implements searched API method
 						return true;
 					}
-				} catch (SecurityException e) {} catch (NoSuchMethodException e) {}
+				} catch (SecurityException e) {
+				} catch (NoSuchMethodException e) {
+				}
 			}
 		}
 		// May be in parent entitities ?
