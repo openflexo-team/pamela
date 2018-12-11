@@ -2,7 +2,14 @@ dependencies {
   compile flexoUtils()
   compile connie()
   compile group: 'org.jdom', name: 'jdom2', version: '2.0.6'
-  compile group: 'org.javassist', name: 'javassist', version: '3.22.0-GA'
+  compile group: 'org.javassist', name: 'javassist', version: '3.22.0-GA' // Error when using 3.23 (see below)
 
   testCompile testUtils()
 }
+// /Users/fdagnat/git/pamela/pamela-core/src/main/java/org/openflexo/pamela/factory/ModelFactory.java:399: error: incompatible types: Class<CAP#1> cannot be converted to Class<? extends I>
+//                        return proxyFactory.getSuperclass();
+//                                                         ^
+//  where I is a type-variable:
+//    I extends Object declared in method <I>getImplementingClassForInterface(Class<I>)
+//  where CAP#1 is a fresh type-variable:
+//    CAP#1 extends Object from capture of ?
