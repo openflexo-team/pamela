@@ -50,11 +50,13 @@ import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.StringConverterLibrary.Converter;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy;
+import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
 import org.openflexo.pamela.annotations.ClosureCondition;
 import org.openflexo.pamela.annotations.ComplexEmbedded;
 import org.openflexo.pamela.annotations.DeletionCondition;
 import org.openflexo.pamela.annotations.Embedded;
 import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.annotations.Initialize;
 import org.openflexo.pamela.annotations.PastingPoint;
 import org.openflexo.pamela.annotations.Reindexer;
@@ -63,8 +65,6 @@ import org.openflexo.pamela.annotations.ReturnedValue;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.XMLAttribute;
 import org.openflexo.pamela.annotations.XMLElement;
-import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
-import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
@@ -1076,6 +1076,13 @@ public class ModelProperty<I> {
 
 	public boolean isSerializable() {
 		return getXMLAttribute() != null || getXMLElement() != null;
+	}
+
+	public boolean isRelevantForEqualityComputation() {
+		if (getXMLAttribute() != null && getXMLAttribute().ignoreForEquality()) {
+			return false;
+		}
+		return isSerializable();
 	}
 
 	public StrategyType getCloningStrategy() {

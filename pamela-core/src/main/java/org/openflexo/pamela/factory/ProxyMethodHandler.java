@@ -76,17 +76,17 @@ import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.PamelaUtils;
 import org.openflexo.pamela.annotations.Adder;
+import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
 import org.openflexo.pamela.annotations.ComplexEmbedded;
 import org.openflexo.pamela.annotations.Embedded;
 import org.openflexo.pamela.annotations.Finder;
 import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.annotations.PastingPoint;
 import org.openflexo.pamela.annotations.Reindexer;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
-import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
-import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
@@ -1853,12 +1853,13 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
-			if (p.isSerializable()) {
+			if (p.isRelevantForEqualityComputation()) {
 				switch (p.getCardinality()) {
 					case SINGLE:
 						Object singleValue = invokeGetter(p);
 						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
 						if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
+							// System.out.println("Equals fails because of SINGLE property " + p);
 							return false;
 						}
 						break;
@@ -1866,6 +1867,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						List<Object> values = (List) invokeGetter(p);
 						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
 						if (!isEqual(values, oppositeValues, new HashSet<>())) {
+							// System.out.println("Equals fails because of LIST property " + p);
 							return false;
 						}
 						break;
