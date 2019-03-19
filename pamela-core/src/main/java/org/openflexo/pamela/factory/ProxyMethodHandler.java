@@ -1921,7 +1921,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
 
-			if (p.isSerializable()) {
+			if (!p.isDerived()) {
 				// System.out.println("[" + Thread.currentThread().getName() + "] Propriete " + p.getPropertyIdentifier());
 
 				switch (p.getCardinality()) {

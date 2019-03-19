@@ -45,8 +45,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.openflexo.pamela.StringEncoder;
 import org.openflexo.pamela.StringConverterLibrary.Converter;
+import org.openflexo.pamela.StringEncoder;
 import org.openflexo.pamela.factory.ModelFactory;
 
 /**
@@ -122,6 +122,15 @@ public @interface Getter {
 	 */
 	boolean allowsMultipleOccurences() default false;
 
+	/**
+	 * Indicates that the underlying property is derived: no need to test it for equality comparison neither for updateWith()
+	 * 
+	 * The default value is <code>false</code>
+	 * 
+	 * @return true if underlying property is derived
+	 */
+	boolean isDerived() default false;
+
 	class GetterImpl implements Getter {
 		private final String value;
 		private final Cardinality cardinality;
@@ -130,9 +139,10 @@ public @interface Getter {
 		private final boolean stringConvertable;
 		private final boolean ignoreType;
 		private final boolean allowsMultipleOccurences;
+		private final boolean isDerived;
 
 		public GetterImpl(String value, Cardinality cardinality, String inverse, String defaultValue, boolean stringConvertable,
-				boolean ignoreType, boolean allowsMultipleOccurences) {
+				boolean ignoreType, boolean allowsMultipleOccurences, boolean isDerived) {
 			this.value = value;
 			this.cardinality = cardinality;
 			this.inverse = inverse;
@@ -140,6 +150,7 @@ public @interface Getter {
 			this.stringConvertable = stringConvertable;
 			this.ignoreType = ignoreType;
 			this.allowsMultipleOccurences = allowsMultipleOccurences;
+			this.isDerived = isDerived;
 		}
 
 		@Override
@@ -180,6 +191,11 @@ public @interface Getter {
 		@Override
 		public boolean allowsMultipleOccurences() {
 			return allowsMultipleOccurences;
+		}
+
+		@Override
+		public boolean isDerived() {
+			return isDerived;
 		}
 	}
 }

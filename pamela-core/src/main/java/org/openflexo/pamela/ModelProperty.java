@@ -663,6 +663,7 @@ public class ModelProperty<I> {
 			boolean stringConvertable;
 			boolean ignoreType;
 			boolean allowsMultipleOccurences;
+			boolean isDerived;
 
 			if (getGetter() != null) {
 				cardinality = getGetter().cardinality();
@@ -686,14 +687,16 @@ public class ModelProperty<I> {
 				stringConvertable = property.getGetter().isStringConvertable();
 				ignoreType = property.getGetter().ignoreType();
 				allowsMultipleOccurences = property.getGetter().allowsMultipleOccurences();
+				isDerived = property.getGetter().isDerived();
 			}
 			else {
 				stringConvertable = getGetter().isStringConvertable();
 				ignoreType = getGetter().ignoreType();
 				allowsMultipleOccurences = getGetter().allowsMultipleOccurences();
+				isDerived = getGetter().isDerived();
 			}
 			getter = new Getter.GetterImpl(propertyIdentifier, cardinality, inverse, defaultValue, stringConvertable, ignoreType,
-					allowsMultipleOccurences);
+					allowsMultipleOccurences, isDerived);
 		}
 		if (rulingProperty != null && rulingProperty.getSetter() != null) {
 			setter = rulingProperty.getSetter();
@@ -1074,12 +1077,19 @@ public class ModelProperty<I> {
 		return complexEmbedded;
 	}
 
+	public boolean isDerived() {
+		if (getGetter() != null) {
+			return getGetter().isDerived();
+		}
+		return false;
+	}
+
 	public boolean isSerializable() {
-		return getXMLAttribute() != null || getXMLElement() != null;
+		return !isDerived() && getXMLAttribute() != null || getXMLElement() != null;
 	}
 
 	public boolean isRelevantForEqualityComputation() {
-		if (getXMLAttribute() != null && getXMLAttribute().ignoreForEquality()) {
+		if (!isDerived() && getXMLAttribute() != null && getXMLAttribute().ignoreForEquality()) {
 			return false;
 		}
 		return isSerializable();
