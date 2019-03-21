@@ -316,6 +316,12 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	}
 
+	protected void finalizeImport() throws ModelDefinitionException {
+		for (ModelProperty<? super I> property : properties.values()) {
+			property.finalizeImport();
+		}
+	}
+
 	private static String getPropertyIdentifier(Method m) {
 		String propertyIdentifier = null;
 		Getter aGetter = m.getAnnotation(Getter.class);

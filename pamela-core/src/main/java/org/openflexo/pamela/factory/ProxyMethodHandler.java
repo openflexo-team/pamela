@@ -926,6 +926,24 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
+	public void invokeUpdater(ModelProperty<? super I> property, Object value) {
+
+		if (property.getUpdaterMethod() == null) {
+			System.err.println("Inconsistent data: cannot find updater for " + property);
+			return;
+		}
+
+		try {
+			property.getUpdaterMethod().invoke(getObject(), value);
+		} catch (IllegalArgumentException e) {
+			throw new ModelExecutionException(e);
+		} catch (IllegalAccessException e) {
+			throw new ModelExecutionException(e);
+		} catch (InvocationTargetException e) {
+			throw new ModelExecutionException(e);
+		}
+	}
+
 	public void invokeAdder(ModelProperty<? super I> property, Object value) {
 		try {
 			property.getAdderMethod().invoke(getObject(), value);
@@ -1190,7 +1208,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		// Is it a real change ?
 		if (!isEqual(oldValue, value, new HashSet<>())) {
 			// System.out.println("Change for " + oldValue + " to " + value);
-			boolean hasInverse = property.hasInverseProperty();
+			boolean hasInverse = property.hasExplicitInverseProperty();
 
 			scheduledSets.put(property, value);
 
@@ -1423,7 +1441,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			}
 			firePropertyChange(property.getPropertyIdentifier(), null, value);
 			// Handle inverse property for new value
-			if (property.hasInverseProperty() && value != null) {
+			if (property.hasExplicitInverseProperty() && value != null) {
 				ProxyMethodHandler<Object> oppositeHandler = getModelFactory().getHandler(value);
 				if (oppositeHandler == null) {
 					// Should not happen
@@ -1519,7 +1537,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			list.remove(value);
 			firePropertyChange(property.getPropertyIdentifier(), value, null);
 			// Handle inverse property for new value
-			if (property.hasInverseProperty() && value != null) {
+			if (property.hasExplicitInverseProperty() && value != null) {
 				ProxyMethodHandler<Object> oppositeHandler = getModelFactory().getHandler(value);
 				if (oppositeHandler == null) {
 					// Should not happen
@@ -1918,8 +1936,13 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		} catch (ModelDefinitionException e) {
 			return false;
 		}
+
+		System.out.println("****** updateWith in " + getModelEntity());
+
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
+
+			System.out.println("       > " + p.getPropertyIdentifier() + " derived=" + p.isDerived());
 
 			if (!p.isDerived()) {
 				// System.out.println("[" + Thread.currentThread().getName() + "] Propriete " + p.getPropertyIdentifier());
@@ -1930,15 +1953,20 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
 						// System.out.println("[" + Thread.currentThread().getName() + "] Ici-1 avec " + p.getPropertyIdentifier());
 						if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
-							if (p.getAccessedEntity() != null && singleValue instanceof AccessibleProxyObject) {
-								// System.out
-								// .println("[" + Thread.currentThread().getName() + "] Ici-3 avec " + p.getPropertyIdentifier());
-								((AccessibleProxyObject) singleValue).updateWith(oppositeValue);
+							if (p.getUpdater() != null) {
+								invokeUpdater(p, oppositeValue);
 							}
 							else {
-								// System.out
-								// .println("[" + Thread.currentThread().getName() + "] Ici-4 avec " + p.getPropertyIdentifier());
-								invokeSetter(p, oppositeValue);
+								if (p.getAccessedEntity() != null && singleValue instanceof AccessibleProxyObject) {
+									// System.out
+									// .println("[" + Thread.currentThread().getName() + "] Ici-3 avec " + p.getPropertyIdentifier());
+									((AccessibleProxyObject) singleValue).updateWith(oppositeValue);
+								}
+								else {
+									// System.out
+									// .println("[" + Thread.currentThread().getName() + "] Ici-4 avec " + p.getPropertyIdentifier());
+									invokeSetter(p, oppositeValue);
+								}
 							}
 						}
 						break;
@@ -1947,7 +1975,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						List<Object> values = invokeGetterForListCardinality(p);
 						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
 						ListMatching matching = match(values, oppositeValues);
-						// System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
+						System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
 						for (Matched m : matching.matchedList) {
 							// System.out.println("match " + m.idx1 + " with " + m.idx2);
 							Object o1 = values.get(m.idx1);

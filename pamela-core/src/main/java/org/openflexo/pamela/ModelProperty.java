@@ -42,6 +42,7 @@ package org.openflexo.pamela;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.text.Collator;
 import java.util.Arrays;
 import java.util.List;
 
@@ -63,6 +64,7 @@ import org.openflexo.pamela.annotations.Reindexer;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.ReturnedValue;
 import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.annotations.Updater;
 import org.openflexo.pamela.annotations.XMLAttribute;
 import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.exceptions.InvalidDataException;
@@ -83,6 +85,7 @@ public class ModelProperty<I> {
 	private final Adder adder;
 	private final Remover remover;
 	private final Reindexer reindexer;
+	private final Updater updater;
 	private final XMLAttribute xmlAttribute;
 	private final XMLElement xmlElement;
 	private final ReturnedValue returnedValue;
@@ -99,8 +102,12 @@ public class ModelProperty<I> {
 	private final Method adderMethod;
 	private final Method removerMethod;
 	private final Method reindexerMethod;
+	private final Method updaterMethod;
 
 	private Cardinality cardinality;
+
+	private ModelProperty<?> inverseProperty;
+	private boolean isDerivedRelativeToInverseProperty = false;
 
 	/* Computed values of the model property */
 	private Class<?> type;
@@ -123,11 +130,13 @@ public class ModelProperty<I> {
 		PastingPoint setPastingPoint = null;
 		PastingPoint addPastingPoint = null;
 		Initialize initialize = null;
+		Updater updater = null;
 		Method getterMethod = null;
 		Method setterMethod = null;
 		Method adderMethod = null;
 		Method removerMethod = null;
 		Method reindexerMethod = null;
+		Method updaterMethod = null;
 		Class<I> implementedInterface = modelEntity.getImplementedInterface();
 
 		for (Method m : implementedInterface.getDeclaredMethods()) {
@@ -143,6 +152,7 @@ public class ModelProperty<I> {
 				Adder anAdder = m.getAnnotation(Adder.class);
 				Remover aRemover = m.getAnnotation(Remover.class);
 				Reindexer aReindexer = m.getAnnotation(Reindexer.class);
+				Updater anUpdater = m.getAnnotation(Updater.class);
 				if (aGetter == null && aSetter == null && anAdder == null && aRemover == null && aReindexer == null) {
 					for (Method m1 : ReflectionUtils.getOverridenMethods(m)) {
 						aGetter = m1.getAnnotation(Getter.class);
@@ -150,7 +160,9 @@ public class ModelProperty<I> {
 						anAdder = m1.getAnnotation(Adder.class);
 						aRemover = m1.getAnnotation(Remover.class);
 						aReindexer = m1.getAnnotation(Reindexer.class);
-						if (aGetter != null || aSetter != null || anAdder != null || aRemover != null || aReindexer != null) {
+						anUpdater = m1.getAnnotation(Updater.class);
+						if (aGetter != null || aSetter != null || anAdder != null || aRemover != null || aReindexer != null
+								|| anUpdater != null) {
 							break;
 						}
 					}
@@ -214,18 +226,28 @@ public class ModelProperty<I> {
 						reindexerMethod = m;
 					}
 				}
+				if (anUpdater != null && anUpdater.value().equals(propertyIdentifier)) {
+					if (updater != null) {
+						throw new ModelDefinitionException(
+								"Duplicate updater '" + propertyIdentifier + "' defined for " + implementedInterface);
+					}
+					else {
+						updater = anUpdater;
+						updaterMethod = m;
+					}
+				}
 			}
 		}
-		return new ModelProperty<>(modelEntity, propertyIdentifier, getter, setter, adder, remover, reindexer, xmlAttribute, xmlElement,
-				returnedValue, embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint, getterMethod,
-				setterMethod, adderMethod, removerMethod, reindexerMethod);
+		return new ModelProperty<>(modelEntity, propertyIdentifier, getter, setter, adder, remover, reindexer, updater, xmlAttribute,
+				xmlElement, returnedValue, embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint,
+				getterMethod, setterMethod, adderMethod, removerMethod, reindexerMethod, updaterMethod);
 	}
 
 	protected ModelProperty(ModelEntity<I> modelEntity, String propertyIdentifier, Getter getter, Setter setter, Adder adder,
-			Remover remover, Reindexer reindexer, XMLAttribute xmlAttribute, XMLElement xmlElement, ReturnedValue returnedValue,
-			Embedded embedded, Initialize initialize, ComplexEmbedded complexEmbedded, CloningStrategy cloningStrategy,
-			PastingPoint setPastingPoint, PastingPoint addPastingPoint, Method getterMethod, Method setterMethod, Method adderMethod,
-			Method removerMethod, Method reindexerMethod) {
+			Remover remover, Reindexer reindexer, Updater updater, XMLAttribute xmlAttribute, XMLElement xmlElement,
+			ReturnedValue returnedValue, Embedded embedded, Initialize initialize, ComplexEmbedded complexEmbedded,
+			CloningStrategy cloningStrategy, PastingPoint setPastingPoint, PastingPoint addPastingPoint, Method getterMethod,
+			Method setterMethod, Method adderMethod, Method removerMethod, Method reindexerMethod, Method updaterMethod) {
 		this.modelEntity = modelEntity;
 		this.propertyIdentifier = propertyIdentifier;
 		this.getter = getter;
@@ -233,6 +255,7 @@ public class ModelProperty<I> {
 		this.adder = adder;
 		this.remover = remover;
 		this.reindexer = reindexer;
+		this.updater = updater;
 		this.xmlAttribute = xmlAttribute;
 		this.xmlElement = xmlElement;
 		this.returnedValue = returnedValue;
@@ -246,6 +269,7 @@ public class ModelProperty<I> {
 		this.adderMethod = adderMethod;
 		this.removerMethod = removerMethod;
 		this.reindexerMethod = reindexerMethod;
+		this.updaterMethod = updaterMethod;
 		this.initialize = initialize;
 		if (setterMethod != null) {
 			PastingPoint pastingPoint = setterMethod.getAnnotation(PastingPoint.class);
@@ -419,6 +443,45 @@ public class ModelProperty<I> {
 					break;
 			}
 		}
+
+	}
+
+	protected void finalizeImport() throws ModelDefinitionException {
+		if (hasExplicitInverseProperty()) {
+			if (getAccessedEntity() != null) {
+				inverseProperty = getInverseProperty(getAccessedEntity());
+				if (inverseProperty != null) {
+					inverseProperty.inverseProperty = this;
+					if (getCardinality() == Cardinality.SINGLE) {
+						if (inverseProperty.getCardinality() != Cardinality.SINGLE) {
+							// In this case, property with single cardinality is considered as derived
+							isDerivedRelativeToInverseProperty = true;
+							inverseProperty.isDerivedRelativeToInverseProperty = false;
+						}
+					}
+					else { // This property has multiple cardinality
+						if (inverseProperty.getCardinality() == Cardinality.SINGLE) {
+							// In this case, property with single cardinality is considered as derived
+							isDerivedRelativeToInverseProperty = false;
+							inverseProperty.isDerivedRelativeToInverseProperty = true;
+						}
+					}
+
+					if (getCardinality() == Cardinality.SINGLE && inverseProperty.getCardinality() == Cardinality.SINGLE) {
+						// Both properties are inverse
+						// We choose arbitrary which one is derived
+						if (Collator.getInstance().compare(getPropertyIdentifier(), inverseProperty.getPropertyIdentifier()) < 0) {
+							isDerivedRelativeToInverseProperty = false;
+							inverseProperty.isDerivedRelativeToInverseProperty = true;
+						}
+						else {
+							isDerivedRelativeToInverseProperty = true;
+							inverseProperty.isDerivedRelativeToInverseProperty = false;
+						}
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -447,7 +510,7 @@ public class ModelProperty<I> {
 				return "Cardinality " + getCardinality() + " is not equal to " + property.getCardinality();
 			}
 		}
-		if (hasInverseProperty() && !property.getGetter().inverse().equals(Getter.UNDEFINED)
+		if (hasExplicitInverseProperty() && !property.getGetter().inverse().equals(Getter.UNDEFINED)
 				&& !getGetter().inverse().equals(property.getGetter().inverse())) {
 			if (rulingProperty == null || rulingProperty.getGetter() == null
 					|| rulingProperty.getGetter().inverse().equals(Getter.UNDEFINED)) {
@@ -639,6 +702,7 @@ public class ModelProperty<I> {
 		Adder adder = null;
 		Remover remover = null;
 		Reindexer reindexer = null;
+		Updater updater = null;
 		XMLAttribute xmlAttribute = null;
 		XMLElement xmlElement = null;
 		ReturnedValue returnedValue = null;
@@ -653,6 +717,7 @@ public class ModelProperty<I> {
 		Method adderMethod = null;
 		Method removerMethod = null;
 		Method reindexerMethod = null;
+		Method updaterMethod = null;
 		if (rulingProperty != null && rulingProperty.getGetter() != null) {
 			getter = rulingProperty.getGetter();
 		}
@@ -740,6 +805,18 @@ public class ModelProperty<I> {
 			}
 			else if (property.getReindexer() != null) {
 				reindexer = property.getReindexer();
+			}
+		}
+
+		if (rulingProperty != null && rulingProperty.getUpdater() != null) {
+			updater = rulingProperty.getUpdater();
+		}
+		else {
+			if (getUpdater() != null) {
+				updater = getUpdater();
+			}
+			else if (property.getUpdater() != null) {
+				updater = property.getUpdater();
 			}
 		}
 
@@ -840,6 +917,18 @@ public class ModelProperty<I> {
 			}
 		}
 
+		if (rulingProperty != null && rulingProperty.getUpdaterMethod() != null) {
+			updaterMethod = rulingProperty.getUpdaterMethod();
+		}
+		else {
+			if (getUpdaterMethod() != null) {
+				updaterMethod = getUpdaterMethod();
+			}
+			else {
+				updaterMethod = property.getUpdaterMethod();
+			}
+		}
+
 		if (rulingProperty != null && (rulingProperty.getXMLAttribute() != null || rulingProperty.getXMLElement() != null)) {
 			xmlAttribute = rulingProperty.getXMLAttribute();
 			xmlElement = rulingProperty.getXMLElement();
@@ -907,9 +996,9 @@ public class ModelProperty<I> {
 			setPastingPoint = rulingProperty.getSetPastingPoint();
 		}
 
-		return new ModelProperty<>(getModelEntity(), getPropertyIdentifier(), getter, setter, adder, remover, reindexer, xmlAttribute,
-				xmlElement, returnedValue, embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint,
-				getterMethod, setterMethod, adderMethod, removerMethod, reindexerMethod);
+		return new ModelProperty<>(getModelEntity(), getPropertyIdentifier(), getter, setter, adder, remover, reindexer, updater,
+				xmlAttribute, xmlElement, returnedValue, embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint,
+				addPastingPoint, getterMethod, setterMethod, adderMethod, removerMethod, reindexerMethod, updaterMethod);
 	}
 
 	final public ModelEntity<I> getModelEntity() {
@@ -942,6 +1031,10 @@ public class ModelProperty<I> {
 
 	public Reindexer getReindexer() {
 		return reindexer;
+	}
+
+	public Updater getUpdater() {
+		return updater;
 	}
 
 	public XMLAttribute getXMLAttribute() {
@@ -991,6 +1084,10 @@ public class ModelProperty<I> {
 		return reindexerMethod;
 	}
 
+	public Method getUpdaterMethod() {
+		return updaterMethod;
+	}
+
 	private Object defaultValue;
 
 	public Object getDefaultValue(ModelFactory factory) throws InvalidDataException {
@@ -1034,11 +1131,22 @@ public class ModelProperty<I> {
 	}
 
 	public boolean hasInverseProperty() {
+		if (hasExplicitInverseProperty()) {
+			return true;
+		}
+		return getDefaultInverseProperty() != null;
+	}
+
+	public boolean hasExplicitInverseProperty() {
 		return !getGetter().inverse().equals(Getter.UNDEFINED);
 	}
 
+	public ModelProperty<?> getDefaultInverseProperty() {
+		return inverseProperty;
+	}
+
 	public <T> ModelProperty<? super T> getInverseProperty(ModelEntity<T> oppositeEntity) throws ModelDefinitionException {
-		if (hasInverseProperty()) {
+		if (hasExplicitInverseProperty()) {
 			if (oppositeEntity == null) {
 				throw new ModelDefinitionException(getModelEntity() + ": Cannot find opposite entity " + getType());
 			}
@@ -1078,9 +1186,16 @@ public class ModelProperty<I> {
 	}
 
 	public boolean isDerived() {
-		if (getGetter() != null) {
-			return getGetter().isDerived();
+
+		// When explicitely marked as derived, return true
+		if (getGetter() != null && getGetter().isDerived()) {
+			return true;
 		}
+
+		if (hasInverseProperty()) {
+			return isDerivedRelativeToInverseProperty;
+		}
+
 		return false;
 	}
 

@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+
 import javax.annotation.Nonnull;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
@@ -127,6 +128,13 @@ public class ModelContext {
 		appendEntity(modelEntity, new HashSet<>());
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
+		finalizeImport();
+	}
+
+	private void finalizeImport() throws ModelDefinitionException {
+		for (ModelEntity<?> modelEntity : modelEntities.values()) {
+			modelEntity.finalizeImport();
+		}
 	}
 
 	public ModelContext(Class<?> baseClass, List<ModelContext> contexts) throws ModelDefinitionException {
@@ -152,6 +160,7 @@ public class ModelContext {
 		}
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
+		finalizeImport();
 	}
 
 	public ModelContext(List<Class<?>> baseClasses) throws ModelDefinitionException {
