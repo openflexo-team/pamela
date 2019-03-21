@@ -1937,12 +1937,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return false;
 		}
 
-		System.out.println("****** updateWith in " + getModelEntity());
+		// System.out.println("****** updateWith in " + getModelEntity());
 
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
 
-			System.out.println("       > " + p.getPropertyIdentifier() + " derived=" + p.isDerived());
+			// System.out.println(" > " + p.getPropertyIdentifier() + " derived=" + p.isDerived());
 
 			if (!p.isDerived()) {
 				// System.out.println("[" + Thread.currentThread().getName() + "] Propriete " + p.getPropertyIdentifier());
@@ -1975,7 +1975,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						List<Object> values = invokeGetterForListCardinality(p);
 						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
 						ListMatching matching = match(values, oppositeValues);
-						System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
+						// System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
 						for (Matched m : matching.matchedList) {
 							// System.out.println("match " + m.idx1 + " with " + m.idx2);
 							Object o1 = values.get(m.idx1);
