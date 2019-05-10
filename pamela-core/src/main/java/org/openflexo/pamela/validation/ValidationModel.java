@@ -293,7 +293,8 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		return localizedInContext(issue.getDetailedInformations(), issue);
 	}
 
-	public final String localizedFixProposal(FixProposal<?, ?> proposal) {
+	// We dont type here, otherwise it does not work on FixIssuePanel.fib
+	public final String localizedFixProposal(FixProposal proposal) {
 		if (proposal == null) {
 			return null;
 		}
