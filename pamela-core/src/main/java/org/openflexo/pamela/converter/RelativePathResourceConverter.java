@@ -45,7 +45,10 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.rm.Resource;
 
 /**
- * A converter that allows to address a {@link Resource} relatively to another {@link Resource} (the container resource)
+ * A converter that allows to address a {@link Resource} relatively to another {@link Resource} (the container resource)<br>
+ * 
+ * This converter also manage an alternative container resource
+ * 
  * 
  * @author sylvain
  *
@@ -56,6 +59,7 @@ public class RelativePathResourceConverter extends Converter<Resource> {
 			.getLogger(RelativePathResourceConverter.class.getPackage().getName());
 
 	private Resource containerResource;
+	private Resource alternativeContainerResource;
 
 	public RelativePathResourceConverter(Resource containerResource) {
 		super(Resource.class);
@@ -70,14 +74,28 @@ public class RelativePathResourceConverter extends Converter<Resource> {
 		this.containerResource = containerResource;
 	}
 
+	public Resource getAlternativeContainerResource() {
+		return alternativeContainerResource;
+	}
+
+	public void setAlternativeContainerResource(Resource alternativeContainerResource) {
+		this.alternativeContainerResource = alternativeContainerResource;
+	}
+
 	@Override
 	public Resource convertFromString(String value, ModelFactory factory) {
 
-		// System.out.println("Je cherche la resource " + value + " depuis " + containerResource);
+		// System.out.println("Je cherche " + value);
 
 		Resource resourceloc = containerResource.locateResource(value);
 
-		// System.out.println("Je trouve " + resourceloc);
+		// System.out.println("Je trouve " + resourceloc + " containerResource=" + containerResource);
+
+		if (resourceloc == null && alternativeContainerResource != null) {
+			resourceloc = alternativeContainerResource.locateResource(value);
+		}
+
+		// System.out.println("Je trouve " + resourceloc + " alternativeContainerResource=" + alternativeContainerResource);
 
 		if (logger.isLoggable(Level.FINE)) {
 			logger.fine("********* convertFromString " + value + " return " + resourceloc.toString());
@@ -87,11 +105,47 @@ public class RelativePathResourceConverter extends Converter<Resource> {
 
 	@Override
 	public String convertToString(Resource value) {
+
+		// System.out.println("Je cherche a encoder la resource " + value + " depuis " + containerResource);
+		// System.out.println("Je peux aussi essayer avec " + value + " depuis " + alternativeContainerResource);
+
+		/*if (value instanceof FileResourceImpl) {
+			if (containerResource != null) {
+				System.out.println(containerResource.computeRelativePath(value));
+				System.out.println("distance: "
+						+ FileUtils.distance(((FileResourceImpl) value).getFile(), ((FileResourceImpl) containerResource).getFile()));
+			}
+			if (alternativeContainerResource != null) {
+				System.out.println(alternativeContainerResource.computeRelativePath(value));
+				System.out.println("distance: " + FileUtils.distance(((FileResourceImpl) value).getFile(),
+						((FileResourceImpl) alternativeContainerResource).getFile()));
+			}
+		}*/
+
 		if (containerResource == null) {
-			logger.warning("Could not compute relative path of " + value + " with RelativePathConverter bound to containerResource=null");
+			if (alternativeContainerResource != null) {
+				return alternativeContainerResource.computeRelativePath(value);
+			}
+			logger.warning("Could not compute relative path of " + value
+					+ " with RelativePathConverter bound to containerResource=null and alternativeContainerResource=null");
 			return null;
 		}
-		return containerResource.computeRelativePath(value);
+		else {
+			if (alternativeContainerResource != null) {
+				int d1 = containerResource.distance(value);
+				int d2 = alternativeContainerResource.distance(value);
+				if (d1 < d2) {
+					// System.out.println("Du coup on retourne " + containerResource.computeRelativePath(value));
+					return containerResource.computeRelativePath(value);
+				}
+				else {
+					// System.out.println("Du coup2 on retourne " + alternativeContainerResource.computeRelativePath(value));
+					return alternativeContainerResource.computeRelativePath(value);
+				}
+			}
+			return containerResource.computeRelativePath(value);
+		}
+
 	}
 
 }
