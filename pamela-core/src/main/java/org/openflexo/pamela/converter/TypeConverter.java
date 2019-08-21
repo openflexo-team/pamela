@@ -183,7 +183,7 @@ public class TypeConverter extends Converter<Type> {
 			if (!t.isResolved()) {
 				// System.out.println("resolve");
 				CustomTypeFactory<?> customTypeFactory = factories.get(t.getClass());
-				t.resolve(customTypeFactory);
+				t.resolve(/*customTypeFactory*/);
 			}
 		}
 	}
