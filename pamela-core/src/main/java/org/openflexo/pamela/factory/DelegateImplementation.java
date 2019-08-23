@@ -140,45 +140,40 @@ public class DelegateImplementation<I> extends ProxyFactory implements MethodHan
 
 		// In this case, we address an existing method in delegated implementation
 		// We should invoke it, but before that, we might intercept the call to notify UndoManager of the execution of a new UndoableEdit
-		if (proceed != null) {
-			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
-			if (property != null) {
-				I masterObject = masterMethodHandler.getObject();
-				if (PamelaUtils.methodIsEquivalentTo(method, property.getSetterMethod())) {
-					// System.out.println("DETECTS SET with " + proceed + " instead of " + method);
-					Object oldValue = masterMethodHandler.invokeGetter(property);
-					if (getUndoManager() != null) {
-						if (oldValue != args[0]) {
-							getUndoManager().addEdit(
-									new SetCommand<>(masterObject, getModelEntity(), property, oldValue, args[0], getModelFactory()));
-						}
-					}
-				}
-				if (PamelaUtils.methodIsEquivalentTo(method, property.getAdderMethod())) {
-					// System.out.println("DETECTS ADD with " + proceed + " instead of " + method);
-					if (getUndoManager() != null) {
-						getUndoManager().addEdit(new AddCommand<>(masterObject, getModelEntity(), property, args[0], getModelFactory()));
-					}
-				}
-				if (PamelaUtils.methodIsEquivalentTo(method, property.getRemoverMethod())) {
-					// System.out.println("DETECTS REMOVE with " + proceed + " instead of " + method);
-					if (getUndoManager() != null) {
-						getUndoManager().addEdit(new RemoveCommand<>(masterObject, getModelEntity(), property, args[0], getModelFactory()));
+
+		ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
+		if (property != null) {
+			I masterObject = masterMethodHandler.getObject();
+			if (PamelaUtils.methodIsEquivalentTo(method, property.getSetterMethod())) {
+				// System.out.println("DETECTS SET with " + proceed + " instead of " + method);
+				Object oldValue = masterMethodHandler.invokeGetter(property);
+				if (getUndoManager() != null) {
+					if (oldValue != args[0]) {
+						getUndoManager()
+								.addEdit(new SetCommand<>(masterObject, getModelEntity(), property, oldValue, args[0], getModelFactory()));
 					}
 				}
 			}
-			try {
-				// Now we really invoke the method (which is a real implementation in delegated implementation)
-				return proceed.invoke(self, args);
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-				throw new ModelExecutionException(e.getCause());
+			if (PamelaUtils.methodIsEquivalentTo(method, property.getAdderMethod())) {
+				// System.out.println("DETECTS ADD with " + proceed + " instead of " + method);
+				if (getUndoManager() != null) {
+					getUndoManager().addEdit(new AddCommand<>(masterObject, getModelEntity(), property, args[0], getModelFactory()));
+				}
+			}
+			if (PamelaUtils.methodIsEquivalentTo(method, property.getRemoverMethod())) {
+				// System.out.println("DETECTS REMOVE with " + proceed + " instead of " + method);
+				if (getUndoManager() != null) {
+					getUndoManager().addEdit(new RemoveCommand<>(masterObject, getModelEntity(), property, args[0], getModelFactory()));
+				}
 			}
 		}
 
-		// Otherwise, we should check if this delegated implementation has a real implementation of supplied method
-		else if (handleMethod(method)) {
+		// We should check if this delegated implementation has a real implementation of supplied method
+		// AND that method to execute is not the one of delegateImplementationClass
+
+		if (handleMethod(method) && (method.getDeclaringClass() != delegateImplementationClass)) {
 			// (The answer is yes)
+			// System.out.println("We have a special impl for " + method + " in " + delegateImplementationClass);
 			try {
 				// Now, we must find which method in delegated implementation really implements supplied method
 				Method localImplementation = localImplementationFor(method);
@@ -187,7 +182,17 @@ public class DelegateImplementation<I> extends ProxyFactory implements MethodHan
 				// We just have now to call that method
 				// (Note that we will be redirected in this invoke(...) method, but the argument proceed will carry the method to invoke)
 				return localImplementation.invoke(delegateObject, args);
-				// return method.invoke(self, args);
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+				throw new ModelExecutionException(e.getCause());
+			}
+		}
+
+		// Otherwise, if proceed is not null
+		if (proceed != null) {
+			try {
+				// Now we really invoke the method (which is a real implementation in delegated implementation)
+				return proceed.invoke(self, args);
 			} catch (InvocationTargetException e) {
 				e.printStackTrace();
 				throw new ModelExecutionException(e.getCause());
@@ -213,8 +218,6 @@ public class DelegateImplementation<I> extends ProxyFactory implements MethodHan
 			}
 		}
 	}
-
-	// private int prout = 0;
 
 	public I getMasterObject() {
 		return masterMethodHandler.getObject();
