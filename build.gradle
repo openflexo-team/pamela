@@ -1,5 +1,4 @@
 buildscript {
-    configurations.classpath.resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
     repositories {
         maven { url uri('https://maven.openflexo.org/artifactory/openflexo-deps/') }
     }
@@ -11,9 +10,3 @@ buildscript {
 
 version = "1.5"
 apply plugin: 'org.openflexo.buildconfig'
-
-subprojects {
-	tasks.withType(Test) {
-		jvmArgs += ["-Djava.awt.headless=true"]
-    }
-}
