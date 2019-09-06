@@ -468,15 +468,28 @@ public class ModelProperty<I> {
 					}
 
 					if (getCardinality() == Cardinality.SINGLE && inverseProperty.getCardinality() == Cardinality.SINGLE) {
-						// Both properties are inverse
-						// We choose arbitrary which one is derived
-						if (Collator.getInstance().compare(getPropertyIdentifier(), inverseProperty.getPropertyIdentifier()) < 0) {
-							isDerivedRelativeToInverseProperty = false;
-							inverseProperty.isDerivedRelativeToInverseProperty = true;
+						if (getGetter().isDerived() != inverseProperty.getGetter().isDerived()) {
+							// One property is explicitely declared as derived
+							if (inverseProperty.getGetter().isDerived()) {
+								isDerivedRelativeToInverseProperty = false;
+								inverseProperty.isDerivedRelativeToInverseProperty = true;
+							}
+							else {
+								isDerivedRelativeToInverseProperty = true;
+								inverseProperty.isDerivedRelativeToInverseProperty = false;
+							}
 						}
 						else {
-							isDerivedRelativeToInverseProperty = true;
-							inverseProperty.isDerivedRelativeToInverseProperty = false;
+							// Both properties are inverse
+							// We choose arbitrary which one is derived
+							if (Collator.getInstance().compare(getPropertyIdentifier(), inverseProperty.getPropertyIdentifier()) < 0) {
+								isDerivedRelativeToInverseProperty = false;
+								inverseProperty.isDerivedRelativeToInverseProperty = true;
+							}
+							else {
+								isDerivedRelativeToInverseProperty = true;
+								inverseProperty.isDerivedRelativeToInverseProperty = false;
+							}
 						}
 					}
 				}
@@ -1204,10 +1217,12 @@ public class ModelProperty<I> {
 	}
 
 	public boolean isRelevantForEqualityComputation() {
-		if (!isDerived() && getXMLAttribute() != null && getXMLAttribute().ignoreForEquality()) {
+		/*if (!isDerived() && (getXMLAttribute() == null || getXMLAttribute().ignoreForEquality())) {
 			return false;
 		}
-		return isSerializable();
+		return isSerializable();*/
+
+		return /*getEmbedded() != null ||*/ !isDerived();
 	}
 
 	public StrategyType getCloningStrategy() {
