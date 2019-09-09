@@ -56,17 +56,13 @@ public @interface XMLAttribute {
 
 	String namespace() default DEFAULT_NAMESPACE;
 
-	boolean ignoreForEquality() default false;
-
 	class XMLAttributeImpl implements XMLAttribute {
 		private final String xmlTag;
 		private final String namespace;
-		private final boolean ignoreForEquality;
 
-		public XMLAttributeImpl(String xmlTag, String namespace, boolean ignoreForEquality) {
+		public XMLAttributeImpl(String xmlTag, String namespace) {
 			this.xmlTag = xmlTag;
 			this.namespace = namespace;
-			this.ignoreForEquality = ignoreForEquality;
 		}
 
 		@Override
@@ -82,11 +78,6 @@ public @interface XMLAttribute {
 		@Override
 		public String namespace() {
 			return namespace;
-		}
-
-		@Override
-		public boolean ignoreForEquality() {
-			return ignoreForEquality;
 		}
 
 	}

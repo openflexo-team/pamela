@@ -742,6 +742,7 @@ public class ModelProperty<I> {
 			boolean ignoreType;
 			boolean allowsMultipleOccurences;
 			boolean isDerived;
+			boolean ignoreForEquality;
 
 			if (getGetter() != null) {
 				cardinality = getGetter().cardinality();
@@ -766,15 +767,17 @@ public class ModelProperty<I> {
 				ignoreType = property.getGetter().ignoreType();
 				allowsMultipleOccurences = property.getGetter().allowsMultipleOccurences();
 				isDerived = property.getGetter().isDerived();
+				ignoreForEquality = property.getGetter().ignoreForEquality();
 			}
 			else {
 				stringConvertable = getGetter().isStringConvertable();
 				ignoreType = getGetter().ignoreType();
 				allowsMultipleOccurences = getGetter().allowsMultipleOccurences();
 				isDerived = getGetter().isDerived();
+				ignoreForEquality = getGetter().ignoreForEquality();
 			}
 			getter = new Getter.GetterImpl(propertyIdentifier, cardinality, inverse, defaultValue, stringConvertable, ignoreType,
-					allowsMultipleOccurences, isDerived);
+					allowsMultipleOccurences, isDerived, ignoreForEquality);
 		}
 		if (rulingProperty != null && rulingProperty.getSetter() != null) {
 			setter = rulingProperty.getSetter();
@@ -1212,6 +1215,16 @@ public class ModelProperty<I> {
 		return false;
 	}
 
+	public boolean ignoreForEquality() {
+
+		// When explicitely marked as derived, return true
+		if (getGetter() != null && getGetter().ignoreForEquality()) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public boolean isSerializable() {
 		return !isDerived() && getXMLAttribute() != null || getXMLElement() != null;
 	}
@@ -1222,7 +1235,7 @@ public class ModelProperty<I> {
 		}
 		return isSerializable();*/
 
-		return /*getEmbedded() != null ||*/ !isDerived();
+		return /*getEmbedded() != null ||*/ !isDerived() && !ignoreForEquality();
 	}
 
 	public StrategyType getCloningStrategy() {
