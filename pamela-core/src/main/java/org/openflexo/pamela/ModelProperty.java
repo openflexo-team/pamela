@@ -468,15 +468,28 @@ public class ModelProperty<I> {
 					}
 
 					if (getCardinality() == Cardinality.SINGLE && inverseProperty.getCardinality() == Cardinality.SINGLE) {
-						// Both properties are inverse
-						// We choose arbitrary which one is derived
-						if (Collator.getInstance().compare(getPropertyIdentifier(), inverseProperty.getPropertyIdentifier()) < 0) {
-							isDerivedRelativeToInverseProperty = false;
-							inverseProperty.isDerivedRelativeToInverseProperty = true;
+						if (getGetter().isDerived() != inverseProperty.getGetter().isDerived()) {
+							// One property is explicitely declared as derived
+							if (inverseProperty.getGetter().isDerived()) {
+								isDerivedRelativeToInverseProperty = false;
+								inverseProperty.isDerivedRelativeToInverseProperty = true;
+							}
+							else {
+								isDerivedRelativeToInverseProperty = true;
+								inverseProperty.isDerivedRelativeToInverseProperty = false;
+							}
 						}
 						else {
-							isDerivedRelativeToInverseProperty = true;
-							inverseProperty.isDerivedRelativeToInverseProperty = false;
+							// Both properties are inverse
+							// We choose arbitrary which one is derived
+							if (Collator.getInstance().compare(getPropertyIdentifier(), inverseProperty.getPropertyIdentifier()) < 0) {
+								isDerivedRelativeToInverseProperty = false;
+								inverseProperty.isDerivedRelativeToInverseProperty = true;
+							}
+							else {
+								isDerivedRelativeToInverseProperty = true;
+								inverseProperty.isDerivedRelativeToInverseProperty = false;
+							}
 						}
 					}
 				}
@@ -729,6 +742,7 @@ public class ModelProperty<I> {
 			boolean ignoreType;
 			boolean allowsMultipleOccurences;
 			boolean isDerived;
+			boolean ignoreForEquality;
 
 			if (getGetter() != null) {
 				cardinality = getGetter().cardinality();
@@ -753,15 +767,17 @@ public class ModelProperty<I> {
 				ignoreType = property.getGetter().ignoreType();
 				allowsMultipleOccurences = property.getGetter().allowsMultipleOccurences();
 				isDerived = property.getGetter().isDerived();
+				ignoreForEquality = property.getGetter().ignoreForEquality();
 			}
 			else {
 				stringConvertable = getGetter().isStringConvertable();
 				ignoreType = getGetter().ignoreType();
 				allowsMultipleOccurences = getGetter().allowsMultipleOccurences();
 				isDerived = getGetter().isDerived();
+				ignoreForEquality = getGetter().ignoreForEquality();
 			}
 			getter = new Getter.GetterImpl(propertyIdentifier, cardinality, inverse, defaultValue, stringConvertable, ignoreType,
-					allowsMultipleOccurences, isDerived);
+					allowsMultipleOccurences, isDerived, ignoreForEquality);
 		}
 		if (rulingProperty != null && rulingProperty.getSetter() != null) {
 			setter = rulingProperty.getSetter();
@@ -1199,15 +1215,27 @@ public class ModelProperty<I> {
 		return false;
 	}
 
+	public boolean ignoreForEquality() {
+
+		// When explicitely marked as derived, return true
+		if (getGetter() != null && getGetter().ignoreForEquality()) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public boolean isSerializable() {
 		return !isDerived() && getXMLAttribute() != null || getXMLElement() != null;
 	}
 
 	public boolean isRelevantForEqualityComputation() {
-		if (!isDerived() && getXMLAttribute() != null && getXMLAttribute().ignoreForEquality()) {
+		/*if (!isDerived() && (getXMLAttribute() == null || getXMLAttribute().ignoreForEquality())) {
 			return false;
 		}
-		return isSerializable();
+		return isSerializable();*/
+
+		return /*getEmbedded() != null ||*/ !isDerived() && !ignoreForEquality();
 	}
 
 	public StrategyType getCloningStrategy() {

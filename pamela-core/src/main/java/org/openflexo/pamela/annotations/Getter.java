@@ -131,6 +131,15 @@ public @interface Getter {
 	 */
 	boolean isDerived() default false;
 
+	/**
+	 * Indicates that the underlying property is derived: no need to test it for equality comparison
+	 * 
+	 * The default value is <code>false</code>
+	 * 
+	 * @return true if underlying property is derived
+	 */
+	boolean ignoreForEquality() default false;
+
 	class GetterImpl implements Getter {
 		private final String value;
 		private final Cardinality cardinality;
@@ -140,9 +149,10 @@ public @interface Getter {
 		private final boolean ignoreType;
 		private final boolean allowsMultipleOccurences;
 		private final boolean isDerived;
+		private final boolean ignoreForEquality;
 
 		public GetterImpl(String value, Cardinality cardinality, String inverse, String defaultValue, boolean stringConvertable,
-				boolean ignoreType, boolean allowsMultipleOccurences, boolean isDerived) {
+				boolean ignoreType, boolean allowsMultipleOccurences, boolean isDerived, boolean ignoreForEquality) {
 			this.value = value;
 			this.cardinality = cardinality;
 			this.inverse = inverse;
@@ -151,6 +161,7 @@ public @interface Getter {
 			this.ignoreType = ignoreType;
 			this.allowsMultipleOccurences = allowsMultipleOccurences;
 			this.isDerived = isDerived;
+			this.ignoreForEquality = ignoreForEquality;
 		}
 
 		@Override
@@ -196,6 +207,11 @@ public @interface Getter {
 		@Override
 		public boolean isDerived() {
 			return isDerived;
+		}
+
+		@Override
+		public boolean ignoreForEquality() {
+			return ignoreForEquality;
 		}
 	}
 }

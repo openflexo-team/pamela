@@ -55,7 +55,10 @@ public class FlexoVersionConverter extends Converter<FlexoVersion> {
 
 	@Override
 	public String convertToString(FlexoVersion value) {
-		return value.toString();
+		if (value != null) {
+			return value.toString();
+		}
+		return null;
 	}
 
 }
