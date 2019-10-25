@@ -1878,8 +1878,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						Object singleValue = invokeGetter(p);
 						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
 						if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
-							System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + " opposite="
-									+ oppositeValue);
+							// System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + " opposite="
+							// + oppositeValue);
 							return false;
 						}
 						break;
@@ -1887,7 +1887,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						List<Object> values = (List) invokeGetter(p);
 						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
 						if (!isEqual(values, oppositeValues, new HashSet<>())) {
-							System.out.println("Equals fails because of LIST property size difference" + p);
+							// System.out.println("Equals fails because of LIST property size difference" + p);
 							return false;
 						}
 						break;
