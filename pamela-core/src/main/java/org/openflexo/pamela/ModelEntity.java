@@ -73,6 +73,7 @@ import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.StringConverter;
 import org.openflexo.pamela.annotations.XMLElement;
+import org.openflexo.pamela.annotations.jml.Invariant;
 import org.openflexo.pamela.exceptions.MissingImplementationException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
@@ -83,6 +84,9 @@ import org.openflexo.pamela.factory.DeletableProxyObject;
 import org.openflexo.pamela.factory.KeyValueCoding;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.factory.SpecifiableProxyObject;
+import org.openflexo.pamela.jml.JMLInvariant;
+import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
@@ -272,6 +276,16 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 							"Duplicated deserialization initializer found for entity " + getImplementedInterface());
 				}
 			}
+
+			// Register JML annotations if class is implementing SpecifiableProxyObject
+			if (SpecifiableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+				registerJMLAnnotations(m);
+			}
+		}
+
+		// Register JML annotations if class is implementing SpecifiableProxyObject
+		if (SpecifiableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+			registerJMLAnnotations();
 		}
 
 		// Init delegate implementations
@@ -1264,6 +1278,12 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 					return true;
 				}
 			}
+			if (SpecifiableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.ENABLE_ASSERTION_CHECKING)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DISABLE_ASSERTION_CHECKING)) {
+					return true;
+				}
+			}
 
 			// Look up in base implementation class
 			Class<?> implementingClassForInterface = factory.getImplementingClassForInterface(getImplementedInterface());
@@ -1317,6 +1337,49 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 		return false;
 
+	}
+
+	private Map<String, JMLMethodDefinition> jmlMethods = new HashMap<>();
+	private JMLInvariant<I> invariant;
+
+	private void registerJMLAnnotations() {
+		if (SpecifiableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+			if (getImplementedInterface().isAnnotationPresent(Invariant.class)) {
+				invariant = new JMLInvariant<>(getImplementedInterface().getAnnotation(Invariant.class), this);
+			}
+		}
+	}
+
+	private JMLMethodDefinition<I> registerJMLAnnotations(Method method) {
+		if (JMLMethodDefinition.hasJMLAnnotations(method)) {
+			JMLMethodDefinition<I> returned = new JMLMethodDefinition<>(method, this);
+			jmlMethods.put(returned.getSignature(), returned);
+			return returned;
+		}
+		return null;
+	}
+
+	public JMLMethodDefinition<? super I> getJMLMethodDefinition(Method method) {
+		JMLMethodDefinition<? super I> returned = jmlMethods.get(PamelaUtils.getSignature(method, getImplementedInterface(), true));
+		if (returned == null) {
+			try {
+				if (getDirectSuperEntities() != null) {
+					for (ModelEntity<? super I> superEntity : getDirectSuperEntities()) {
+						returned = superEntity.getJMLMethodDefinition(method);
+						if (returned != null) {
+							return returned;
+						}
+					}
+				}
+			} catch (ModelDefinitionException e) {
+				e.printStackTrace();
+			}
+		}
+		return returned;
+	}
+
+	public JMLInvariant<I> getInvariant() {
+		return invariant;
 	}
 
 	public static boolean isModelEntity(Class<?> type) {
