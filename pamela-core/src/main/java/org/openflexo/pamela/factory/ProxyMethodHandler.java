@@ -75,6 +75,7 @@ import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.PamelaUtils;
+import org.openflexo.pamela.StringEncoder;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
 import org.openflexo.pamela.annotations.ComplexEmbedded;
@@ -1877,7 +1878,23 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					case SINGLE:
 						Object singleValue = invokeGetter(p);
 						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
-						if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
+						// Special case for properties that are String convertable
+						if (p.isStringConvertable()) {
+							StringEncoder se = getModelFactory().getStringEncoder();
+							try {
+								String singleValueAsString = se.toString(singleValue);
+								String oppositeValueAsString = se.toString(oppositeValue);
+								if ((singleValueAsString == null && oppositeValueAsString != null)
+										|| (singleValueAsString != null && !singleValueAsString.equals(oppositeValueAsString))) {
+									System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" + singleValue
+											+ " opposite=" + oppositeValue);
+									return false;
+								}
+							} catch (InvalidDataException e) {
+								e.printStackTrace();
+							}
+						}
+						else if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
 							System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + " opposite="
 									+ oppositeValue);
 							return false;
