@@ -61,6 +61,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 import javax.annotation.Nonnull;
@@ -94,6 +95,10 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.NoSuchEntityException;
 import org.openflexo.pamela.exceptions.UnitializedEntityException;
 import org.openflexo.pamela.factory.ModelFactory.PAMELAProxyFactory;
+import org.openflexo.pamela.jml.JMLEnsures;
+import org.openflexo.pamela.jml.JMLMethodDefinition;
+import org.openflexo.pamela.jml.JMLRequires;
+import org.openflexo.pamela.jml.SpecificationsViolationException;
 import org.openflexo.pamela.undo.AddCommand;
 import org.openflexo.pamela.undo.CreateCommand;
 import org.openflexo.pamela.undo.DeleteCommand;
@@ -172,6 +177,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	public static Method OBJECT_FOR_KEY;
 	public static Method SET_OBJECT_FOR_KEY;
 	public static Method GET_TYPE_FOR_KEY;
+	public static Method ENABLE_ASSERTION_CHECKING;
+	public static Method DISABLE_ASSERTION_CHECKING;
 
 	private final PAMELAProxyFactory<I> pamelaProxyFactory;
 	private final EditingContext editingContext;
@@ -221,6 +228,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("objectForKey", String.class);
 			SET_OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("setObjectForKey", Object.class, String.class);
 			GET_TYPE_FOR_KEY = KeyValueCoding.class.getMethod("getTypeForKey", String.class);
+			ENABLE_ASSERTION_CHECKING = SpecifiableProxyObject.class.getMethod("enableAssertionChecking");
+			DISABLE_ASSERTION_CHECKING = SpecifiableProxyObject.class.getMethod("disableAssertionChecking");
+
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		} catch (NoSuchMethodException e) {
@@ -232,6 +242,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		this.pamelaProxyFactory = pamelaProxyFactory;
 		this.editingContext = editingContext;
 		values = new HashMap<>(getModelEntity().getPropertiesSize(), 1.0f);
+		historyValues = new HashMap<>();
 		initialized = !getModelEntity().hasInitializers();
 		initDelegateImplementations();
 	}
@@ -311,10 +322,17 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	@Override
 	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
+		boolean assertionChecking = false;
+		if (enableAssertionChecking) {
+			assertionChecking = checkOnEntry(method, args);
+		}
 		Object invoke = _invoke(self, method, proceed, args);
 		if (method.getReturnType().isPrimitive() && invoke == null) {
 			// Avoids an NPE
 			invoke = Defaults.defaultValue(method.getReturnType());
+		}
+		if (enableAssertionChecking && assertionChecking) {
+			checkOnExit(method, args);
 		}
 		return invoke;
 	}
@@ -393,6 +411,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					if (exceptionType.isAssignableFrom(e.getTargetException().getClass())) {
 						throw e.getTargetException();
 					}
+				}
+				// Also throw SpecificationsViolationException
+				if (SpecificationsViolationException.class.isAssignableFrom(e.getTargetException().getClass())) {
+					throw e.getTargetException();
 				}
 				// If we come here, this means that this exception was unexpected
 				// In this case, we wrap this exception in a ModelExecutionException and we throw it
@@ -616,6 +638,14 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				System.err.println("Cannot handle property " + args[0] + " for " + getObject());
 				return null;
 			}
+		}
+		else if (PamelaUtils.methodIsEquivalentTo(method, ENABLE_ASSERTION_CHECKING)) {
+			invokeEnableAssertionChecking();
+			return null;
+		}
+		else if (PamelaUtils.methodIsEquivalentTo(method, DISABLE_ASSERTION_CHECKING)) {
+			invokeDisableAssertionChecking();
+			return null;
 		}
 		ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
 		if (property != null) {
@@ -1895,8 +1925,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							}
 						}
 						else if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
-							System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + " opposite="
-									+ oppositeValue);
+							// System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + " opposite="
+							// + oppositeValue);
 							return false;
 						}
 						break;
@@ -1904,7 +1934,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						List<Object> values = (List) invokeGetter(p);
 						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
 						if (!isEqual(values, oppositeValues, new HashSet<>())) {
-							System.out.println("Equals fails because of LIST property size difference" + p);
+							// System.out.println("Equals fails because of LIST property size difference" + p);
 							return false;
 						}
 						break;
@@ -3176,6 +3206,79 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		System.out.println("Return " + returned);
 		return returned;
+	}
+
+	private boolean enableAssertionChecking = false;
+
+	private void invokeEnableAssertionChecking() {
+		this.enableAssertionChecking = true;
+	}
+
+	private void invokeDisableAssertionChecking() {
+		this.enableAssertionChecking = false;
+	}
+
+	private Stack<Method> assertionCheckingStack = new Stack<>();
+	private Map<Method, Map<String, Object>> historyValues;
+
+	public Stack<Method> getAssertionCheckingStack() {
+		return assertionCheckingStack;
+	}
+
+	private boolean checkOnEntry(Method method, Object[] args) {
+
+		if (!assertionCheckingStack.isEmpty() && assertionCheckingStack.peek() == method) {
+			return false;
+		}
+
+		assertionCheckingStack.push(method);
+
+		// System.out.println("--------> checkOnEntry " + method);
+
+		checkInvariant();
+
+		JMLMethodDefinition<? super I> jmlMethodDefinition = getModelEntity().getJMLMethodDefinition(method);
+		if (jmlMethodDefinition != null) {
+			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
+			if (jmlMethodDefinition.getRequires() != null) {
+				// System.out.println("Check pre-condition " + jmlMethodDefinition.getRequires().getExpression());
+				((JMLRequires) jmlMethodDefinition.getRequires()).check(this, args);
+			}
+			if (jmlMethodDefinition.getEnsures() != null) {
+				// System.out.println("Init post-condition " + jmlMethodDefinition.getEnsures().getExpression());
+				Map<String, Object> historyValuesForThisMethod = ((JMLEnsures) jmlMethodDefinition.getEnsures()).checkOnEntry(this, args);
+				historyValues.put(method, historyValuesForThisMethod);
+			}
+		}
+
+		return true;
+	}
+
+	private void checkInvariant() {
+		if (getModelEntity().getInvariant() != null) {
+			getModelEntity().getInvariant().check(this);
+		}
+	}
+
+	private void checkOnExit(Method method, Object[] args) {
+
+		// System.out.println("<-------- checkOnExit " + method);
+
+		checkInvariant();
+
+		JMLMethodDefinition<? super I> jmlMethodDefinition = getModelEntity().getJMLMethodDefinition(method);
+		if (jmlMethodDefinition != null) {
+			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
+			if (jmlMethodDefinition.getEnsures() != null) {
+				// System.out.println("Check post-condition " + jmlMethodDefinition.getEnsures().getExpression());
+				((JMLEnsures) jmlMethodDefinition.getEnsures()).checkOnExit(this, args, historyValues.get(method));
+			}
+		}
+
+		// checkedMethod = null;
+
+		assertionCheckingStack.pop();
+
 	}
 
 }

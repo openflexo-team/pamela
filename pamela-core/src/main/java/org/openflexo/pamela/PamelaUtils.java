@@ -96,4 +96,25 @@ public class PamelaUtils {
 		return Arrays.equals(m1Types, m2Types);
 	}
 
+	public static String getSignature(Method method, Type declaringType, boolean fullyQualified) {
+		StringBuffer signature = new StringBuffer();
+		signature.append(method.getName());
+		signature.append("(");
+		signature.append(getParameterListAsString(method, declaringType, fullyQualified));
+		signature.append(")");
+		return signature.toString();
+	}
+
+	private static String getParameterListAsString(Method method, Type declaringType, boolean fullyQualified) {
+		StringBuilder returned = new StringBuilder();
+		boolean isFirst = true;
+		for (Type p : method.getGenericParameterTypes()) {
+			Type contextualParamType = TypeUtils.makeInstantiatedType(p, declaringType);
+			returned.append((isFirst ? "" : ",") + (fullyQualified ? TypeUtils.fullQualifiedRepresentation(contextualParamType)
+					: TypeUtils.simpleRepresentation(contextualParamType)));
+			isFirst = false;
+		}
+		return returned.toString();
+	}
+
 }

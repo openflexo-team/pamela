@@ -62,8 +62,8 @@ import org.openflexo.pamela.ModelContextLibrary;
 import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.ModelInitializer;
 import org.openflexo.pamela.ModelProperty;
-import org.openflexo.pamela.StringEncoder;
 import org.openflexo.pamela.StringConverterLibrary.Converter;
+import org.openflexo.pamela.StringEncoder;
 import org.openflexo.pamela.annotations.PastingPoint;
 import org.openflexo.pamela.exceptions.MissingImplementationException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
@@ -122,6 +122,11 @@ public class ModelFactory implements IObjectGraphFactory {
 					if (method.getName().equals("toString")) {
 						return true;
 					}
+
+					if (aModelEntity.getJMLMethodDefinition(method) != null) {
+						return true;
+					}
+
 					// TODO perf issue ??? Check this !
 					if (modelEntity.getPropertyForMethod(method) != null) {
 						return true;
