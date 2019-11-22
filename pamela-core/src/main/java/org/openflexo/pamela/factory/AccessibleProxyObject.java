@@ -39,6 +39,9 @@
 
 package org.openflexo.pamela.factory;
 
+import java.util.List;
+
+import org.openflexo.pamela.factory.PAMELAVisitor.VisitingStrategy;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
@@ -250,4 +253,35 @@ public interface AccessibleProxyObject extends HasPropertyChangeSupport, KeyValu
 	 * To implements deleting/undeleting facilities, use {@link DeletableProxyObject} interface instead
 	 */
 	public void destroy();
+
+	/**
+	 * Called to be visited by a {@link PAMELAVisitor}
+	 * 
+	 * Default strategy is Embedding
+	 * 
+	 * @param visitor
+	 */
+	public void accept(PAMELAVisitor visitor);
+
+	/**
+	 * Called to be visited by a {@link PAMELAVisitor}
+	 * 
+	 * @param visitor
+	 * @param strategy
+	 */
+	public void accept(PAMELAVisitor visitor, VisitingStrategy strategy);
+
+	/**
+	 * Return the list of all objects beeing directely referenced as embedded in this object
+	 * 
+	 * @return
+	 */
+	public List<? extends AccessibleProxyObject> getEmbeddedObjects();
+
+	/**
+	 * Return the list of all objects beeing directely referenced in this object
+	 * 
+	 * @return
+	 */
+	public List<? extends AccessibleProxyObject> getReferencedObjects();
 }
