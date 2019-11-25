@@ -1238,7 +1238,11 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_SET_MODIFIED)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DESTROY)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.UPDATE_WITH_OBJECT)
-						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.EQUALS_OBJECT)) {
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.EQUALS_OBJECT)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.ACCEPT_VISITOR)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.ACCEPT_WITH_STRATEGY_VISITOR)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_EMBEDDED)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.GET_REFERENCED)) {
 					return true;
 				}
 			}
