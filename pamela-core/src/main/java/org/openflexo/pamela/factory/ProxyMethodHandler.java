@@ -1922,9 +1922,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			pamelaVisitor.visit(object);
 		}
 
-		for (AccessibleProxyObject embeddedObject : object.getEmbeddedObjects()) {
-			if (!visitedObjects.contains(embeddedObject)) {
-				acceptVisitorEmbeddingStrategy(embeddedObject, pamelaVisitor, visitedObjects);
+		List<? extends AccessibleProxyObject> directEmbeddedObjects = object.getEmbeddedObjects();
+		if (directEmbeddedObjects != null) {
+			for (AccessibleProxyObject embeddedObject : directEmbeddedObjects) {
+				if (!visitedObjects.contains(embeddedObject)) {
+					acceptVisitorEmbeddingStrategy(embeddedObject, pamelaVisitor, visitedObjects);
+				}
 			}
 		}
 	}
@@ -1936,9 +1939,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			pamelaVisitor.visit(object);
 		}
 
-		for (AccessibleProxyObject referencedObject : object.getReferencedObjects()) {
-			if (!visitedObjects.contains(referencedObject)) {
-				acceptVisitorExhaustiveStrategy(referencedObject, pamelaVisitor, visitedObjects);
+		List<? extends AccessibleProxyObject> directReferencedObjects = object.getReferencedObjects();
+		if (directReferencedObjects != null) {
+			for (AccessibleProxyObject referencedObject : directReferencedObjects) {
+				if (!visitedObjects.contains(referencedObject)) {
+					acceptVisitorExhaustiveStrategy(referencedObject, pamelaVisitor, visitedObjects);
+				}
 			}
 		}
 	}
@@ -2091,7 +2097,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						if (!isEqual(values, oppositeValues, new HashSet<>())) {
 							System.out.println("values=" + values);
 							System.out.println("oppositeValues=" + oppositeValues);
-							System.out.println("Equals fails because of LIST property difference" + p);
+							System.out.println("Equals fails because of LIST property difference " + p);
 							return false;
 						}
 						break;
