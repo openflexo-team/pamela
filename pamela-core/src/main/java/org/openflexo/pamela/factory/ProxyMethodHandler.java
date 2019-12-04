@@ -2069,10 +2069,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 								String oppositeValueAsString = se.toString(oppositeValue);
 								if ((singleValueAsString == null && oppositeValueAsString != null)
 										|| (singleValueAsString != null && !singleValueAsString.equals(oppositeValueAsString))) {
-									System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" + singleValue
-											+ " opposite=" + oppositeValue);
-									System.out.println("object1=" + getObject() + " of " + getObject().getClass());
-									System.out.println("object2=" + obj + " of " + obj.getClass());
+									// System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" +
+									// singleValue
+									// + " opposite=" + oppositeValue);
+									// System.out.println("object1=" + getObject() + " of " + getObject().getClass());
+									// System.out.println("object2=" + obj + " of " + obj.getClass());
 									return false;
 								}
 							} catch (InvalidDataException e) {
@@ -2080,8 +2081,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							}
 						}
 						else if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
-							System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + " opposite="
-									+ oppositeValue);
+							// System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + " opposite="
+							// + oppositeValue);
 							return false;
 						}
 						break;
@@ -2089,9 +2090,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						List<Object> values = (List) invokeGetter(p);
 						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
 						if (!isEqual(values, oppositeValues, new HashSet<>())) {
-							System.out.println("values=" + values);
-							System.out.println("oppositeValues=" + oppositeValues);
-							System.out.println("Equals fails because of LIST property difference" + p);
+							// System.out.println("values=" + values);
+							// System.out.println("oppositeValues=" + oppositeValues);
+							// System.out.println("Equals fails because of LIST property difference" + p);
 							return false;
 						}
 						break;
@@ -2882,16 +2883,17 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		boolean somethingWasPasted = false;
 		for (Class<?> type : clipboard.getTypes()) {
 
-			// System.out.println("pasting as " + type);
+			System.out.println("pasting as " + type);
+			System.out.println("in " + getModelEntity());
 
 			Collection<ModelProperty<? super I>> propertiesAssignableFrom = getModelEntity().getPropertiesAssignableFrom(type);
 			Collection<ModelProperty<? super I>> pastingPointProperties = Collections2.filter(propertiesAssignableFrom,
 					new Predicate<ModelProperty<?>>() {
 						@Override
 						public boolean apply(ModelProperty<?> arg0) {
-							// System.out.println("Property " + arg0);
-							// System.out.println("Add PP=" + arg0.getAddPastingPoint());
-							// System.out.println("Set PP=" + arg0.getSetPastingPoint());
+							System.out.println("Property " + arg0);
+							System.out.println("Add PP=" + arg0.getAddPastingPoint());
+							System.out.println("Set PP=" + arg0.getSetPastingPoint());
 							return arg0.getAddPastingPoint() != null || arg0.getSetPastingPoint() != null;
 						}
 					});
