@@ -1922,9 +1922,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			pamelaVisitor.visit(object);
 		}
 
-		for (AccessibleProxyObject embeddedObject : object.getEmbeddedObjects()) {
-			if (!visitedObjects.contains(embeddedObject)) {
-				acceptVisitorEmbeddingStrategy(embeddedObject, pamelaVisitor, visitedObjects);
+		List<? extends AccessibleProxyObject> directEmbeddedObjects = object.getEmbeddedObjects();
+		if (directEmbeddedObjects != null) {
+			for (AccessibleProxyObject embeddedObject : directEmbeddedObjects) {
+				if (!visitedObjects.contains(embeddedObject)) {
+					acceptVisitorEmbeddingStrategy(embeddedObject, pamelaVisitor, visitedObjects);
+				}
 			}
 		}
 	}
@@ -1936,9 +1939,12 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			pamelaVisitor.visit(object);
 		}
 
-		for (AccessibleProxyObject referencedObject : object.getReferencedObjects()) {
-			if (!visitedObjects.contains(referencedObject)) {
-				acceptVisitorExhaustiveStrategy(referencedObject, pamelaVisitor, visitedObjects);
+		List<? extends AccessibleProxyObject> directReferencedObjects = object.getReferencedObjects();
+		if (directReferencedObjects != null) {
+			for (AccessibleProxyObject referencedObject : directReferencedObjects) {
+				if (!visitedObjects.contains(referencedObject)) {
+					acceptVisitorExhaustiveStrategy(referencedObject, pamelaVisitor, visitedObjects);
+				}
 			}
 		}
 	}
@@ -2883,8 +2889,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		boolean somethingWasPasted = false;
 		for (Class<?> type : clipboard.getTypes()) {
 
-			System.out.println("pasting as " + type);
-			System.out.println("in " + getModelEntity());
+			// System.out.println("pasting as " + type);
 
 			Collection<ModelProperty<? super I>> propertiesAssignableFrom = getModelEntity().getPropertiesAssignableFrom(type);
 			Collection<ModelProperty<? super I>> pastingPointProperties = Collections2.filter(propertiesAssignableFrom,
