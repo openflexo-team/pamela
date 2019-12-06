@@ -55,6 +55,7 @@ import javax.annotation.Nonnull;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.toolbox.StringUtils;
 
 public class ModelContext {
@@ -118,6 +119,7 @@ public class ModelContext {
 	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
 	private final Map<ModelEntity<?>, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
 	private final Class<?> baseClass;
+	private PatternContext patternContext; // CAINE
 
 	public ModelContext(@Nonnull Class<?> baseClass) throws ModelDefinitionException {
 		this.baseClass = baseClass;
@@ -132,9 +134,21 @@ public class ModelContext {
 	}
 
 	private void finalizeImport() throws ModelDefinitionException {
+		this.patternContext = new PatternContext(this,true); // CAINE
 		for (ModelEntity<?> modelEntity : modelEntities.values()) {
 			modelEntity.finalizeImport();
+			try { // CAINE
+				this.patternContext.attachClass(modelEntity.getImplementedInterface());
+			}
+			catch (NoSuchMethodException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
 		}
+	}
+
+	public PatternContext getPatternContext() { // CAINE
+		return patternContext;
 	}
 
 	public ModelContext(Class<?> baseClass, List<ModelContext> contexts) throws ModelDefinitionException {

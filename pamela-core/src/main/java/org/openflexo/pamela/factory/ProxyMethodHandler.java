@@ -48,6 +48,7 @@ import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -95,7 +96,6 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.NoSuchEntityException;
 import org.openflexo.pamela.exceptions.UnitializedEntityException;
 import org.openflexo.pamela.factory.ModelFactory.PAMELAProxyFactory;
-import org.openflexo.pamela.factory.PAMELAVisitor.VisitingStrategy;
 import org.openflexo.pamela.jml.JMLEnsures;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.jml.JMLRequires;
@@ -173,10 +173,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	public static Method IS_DELETED;
 	public static Method EQUALS_OBJECT;
 	public static Method UPDATE_WITH_OBJECT;
-	public static Method ACCEPT_VISITOR;
-	public static Method ACCEPT_WITH_STRATEGY_VISITOR;
-	public static Method GET_EMBEDDED;
-	public static Method GET_REFERENCED;
 	public static Method DESTROY;
 	public static Method HAS_KEY;
 	public static Method OBJECT_FOR_KEY;
@@ -228,11 +224,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			IS_BEING_CLONED = CloneableProxyObject.class.getMethod("isBeingCloned");
 			EQUALS_OBJECT = AccessibleProxyObject.class.getMethod("equalsObject", Object.class);
 			UPDATE_WITH_OBJECT = AccessibleProxyObject.class.getMethod("updateWith", Object.class);
-			GET_EMBEDDED = AccessibleProxyObject.class.getMethod("getEmbeddedObjects");
-			GET_REFERENCED = AccessibleProxyObject.class.getMethod("getReferencedObjects");
-			ACCEPT_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class);
-			ACCEPT_WITH_STRATEGY_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class,
-					PAMELAVisitor.VisitingStrategy.class);
 			DESTROY = AccessibleProxyObject.class.getMethod("destroy");
 			HAS_KEY = KeyValueCoding.class.getMethod("hasKey", String.class);
 			OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("objectForKey", String.class);
@@ -335,6 +326,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		boolean assertionChecking = false;
 		if (enableAssertionChecking) {
 			assertionChecking = checkOnEntry(method, args);
+		}
+		boolean patternRelated = this.getModelFactory().getModelContext().getPatternContext().processMethodBeforeInvoke(self, method); // CAINE
+		if (patternRelated && Modifier.isAbstract(method.getModifiers())){
+			return null;
 		}
 		Object invoke = _invoke(self, method, proceed, args);
 		if (method.getReturnType().isPrimitive() && invoke == null) {
@@ -580,18 +575,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, UPDATE_WITH_OBJECT)) {
 			return updateWith(args[0]);
-		}
-		else if (PamelaUtils.methodIsEquivalentTo(method, GET_EMBEDDED)) {
-			return getDirectEmbeddedObjects();
-		}
-		else if (PamelaUtils.methodIsEquivalentTo(method, GET_REFERENCED)) {
-			return getReferencedObjects();
-		}
-		else if (PamelaUtils.methodIsEquivalentTo(method, ACCEPT_VISITOR)) {
-			return acceptVisitor((PAMELAVisitor) args[0]);
-		}
-		else if (PamelaUtils.methodIsEquivalentTo(method, ACCEPT_WITH_STRATEGY_VISITOR)) {
-			return acceptVisitor((PAMELAVisitor) args[0], (VisitingStrategy) args[1]);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, IS_DELETED)) {
 			return deleted;
@@ -1900,143 +1883,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return clonedObject;
 		}*/
 
-	private Object acceptVisitor(PAMELAVisitor pamelaVisitor, VisitingStrategy visitingStrategy) {
-		switch (visitingStrategy) {
-			case Embedding:
-				acceptVisitorEmbeddingStrategy((AccessibleProxyObject) getObject(), pamelaVisitor, new HashSet<Object>());
-				break;
-			case Exhaustive:
-				acceptVisitorExhaustiveStrategy((AccessibleProxyObject) getObject(), pamelaVisitor, new HashSet<Object>());
-				break;
-
-			default:
-				break;
-		}
-		return null;
-	}
-
-	private static void acceptVisitorEmbeddingStrategy(AccessibleProxyObject object, PAMELAVisitor pamelaVisitor,
-			Set<Object> visitedObjects) {
-		if (!visitedObjects.contains(object)) {
-			visitedObjects.add(object);
-			pamelaVisitor.visit(object);
-		}
-
-		List<? extends AccessibleProxyObject> directEmbeddedObjects = object.getEmbeddedObjects();
-		if (directEmbeddedObjects != null) {
-			for (AccessibleProxyObject embeddedObject : directEmbeddedObjects) {
-				if (!visitedObjects.contains(embeddedObject)) {
-					acceptVisitorEmbeddingStrategy(embeddedObject, pamelaVisitor, visitedObjects);
-				}
-			}
-		}
-	}
-
-	private static void acceptVisitorExhaustiveStrategy(AccessibleProxyObject object, PAMELAVisitor pamelaVisitor,
-			Set<Object> visitedObjects) {
-		if (!visitedObjects.contains(object)) {
-			visitedObjects.add(object);
-			pamelaVisitor.visit(object);
-		}
-
-		List<? extends AccessibleProxyObject> directReferencedObjects = object.getReferencedObjects();
-		if (directReferencedObjects != null) {
-			for (AccessibleProxyObject referencedObject : directReferencedObjects) {
-				if (!visitedObjects.contains(referencedObject)) {
-					acceptVisitorExhaustiveStrategy(referencedObject, pamelaVisitor, visitedObjects);
-				}
-			}
-		}
-	}
-
-	private Object acceptVisitor(PAMELAVisitor pamelaVisitor) {
-		return acceptVisitor(pamelaVisitor, VisitingStrategy.Embedding);
-	}
-
-	private List<AccessibleProxyObject> getDirectEmbeddedObjects() {
-
-		List<AccessibleProxyObject> returned = new ArrayList<AccessibleProxyObject>();
-
-		ModelEntity<I> modelEntity = getModelEntity();
-
-		Iterator<ModelProperty<? super I>> properties;
-		try {
-			properties = modelEntity.getProperties();
-		} catch (ModelDefinitionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-		while (properties.hasNext()) {
-			ModelProperty<? super I> p = properties.next();
-			if (p.getEmbedded() != null) {
-				switch (p.getCardinality()) {
-					case SINGLE:
-						Object oValue = invokeGetter(p);
-						if (oValue instanceof AccessibleProxyObject) {
-							returned.add((AccessibleProxyObject) oValue);
-						}
-						break;
-					case LIST:
-						List<?> values = (List<?>) invokeGetter(p);
-						if (values != null) {
-							for (Object o : values) {
-								if (o instanceof AccessibleProxyObject) {
-									returned.add((AccessibleProxyObject) o);
-								}
-							}
-						}
-						break;
-					default:
-						break;
-				}
-			}
-		}
-
-		return returned;
-	}
-
-	private List<AccessibleProxyObject> getReferencedObjects() {
-
-		List<AccessibleProxyObject> returned = new ArrayList<AccessibleProxyObject>();
-
-		ModelEntity<I> modelEntity = getModelEntity();
-
-		Iterator<ModelProperty<? super I>> properties;
-		try {
-			properties = modelEntity.getProperties();
-		} catch (ModelDefinitionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-		while (properties.hasNext()) {
-			ModelProperty<? super I> p = properties.next();
-			switch (p.getCardinality()) {
-				case SINGLE:
-					Object oValue = invokeGetter(p);
-					if (oValue instanceof AccessibleProxyObject) {
-						returned.add((AccessibleProxyObject) oValue);
-					}
-					break;
-				case LIST:
-					List<?> values = (List<?>) invokeGetter(p);
-					if (values != null) {
-						for (Object o : values) {
-							if (o instanceof AccessibleProxyObject) {
-								returned.add((AccessibleProxyObject) o);
-							}
-						}
-					}
-					break;
-				default:
-					break;
-			}
-		}
-
-		return returned;
-	}
-
 	public boolean equalsObject(Object obj) {
 		if (getObject() == obj) {
 			return true;
@@ -2075,11 +1921,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 								String oppositeValueAsString = se.toString(oppositeValue);
 								if ((singleValueAsString == null && oppositeValueAsString != null)
 										|| (singleValueAsString != null && !singleValueAsString.equals(oppositeValueAsString))) {
-									// System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" +
-									// singleValue
-									// + " opposite=" + oppositeValue);
-									// System.out.println("object1=" + getObject() + " of " + getObject().getClass());
-									// System.out.println("object2=" + obj + " of " + obj.getClass());
+									System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" + singleValue
+											+ " opposite=" + oppositeValue);
 									return false;
 								}
 							} catch (InvalidDataException e) {
@@ -2096,9 +1939,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						List<Object> values = (List) invokeGetter(p);
 						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
 						if (!isEqual(values, oppositeValues, new HashSet<>())) {
-							// System.out.println("values=" + values);
-							// System.out.println("oppositeValues=" + oppositeValues);
-							// System.out.println("Equals fails because of LIST property difference" + p);
+							// System.out.println("Equals fails because of LIST property size difference" + p);
 							return false;
 						}
 						break;
@@ -2238,7 +2079,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * Compute the distance (double value between 0.0 and 1.0) between this object and an opposite object (which must be of right type!) If
 	 * two objects are equals, return 0. If two objects are totally differents, return 1.
 	 * 
-	 * @param object
+	 * @param obj
 	 * @return
 	 */
 	public double getDistance(Object obj) {
@@ -2896,9 +2737,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					new Predicate<ModelProperty<?>>() {
 						@Override
 						public boolean apply(ModelProperty<?> arg0) {
-							System.out.println("Property " + arg0);
-							System.out.println("Add PP=" + arg0.getAddPastingPoint());
-							System.out.println("Set PP=" + arg0.getSetPastingPoint());
+							// System.out.println("Property " + arg0);
+							// System.out.println("Add PP=" + arg0.getAddPastingPoint());
+							// System.out.println("Set PP=" + arg0.getSetPastingPoint());
 							return arg0.getAddPastingPoint() != null || arg0.getSetPastingPoint() != null;
 						}
 					});
