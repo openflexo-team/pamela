@@ -1,23 +1,23 @@
 /**
- * 
+ *
  */
 /**
- * 
+ *
  * Copyright (c) 2013-2015, Openflexo
  * Copyright (c) 2011-2012, AgileBirds
- * 
+ *
  * This file is part of Pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
- * 
- * 
+ *
+ *
  * Openflexo is dual-licensed under the European Union Public License (EUPL, either 
  * version 1.1 of the License, or any later version ), which is available at 
  * https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
  * and the GNU General Public License (GPL, either version 3 of the License, or any 
  * later version), which is available at http://www.gnu.org/licenses/gpl.html .
- * 
+ *
  * You can redistribute it and/or modify under the terms of either of these licenses
- * 
+ *
  * If you choose to redistribute it and/or modify under the terms of the GNU GPL, you
  * must include the following additional permission.
  *
@@ -27,17 +27,17 @@
  *          combining it with software containing parts covered by the terms 
  *          of EPL 1.0, the licensors of this Program grant you additional permission
  *          to convey the resulting work. * 
- * 
+ *
  * This software is distributed in the hope that it will be useful, but WITHOUT ANY 
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
  * PARTICULAR PURPOSE. 
  *
  * See http://www.openflexo.org/license.html for details.
- * 
- * 
+ *
+ *
  * Please contact Openflexo (openflexo-contacts@openflexo.org)
  * or visit www.openflexo.org if you need additional information.
- * 
+ *
  */
 
 package org.openflexo.pamela.factory;
@@ -96,6 +96,7 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.NoSuchEntityException;
 import org.openflexo.pamela.exceptions.UnitializedEntityException;
 import org.openflexo.pamela.factory.ModelFactory.PAMELAProxyFactory;
+import org.openflexo.pamela.factory.PAMELAVisitor.VisitingStrategy;
 import org.openflexo.pamela.jml.JMLEnsures;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.jml.JMLRequires;
@@ -173,6 +174,10 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	public static Method IS_DELETED;
 	public static Method EQUALS_OBJECT;
 	public static Method UPDATE_WITH_OBJECT;
+	public static Method ACCEPT_VISITOR;
+	public static Method ACCEPT_WITH_STRATEGY_VISITOR;
+	public static Method GET_EMBEDDED;
+	public static Method GET_REFERENCED;
 	public static Method DESTROY;
 	public static Method HAS_KEY;
 	public static Method OBJECT_FOR_KEY;
@@ -224,6 +229,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			IS_BEING_CLONED = CloneableProxyObject.class.getMethod("isBeingCloned");
 			EQUALS_OBJECT = AccessibleProxyObject.class.getMethod("equalsObject", Object.class);
 			UPDATE_WITH_OBJECT = AccessibleProxyObject.class.getMethod("updateWith", Object.class);
+			GET_EMBEDDED = AccessibleProxyObject.class.getMethod("getEmbeddedObjects");
+			GET_REFERENCED = AccessibleProxyObject.class.getMethod("getReferencedObjects");
+			ACCEPT_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class);
+			ACCEPT_WITH_STRATEGY_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class,
+					PAMELAVisitor.VisitingStrategy.class);
 			DESTROY = AccessibleProxyObject.class.getMethod("destroy");
 			HAS_KEY = KeyValueCoding.class.getMethod("hasKey", String.class);
 			OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("objectForKey", String.class);
@@ -576,6 +586,18 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		else if (PamelaUtils.methodIsEquivalentTo(method, UPDATE_WITH_OBJECT)) {
 			return updateWith(args[0]);
 		}
+		else if (PamelaUtils.methodIsEquivalentTo(method, GET_EMBEDDED)) {
+			return getDirectEmbeddedObjects();
+		}
+		else if (PamelaUtils.methodIsEquivalentTo(method, GET_REFERENCED)) {
+			return getReferencedObjects();
+		}
+		else if (PamelaUtils.methodIsEquivalentTo(method, ACCEPT_VISITOR)) {
+			return acceptVisitor((PAMELAVisitor) args[0]);
+		}
+		else if (PamelaUtils.methodIsEquivalentTo(method, ACCEPT_WITH_STRATEGY_VISITOR)) {
+			return acceptVisitor((PAMELAVisitor) args[0], (VisitingStrategy) args[1]);
+		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, IS_DELETED)) {
 			return deleted;
 		}
@@ -744,7 +766,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * should be taken into account when computing embedded objects according to the deletion conditions. Invoking this method may result in
 	 * deleting indirectly the objects provided by the <code>context</code>, however the invoker should make sure that they have been
 	 * actually deleted.
-	 * 
+	 *
 	 * @param context
 	 *            the list of objects that will also be deleted and which should be taken into account when computing embedded objects.
 	 * @see Embedded#deletionConditions()
@@ -1704,16 +1726,16 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	/*private Object cloneObject() throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException
 		{
 		System.out.println("Tiens je clone "+getObject());
-	
+
 		if (!(getObject() instanceof CloneableProxyObject)) throw new CloneNotSupportedException();
-	
+
 		Hashtable<CloneableProxyObject,Object> clonedObjects = new Hashtable<>();
 		Object returned = performClone(clonedObjects);
 		for (CloneableProxyObject o : clonedObjects.keySet()) {
 			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(o);
 			clonedObjectHandler.finalizeClone(clonedObjects);
 		}
-	
+
 		private Object appendToClonedObjects(Hashtable<CloneableProxyObject,Object> clonedObjects, CloneableProxyObject objectToCloneOrReference) throws ModelExecutionException, ModelDefinitionException
 		{
 			Object returned = clonedObjects.get(objectToCloneOrReference);
@@ -1723,11 +1745,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			System.out.println("for "+objectToCloneOrReference+" clone is "+returned);
 			return returned;
 		}
-	
+
 		private Object performClone(Hashtable<CloneableProxyObject,Object> clonedObjects) throws ModelExecutionException, ModelDefinitionException
 		{
 			System.out.println("******* performClone "+getObject());
-	
+
 			Object returned = null;
 			try {
 				returned = getModelEntity().newInstance();
@@ -1743,7 +1765,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				throw new ModelExecutionException(e);
 			}
 			clonedObjects.put((CloneableProxyObject)getObject(),returned);
-	
+
 			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(returned);
 			Enumeration<ModelProperty<? super I>> properties = getModelEntity().getProperties();
 			while(properties.hasMoreElements()) {
@@ -1786,22 +1808,22 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				default:
 					break;
 				}
-	
+
 			}
-	
+
 			return returned;
 		}
-	
+
 		private Object finalizeClone(Hashtable<CloneableProxyObject,Object> clonedObjects) throws ModelExecutionException, ModelDefinitionException
 		{
 			Object clonedObject = clonedObjects.get(getObject());
-	
+
 			System.out.println("Tiens je finalise le clone pour "+getObject()+" le clone c'est "+clonedObject);
-	
+
 		ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(clonedObject);
-	
+
 			Enumeration<ModelProperty<? super I>> properties = getModelEntity().getProperties();
-	
+
 			while(properties.hasMoreElements()) {
 				ModelProperty p = properties.nextElement();
 				switch (p.getCardinality()) {
@@ -1871,17 +1893,154 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						case IGNORE:
 							break;
 						}
-	
+
 					}
 					break;
 				default:
 					break;
 				}
-	
+
 			}
-	
+
 			return clonedObject;
 		}*/
+
+	private Object acceptVisitor(PAMELAVisitor pamelaVisitor, VisitingStrategy visitingStrategy) {
+		switch (visitingStrategy) {
+			case Embedding:
+				acceptVisitorEmbeddingStrategy((AccessibleProxyObject) getObject(), pamelaVisitor, new HashSet<Object>());
+				break;
+			case Exhaustive:
+				acceptVisitorExhaustiveStrategy((AccessibleProxyObject) getObject(), pamelaVisitor, new HashSet<Object>());
+				break;
+
+			default:
+				break;
+		}
+		return null;
+	}
+
+	private static void acceptVisitorEmbeddingStrategy(AccessibleProxyObject object, PAMELAVisitor pamelaVisitor,
+													   Set<Object> visitedObjects) {
+		if (!visitedObjects.contains(object)) {
+			visitedObjects.add(object);
+			pamelaVisitor.visit(object);
+		}
+
+		List<? extends AccessibleProxyObject> directEmbeddedObjects = object.getEmbeddedObjects();
+		if (directEmbeddedObjects != null) {
+			for (AccessibleProxyObject embeddedObject : directEmbeddedObjects) {
+				if (!visitedObjects.contains(embeddedObject)) {
+					acceptVisitorEmbeddingStrategy(embeddedObject, pamelaVisitor, visitedObjects);
+				}
+			}
+		}
+	}
+
+	private static void acceptVisitorExhaustiveStrategy(AccessibleProxyObject object, PAMELAVisitor pamelaVisitor,
+														Set<Object> visitedObjects) {
+		if (!visitedObjects.contains(object)) {
+			visitedObjects.add(object);
+			pamelaVisitor.visit(object);
+		}
+
+		List<? extends AccessibleProxyObject> directReferencedObjects = object.getReferencedObjects();
+		if (directReferencedObjects != null) {
+			for (AccessibleProxyObject referencedObject : directReferencedObjects) {
+				if (!visitedObjects.contains(referencedObject)) {
+					acceptVisitorExhaustiveStrategy(referencedObject, pamelaVisitor, visitedObjects);
+				}
+			}
+		}
+	}
+
+	private Object acceptVisitor(PAMELAVisitor pamelaVisitor) {
+		return acceptVisitor(pamelaVisitor, VisitingStrategy.Embedding);
+	}
+
+	private List<AccessibleProxyObject> getDirectEmbeddedObjects() {
+
+		List<AccessibleProxyObject> returned = new ArrayList<AccessibleProxyObject>();
+
+		ModelEntity<I> modelEntity = getModelEntity();
+
+		Iterator<ModelProperty<? super I>> properties;
+		try {
+			properties = modelEntity.getProperties();
+		} catch (ModelDefinitionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		while (properties.hasNext()) {
+			ModelProperty<? super I> p = properties.next();
+			if (p.getEmbedded() != null) {
+				switch (p.getCardinality()) {
+					case SINGLE:
+						Object oValue = invokeGetter(p);
+						if (oValue instanceof AccessibleProxyObject) {
+							returned.add((AccessibleProxyObject) oValue);
+						}
+						break;
+					case LIST:
+						List<?> values = (List<?>) invokeGetter(p);
+						if (values != null) {
+							for (Object o : values) {
+								if (o instanceof AccessibleProxyObject) {
+									returned.add((AccessibleProxyObject) o);
+								}
+							}
+						}
+						break;
+					default:
+						break;
+				}
+			}
+		}
+
+		return returned;
+	}
+
+	private List<AccessibleProxyObject> getReferencedObjects() {
+
+		List<AccessibleProxyObject> returned = new ArrayList<AccessibleProxyObject>();
+
+		ModelEntity<I> modelEntity = getModelEntity();
+
+		Iterator<ModelProperty<? super I>> properties;
+		try {
+			properties = modelEntity.getProperties();
+		} catch (ModelDefinitionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		while (properties.hasNext()) {
+			ModelProperty<? super I> p = properties.next();
+			switch (p.getCardinality()) {
+				case SINGLE:
+					Object oValue = invokeGetter(p);
+					if (oValue instanceof AccessibleProxyObject) {
+						returned.add((AccessibleProxyObject) oValue);
+					}
+					break;
+				case LIST:
+					List<?> values = (List<?>) invokeGetter(p);
+					if (values != null) {
+						for (Object o : values) {
+							if (o instanceof AccessibleProxyObject) {
+								returned.add((AccessibleProxyObject) o);
+							}
+						}
+					}
+					break;
+				default:
+					break;
+			}
+		}
+
+		return returned;
+	}
 
 	public boolean equalsObject(Object obj) {
 		if (getObject() == obj) {
@@ -1921,8 +2080,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 								String oppositeValueAsString = se.toString(oppositeValue);
 								if ((singleValueAsString == null && oppositeValueAsString != null)
 										|| (singleValueAsString != null && !singleValueAsString.equals(oppositeValueAsString))) {
-									System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" + singleValue
-											+ " opposite=" + oppositeValue);
+									// System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" +
+									// singleValue
+									// + " opposite=" + oppositeValue);
+									// System.out.println("object1=" + getObject() + " of " + getObject().getClass());
+									// System.out.println("object2=" + obj + " of " + obj.getClass());
 									return false;
 								}
 							} catch (InvalidDataException e) {
@@ -1939,7 +2101,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						List<Object> values = (List) invokeGetter(p);
 						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
 						if (!isEqual(values, oppositeValues, new HashSet<>())) {
-							// System.out.println("Equals fails because of LIST property size difference" + p);
+							// System.out.println("values=" + values);
+							// System.out.println("oppositeValues=" + oppositeValues);
+							// System.out.println("Equals fails because of LIST property difference" + p);
 							return false;
 						}
 						break;
@@ -1958,7 +2122,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * Collections are handled while trying to match updated objects with a given strategy<br>
 	 * Perform required changes on this object so that at the end of the call, equalsObject(object) shoud return true<br>
 	 * Also perform required notifications, so that it is safe to call that method in a deployed environment
-	 * 
+	 *
 	 * @param obj
 	 *            object to update with, which must be of same type
 	 * @return boolean indicating if update was successfull
@@ -2078,8 +2242,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	/**
 	 * Compute the distance (double value between 0.0 and 1.0) between this object and an opposite object (which must be of right type!) If
 	 * two objects are equals, return 0. If two objects are totally differents, return 1.
-	 * 
-	 * @param obj
+	 *
+	 * @param
 	 * @return
 	 */
 	public double getDistance(Object obj) {
@@ -2245,7 +2409,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * constructed during this operation. If a property is marked as @CloningStrategy.CLONE but lead to an object outside scope of cloning
 	 * (the closure being computed), then resulting value is nullified. When context is not set, don't compute any closure, and clone all
 	 * required objects
-	 * 
+	 *
 	 * @param context
 	 * @return
 	 * @throws ModelExecutionException
@@ -2293,7 +2457,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * Internally used for cloning computation
 	 */
 	private Object appendToClonedObjects(Hashtable<CloneableProxyObject, Object> clonedObjects,
-			CloneableProxyObject objectToCloneOrReference) throws ModelExecutionException, ModelDefinitionException {
+										 CloneableProxyObject objectToCloneOrReference) throws ModelExecutionException, ModelDefinitionException {
 		Object returned = clonedObjects.get(objectToCloneOrReference);
 		if (returned != null) {
 			return returned;
@@ -2610,11 +2774,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	/**
 	 * Clone several object, using meta informations provided by related class All property should be annoted with a @CloningStrategy
 	 * annotation which determine the way of handling this property
-	 * 
+	 *
 	 * The list of objects is used as the context considered to determine the closure of objects graph being constructed during this
 	 * operation. If a property is marked as @CloningStrategy.CLONE but lead to an object outside scope of cloning (the closure being
 	 * computed), then resulting value is nullified.
-	 * 
+	 *
 	 * @param someObjects
 	 * @return
 	 * @throws ModelExecutionException
@@ -2656,7 +2820,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	/**
 	 * Return boolean indicating if supplied clipboard is valid for pasting in object monitored by this method handler<br>
-	 * 
+	 *
 	 * @param clipboard
 	 * @return
 	 */
@@ -2698,7 +2862,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	/**
 	 * Return boolean indicating if supplied clipboard is valid for pasting in object monitored by this method handler<br>
-	 * 
+	 *
 	 * @param clipboard
 	 * @return
 	 */
@@ -2710,7 +2874,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	/**
 	 * Paste supplied clipboard in object monitored by this method handler<br>
 	 * Return pasted objects (a single object for a single contents clipboard, and a list of objects for a multiple contents)
-	 * 
+	 *
 	 * @param clipboard
 	 * @return
 	 * @throws ModelExecutionException
@@ -2737,9 +2901,9 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					new Predicate<ModelProperty<?>>() {
 						@Override
 						public boolean apply(ModelProperty<?> arg0) {
-							// System.out.println("Property " + arg0);
-							// System.out.println("Add PP=" + arg0.getAddPastingPoint());
-							// System.out.println("Set PP=" + arg0.getSetPastingPoint());
+							System.out.println("Property " + arg0);
+							System.out.println("Add PP=" + arg0.getAddPastingPoint());
+							System.out.println("Set PP=" + arg0.getSetPastingPoint());
 							return arg0.getAddPastingPoint() != null || arg0.getSetPastingPoint() != null;
 						}
 					});
@@ -2797,7 +2961,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	/**
 	 * Paste using supplied clipboard and property, asserting a pasting point could be found<br>
 	 * Return pasted objects for supplied property
-	 * 
+	 *
 	 * @param clipboard
 	 * @param modelProperty
 	 * @return
@@ -2829,7 +2993,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	/**
 	 * Paste using supplied clipboard and property, as specified pasting point<br>
 	 * Return pasted objects for supplied property
-	 * 
+	 *
 	 * @param clipboard
 	 * @param modelProperty
 	 * @param pp
@@ -3078,7 +3242,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	/**
 	 * Compute optimal matching between two lists of objects
-	 * 
+	 *
 	 * @param l1
 	 * @param l2
 	 * @return
@@ -3090,7 +3254,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	/**
 	 * A functional algorithm, but not really optimal
-	 * 
+	 *
 	 * @param l1
 	 * @param l2
 	 * @return
@@ -3151,7 +3315,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * Retrieve best match between the two lists.<br>
 	 * Best match is represented by a couple of objects (one in each list) of exactely same type, whose distance is the minimal found.<br>
 	 * A minimal distance is required as a threshold (here 0.7)
-	 * 
+	 *
 	 * @param l1
 	 * @param l2
 	 * @return
@@ -3185,7 +3349,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	/**
 	 * Stupid implementation, do not use it in production
-	 * 
+	 *
 	 * @param l1
 	 * @param l2
 	 * @return
