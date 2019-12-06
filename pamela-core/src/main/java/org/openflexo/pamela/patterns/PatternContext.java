@@ -15,59 +15,48 @@ public class PatternContext {
     private HashMap<String, AuthenticatorPattern> authenticatorPatterns;
     private HashMap<Class, ArrayList<String>> authenticatorSubjectClasses;
     private ModelContext modelContext;
-    private boolean pamela_on = false;
 
-    public PatternContext(ModelContext context, boolean pamela_on){
+    public PatternContext(ModelContext context){
         this.authenticatorPatterns = new HashMap<>();
         this.authenticatorSubjectClasses = new HashMap<>();
-        this.pamela_on = pamela_on;
         this.modelContext = context;
     }
 
-    public PatternContext(){
-        this(null, false);
-    }
-
-    public ModelContext getContext(){
-        return this.modelContext;
-    }
-
-    public void attachClass(Class klass) throws NoSuchMethodException, ModelDefinitionException {
-        for (Annotation a : klass.getAnnotations()){
-            if (a instanceof AuthenticatorSubject){
-                AuthenticatorSubject annotation = (AuthenticatorSubject) a;
-                if (!this.authenticatorPatterns.containsKey(annotation.patternID())){
-                    this.authenticatorPatterns.put(annotation.patternID(), new AuthenticatorPattern(this, annotation.patternID()));
-                }
-                if (!this.authenticatorSubjectClasses.containsKey(klass)){
-                    this.authenticatorSubjectClasses.put(klass, new ArrayList<>());
-                }
-                this.authenticatorSubjectClasses.get(klass).add(annotation.patternID());
-                this.authenticatorPatterns.get(annotation.patternID()).attachClass(klass);
-            }
-        }
-    }
-
-    public boolean processMethodBeforeInvoke(Object instance, Method method) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        boolean returned = false;
-        if (!this.pamela_on){
-            if (this.authenticatorSubjectClasses.containsKey(instance.getClass())){
-                for (String id : this.authenticatorSubjectClasses.get(instance.getClass())){
-                    returned = returned || this.authenticatorPatterns.get(id).processMethodBeforeInvoke(instance, method, instance.getClass());
-                }
-            }
-            return returned;
-        }
-        else {
-            for (Class interf : instance.getClass().getInterfaces()){
-                if (this.authenticatorSubjectClasses.containsKey(interf)){
-                    for (String id : this.authenticatorSubjectClasses.get(interf)){
-                        returned = returned || this.authenticatorPatterns.get(id).processMethodBeforeInvoke(instance, method, interf);
+    public void attachClass(Class baseClass) throws NoSuchMethodException, ModelDefinitionException {
+        for (Class klass : PatternLibrary.getClassHierarchy(baseClass)) {
+            for (Annotation a : klass.getAnnotations()) {
+                if (a instanceof AuthenticatorSubject) {
+                    AuthenticatorSubject annotation = (AuthenticatorSubject) a;
+                    if (!this.authenticatorPatterns.containsKey(annotation.patternID())) {
+                        this.authenticatorPatterns.put(annotation.patternID(), new AuthenticatorPattern(this, annotation.patternID()));
                     }
-                    return returned;
+                    if (!this.authenticatorSubjectClasses.containsKey(klass)) {
+                        this.authenticatorSubjectClasses.put(klass, new ArrayList<>());
+                    }
+                    this.authenticatorSubjectClasses.get(klass).add(annotation.patternID());
+                    this.authenticatorPatterns.get(annotation.patternID()).attachClass(klass);
                 }
             }
-            return returned;
         }
+    }
+
+    public ArrayList<PatternClassWrapper> getRelatedPatterns(Object instance){
+        ArrayList<PatternClassWrapper> wrappers = new ArrayList<>();
+        for (Class klass : PatternLibrary.getClassHierarchy(instance.getClass())){
+            if (this.authenticatorSubjectClasses.containsKey(klass)){
+                for (String id : this.authenticatorSubjectClasses.get(klass)){
+                    wrappers.add(new PatternClassWrapper(this.authenticatorPatterns.get(id), klass));
+                }
+            }
+        }
+        return wrappers;
+    }
+
+    public HashMap<Class, ArrayList<String>> getAuthenticatorSubjectClasses() {
+        return authenticatorSubjectClasses;
+    }
+
+    public HashMap<String, AuthenticatorPattern> getAuthenticatorPatterns() {
+        return authenticatorPatterns;
     }
 }

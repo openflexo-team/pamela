@@ -15,7 +15,7 @@ public class SubjectEntity {
     private AuthenticatorPattern pattern;
     private Class baseClass;
     private Method idProofSetter;
-    private HashMap<Method, String> requiresAuthenticationMethods;
+    private HashMap<Method, String> authenticateMethods;
     private HashMap<String, Method> authInfoGetters;
     private Method[] args;
     private boolean successLinking;
@@ -24,7 +24,7 @@ public class SubjectEntity {
         this.pattern = pattern;
         this.baseClass = klass;
         this.authInfoGetters = new HashMap<>();
-        this.requiresAuthenticationMethods = new HashMap<>();
+        this.authenticateMethods = new HashMap<>();
         this.analyzeClass();
         this.successLinking = false;
         this.link();
@@ -66,8 +66,8 @@ public class SubjectEntity {
     }
 
     private void processRequiresAuthentication(Method method, AuthenticateMethod annotation) throws ModelDefinitionException, NoSuchMethodException {
-        this.requiresAuthenticationMethods.put(method, annotation.authenticator());
-        this.pattern.attachAuthenticatorFromRequiresMethod(this.baseClass.getMethod(annotation.authenticator()).getReturnType());
+        this.authenticateMethods.put(method, annotation.authenticator());
+        this.pattern.attachAuthenticatorFromAuthenticateMethod(this.baseClass.getMethod(annotation.authenticator()).getReturnType());
     }
 
     private void link(){
@@ -94,13 +94,13 @@ public class SubjectEntity {
 
     public boolean processMethodBeforeInvoke(Object instance, Method method, Class klass) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Method superMethod = klass.getMethod(method.getName(), method.getParameterTypes());
-        if (this.requiresAuthenticationMethods.containsKey(method)){
-            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.requiresAuthenticationMethods.get(method));
-            return true;
+        if (this.authenticateMethods.containsKey(method)){
+            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticateMethods.get(method));
+            return false;
         }
-        else if (this.requiresAuthenticationMethods.containsKey(superMethod)){
-            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.requiresAuthenticationMethods.get(superMethod));
-            return true;
+        else if (this.authenticateMethods.containsKey(superMethod)){
+            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticateMethods.get(superMethod));
+            return false;
         }
 
         if (this.idProofSetter.hashCode() == method.hashCode()){
@@ -109,6 +109,6 @@ public class SubjectEntity {
         else if (this.idProofSetter.hashCode() == superMethod.hashCode()){
             return pattern.handleIdProofSetterCall(instance, method, this.args);
         }
-        return false;
+        return true;
     }
 }

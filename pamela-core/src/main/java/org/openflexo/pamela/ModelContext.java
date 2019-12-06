@@ -56,6 +56,7 @@ import javax.annotation.Nonnull;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.patterns.PatternContext;
+import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.toolbox.StringUtils;
 
 public class ModelContext {
@@ -134,10 +135,10 @@ public class ModelContext {
 	}
 
 	private void finalizeImport() throws ModelDefinitionException {
-		this.patternContext = new PatternContext(this,true); // CAINE
+		this.patternContext = new PatternContext(this);
 		for (ModelEntity<?> modelEntity : modelEntities.values()) {
 			modelEntity.finalizeImport();
-			try { // CAINE
+			try {
 				this.patternContext.attachClass(modelEntity.getImplementedInterface());
 			}
 			catch (NoSuchMethodException e) {

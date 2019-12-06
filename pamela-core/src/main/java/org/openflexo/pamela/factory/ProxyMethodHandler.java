@@ -101,6 +101,9 @@ import org.openflexo.pamela.jml.JMLEnsures;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.jml.JMLRequires;
 import org.openflexo.pamela.jml.SpecificationsViolationException;
+import org.openflexo.pamela.patterns.AbstractPattern;
+import org.openflexo.pamela.patterns.PatternClassWrapper;
+import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.undo.AddCommand;
 import org.openflexo.pamela.undo.CreateCommand;
 import org.openflexo.pamela.undo.DeleteCommand;
@@ -334,13 +337,19 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	@Override
 	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 		boolean assertionChecking = false;
+		PatternContext patternContext = this.getModelFactory().getModelContext().getPatternContext();
+
 		if (enableAssertionChecking) {
 			assertionChecking = checkOnEntry(method, args);
 		}
-		boolean patternRelated = this.getModelFactory().getModelContext().getPatternContext().processMethodBeforeInvoke(self, method); // CAINE
-		if (patternRelated && Modifier.isAbstract(method.getModifiers())){
+		boolean keepGoing = true;
+		for (PatternClassWrapper wrapper : patternContext.getRelatedPatterns(self)){
+			keepGoing = keepGoing && wrapper.getPattern().processMethodBeforeInvoke(self, method, wrapper.getKlass());
+		}
+		if (!keepGoing){
 			return null;
 		}
+
 		Object invoke = _invoke(self, method, proceed, args);
 		if (method.getReturnType().isPrimitive() && invoke == null) {
 			// Avoids an NPE

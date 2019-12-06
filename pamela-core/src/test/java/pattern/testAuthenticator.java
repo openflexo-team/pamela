@@ -1,4 +1,4 @@
-package pattern.testAuthenticator;
+package pattern;
 
 import org.junit.BeforeClass;
 import org.junit.Test;

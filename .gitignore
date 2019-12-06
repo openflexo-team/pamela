@@ -3,7 +3,7 @@
 # Package Files #
 # *.jar
 *.war
-/.idea/*
+/.idea/
 *.ear
 .classpath
 .project
@@ -13,3 +13,4 @@
 build/
 .gradle
 **/out/
+/pamela-core/src/main/java/playground/

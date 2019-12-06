@@ -1,16 +1,20 @@
 package org.openflexo.pamela.patterns.authenticator;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.patterns.AbstractPattern;
 import org.openflexo.pamela.patterns.PatternContext;
+import org.openflexo.pamela.patterns.PatternLibrary;
+import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentAuthenticatorEntityException;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-public class AuthenticatorPattern {
+public class AuthenticatorPattern extends AbstractPattern {
     private PatternContext context;
     private String id;
     private HashMap<Class, SubjectEntity> subjects;
@@ -33,9 +37,19 @@ public class AuthenticatorPattern {
         }
     }
 
-    protected void attachAuthenticatorFromRequiresMethod(Class authenticatorClass) throws ModelDefinitionException {
+    protected void attachAuthenticatorFromAuthenticateMethod(Class authenticatorClass) throws ModelDefinitionException {
         if (this.authenticator == null){
-            AuthenticatorEntity authenticator = new AuthenticatorEntity(this, authenticatorClass);
+            Class auth = null;
+            for (Class klass : PatternLibrary.getClassHierarchy(authenticatorClass)){
+                Annotation annotation = klass.getAnnotation(Authenticator.class);
+                if (annotation != null){
+                    auth = klass;
+                }
+            }
+            if (auth == null){
+                throw new InconsistentAuthenticatorEntityException("Missing annotations in " + authenticatorClass.getSimpleName() + "Authenticator definition with ID " + this.id);
+            }
+            AuthenticatorEntity authenticator = new AuthenticatorEntity(this, auth);
             if  (authenticator.isComplete()){
                 this.authenticator = authenticator;
             }
@@ -43,9 +57,9 @@ public class AuthenticatorPattern {
                 throw new InconsistentAuthenticatorEntityException("Missing annotations in " + authenticatorClass.getSimpleName() + "Authenticator definition with ID " + this.id);
             }
         }
-        else if (this.authenticator.getClassName().compareTo(authenticatorClass.getName()) != 0){
+        /*else if (this.authenticator.getClassName().compareTo(authenticatorClass.getName()) != 0){
             throw new ModelDefinitionException("Duplicate @Authenticator for pattern " + this.id);
-        }
+        }*/
     }
 
     private void attachSubject(Class klass) throws ModelDefinitionException, NoSuchMethodException {
@@ -66,8 +80,9 @@ public class AuthenticatorPattern {
         return this.authenticator;
     }
 
+    @Override
     public boolean processMethodBeforeInvoke(Object instance, Method method, Class klass) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-        boolean returned = false;
+        boolean returned = true;
         if (this.subjects.containsKey(klass)){
             returned = this.subjects.get(klass).processMethodBeforeInvoke(instance, method, klass);
         }
@@ -88,9 +103,13 @@ public class AuthenticatorPattern {
 
     public boolean handleIdProofSetterCall(Object instance, Method method, Method[] args) {
         StackTraceElement[] cause = Thread.currentThread().getStackTrace();
-        if (cause.length < 11 || cause[11].getClassName().compareTo(this.getClass().getName()) != 0){
-            return true;
+        if (cause.length < 12 || cause[12].getClassName().compareTo(this.getClass().getName()) != 0){
+            return false;
         }
-        return false;
+        return true;
+    }
+
+    public HashMap<Class, SubjectEntity> getSubjects() {
+        return subjects;
     }
 }
