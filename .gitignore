@@ -3,7 +3,7 @@
 # Package Files #
 # *.jar
 *.war
-.idea/*
+/.idea/*
 *.ear
 .classpath
 .project
