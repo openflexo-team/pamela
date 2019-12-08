@@ -5,10 +5,12 @@ import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticationInf
 import org.openflexo.pamela.patterns.authenticator.annotations.ProofOfIdentity;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticateMethod;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
+import playground.Subject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class SubjectEntity {
@@ -110,5 +112,25 @@ public class SubjectEntity {
             return pattern.handleIdProofSetterCall(instance, method, this.args);
         }
         return true;
+    }
+
+    public Class getBaseClass() {
+        return baseClass;
+    }
+
+    public Method getIdProofSetter() {
+        return idProofSetter;
+    }
+
+    public HashMap<Method, String> getAuthenticateMethods() {
+        return authenticateMethods;
+    }
+
+    public HashMap<String, Method> getAuthInfoGetters() {
+        return authInfoGetters;
+    }
+
+    public Method[] getArgs() {
+        return args;
     }
 }

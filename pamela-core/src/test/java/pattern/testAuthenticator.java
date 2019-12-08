@@ -6,8 +6,13 @@ import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.patterns.PatternContext;
+import org.openflexo.pamela.patterns.authenticator.AuthenticatorPattern;
+import org.openflexo.pamela.patterns.authenticator.SubjectEntity;
+import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticateMethod;
 import pattern.modelAuthenticator.IAuthenticator;
 import pattern.modelAuthenticator.Subject;
+
+import java.lang.reflect.Method;
 
 public class testAuthenticator extends AbstractPAMELATest {
     ModelFactory factory;
@@ -22,7 +27,16 @@ public class testAuthenticator extends AbstractPAMELATest {
     public void testPatternAnalysis() throws Exception {
         PatternContext patternContext = this.factory.getModelContext().getPatternContext();
         assertNotNull(patternContext);
-        // TODO Add getters to inspect code
+        assertNotNull(patternContext.getAuthenticatorPatterns().get(Subject.PATTERN_ID));
+        AuthenticatorPattern pattern = patternContext.getAuthenticatorPatterns().get(Subject.PATTERN_ID);
+        assertEquals(IAuthenticator.class, pattern.getAuthenticator().getBaseClass());
+        assertEquals(IAuthenticator.class.getMethod("request", String.class), pattern.getAuthenticator().getMethod());
+        assertTrue(pattern.getSubjects().containsKey(Subject.class) && pattern.getSubjects().size() == 1);
+        SubjectEntity subject = pattern.getSubjects().get(Subject.class);
+        assertTrue(subject.getArgs().length == 1 && subject.getArgs()[0].equals(Subject.class.getMethod("getAuthInfo")));
+        assertEquals(Subject.class.getMethod("authenticate" ).getAnnotation(AuthenticateMethod.class).authenticator(), subject.getAuthenticateMethods().get(Subject.class.getMethod("authenticate" )));
+        assertEquals(Subject.class, subject.getBaseClass());
+        assertEquals(Subject.class.getMethod("setIdProof", int.class), subject.getIdProofSetter());
     }
 
     @Test

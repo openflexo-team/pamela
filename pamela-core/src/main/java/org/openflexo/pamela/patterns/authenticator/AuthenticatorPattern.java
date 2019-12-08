@@ -23,7 +23,7 @@ public class AuthenticatorPattern extends AbstractPattern {
     public AuthenticatorPattern(PatternContext context, String id){
         this.context = context;
         this.id = id;
-        this.subjects = new HashMap<Class, SubjectEntity>();
+        this.subjects = new HashMap<>();
     }
 
     public PatternContext getContext(){
@@ -57,9 +57,6 @@ public class AuthenticatorPattern extends AbstractPattern {
                 throw new InconsistentAuthenticatorEntityException("Missing annotations in " + authenticatorClass.getSimpleName() + "Authenticator definition with ID " + this.id);
             }
         }
-        /*else if (this.authenticator.getClassName().compareTo(authenticatorClass.getName()) != 0){
-            throw new ModelDefinitionException("Duplicate @Authenticator for pattern " + this.id);
-        }*/
     }
 
     private void attachSubject(Class klass) throws ModelDefinitionException, NoSuchMethodException {
