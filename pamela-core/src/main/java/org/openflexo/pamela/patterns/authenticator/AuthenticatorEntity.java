@@ -3,15 +3,18 @@ package org.openflexo.pamela.patterns.authenticator;
 import org.openflexo.pamela.patterns.authenticator.annotations.RequestAuthentication;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 
 public class AuthenticatorEntity {
     private AuthenticatorPattern pattern;
     private Class authenticatorClass;
     private Method requestMethod;
+    private HashMap<Object, AuthenticatorInstance> instances;
 
     public AuthenticatorEntity(AuthenticatorPattern authenticatorPatternProperty, Class authenticatorClass) {
         this.pattern = authenticatorPatternProperty;
         this.authenticatorClass = authenticatorClass;
+        this.instances = new HashMap<>();
         this.analyzeClass();
     }
 
@@ -42,5 +45,10 @@ public class AuthenticatorEntity {
 
     public Method getMethod() {
         return this.requestMethod;
+    }
+
+    public void discoverInstance(Object instance) {
+        this.instances.put(instance, new AuthenticatorInstance(instance, this));
+        this.instances.get(instance).init();
     }
 }

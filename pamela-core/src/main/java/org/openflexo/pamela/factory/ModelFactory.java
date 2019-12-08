@@ -110,7 +110,7 @@ public class ModelFactory implements IObjectGraphFactory {
 		private boolean locked = false;
 		private boolean overridingSuperClass = false;
 
-		public PAMELAProxyFactory(ModelEntity<I> aModelEntity) throws ModelDefinitionException {
+		public PAMELAProxyFactory(ModelEntity<I> aModelEntity, ModelContext context) throws ModelDefinitionException {
 			super();
 			this.modelEntity = aModelEntity;
 			setFilter(new MethodFilter() {
@@ -125,6 +125,14 @@ public class ModelFactory implements IObjectGraphFactory {
 
 					if (aModelEntity.getJMLMethodDefinition(method) != null) {
 						return true;
+					}
+					if (context.getPatternContext().getRelatedPatternsFromClass(aModelEntity.getImplementedInterface()).size() > 0){
+						try {
+							aModelEntity.getImplementedInterface().getMethod(method.getName(), method.getParameterTypes());
+							return true;
+						}
+						catch (NoSuchMethodException e){
+						}
 					}
 
 					// TODO perf issue ??? Check this !
@@ -366,7 +374,7 @@ public class ModelFactory implements IObjectGraphFactory {
 			}
 			else {
 				if (create) {
-					proxyFactories.put(implementedInterface, proxyFactory = new PAMELAProxyFactory<>(entity));
+					proxyFactories.put(implementedInterface, proxyFactory = new PAMELAProxyFactory<>(entity, this.getModelContext()));
 				}
 			}
 		}

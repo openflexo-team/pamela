@@ -34,7 +34,7 @@ public class testAuthenticator extends AbstractPAMELATest {
         assertTrue(pattern.getSubjects().containsKey(Subject.class) && pattern.getSubjects().size() == 1);
         SubjectEntity subject = pattern.getSubjects().get(Subject.class);
         assertTrue(subject.getArgs().length == 1 && subject.getArgs()[0].equals(Subject.class.getMethod("getAuthInfo")));
-        assertEquals(Subject.class.getMethod("authenticate" ).getAnnotation(AuthenticateMethod.class).authenticator(), subject.getAuthenticateMethods().get(Subject.class.getMethod("authenticate" )));
+        assertTrue(subject.getAuthenticateMethods().size() == 1 && subject.getAuthenticateMethods().get(0).equals(Subject.class.getMethod("authenticate")));
         assertEquals(Subject.class, subject.getBaseClass());
         assertEquals(Subject.class.getMethod("setIdProof", int.class), subject.getIdProofSetter());
     }

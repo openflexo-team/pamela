@@ -2,13 +2,14 @@ package org.openflexo.pamela.patterns.authenticator;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticationInformation;
+import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorGetter;
 import org.openflexo.pamela.patterns.authenticator.annotations.ProofOfIdentity;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticateMethod;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
-import playground.Subject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,16 +18,19 @@ public class SubjectEntity {
     private AuthenticatorPattern pattern;
     private Class baseClass;
     private Method idProofSetter;
-    private HashMap<Method, String> authenticateMethods;
+    private ArrayList<Method> authenticateMethods;
     private HashMap<String, Method> authInfoGetters;
+    private HashMap<Object, SubjectInstance> instances;
     private Method[] args;
     private boolean successLinking;
+    private Method authenticatorGetter;
 
     protected SubjectEntity(AuthenticatorPattern pattern, Class klass) throws ModelDefinitionException, NoSuchMethodException {
         this.pattern = pattern;
         this.baseClass = klass;
         this.authInfoGetters = new HashMap<>();
-        this.authenticateMethods = new HashMap<>();
+        this.authenticateMethods = new ArrayList<>();
+        this.instances = new HashMap<>();
         this.analyzeClass();
         this.successLinking = false;
         this.link();
@@ -44,9 +48,20 @@ public class SubjectEntity {
             }
             AuthenticateMethod authenticateMethodAnnotation =  m.getAnnotation(AuthenticateMethod.class);
             if (authenticateMethodAnnotation != null && authenticateMethodAnnotation.patternID().compareTo(pattern.getID()) == 0){
-                this.processRequiresAuthentication(m, authenticateMethodAnnotation);
+                this.processAuthenticateMethod(m, authenticateMethodAnnotation);
+            }
+            AuthenticatorGetter authenticatorGetterAnnotation = m.getAnnotation(AuthenticatorGetter.class);
+            if (authenticatorGetterAnnotation != null && authenticatorGetterAnnotation.patternID().compareTo(pattern.getID()) == 0){
+                this.processAuthenticatorGetter(m, authenticatorGetterAnnotation);
             }
         }
+    }
+
+    private void processAuthenticatorGetter(Method m, AuthenticatorGetter annotation) throws ModelDefinitionException{
+        if (this.authenticatorGetter == null) {
+            this.authenticatorGetter = m;
+        }
+        this.pattern.attachAuthenticatorFromAuthenticatorGetter(m.getReturnType());
     }
 
     private void processAuthenticationInformation(Method method, AuthenticationInformation annotation) throws InconsistentSubjectEntityException {
@@ -67,9 +82,8 @@ public class SubjectEntity {
         }
     }
 
-    private void processRequiresAuthentication(Method method, AuthenticateMethod annotation) throws ModelDefinitionException, NoSuchMethodException {
-        this.authenticateMethods.put(method, annotation.authenticator());
-        this.pattern.attachAuthenticatorFromAuthenticateMethod(this.baseClass.getMethod(annotation.authenticator()).getReturnType());
+    private void processAuthenticateMethod(Method method, AuthenticateMethod annotation){
+        this.authenticateMethods.add(method);
     }
 
     private void link(){
@@ -96,19 +110,19 @@ public class SubjectEntity {
 
     public boolean processMethodBeforeInvoke(Object instance, Method method, Class klass) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Method superMethod = klass.getMethod(method.getName(), method.getParameterTypes());
-        if (this.authenticateMethods.containsKey(method)){
-            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticateMethods.get(method));
-            return false;
+        if (this.authenticateMethods.contains(method)){
+            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticatorGetter);
+            return !Modifier.isAbstract(method.getModifiers());
         }
-        else if (this.authenticateMethods.containsKey(superMethod)){
-            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticateMethods.get(superMethod));
-            return false;
+        else if (this.authenticateMethods.contains(superMethod)){
+            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticatorGetter);
+            return !Modifier.isAbstract(method.getModifiers());
         }
 
-        if (this.idProofSetter.hashCode() == method.hashCode()){
+        if (this.idProofSetter.equals(method)){
             return pattern.handleIdProofSetterCall(instance, method, this.args);
         }
-        else if (this.idProofSetter.hashCode() == superMethod.hashCode()){
+        else if (this.idProofSetter.equals(superMethod)){
             return pattern.handleIdProofSetterCall(instance, method, this.args);
         }
         return true;
@@ -122,7 +136,7 @@ public class SubjectEntity {
         return idProofSetter;
     }
 
-    public HashMap<Method, String> getAuthenticateMethods() {
+    public ArrayList<Method> getAuthenticateMethods() {
         return authenticateMethods;
     }
 
@@ -132,5 +146,12 @@ public class SubjectEntity {
 
     public Method[] getArgs() {
         return args;
+    }
+
+    public void discoverInstance(Object instance) {
+        if (!this.instances.containsKey(instance)){
+            this.instances.put(instance, new SubjectInstance(instance, this));
+            this.instances.get(instance).init();
+        }
     }
 }

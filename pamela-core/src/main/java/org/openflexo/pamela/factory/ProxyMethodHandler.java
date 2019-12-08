@@ -48,7 +48,6 @@ import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -101,7 +100,6 @@ import org.openflexo.pamela.jml.JMLEnsures;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.jml.JMLRequires;
 import org.openflexo.pamela.jml.SpecificationsViolationException;
-import org.openflexo.pamela.patterns.AbstractPattern;
 import org.openflexo.pamela.patterns.PatternClassWrapper;
 import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.undo.AddCommand;
@@ -343,7 +341,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			assertionChecking = checkOnEntry(method, args);
 		}
 		boolean keepGoing = true;
-		for (PatternClassWrapper wrapper : patternContext.getRelatedPatterns(self)){
+		for (PatternClassWrapper wrapper : patternContext.getRelatedPatternsFromInstance(self)){
 			keepGoing = keepGoing && wrapper.getPattern().processMethodBeforeInvoke(self, method, wrapper.getKlass());
 		}
 		if (!keepGoing){

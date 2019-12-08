@@ -1389,5 +1389,4 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 	public static boolean isModelEntity(Class<?> type) {
 		return type.isAnnotationPresent(org.openflexo.pamela.annotations.ModelEntity.class);
 	}
-
 }

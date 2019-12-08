@@ -5,10 +5,7 @@ import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.factory.AccessibleProxyObject;
-import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticateMethod;
-import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticationInformation;
-import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
-import org.openflexo.pamela.patterns.authenticator.annotations.ProofOfIdentity;
+import org.openflexo.pamela.patterns.authenticator.annotations.*;
 
 @ModelEntity
 @AuthenticatorSubject(patternID = Subject.PATTERN_ID)
@@ -34,11 +31,12 @@ public interface Subject extends AccessibleProxyObject {
     void setIdProof(int val);
 
     @Getter(MANAGER)
+    @AuthenticatorGetter(patternID = PATTERN_ID)
     IAuthenticator getManager();
     @Setter(MANAGER)
     void setManager(IAuthenticator val);
 
-    @AuthenticateMethod(patternID = PATTERN_ID, authenticator = "getManager")
+    @AuthenticateMethod(patternID = PATTERN_ID)
     void authenticate();
 
 }

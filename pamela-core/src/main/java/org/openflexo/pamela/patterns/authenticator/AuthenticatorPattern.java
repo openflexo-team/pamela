@@ -37,7 +37,7 @@ public class AuthenticatorPattern extends AbstractPattern {
         }
     }
 
-    protected void attachAuthenticatorFromAuthenticateMethod(Class authenticatorClass) throws ModelDefinitionException {
+    protected void attachAuthenticatorFromAuthenticatorGetter(Class authenticatorClass) throws ModelDefinitionException {
         if (this.authenticator == null){
             Class auth = null;
             for (Class klass : PatternLibrary.getClassHierarchy(authenticatorClass)){
@@ -52,6 +52,7 @@ public class AuthenticatorPattern extends AbstractPattern {
             AuthenticatorEntity authenticator = new AuthenticatorEntity(this, auth);
             if  (authenticator.isComplete()){
                 this.authenticator = authenticator;
+                this.context.attachAuthenticatorClass(this.authenticator.getBaseClass(), this.id);
             }
             else {
                 throw new InconsistentAuthenticatorEntityException("Missing annotations in " + authenticatorClass.getSimpleName() + "Authenticator definition with ID " + this.id);
@@ -86,8 +87,18 @@ public class AuthenticatorPattern extends AbstractPattern {
         return returned;
     }
 
-    public void performAuthentication(Object instance, Method idProofSetter, Method[] args, String authenticatorGetter) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-        Object authenticatorInstance = instance.getClass().getMethod(authenticatorGetter).invoke(instance);
+    @Override
+    public void discoverInstance(Object instance, Class klass){
+        if (this.subjects.containsKey(klass)){
+            this.subjects.get(klass).discoverInstance(instance);
+        }
+        if (this.authenticator.getBaseClass().equals(klass)){
+            this.authenticator.discoverInstance(instance);
+        }
+    }
+
+    public void performAuthentication(Object instance, Method idProofSetter, Method[] args, Method authenticatorGetter) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        Object authenticatorInstance = authenticatorGetter.invoke(instance);
         Object[] instanceArgs = new Object[args.length];
         int current = 0;
         for (Method m : args){
