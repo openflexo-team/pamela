@@ -5,27 +5,25 @@ import org.junit.Test;
 import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.patterns.PatternClassWrapper;
 import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.authenticator.AuthenticatorPattern;
 import org.openflexo.pamela.patterns.authenticator.SubjectEntity;
+import org.openflexo.pamela.patterns.authenticator.SubjectInstance;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticateMethod;
+import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
 import pattern.modelAuthenticator.IAuthenticator;
 import pattern.modelAuthenticator.Subject;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 public class testAuthenticator extends AbstractPAMELATest {
-    ModelFactory factory;
-
-    @Override
-    @BeforeClass
-    public void setUp() throws Exception{
-        factory = new ModelFactory(new ModelContext(Subject.class));
-    }
 
     @Test
-    public void testPatternAnalysis() throws Exception {
-        PatternContext patternContext = this.factory.getModelContext().getPatternContext();
+    public static void testPatternAnalysis() throws Exception {
+        ModelContext context = new ModelContext(Subject.class);
+        PatternContext patternContext = context.getPatternContext();
         assertNotNull(patternContext);
         assertNotNull(patternContext.getAuthenticatorPatterns().get(Subject.PATTERN_ID));
         AuthenticatorPattern pattern = patternContext.getAuthenticatorPatterns().get(Subject.PATTERN_ID);
@@ -40,7 +38,9 @@ public class testAuthenticator extends AbstractPAMELATest {
     }
 
     @Test
-    public void testAuthenticateValid() throws Exception{
+    public static void testAuthenticateValid() throws Exception{
+        ModelContext context = new ModelContext(Subject.class);
+        ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
         manager.init();
         Subject subject = factory.newInstance(Subject.class);
@@ -52,7 +52,9 @@ public class testAuthenticator extends AbstractPAMELATest {
     }
 
     @Test
-    public void testAuthenticatorInvalidReturn() throws Exception{
+    public static void testAuthenticatorInvalidReturn() throws Exception{
+        ModelContext context = new ModelContext(Subject.class);
+        ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
         Subject subject = factory.newInstance(Subject.class);
         manager.init();
@@ -63,7 +65,9 @@ public class testAuthenticator extends AbstractPAMELATest {
     }
 
     @Test
-    public void testSetterNoEffect() throws Exception {
+    public static void testSetterNoEffect() throws Exception {
+        ModelContext context = new ModelContext(Subject.class);
+        ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
         Subject subject = factory.newInstance(Subject.class);
         subject.setManager(manager);
@@ -71,5 +75,25 @@ public class testAuthenticator extends AbstractPAMELATest {
         subject.authenticate();
         subject.setIdProof(-1);
         assertEquals(subject.getIDProof(), manager.generateFromAuthInfo(subject.getAuthInfo()));
+    }
+
+    @Test
+    public static void testInstanceDiscovery() throws Exception {
+        //TODO Works with debugger but not with test execution
+        /*
+        ModelContext context = new ModelContext(Subject.class);
+        ModelFactory factory = new ModelFactory(context);
+        assertTrue(context.getPatternContext().getKnownInstances().isEmpty());
+        IAuthenticator manager = factory.newInstance(IAuthenticator.class);
+        assertTrue(context.getPatternContext().getKnownInstances().containsKey(manager));
+        Subject subject = factory.newInstance(Subject.class);
+        assertTrue(context.getPatternContext().getKnownInstances().containsKey(subject));
+        ArrayList<PatternClassWrapper> patternList = context.getPatternContext().getKnownInstances().get(subject);
+        assertTrue(patternList.size() == 1 );
+        AuthenticatorPattern pattern = (AuthenticatorPattern)patternList.get(0).getPattern();
+        assertTrue(pattern.getSubjects().containsKey(patternList.get(0).getKlass()));
+        SubjectEntity subjectEntity = pattern.getSubjects().get(patternList.get(0).getKlass());
+        assertTrue(subjectEntity.getInstances().size() == 1 && subjectEntity.getInstances().containsKey(subject));
+        */
     }
 }

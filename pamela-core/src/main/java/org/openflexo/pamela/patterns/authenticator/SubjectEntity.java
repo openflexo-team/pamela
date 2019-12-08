@@ -154,4 +154,8 @@ public class SubjectEntity {
             this.instances.get(instance).init();
         }
     }
+
+    public HashMap<Object, SubjectInstance> getInstances() {
+        return instances;
+    }
 }

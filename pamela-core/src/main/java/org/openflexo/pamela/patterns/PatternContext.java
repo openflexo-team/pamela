@@ -17,6 +17,7 @@ public class PatternContext {
     private HashMap<Class, ArrayList<String>> authenticatorSubjectClasses;
     private HashMap<Class, ArrayList<String>> authenticatorClasses;
     private ModelContext modelContext;
+
     private HashMap<Object, ArrayList<PatternClassWrapper>> knownInstances;
 
     public PatternContext(ModelContext context) {
@@ -101,5 +102,9 @@ public class PatternContext {
             }
         }
         return wrappers;
+    }
+
+    public HashMap<Object, ArrayList<PatternClassWrapper>> getKnownInstances() {
+        return knownInstances;
     }
 }
