@@ -16,6 +16,7 @@ public interface Subject extends AccessibleProxyObject {
     String MANAGER = "manager";
     String ID_PROOF = "id_proof";
 
+    @Initializer
     default void init(IAuthenticator manager, String id) {setManager(manager);setAuthInfo(id);}
 
     @Getter(value = AUTH_INFO, defaultValue = AUTH_INFO)

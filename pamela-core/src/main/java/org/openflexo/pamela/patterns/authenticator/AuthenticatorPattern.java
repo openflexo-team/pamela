@@ -80,11 +80,23 @@ public class AuthenticatorPattern extends AbstractPattern {
 
     @Override
     public boolean processMethodBeforeInvoke(Object instance, Method method, Class klass) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        if (!context.isInConstructor()){
+            this.checkBeforeInvoke(instance, method, klass);
+        }
         boolean returned = true;
         if (this.subjects.containsKey(klass)){
             returned = this.subjects.get(klass).processMethodBeforeInvoke(instance, method, klass);
         }
         return returned;
+    }
+
+    private void checkBeforeInvoke(Object instance, Method method, Class klass) {
+        if (this.subjects.containsKey(klass) && this.subjects.get(klass).getInstances().containsKey(instance)){
+            this.subjects.get(klass).getInstances().get(instance).checkBeforeInvoke(method);
+        }
+        if (this.authenticator.getBaseClass().equals(klass) && this.authenticator.getInstances().containsKey(instance)){
+            this.authenticator.getInstances().get(instance).checkBeforeInvoke(method);
+        }
     }
 
     @Override
@@ -97,7 +109,23 @@ public class AuthenticatorPattern extends AbstractPattern {
         }
     }
 
-    public void performAuthentication(Object instance, Method idProofSetter, Method[] args, Method authenticatorGetter) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    @Override
+    public void processMethodAfterInvoke(Object instance, Method method, Class klass, Object returnValue) {
+        if (!context.isInConstructor()) {
+            this.checkAfterInvoke(instance, method, klass, returnValue);
+        }
+    }
+
+    private void checkAfterInvoke(Object instance, Method method, Class klass, Object returnValue) {
+        if (this.subjects.containsKey(klass) && this.subjects.get(klass).getInstances().containsKey(instance)){
+            this.subjects.get(klass).getInstances().get(instance).checkAfterInvoke(method, returnValue);
+        }
+        if (this.authenticator.getBaseClass().equals(klass) && this.authenticator.getInstances().containsKey(instance)){
+            this.authenticator.getInstances().get(instance).checkAfterInvoke(method, returnValue);
+        }
+    }
+
+    public void performAuthentication(Object instance, Method idProofSetter, Method[] args, Method authenticatorGetter, SubjectEntity subjectEntity) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Object authenticatorInstance = authenticatorGetter.invoke(instance);
         Object[] instanceArgs = new Object[args.length];
         int current = 0;
@@ -106,15 +134,8 @@ public class AuthenticatorPattern extends AbstractPattern {
             current++;
         }
         Object proof = this.authenticator.getMethod().invoke(authenticatorInstance, instanceArgs);
+        subjectEntity.getInstances().get(instance).setIDProof(proof);
         idProofSetter.invoke(instance, proof);
-    }
-
-    public boolean handleIdProofSetterCall(Object instance, Method method, Method[] args) {
-        StackTraceElement[] cause = Thread.currentThread().getStackTrace();
-        if (cause.length < 12 || cause[12].getClassName().compareTo(this.getClass().getName()) != 0){
-            return false;
-        }
-        return true;
     }
 
     public HashMap<Class, SubjectEntity> getSubjects() {

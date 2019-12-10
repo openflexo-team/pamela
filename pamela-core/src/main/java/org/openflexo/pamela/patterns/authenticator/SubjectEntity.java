@@ -1,5 +1,6 @@
 package org.openflexo.pamela.patterns.authenticator;
 
+import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticationInformation;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorGetter;
@@ -24,6 +25,7 @@ public class SubjectEntity {
     private Method[] args;
     private boolean successLinking;
     private Method authenticatorGetter;
+    private Method idProofGetter;
 
     protected SubjectEntity(AuthenticatorPattern pattern, Class klass) throws ModelDefinitionException, NoSuchMethodException {
         this.pattern = pattern;
@@ -73,12 +75,20 @@ public class SubjectEntity {
         }
     }
 
-    private void processIdProof(Method method, ProofOfIdentity annotation) throws InconsistentSubjectEntityException {
+    private void processIdProof(Method method, ProofOfIdentity annotation) throws ModelDefinitionException {
         if (this.idProofSetter == null){
             this.idProofSetter = method;
         }
         else {
             throw new InconsistentSubjectEntityException("Duplicate @ProofOfIdentity annotation with same pattern ID (" + this.pattern.getID() + ") in " + this.baseClass.getSimpleName());
+        }
+        Setter setter = method.getAnnotation(Setter.class);
+        if (setter == null){
+            throw new InconsistentSubjectEntityException("Proof of identity annotation not on a setter in " + this.baseClass.getSimpleName());
+        }
+        this.idProofGetter = this.pattern.getContext().getContext().getModelEntity(this.baseClass).getModelProperty(setter.value()).getGetterMethod();
+        if (this.idProofGetter == null){
+            throw new InconsistentSubjectEntityException("No getter for Proof of identity in " + this.baseClass.getSimpleName());
         }
     }
 
@@ -111,20 +121,14 @@ public class SubjectEntity {
     public boolean processMethodBeforeInvoke(Object instance, Method method, Class klass) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Method superMethod = klass.getMethod(method.getName(), method.getParameterTypes());
         if (this.authenticateMethods.contains(method)){
-            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticatorGetter);
+            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticatorGetter, this);
             return !Modifier.isAbstract(method.getModifiers());
         }
         else if (this.authenticateMethods.contains(superMethod)){
-            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticatorGetter);
+            pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticatorGetter, this);
             return !Modifier.isAbstract(method.getModifiers());
         }
 
-        if (this.idProofSetter.equals(method)){
-            return pattern.handleIdProofSetterCall(instance, method, this.args);
-        }
-        else if (this.idProofSetter.equals(superMethod)){
-            return pattern.handleIdProofSetterCall(instance, method, this.args);
-        }
         return true;
     }
 
@@ -157,5 +161,17 @@ public class SubjectEntity {
 
     public HashMap<Object, SubjectInstance> getInstances() {
         return instances;
+    }
+
+    public Method getAuthenticatorGetter() {
+        return this.authenticatorGetter;
+    }
+
+    public AuthenticatorPattern getPattern() {
+        return this.pattern;
+    }
+
+    public Method getIdProofGetter() {
+        return this.idProofGetter;
     }
 }

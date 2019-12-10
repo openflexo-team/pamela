@@ -15,6 +15,7 @@ public interface IAuthenticator {
     String LIST = "list";
     String ID = "id";
 
+    @Initializer
     default void init() {setList(new ArrayList<>());}
 
     @Getter(value = LIST, cardinality = Getter.Cardinality.LIST)

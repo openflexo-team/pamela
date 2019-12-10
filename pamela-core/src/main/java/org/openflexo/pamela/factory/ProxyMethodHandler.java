@@ -336,12 +336,13 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 		boolean assertionChecking = false;
 		PatternContext patternContext = this.getModelFactory().getModelContext().getPatternContext();
-
 		if (enableAssertionChecking) {
 			assertionChecking = checkOnEntry(method, args);
 		}
+
 		boolean keepGoing = true;
-		for (PatternClassWrapper wrapper : patternContext.getRelatedPatternsFromInstance(self)){
+		ArrayList<PatternClassWrapper> patternsOfInterest = patternContext.getRelatedPatternsFromInstance(self);
+		for (PatternClassWrapper wrapper : patternsOfInterest){
 			keepGoing = keepGoing && wrapper.getPattern().processMethodBeforeInvoke(self, method, wrapper.getKlass());
 		}
 		if (!keepGoing){
@@ -356,6 +357,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		if (enableAssertionChecking && assertionChecking) {
 			checkOnExit(method, args);
 		}
+
+		for (PatternClassWrapper wrapper : patternsOfInterest) {
+			wrapper.getPattern().processMethodAfterInvoke(self, method, wrapper.getKlass(), invoke);
+		}
+
 		return invoke;
 	}
 

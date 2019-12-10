@@ -3,13 +3,9 @@ package org.openflexo.pamela.patterns;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.authenticator.AuthenticatorPattern;
-import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class PatternContext {
@@ -17,6 +13,7 @@ public class PatternContext {
     private HashMap<Class, ArrayList<String>> authenticatorSubjectClasses;
     private HashMap<Class, ArrayList<String>> authenticatorClasses;
     private ModelContext modelContext;
+    private boolean inConstructor;
 
     private HashMap<Object, ArrayList<PatternClassWrapper>> knownInstances;
 
@@ -26,6 +23,7 @@ public class PatternContext {
         this.authenticatorClasses = new HashMap<>();
         this.knownInstances = new HashMap<>();
         this.modelContext = context;
+        this.inConstructor = false;
     }
 
     public void attachClass(Class baseClass) throws NoSuchMethodException, ModelDefinitionException {
@@ -46,6 +44,14 @@ public class PatternContext {
         }
     }
 
+    public void insideConstructor(){
+        this.inConstructor = true;
+    }
+
+    public void leavingConstructor(){
+        this.inConstructor = false;
+    }
+
     public ArrayList<PatternClassWrapper> getRelatedPatternsFromInstance(Object instance) {
         ArrayList<PatternClassWrapper> wrappers;
         if (this.knownInstances.containsKey(instance)) {
@@ -56,17 +62,17 @@ public class PatternContext {
                 if (this.authenticatorSubjectClasses.containsKey(klass)) {
                     for (String id : this.authenticatorSubjectClasses.get(klass)) {
                         wrappers.add(new PatternClassWrapper(this.authenticatorPatterns.get(id), klass));
-                        this.authenticatorPatterns.get(id).discoverInstance(instance, klass);
+                        if (!this.inConstructor)this.authenticatorPatterns.get(id).discoverInstance(instance, klass);
                     }
                 }
                 if (this.authenticatorClasses.containsKey(klass)) {
                     for (String id : this.authenticatorClasses.get(klass)) {
                         wrappers.add(new PatternClassWrapper(this.authenticatorPatterns.get(id), klass));
-                        this.authenticatorPatterns.get(id).discoverInstance(instance, klass);
+                        if (!this.inConstructor)this.authenticatorPatterns.get(id).discoverInstance(instance, klass);
                     }
                 }
             }
-            this.knownInstances.put(instance, wrappers);
+            if (!this.inConstructor)this.knownInstances.put(instance, wrappers);
         }
         return wrappers;
     }
@@ -106,5 +112,13 @@ public class PatternContext {
 
     public HashMap<Object, ArrayList<PatternClassWrapper>> getKnownInstances() {
         return knownInstances;
+    }
+
+    public boolean isInConstructor() {
+        return this.inConstructor;
+    }
+
+    public ModelContext getContext() {
+        return this.modelContext;
     }
 }

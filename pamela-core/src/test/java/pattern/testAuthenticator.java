@@ -1,22 +1,15 @@
 package pattern;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.patterns.PatternClassWrapper;
 import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.authenticator.AuthenticatorPattern;
 import org.openflexo.pamela.patterns.authenticator.SubjectEntity;
-import org.openflexo.pamela.patterns.authenticator.SubjectInstance;
-import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticateMethod;
-import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
 import pattern.modelAuthenticator.IAuthenticator;
 import pattern.modelAuthenticator.Subject;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 
 public class testAuthenticator extends AbstractPAMELATest {
 
@@ -42,9 +35,7 @@ public class testAuthenticator extends AbstractPAMELATest {
         ModelContext context = new ModelContext(Subject.class);
         ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-        manager.init();
-        Subject subject = factory.newInstance(Subject.class);
-        subject.init(manager, "id1");
+        Subject subject = factory.newInstance(Subject.class, manager, "id1");
         subject.setManager(manager);
         manager.addUser(subject.getAuthInfo());
         subject.authenticate();
@@ -56,25 +47,10 @@ public class testAuthenticator extends AbstractPAMELATest {
         ModelContext context = new ModelContext(Subject.class);
         ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-        Subject subject = factory.newInstance(Subject.class);
-        manager.init();
-        subject.init(manager, "id");
+        Subject subject = factory.newInstance(Subject.class, manager, "id");
         subject.setManager(manager);
         subject.authenticate();
         assertEquals(subject.getIDProof(),manager.getDefaultToken());
-    }
-
-    @Test
-    public static void testSetterNoEffect() throws Exception {
-        ModelContext context = new ModelContext(Subject.class);
-        ModelFactory factory = new ModelFactory(context);
-        IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-        Subject subject = factory.newInstance(Subject.class);
-        subject.setManager(manager);
-        manager.addUser(subject.getAuthInfo());
-        subject.authenticate();
-        subject.setIdProof(-1);
-        assertEquals(subject.getIDProof(), manager.generateFromAuthInfo(subject.getAuthInfo()));
     }
 
     @Test
@@ -86,7 +62,7 @@ public class testAuthenticator extends AbstractPAMELATest {
         assertTrue(context.getPatternContext().getKnownInstances().isEmpty());
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
         assertTrue(context.getPatternContext().getKnownInstances().containsKey(manager));
-        Subject subject = factory.newInstance(Subject.class);
+        Subject subject = factory.newInstance(Subject.class, manager, "id");
         assertTrue(context.getPatternContext().getKnownInstances().containsKey(subject));
         ArrayList<PatternClassWrapper> patternList = context.getPatternContext().getKnownInstances().get(subject);
         assertTrue(patternList.size() == 1 );
@@ -96,4 +72,87 @@ public class testAuthenticator extends AbstractPAMELATest {
         assertTrue(subjectEntity.getInstances().size() == 1 && subjectEntity.getInstances().containsKey(subject));
         */
     }
+
+    @Test
+    public static void testAuthInfoUniqueness() throws Exception {
+        ModelContext context = new ModelContext(Subject.class);
+        ModelFactory factory = new ModelFactory(context);
+        IAuthenticator manager = factory.newInstance(IAuthenticator.class);
+        Subject subject = factory.newInstance(Subject.class, manager, "id");
+        Subject subject2 = factory.newInstance(Subject.class, manager, "id2");
+        Subject subject3 = factory.newInstance(Subject.class, manager, "id");
+        subject.getAuthInfo();
+        subject2.getAuthInfo();
+        try {
+            subject3.getAuthInfo();
+            fail();
+        }
+        catch (ModelExecutionException e){
+            e.printStackTrace();
+            if (e.getMessage().compareTo("Subject Invariant Violation: Authentication information are not unique") != 0){
+                fail();
+            }
+        }
+    }
+
+    @Test
+    public static void testAuthenticatorInvariant() throws Exception {
+        ModelContext context = new ModelContext(Subject.class);
+        ModelFactory factory = new ModelFactory(context);
+        IAuthenticator manager = factory.newInstance(IAuthenticator.class);
+        Subject subject = factory.newInstance(Subject.class, manager, "id");
+        subject.setManager(manager);
+        try {
+            subject.setManager(factory.newInstance(IAuthenticator.class));
+            fail();
+        }
+        catch (ModelExecutionException e){
+            e.printStackTrace();
+            if (e.getMessage().compareTo("Subject Invariant Violation: Authenticator has changed since initialization") != 0){
+                fail();
+            }
+        }
+    }
+
+    @Test
+    public static void testAuthInfoInvariant() throws Exception {
+        ModelContext context = new ModelContext(Subject.class);
+        ModelFactory factory = new ModelFactory(context);
+        IAuthenticator manager = factory.newInstance(IAuthenticator.class);
+        Subject subject = factory.newInstance(Subject.class, manager, "id");
+        subject.setAuthInfo("id");
+        try {
+            subject.setAuthInfo(null);
+            fail();
+        }
+        catch (ModelExecutionException e){
+            e.printStackTrace();
+            if (e.getMessage().compareTo("Subject Invariant Violation: Authentication Information has changed since initialization") != 0){
+                fail();
+            }
+        }
+    }
+
+    @Test
+    public static void testIdProofForgery() throws Exception {
+        ModelContext context = new ModelContext(Subject.class);
+        ModelFactory factory = new ModelFactory(context);
+        IAuthenticator manager = factory.newInstance(IAuthenticator.class);
+        Subject subject = factory.newInstance(Subject.class, manager, "id");
+        subject.setIdProof(-1);
+        subject.authenticate();
+        subject.setIdProof(subject.getIDProof());
+        try {
+            subject.setIdProof(subject.getIDProof() + 1);
+            fail();
+        }
+        catch (ModelExecutionException e){
+            e.printStackTrace();
+            if (e.getMessage().compareTo("Subject Invariant Violation: Proof of identity has been forged") != 0){
+                fail();
+            }
+        }
+    }
+
+
 }

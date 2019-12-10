@@ -51,4 +51,8 @@ public class AuthenticatorEntity {
         this.instances.put(instance, new AuthenticatorInstance(instance, this));
         this.instances.get(instance).init();
     }
+
+    public HashMap<Object, AuthenticatorInstance> getInstances() {
+        return this.instances;
+    }
 }

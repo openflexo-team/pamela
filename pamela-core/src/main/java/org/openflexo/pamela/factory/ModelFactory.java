@@ -278,6 +278,7 @@ public class ModelFactory implements IObjectGraphFactory {
 
 	public <I> I newInstance(Class<I> implementedInterface, Object... args) {
 		try {
+			this.getModelContext().getPatternContext().insideConstructor();
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
 			I returned = proxyFactory.newInstance(args);
 			if (getEditingContext() != null) {
@@ -285,6 +286,7 @@ public class ModelFactory implements IObjectGraphFactory {
 					getEditingContext().getUndoManager().addEdit(new CreateCommand<>(returned, proxyFactory.getModelEntity(), this));
 				}
 			}
+			this.getModelContext().getPatternContext().leavingConstructor();
 			return returned;
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
