@@ -18,10 +18,10 @@ public class testAuthenticator extends AbstractPAMELATest {
         ModelContext context = new ModelContext(Subject.class);
         PatternContext patternContext = context.getPatternContext();
         assertNotNull(patternContext);
-        assertNotNull(patternContext.getAuthenticatorPatterns().get(Subject.PATTERN_ID));
-        AuthenticatorPattern pattern = patternContext.getAuthenticatorPatterns().get(Subject.PATTERN_ID);
+        assertNotNull(patternContext.getPatterns().get(Subject.PATTERN_ID));
+        AuthenticatorPattern pattern = (AuthenticatorPattern)patternContext.getPatterns().get(Subject.PATTERN_ID);
         assertEquals(IAuthenticator.class, pattern.getAuthenticator().getBaseClass());
-        assertEquals(IAuthenticator.class.getMethod("request", String.class), pattern.getAuthenticator().getMethod());
+        assertEquals(IAuthenticator.class.getMethod("request", String.class), pattern.getAuthenticator().getRequestMethod());
         assertTrue(pattern.getSubjects().containsKey(Subject.class) && pattern.getSubjects().size() == 1);
         SubjectEntity subject = pattern.getSubjects().get(Subject.class);
         assertTrue(subject.getArgs().length == 1 && subject.getArgs()[0].equals(Subject.class.getMethod("getAuthInfo")));

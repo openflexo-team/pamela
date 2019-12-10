@@ -28,7 +28,7 @@ public interface Subject extends AccessibleProxyObject {
     @Getter(value = ID_PROOF, defaultValue = "-1")
     int getIDProof();
     @Setter(ID_PROOF)
-    @ProofOfIdentity(patternID = PATTERN_ID)
+    @ProofOfIdentitySetter(patternID = PATTERN_ID)
     void setIdProof(int val);
 
     @Getter(MANAGER)

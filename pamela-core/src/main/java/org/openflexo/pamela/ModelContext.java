@@ -138,13 +138,7 @@ public class ModelContext {
 		this.patternContext = new PatternContext(this);
 		for (ModelEntity<?> modelEntity : modelEntities.values()) {
 			modelEntity.finalizeImport();
-			try {
-				this.patternContext.attachClass(modelEntity.getImplementedInterface());
-			}
-			catch (NoSuchMethodException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
+			this.patternContext.attachClass(modelEntity.getImplementedInterface());
 		}
 	}
 

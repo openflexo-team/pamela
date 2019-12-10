@@ -335,31 +335,33 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	@Override
 	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 		boolean assertionChecking = false;
+		boolean keepGoing = true;
 		PatternContext patternContext = this.getModelFactory().getModelContext().getPatternContext();
+		Object invoke = null;
+
 		if (enableAssertionChecking) {
 			assertionChecking = checkOnEntry(method, args);
 		}
 
-		boolean keepGoing = true;
 		ArrayList<PatternClassWrapper> patternsOfInterest = patternContext.getRelatedPatternsFromInstance(self);
 		for (PatternClassWrapper wrapper : patternsOfInterest){
 			keepGoing = keepGoing && wrapper.getPattern().processMethodBeforeInvoke(self, method, wrapper.getKlass());
 		}
-		if (!keepGoing){
-			return null;
-		}
 
-		Object invoke = _invoke(self, method, proceed, args);
-		if (method.getReturnType().isPrimitive() && invoke == null) {
-			// Avoids an NPE
-			invoke = Defaults.defaultValue(method.getReturnType());
-		}
-		if (enableAssertionChecking && assertionChecking) {
-			checkOnExit(method, args);
+		if (keepGoing){
+			invoke = _invoke(self, method, proceed, args);
+			if (method.getReturnType().isPrimitive() && invoke == null) {
+				// Avoids an NPE
+				invoke = Defaults.defaultValue(method.getReturnType());
+			}
 		}
 
 		for (PatternClassWrapper wrapper : patternsOfInterest) {
 			wrapper.getPattern().processMethodAfterInvoke(self, method, wrapper.getKlass(), invoke);
+		}
+
+		if (enableAssertionChecking && assertionChecking) {
+			checkOnExit(method, args);
 		}
 
 		return invoke;
