@@ -25,6 +25,7 @@ class SubjectInstance {
     private final ArrayList<Object> authInfos;
     private Object defaultIdProof;
     private Object idProof;
+    private Object currentIdProof;
     private boolean initializing;
     private boolean checking;
 
@@ -53,6 +54,7 @@ class SubjectInstance {
             }
             this.authenticatorInstance = entity.getAuthenticatorGetter().invoke(instance);
             this.defaultIdProof = this.entity.getIdProofGetter().invoke(this.instance);
+            this.currentIdProof = this.defaultIdProof;
             this.idProof = null;
             this.initializing = false;
         }
@@ -121,8 +123,11 @@ class SubjectInstance {
     private void checkIdProofIsValid() {
         try {
             Object currentProof = this.entity.getIdProofGetter().invoke(this.instance);
-            if ((this.idProof == null && !currentProof.equals(this.defaultIdProof)) || (this.idProof != null && !currentProof.equals(this.idProof) && !currentProof.equals(this.defaultIdProof))) {
-                throw new ModelExecutionException("Subject Invariant Violation: Proof of identity has been forged");
+            if (!this.currentIdProof.equals(currentProof)){
+                if ((this.idProof == null && !currentProof.equals(this.defaultIdProof)) || (this.idProof != null && !currentProof.equals(this.idProof) && !currentProof.equals(this.defaultIdProof))) {
+                    throw new ModelExecutionException("Subject Invariant Violation: Proof of identity has been forged");
+                }
+                this.currentIdProof = currentProof;
             }
         }
         catch (IllegalAccessException | InvocationTargetException e) {
