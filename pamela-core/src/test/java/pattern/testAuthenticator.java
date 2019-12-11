@@ -166,4 +166,15 @@ public class testAuthenticator extends AbstractPAMELATest {
             }
         }
     }
+
+    public void testInvariantValidityWithDynamicPrivilegeRules() throws Exception {
+        ModelContext context = new ModelContext(Subject.class);
+        ModelFactory factory = new ModelFactory(context);
+        IAuthenticator manager = factory.newInstance(IAuthenticator.class);
+        Subject subject = factory.newInstance(Subject.class, manager, "id");
+        subject.authenticate();
+        manager.addUser(subject.getAuthInfo());
+        subject.getAuthInfo();
+        subject.authenticate();
+    }
 }
