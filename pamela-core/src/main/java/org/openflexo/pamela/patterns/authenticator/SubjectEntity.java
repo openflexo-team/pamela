@@ -88,6 +88,13 @@ public class SubjectEntity {
     }
 
     /**
+     * @return the {@link HashMap} mapping known instance references with the associated {@link SubjectInstance}
+     */
+    public HashMap<Object, SubjectInstance> getInstances() {
+        return instances;
+    }
+
+    /**
      * @return the {@link HashMap} mapping parameters identifier of the {@link AuthenticationInformation} annotated getters with the associated getters
      */
     HashMap<String, Method> getAuthInfoGetters() {
@@ -103,13 +110,6 @@ public class SubjectEntity {
             this.instances.put(instance, new SubjectInstance(instance, this));
             this.instances.get(instance).init();
         }
-    }
-
-    /**
-     * @return the {@link HashMap} mapping known instance references with the associated {@link SubjectInstance}
-     */
-    HashMap<Object, SubjectInstance> getInstances() {
-        return instances;
     }
 
     /**

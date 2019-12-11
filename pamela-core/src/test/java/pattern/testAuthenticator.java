@@ -1,20 +1,22 @@
 package pattern;
 
-import org.junit.Test;
 import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.patterns.PatternClassWrapper;
 import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.authenticator.AuthenticatorPattern;
 import org.openflexo.pamela.patterns.authenticator.SubjectEntity;
 import pattern.modelAuthenticator.IAuthenticator;
 import pattern.modelAuthenticator.Subject;
 
+import java.util.ArrayList;
+
 public class testAuthenticator extends AbstractPAMELATest {
 
-    @Test
-    public static void testPatternAnalysis() throws Exception {
+
+    public void testPatternAnalysis() throws Exception {
         ModelContext context = new ModelContext(Subject.class);
         PatternContext patternContext = context.getPatternContext();
         assertNotNull(patternContext);
@@ -30,8 +32,8 @@ public class testAuthenticator extends AbstractPAMELATest {
         assertEquals(Subject.class.getMethod("setIdProof", int.class), subject.getIdProofSetter());
     }
 
-    @Test
-    public static void testAuthenticateValid() throws Exception{
+
+    public void testAuthenticateValid() throws Exception{
         ModelContext context = new ModelContext(Subject.class);
         ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
@@ -42,8 +44,8 @@ public class testAuthenticator extends AbstractPAMELATest {
         assertEquals(subject.getIDProof(), manager.generateFromAuthInfo(subject.getAuthInfo()));
     }
 
-    @Test
-    public static void testAuthenticatorInvalidReturn() throws Exception{
+
+    public void testAuthenticatorInvalidReturn() throws Exception{
         ModelContext context = new ModelContext(Subject.class);
         ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
@@ -53,28 +55,42 @@ public class testAuthenticator extends AbstractPAMELATest {
         assertEquals(subject.getIDProof(),manager.getDefaultToken());
     }
 
-    @Test
-    public static void testInstanceDiscovery() throws Exception {
-        //TODO Works with debugger but not with test execution
-        /*
+
+    public void testInstanceDiscovery() throws Exception {
         ModelContext context = new ModelContext(Subject.class);
         ModelFactory factory = new ModelFactory(context);
         assertTrue(context.getPatternContext().getKnownInstances().isEmpty());
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
+        assertTrue(context.getPatternContext().getKnownInstances().isEmpty());
+        manager.getDefaultToken();
         assertTrue(context.getPatternContext().getKnownInstances().containsKey(manager));
+        assertEquals(1, context.getPatternContext().getKnownInstances().size());
         Subject subject = factory.newInstance(Subject.class, manager, "id");
+        assertEquals(1, context.getPatternContext().getKnownInstances().size());
+        subject.getAuthInfo();
         assertTrue(context.getPatternContext().getKnownInstances().containsKey(subject));
+        assertEquals(2, context.getPatternContext().getKnownInstances().size());
         ArrayList<PatternClassWrapper> patternList = context.getPatternContext().getKnownInstances().get(subject);
-        assertTrue(patternList.size() == 1 );
+        assertEquals(1, patternList.size());
         AuthenticatorPattern pattern = (AuthenticatorPattern)patternList.get(0).getPattern();
         assertTrue(pattern.getSubjects().containsKey(patternList.get(0).getKlass()));
         SubjectEntity subjectEntity = pattern.getSubjects().get(patternList.get(0).getKlass());
         assertTrue(subjectEntity.getInstances().size() == 1 && subjectEntity.getInstances().containsKey(subject));
-        */
     }
 
-    @Test
-    public static void testAuthInfoUniqueness() throws Exception {
+    public void testIndirectInstanceDiscovery() throws Exception{
+        ModelContext context = new ModelContext(Subject.class);
+        ModelFactory factory = new ModelFactory(context);
+        IAuthenticator manager = factory.newInstance(IAuthenticator.class);
+        Subject subject = factory.newInstance(Subject.class, manager, "id");
+        assertEquals(0, context.getPatternContext().getKnownInstances().size());
+        subject.authenticate();
+        assertEquals(2, context.getPatternContext().getKnownInstances().size());
+        assertTrue(context.getPatternContext().getKnownInstances().containsKey(manager));
+        assertTrue(context.getPatternContext().getKnownInstances().containsKey(subject));
+    }
+
+    public void testAuthInfoUniqueness() throws Exception {
         ModelContext context = new ModelContext(Subject.class);
         ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
@@ -95,8 +111,7 @@ public class testAuthenticator extends AbstractPAMELATest {
         }
     }
 
-    @Test
-    public static void testAuthenticatorInvariant() throws Exception {
+    public void testAuthenticatorInvariant() throws Exception {
         ModelContext context = new ModelContext(Subject.class);
         ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
@@ -114,8 +129,7 @@ public class testAuthenticator extends AbstractPAMELATest {
         }
     }
 
-    @Test
-    public static void testAuthInfoInvariant() throws Exception {
+    public void testAuthInfoInvariant() throws Exception {
         ModelContext context = new ModelContext(Subject.class);
         ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
@@ -133,8 +147,7 @@ public class testAuthenticator extends AbstractPAMELATest {
         }
     }
 
-    @Test
-    public static void testIdProofForgery() throws Exception {
+    public void testIdProofForgery() throws Exception {
         ModelContext context = new ModelContext(Subject.class);
         ModelFactory factory = new ModelFactory(context);
         IAuthenticator manager = factory.newInstance(IAuthenticator.class);
@@ -153,6 +166,4 @@ public class testAuthenticator extends AbstractPAMELATest {
             }
         }
     }
-
-
 }

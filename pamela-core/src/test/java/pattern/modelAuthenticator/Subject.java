@@ -12,7 +12,6 @@ import org.openflexo.pamela.patterns.authenticator.annotations.*;
 public interface Subject extends AccessibleProxyObject {
     String PATTERN_ID = "patternID";
     String AUTH_INFO = "auth_info1";
-    String AUTH_INFO_BIS = "auth_info2";
     String MANAGER = "manager";
     String ID_PROOF = "id_proof";
 

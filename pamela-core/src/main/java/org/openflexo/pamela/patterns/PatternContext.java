@@ -125,7 +125,7 @@ public class PatternContext {
         if (this.authenticatorClasses.containsKey(baseClass) && !this.authenticatorClasses.get(baseClass).contains(id)) {
             this.authenticatorClasses.get(baseClass).add(id);
         } else if (!this.authenticatorClasses.containsKey(baseClass)) {
-            this.authenticatorClasses.put(baseClass, new ArrayList<>(Arrays.asList(id)));
+            this.authenticatorClasses.put(baseClass, new ArrayList<>(Collections.singletonList(id)));
         }
     }
 
@@ -164,5 +164,12 @@ public class PatternContext {
      */
     public ModelContext getContext() {
         return this.modelContext;
+    }
+
+    /**
+     * @return the {@link HashMap} mapping known instances with the patterns they are involved in, wrapped in a list of {@link PatternClassWrapper}
+     */
+    public HashMap<Object, ArrayList<PatternClassWrapper>> getKnownInstances() {
+        return this.knownInstances;
     }
 }

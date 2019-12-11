@@ -125,9 +125,7 @@ class SubjectInstance {
                 throw new ModelExecutionException("Subject Invariant Violation: Proof of identity has been forged");
             }
         }
-        catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
+        catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
     }
@@ -149,9 +147,7 @@ class SubjectInstance {
                 throw new ModelExecutionException("Subject Invariant Violation: Authentication Information has changed since initialization");
             }
         }
-        catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
+        catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
     }
@@ -165,10 +161,7 @@ class SubjectInstance {
             if (!currentAuthenticator.equals(this.authenticatorInstance)){
                 throw new ModelExecutionException("Subject Invariant Violation: Authenticator has changed since initialization");
             }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-            System.exit(1);
-        } catch (InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
             System.exit(1);
         }
