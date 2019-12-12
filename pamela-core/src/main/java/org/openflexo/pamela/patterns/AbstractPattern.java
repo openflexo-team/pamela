@@ -6,12 +6,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * @author C. SILVA
- *
- * This abstract class represents a pattern. Its instances are to be wrapped in the patternContext
+ * This abstract class represents a pattern. Its instances are to be wrapped in the patternContext.<br>
  * It has the responsibility of:
- *  - Handle method call before and after invoke to perform execution or check relevant to the pattern.
- *  - Relay the instance discovery to the concrete compomnent of the pattern.
+ * <ul><li>Handling method call before and after invoke to perform execution or check relevant to the pattern.</li>
+ * <li>Relaying the instance discovery to the relevant component of the pattern.</li></ul>
+ *
+ *  @author C. SILVA
  */
 public abstract class AbstractPattern {
 
@@ -35,7 +35,7 @@ public abstract class AbstractPattern {
     public abstract void discoverInstance(Object instance, Class klass);
 
     /**
-     *
+     * Method called after every method invoke
      * @param self Object on which the method is called
      * @param method Just-invoked method
      * @param klass Class of the class tree of <code>self</code> involved in the pattern

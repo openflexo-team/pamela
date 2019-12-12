@@ -8,12 +8,12 @@ import java.lang.annotation.Target;
 import org.openflexo.pamela.annotations.Setter;
 
 /**
- * @author C. SILVA
- *
- * This annotation is used in the definition of an <code>Authenticator Pattern</code>.
- * This annotation is to be put on {@link Setter} annotated method in a {@link AuthenticatorSubject} annotated class.
+ * This annotation is used in the definition of an <code>Authenticator Pattern</code>. <br>
+ * This annotation is to be put on {@link Setter} annotated method in a {@link AuthenticatorSubject} annotated class. <br>
  * The associated field must always be either its initial value (set in constructor) or the result of the {@link RequestAuthentication}
  * method of the pattern.
+ *
+ * @author C. SILVA
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)

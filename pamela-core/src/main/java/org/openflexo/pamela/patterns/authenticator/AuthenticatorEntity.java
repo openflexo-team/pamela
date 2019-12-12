@@ -7,14 +7,14 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 /**
- * @author C. SILVA
- *
  * This class wraps all the static authenticator pattern related information extracted from parsing a
- * {@link Authenticator} annotated class.
+ * {@link Authenticator} annotated class. <br>
  * It has the responsibility of:
- *  - Parsing the class.
- *  - Save the relevant pattern related inforamtion.
- *  - Discover and save at runtime the known instance of the associated class.
+ * <ul><li>Parsing the class.</li>
+ * <li>Saving the relevant pattern related information.</li>
+ * <li>Discovering and saving at runtime the known instance of the associated class.</li></ul>
+ *
+ *  @author C. SILVA
  */
 
 public class AuthenticatorEntity {
@@ -24,7 +24,7 @@ public class AuthenticatorEntity {
     private final HashMap<Object, AuthenticatorInstance> instances;
 
     /**
-     * Constructor of the class.
+     * Constructor of the class.<br>
      * The constructor performs the class analysis.
      * @param authenticatorPattern Reference of the associated {@link AuthenticatorPattern}
      * @param authenticatorClass {@link Authenticator} annotated class to analyze
@@ -60,7 +60,7 @@ public class AuthenticatorEntity {
     }
 
     /**
-     * @return a {@link HashMap} containing known authenticator instance references as keys and the associated {@link @AuthenticatorInstance}
+     * @return a {@link HashMap} containing known authenticator instance references as keys and the associated {@link AuthenticatorInstance}
      */
     HashMap<Object, AuthenticatorInstance> getInstances() {
         return this.instances;

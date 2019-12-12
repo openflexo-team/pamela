@@ -1,8 +1,10 @@
 package org.openflexo.pamela.patterns;
 
 /**
- * Wrapper of an {@link AbstractPattern} and a {@link Class} of interest for this pattern.
+ * Wrapper of an {@link AbstractPattern} and a {@link Class} of interest for this pattern. <br>
  * This wrapper is used as a return type when searching an object or class for the patterns it is involved in.
+ *
+ * @author C. SILVA
  */
 public class PatternClassWrapper {
     private final AbstractPattern pattern;

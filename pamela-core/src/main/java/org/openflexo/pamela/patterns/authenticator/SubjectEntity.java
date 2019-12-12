@@ -14,14 +14,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * @author C. SILVA
- *
  * This class wraps all the static authenticator pattern related information extracted from parsing a
- * {@link AuthenticatorSubject} annotated class.
+ * {@link AuthenticatorSubject} annotated class.<br>
  * It has the responsibility of:
- *  - Parsing the class.
- *  - Save the relevant pattern related inforamtion.
- *  - Discover and save at runtime the known instance of the associated class.
+ * <ul><li>Parsing the class.</li>
+ * <li>Saving the relevant pattern related information.</li>
+ * <li>Discovering and saving at runtime the known instance of the associated class.</li></ul>
+ *
+ *  @author C. SILVA
  */
 public class SubjectEntity {
     private final AuthenticatorPattern pattern;
@@ -36,10 +36,11 @@ public class SubjectEntity {
     private Method idProofGetter;
 
     /**
-     * Constructor of the class.
+     * Constructor of the class.<br>
      * The constructor performs the class analysis.
      * @param pattern Reference of the associated {@link AuthenticatorPattern}
      * @param klass {@link AuthenticatorSubject} annotated class to analyze
+     * @throws ModelDefinitionException When malformed or missing annotation in the subject class or associated authenticator class
      */
     SubjectEntity(AuthenticatorPattern pattern, Class klass) throws ModelDefinitionException {
         this.pattern = pattern;
@@ -242,7 +243,7 @@ public class SubjectEntity {
     }
 
     /**
-     * Attempt to create the ordered list of getter for the <code>Request</code> method parameters of the associated <code>Authenticator</code> .
+     * Attempt to create the ordered list of getter for the <code>Request</code> method parameters of the associated <code>Authenticator</code>.<br>
      * If all parameters are found, the field <code>successLinking</code> is set to true.
      */
     private void link(){

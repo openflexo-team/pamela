@@ -5,14 +5,14 @@ import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
 import java.lang.reflect.Method;
 
 /**
- * @author C. SILVA
- *
  * This class wraps all the dynamic authenticator pattern related information extracted from a
- * {@link Authenticator} annotated class instance.
+ * {@link Authenticator} annotated class instance.<br>
  * It has the responsibility of:
- *  - ensuring invariants of the {@link Authenticator} annotated class.
- *  - ensuring preconditions of the {@link Authenticator} annotated class.
- *  - ensuring postconditions of the {@link Authenticator} annotated class.
+ * <ul><li>Enforcing invariants of the {@link Authenticator} annotated class.</li>
+ * <li>Enforcing preconditions of the {@link Authenticator} annotated class.</li>
+ * <li>Enforcing postconditions of the {@link Authenticator} annotated class.</li></ul>
+ *
+ *  @author C. SILVA
  */
 
 class AuthenticatorInstance {

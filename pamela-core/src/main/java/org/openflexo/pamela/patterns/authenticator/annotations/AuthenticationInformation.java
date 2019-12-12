@@ -7,16 +7,15 @@ import java.lang.annotation.Target;
 import org.openflexo.pamela.annotations.Getter;
 
 /**
- * @author C. SILVA
- *
- * This annotation is used in the definition of an <code>Authenticator Pattern</code>.
+ * This annotation is used in the definition of an <code>Authenticator Pattern</code>. <br>
  * This annotation is to be put on a {@link Getter} method in a {@link AuthenticatorSubject} annotated class and on the
  * corresponding parameter of the {@link RequestAuthentication} annotated method of the associated {@link Authenticator}
- * class.
- * The associated field is supposed to be initialized in constructor and must not change throughout runtime.
+ * class. <br>
+ * The associated field is supposed to be initialized in constructor and must not change throughout runtime. <br>
  * A class can have multiple {@link AuthenticationInformation} annotations. The set of all of these fields is
  * supposed to be unique. (i.e. two different instances must have a different set of <code>Authentication Information</code>).
- * {@link Authenticator} annotated class.
+ *
+ * @author C. SILVA
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.METHOD, ElementType.PARAMETER})

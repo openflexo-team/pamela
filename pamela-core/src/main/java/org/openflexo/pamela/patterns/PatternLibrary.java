@@ -3,9 +3,9 @@ package org.openflexo.pamela.patterns;
 import java.util.ArrayList;
 
 /**
- * @author C. SILVA
+ * Library of static methods useful for the {@link PatternContext}
  *
- * Library of static methods useful for the {@link PatternContext)
+ * @author C. SILVA
  */
 public class PatternLibrary {
 

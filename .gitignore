@@ -14,3 +14,4 @@ build/
 .gradle
 **/out/
 /pamela-core/src/main/java/playground/
+/javaDoc/

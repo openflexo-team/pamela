@@ -17,17 +17,17 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 /**
- * @author C. SILVA
- *
- * This class represents an instance of an <code>Authenticator Pattern</code>. An instance is uniquely indentified by
- * the <code>patternID</code> field of associated annotations.
+ * This class represents an instance of an <code>Authenticator Pattern</code>. An instance is uniquely identified by
+ * the <code>patternID</code> field of associated annotations.<br>
  * It has the responsibility of:
- *  - Creating and saving the {@link AuthenticatorEntity} and all {@link SubjectEntity} relevant to this pattern.
- *  - Throwing {@link InconsistentAuthenticatorEntityException} and {@link InconsistentAuthenticatorEntityException} when
- *  the associated entity instanciation has failed.
- *  - Perform the authentication in case of {@link AuthenticateMethod} call.
- *  - Relay to the relevant entities the instance discovery.
- *  - Relay to the relevant entities the checks and execution of methods.
+ *  <ul><li>Creating and saving the {@link AuthenticatorEntity} and all {@link SubjectEntity} relevant to this pattern.</li>
+ *  <li>Throwing {@link InconsistentAuthenticatorEntityException} and {@link InconsistentAuthenticatorEntityException} when
+ *  the associated entity instanciation has failed.</li>
+ *  <li>Performing the authentication in case of {@link AuthenticateMethod} call.</li>
+ *  <li>Relaying to the relevant entities the instance discovery.</li>
+ *  <li>Relaying to the relevant entities the checks and execution of methods.</li></ul>
+ *
+ *  @author C. SILVA
  */
 public class AuthenticatorPattern extends AbstractPattern {
     private final PatternContext context;
@@ -161,7 +161,7 @@ public class AuthenticatorPattern extends AbstractPattern {
             AuthenticatorEntity authenticator = new AuthenticatorEntity(this, auth);
             if  (authenticator.isComplete()){
                 this.authenticator = authenticator;
-                this.context.attachAuthenticatorClass(this.authenticator.getBaseClass(), this.id);
+                this.context.attachClassFromAbstractPattern(this.authenticator.getBaseClass(), this.id);
             }
             else {
                 throw new InconsistentAuthenticatorEntityException("Missing annotations in " + authenticatorClass.getSimpleName() + "Authenticator definition with ID " + this.id);
@@ -193,7 +193,8 @@ public class AuthenticatorPattern extends AbstractPattern {
     }
 
     /**
-     * Instantiate an {@link SubjectEntity} with the given class.
+     * Instantiate a {@link SubjectEntity} with the given class.
+     * @param klass {@link AuthenticatorSubject} annotated class
      * @throws ModelDefinitionException In case of inconsistent subject definition.
      */
     private void attachSubject(Class klass) throws ModelDefinitionException {

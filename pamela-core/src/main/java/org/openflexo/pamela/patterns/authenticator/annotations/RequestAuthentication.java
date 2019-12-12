@@ -6,12 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @author C. SILVA
- *
- * This annotation is used in the definition of an <code>Authenticator Pattern</code>.
- * This annotation is to be put on method in a {@link Authenticator} annotated class.
+ * This annotation is used in the definition of an <code>Authenticator Pattern</code>. <br>
+ * This annotation is to be put on method in a {@link Authenticator} annotated class. <br>
  * The annotated method will call the {@link ProofOfIdentitySetter} should check the {@link AuthenticationInformation}
  * annotated parameters and return the adequate Proof of Identity.
+ *
+ * @author C. SILVA
  */
 
 @Retention(RetentionPolicy.RUNTIME)

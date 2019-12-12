@@ -8,14 +8,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 /**
- * @author C. SILVA
- *
  * This class wraps all the dynamic authenticator pattern related information extracted from a
- * {@link AuthenticatorSubject} annotated class instance.
+ * {@link AuthenticatorSubject} annotated class instance.<br>
  * It has the responsibility of:
- *  - ensuring invariants of the {@link AuthenticatorSubject} annotated class.
- *  - ensuring preconditions of the {@link AuthenticatorSubject} annotated class.
- *  - ensuring postconditions of the {@link AuthenticatorSubject} annotated class.
+ * <ul><li>Enforcing invariants of the {@link AuthenticatorSubject} annotated class.</li>
+ * <li>Enforcing preconditions of the {@link AuthenticatorSubject} annotated class.</li>
+ * <li>Enforcing postconditions of the {@link AuthenticatorSubject} annotated class.</li></ul>
+ *
+ *  @author C. SILVA
  */
 
 class SubjectInstance {

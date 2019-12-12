@@ -4,25 +4,23 @@ import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.authenticator.AuthenticatorPattern;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
-import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
 
 /**
- * @author C. SILVA
- *
- * Class wrapping all the known patterns of the model.
+ * Class wrapping all the known patterns of the model.<br>
  * It has the responsibility of:
- *  - Instantiate the discovered patterns when creating the model.
- *  - Saves all known patterns.
- *  - Relay method execution, checks and instance discovery to teh relevant patterns.
+ * <ul><li>Instantiating the discovered patterns when creating the model.</li>
+ * <li>Saving all known patterns.</li>
+ * <li>Relaying method execution, checks and instance discovery to the relevant patterns.</li></ul>
+ *
+ *  @author C. SILVA
  */
 public class PatternContext {
     private final HashMap<String, AbstractPattern> patterns;
-    private final HashMap<Class, ArrayList<String>> authenticatorSubjectClasses;
-    private final HashMap<Class, ArrayList<String>> authenticatorClasses;
+    private final HashMap<Class, ArrayList<String>> classesOfInterest;
     private final ModelContext modelContext;
     private boolean inConstructor;
     private final HashMap<Object, ArrayList<PatternClassWrapper>> knownInstances;
@@ -33,15 +31,14 @@ public class PatternContext {
      */
     public PatternContext(ModelContext context) {
         this.patterns = new HashMap<>();
-        this.authenticatorSubjectClasses = new HashMap<>();
-        this.authenticatorClasses = new HashMap<>();
+        this.classesOfInterest = new HashMap<>();
         this.knownInstances = new HashMap<>();
         this.modelContext = context;
         this.inConstructor = false;
     }
 
     /**
-     * Method called when a new class is discovered by the {@link ModelContext}.
+     * Method called when a new class is discovered by the {@link ModelContext}.<br>
      * Search the <code>baseClass</code> for pattern-related annotations and instantiate the relevant patterns.
      * @param baseClass class to search
      * @throws ModelDefinitionException In case of error during analysis of the class
@@ -54,11 +51,13 @@ public class PatternContext {
                     if (!this.patterns.containsKey(subjectAnnotation.patternID())) {
                         this.patterns.put(subjectAnnotation.patternID(), new AuthenticatorPattern(this, subjectAnnotation.patternID()));
                     }
-                    if (!this.authenticatorSubjectClasses.containsKey(klass)) {
-                        this.authenticatorSubjectClasses.put(klass, new ArrayList<>());
+                    if (!this.classesOfInterest.containsKey(klass)) {
+                        this.classesOfInterest.put(klass, new ArrayList<>());
                     }
-                    this.authenticatorSubjectClasses.get(klass).add(subjectAnnotation.patternID());
-                    this.patterns.get(subjectAnnotation.patternID()).attachClass(klass);
+                    if (!this.classesOfInterest.get(klass).contains(subjectAnnotation.patternID())){
+                        this.classesOfInterest.get(klass).add(subjectAnnotation.patternID());
+                        this.patterns.get(subjectAnnotation.patternID()).attachClass(klass);
+                    }
                 }
             }
         }
@@ -91,14 +90,8 @@ public class PatternContext {
         } else {
             wrappers = new ArrayList<>();
             for (Class klass : PatternLibrary.getClassHierarchy(instance.getClass())) {
-                if (this.authenticatorSubjectClasses.containsKey(klass)) {
-                    for (String id : this.authenticatorSubjectClasses.get(klass)) {
-                        wrappers.add(new PatternClassWrapper(this.patterns.get(id), klass));
-                        if (!this.inConstructor)this.patterns.get(id).discoverInstance(instance, klass);
-                    }
-                }
-                if (this.authenticatorClasses.containsKey(klass)) {
-                    for (String id : this.authenticatorClasses.get(klass)) {
+                if (this.classesOfInterest.containsKey(klass)) {
+                    for (String id : this.classesOfInterest.get(klass)) {
                         wrappers.add(new PatternClassWrapper(this.patterns.get(id), klass));
                         if (!this.inConstructor)this.patterns.get(id).discoverInstance(instance, klass);
                     }
@@ -117,34 +110,30 @@ public class PatternContext {
     }
 
     /**
-     * Saves the the class as an <code>Authenticator</code>
-     * @param baseClass {@link Authenticator} annotated class to save
+     * Saves the the class with the given pattern identifier. This method is to be called by {@link AbstractPattern}
+     * when its analysis lead to the discovery of a new Class of interest.
+     * @param baseClass Class to save
      * @param id Identifier of the pattern in which <code>baseClass</code> is involved in
      */
-    public void attachAuthenticatorClass(Class baseClass, String id) {
-        if (this.authenticatorClasses.containsKey(baseClass) && !this.authenticatorClasses.get(baseClass).contains(id)) {
-            this.authenticatorClasses.get(baseClass).add(id);
-        } else if (!this.authenticatorClasses.containsKey(baseClass)) {
-            this.authenticatorClasses.put(baseClass, new ArrayList<>(Collections.singletonList(id)));
+    public void attachClassFromAbstractPattern(Class baseClass, String id) {
+        if (this.classesOfInterest.containsKey(baseClass) && !this.classesOfInterest.get(baseClass).contains(id)) {
+            this.classesOfInterest.get(baseClass).add(id);
+        } else if (!this.classesOfInterest.containsKey(baseClass)) {
+            this.classesOfInterest.put(baseClass, new ArrayList<>(Collections.singletonList(id)));
         }
     }
 
     /**
      * Analyze a class to determine the patterns it is involved in.
      * @param baseClass Class to analyze
-     * @return the list of {@link PatternClassWrapper} containing the patterns <code>class/code> is involved in as well
+     * @return the list of {@link PatternClassWrapper} containing the patterns <code>baseClass</code> is involved in as well
      * as the pattern-related class of its class tree.
      */
     public ArrayList<PatternClassWrapper> getRelatedPatternsFromClass(Class baseClass) {
         ArrayList<PatternClassWrapper> wrappers = new ArrayList<>();
         for (Class klass : PatternLibrary.getClassHierarchy(baseClass)) {
-            if (this.authenticatorSubjectClasses.containsKey(klass)) {
-                for (String id : this.authenticatorSubjectClasses.get(klass)) {
-                    wrappers.add(new PatternClassWrapper(this.patterns.get(id), klass));
-                }
-            }
-            if (this.authenticatorClasses.containsKey(klass)) {
-                for (String id : this.authenticatorClasses.get(klass)) {
+            if (this.classesOfInterest.containsKey(klass)) {
+                for (String id : this.classesOfInterest.get(klass)) {
                     wrappers.add(new PatternClassWrapper(this.patterns.get(id), klass));
                 }
             }
