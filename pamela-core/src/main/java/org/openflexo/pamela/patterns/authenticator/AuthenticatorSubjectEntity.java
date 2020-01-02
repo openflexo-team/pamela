@@ -139,12 +139,13 @@ public class AuthenticatorSubjectEntity {
      * @param instance Object on which the method is called
      * @param method Called method
      * @param klass Pattern-related class of identified im the class tree of <code>instance</code>
+     * @param args
      * @return true if the execution of the invoke should go one after the call, false if not.
      * @throws InvocationTargetException if an error occurred when internally invoking a method
      * @throws IllegalAccessException if an error occurred when internally invoking a method
      * @throws NoSuchMethodException if an error occurred when internally invoking a method
      */
-    boolean processMethodBeforeInvoke(Object instance, Method method, Class klass) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    boolean processMethodBeforeInvoke(Object instance, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Method superMethod = klass.getMethod(method.getName(), method.getParameterTypes());
         if (this.authenticateMethods.contains(method)){
             pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticatorGetter, this);

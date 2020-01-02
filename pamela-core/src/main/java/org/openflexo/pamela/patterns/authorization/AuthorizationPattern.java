@@ -4,19 +4,14 @@ import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.AbstractPattern;
 import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.PatternLibrary;
-import org.openflexo.pamela.patterns.authenticator.AuthenticatorEntity;
-import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
-import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentAuthenticatorEntityException;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
 import org.openflexo.pamela.patterns.authorization.annotations.*;
 import org.openflexo.pamela.patterns.authorization.exception.InconsistentPermissionCheckerEntityException;
 import org.openflexo.pamela.patterns.authorization.exception.InconsistentResourceEntityException;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Map;
 
 public class AuthorizationPattern extends AbstractPattern {
     private final HashMap<Class, AuthorizationSubjectEntity> subjects;
@@ -45,7 +40,7 @@ public class AuthorizationPattern extends AbstractPattern {
     }
 
     @Override
-    public boolean processMethodBeforeInvoke(Object self, Method method, Class klass) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public boolean processMethodBeforeInvoke(Object self, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         return true;
     }
 
@@ -55,7 +50,7 @@ public class AuthorizationPattern extends AbstractPattern {
     }
 
     @Override
-    public void processMethodAfterInvoke(Object self, Method method, Class klass, Object returnValue) {
+    public void processMethodAfterInvoke(Object self, Method method, Class klass, Object returnValue, Object[] args) {
 
     }
 

@@ -345,7 +345,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		ArrayList<PatternClassWrapper> patternsOfInterest = patternContext.getRelatedPatternsFromInstance(self);
 		for (PatternClassWrapper wrapper : patternsOfInterest){
-			keepGoing = keepGoing && wrapper.getPattern().processMethodBeforeInvoke(self, method, wrapper.getKlass());
+			keepGoing = keepGoing && wrapper.getPattern().processMethodBeforeInvoke(self, method, wrapper.getKlass(), args);
 		}
 
 		if (keepGoing){
@@ -357,7 +357,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 
 		for (PatternClassWrapper wrapper : patternsOfInterest) {
-			wrapper.getPattern().processMethodAfterInvoke(self, method, wrapper.getKlass(), invoke);
+			wrapper.getPattern().processMethodAfterInvoke(self, method, wrapper.getKlass(), invoke, args);
 		}
 
 		if (enableAssertionChecking && assertionChecking) {

@@ -32,12 +32,13 @@ public abstract class AbstractPattern {
      * @param self Object on which the method is called
      * @param method method to be invoked
      * @param klass Class of the class tree of <code>self</code> involved in the pattern
+     * @param args Argument passed to the to-be-called method
      * @return true if the execution of the method should be continued after the call of this method
      * @throws InvocationTargetException in case of error during internal calls
      * @throws IllegalAccessException in case of error during internal calls
      * @throws NoSuchMethodException in case of error during internal calls
      */
-    public abstract boolean processMethodBeforeInvoke(Object self, Method method, Class klass) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException;
+    public abstract boolean processMethodBeforeInvoke(Object self, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException;
 
     /**
      * Method called when a new pattern-related instance is discovered by the {@link PatternContext}
@@ -51,9 +52,10 @@ public abstract class AbstractPattern {
      * @param self Object on which the method is called
      * @param method Just-invoked method
      * @param klass Class of the class tree of <code>self</code> involved in the pattern
-     * @param returnValue return Value of the just-invoked method
+     * @param returnValue Returned Value of the just-invoked method
+     * @param args Argument passed to the just-invoked methods
      */
-    public abstract void processMethodAfterInvoke(Object self, Method method, Class klass, Object returnValue);
+    public abstract void processMethodAfterInvoke(Object self, Method method, Class klass, Object returnValue, Object[] args);
 
     /**
      * Identifies the entity type to instantiate with the given class, and if relevant, instantiate the associated entity.

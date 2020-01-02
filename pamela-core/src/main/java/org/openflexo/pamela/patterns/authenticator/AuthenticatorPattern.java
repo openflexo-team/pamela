@@ -61,19 +61,20 @@ public class AuthenticatorPattern extends AbstractPattern {
      * @param instance Object on which the method is called
      * @param method Called method
      * @param klass Pattern-related class of identified im the class tree of <code>instance</code>
+     * @param args Argument passed to the to-be-called method
      * @return true if the execution should continue after this method, false if not.
      * @throws InvocationTargetException if an error occurred when internally invoking a method
      * @throws IllegalAccessException if an error occurred when internally invoking a method
      * @throws NoSuchMethodException if an error occurred when internally invoking a method
      */
     @Override
-    public boolean processMethodBeforeInvoke(Object instance, Method method, Class klass) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public boolean processMethodBeforeInvoke(Object instance, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         if (context.notInConstructor()){
-            this.checkBeforeInvoke(instance, method, klass);
+            this.checkBeforeInvoke(instance, method, klass, args);
         }
         boolean returned = true;
         if (this.subjects.containsKey(klass)){
-            returned = this.subjects.get(klass).processMethodBeforeInvoke(instance, method, klass);
+            returned = this.subjects.get(klass).processMethodBeforeInvoke(instance, method, klass, args);
         }
         return returned;
     }
@@ -101,11 +102,12 @@ public class AuthenticatorPattern extends AbstractPattern {
      * @param method Called method
      * @param klass Pattern-related class of identified im the class tree of <code>instance</code>
      * @param returnValue Return value of the <code>method</code> invoke
+     * @param args Argument passed to the just-invoked methods
      */
     @Override
-    public void processMethodAfterInvoke(Object instance, Method method, Class klass, Object returnValue) {
+    public void processMethodAfterInvoke(Object instance, Method method, Class klass, Object returnValue, Object[] args) {
         if (context.notInConstructor()) {
-            this.checkAfterInvoke(instance, method, klass, returnValue);
+            this.checkAfterInvoke(instance, method, klass, returnValue, args);
         }
     }
 
@@ -196,8 +198,9 @@ public class AuthenticatorPattern extends AbstractPattern {
      * @param instance Object on which the method is called
      * @param method Called method
      * @param klass Pattern-related class of identified im the class tree of <code>instance</code>
+     * @param args Argument passed to the to-be-called methods
      */
-    private void checkBeforeInvoke(Object instance, Method method, Class klass) {
+    private void checkBeforeInvoke(Object instance, Method method, Class klass, Object[] args) {
         if (this.subjects.containsKey(klass) && this.subjects.get(klass).getInstances().containsKey(instance)){
             this.subjects.get(klass).getInstances().get(instance).checkBeforeInvoke(method);
         }
@@ -213,8 +216,9 @@ public class AuthenticatorPattern extends AbstractPattern {
      * @param method Called method
      * @param klass Pattern-related class of identified im the class tree of <code>instance</code>
      * @param returnValue Return value of the <code>method</code> invoke
+     * @param args Argument passed to the just-invoked methods
      */
-    private void checkAfterInvoke(Object instance, Method method, Class klass, Object returnValue) {
+    private void checkAfterInvoke(Object instance, Method method, Class klass, Object returnValue, Object[] args) {
         if (this.subjects.containsKey(klass) && this.subjects.get(klass).getInstances().containsKey(instance)){
             this.subjects.get(klass).getInstances().get(instance).checkAfterInvoke(method, returnValue);
         }
