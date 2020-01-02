@@ -23,7 +23,7 @@ import java.util.HashMap;
  *
  *  @author C. SILVA
  */
-public class SubjectEntity {
+public class AuthenticatorSubjectEntity {
     private final AuthenticatorPattern pattern;
     private final Class baseClass;
     private Method idProofSetter;
@@ -42,7 +42,7 @@ public class SubjectEntity {
      * @param klass {@link AuthenticatorSubject} annotated class to analyze
      * @throws ModelDefinitionException When malformed or missing annotation in the subject class or associated authenticator class
      */
-    SubjectEntity(AuthenticatorPattern pattern, Class klass) throws ModelDefinitionException {
+    AuthenticatorSubjectEntity(AuthenticatorPattern pattern, Class klass) throws ModelDefinitionException {
         this.pattern = pattern;
         this.baseClass = klass;
         this.authInfoGetters = new HashMap<>();

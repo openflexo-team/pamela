@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 class SubjectInstance {
     private final Object instance;
-    private final SubjectEntity entity;
+    private final AuthenticatorSubjectEntity entity;
     private Object authenticatorInstance;
     private final ArrayList<Object> authInfos;
     private Object defaultIdProof;
@@ -32,9 +32,9 @@ class SubjectInstance {
     /**
      * Constructor of the class.
      * @param instance {@link AuthenticatorSubject} annotated class instance.
-     * @param entity {@link SubjectEntity} wrapping this object.
+     * @param entity {@link AuthenticatorSubjectEntity} wrapping this object.
      */
-    SubjectInstance(Object instance, SubjectEntity entity){
+    SubjectInstance(Object instance, AuthenticatorSubjectEntity entity){
         this.instance = instance;
         this.entity = entity;
         this.authInfos = new ArrayList<>();

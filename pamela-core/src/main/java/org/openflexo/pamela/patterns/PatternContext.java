@@ -5,6 +5,9 @@ import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.authenticator.AuthenticatorPattern;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.patterns.authorization.AuthorizationPattern;
+import org.openflexo.pamela.patterns.authorization.annotations.AuthorizationSubject;
+import org.openflexo.pamela.patterns.authorization.annotations.ProtectedResource;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -57,6 +60,33 @@ public class PatternContext {
                     if (!this.classesOfInterest.get(klass).contains(subjectAnnotation.patternID())){
                         this.classesOfInterest.get(klass).add(subjectAnnotation.patternID());
                         this.patterns.get(subjectAnnotation.patternID()).attachClass(klass);
+                    }
+                }
+                if (a instanceof AuthorizationSubject){
+                    AuthorizationSubject subjectAnnotation = (AuthorizationSubject) a;
+                    if (!this.patterns.containsKey(subjectAnnotation.patternID())){
+                        this.patterns.put(subjectAnnotation.patternID(), new AuthorizationPattern(this, subjectAnnotation.patternID()));
+                    }
+                    if (!this.classesOfInterest.containsKey(klass)) {
+                        this.classesOfInterest.put(klass, new ArrayList<>());
+                    }
+                    if (!this.classesOfInterest.get(klass).contains(subjectAnnotation.patternID())){
+                        this.classesOfInterest.get(klass).add(subjectAnnotation.patternID());
+                        this.patterns.get(subjectAnnotation.patternID()).attachClass(klass);
+                    }
+                }
+
+                if (a instanceof ProtectedResource){
+                    ProtectedResource resourceAnnotation = (ProtectedResource) a;
+                    if (!this.patterns.containsKey(resourceAnnotation.patternID())){
+                        this.patterns.put(resourceAnnotation.patternID(), new AuthorizationPattern(this, resourceAnnotation.patternID()));
+                    }
+                    if (!this.classesOfInterest.containsKey(klass)) {
+                        this.classesOfInterest.put(klass, new ArrayList<>());
+                    }
+                    if (!this.classesOfInterest.get(klass).contains(resourceAnnotation.patternID())){
+                        this.classesOfInterest.get(klass).add(resourceAnnotation.patternID());
+                        this.patterns.get(resourceAnnotation.patternID()).attachClass(klass);
                     }
                 }
             }

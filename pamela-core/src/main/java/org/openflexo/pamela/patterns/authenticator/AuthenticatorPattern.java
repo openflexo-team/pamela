@@ -11,7 +11,6 @@ import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjec
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticateMethod;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorGetter;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -20,7 +19,7 @@ import java.util.HashMap;
  * This class represents an instance of an <code>Authenticator Pattern</code>. An instance is uniquely identified by
  * the <code>patternID</code> field of associated annotations.<br>
  * It has the responsibility of:
- *  <ul><li>Creating and saving the {@link AuthenticatorEntity} and all {@link SubjectEntity} relevant to this pattern.</li>
+ *  <ul><li>Creating and saving the {@link AuthenticatorEntity} and all {@link AuthenticatorSubjectEntity} relevant to this pattern.</li>
  *  <li>Throwing {@link InconsistentAuthenticatorEntityException} and {@link InconsistentAuthenticatorEntityException} when
  *  the associated entity instanciation has failed.</li>
  *  <li>Performing the authentication in case of {@link AuthenticateMethod} call.</li>
@@ -30,9 +29,7 @@ import java.util.HashMap;
  *  @author C. SILVA
  */
 public class AuthenticatorPattern extends AbstractPattern {
-    private final PatternContext context;
-    private final String id;
-    private final HashMap<Class, SubjectEntity> subjects;
+    private final HashMap<Class, AuthenticatorSubjectEntity> subjects;
     private AuthenticatorEntity authenticator;
 
     /**
@@ -41,8 +38,7 @@ public class AuthenticatorPattern extends AbstractPattern {
      * @param id Unique identifier of the pattern
      */
     public AuthenticatorPattern(PatternContext context, String id){
-        this.context = context;
-        this.id = id;
+        super(context,id);
         this.subjects = new HashMap<>();
     }
 
@@ -51,6 +47,7 @@ public class AuthenticatorPattern extends AbstractPattern {
      * @param baseClass Class to analyze
      * @throws ModelDefinitionException In case of inconsistent subject or authenticator definition
      */
+    @Override
     public void attachClass(Class baseClass) throws ModelDefinitionException {
         AuthenticatorSubject subjectAnnotation = (AuthenticatorSubject) baseClass.getAnnotation(AuthenticatorSubject.class);
         if (subjectAnnotation != null && subjectAnnotation.patternID().compareTo(this.id) == 0){
@@ -113,24 +110,10 @@ public class AuthenticatorPattern extends AbstractPattern {
     }
 
     /**
-     * @return the {@link HashMap} mapping {@link AuthenticatorSubject} annotated class with the corresponding {@link SubjectEntity}
+     * @return the {@link HashMap} mapping {@link AuthenticatorSubject} annotated class with the corresponding {@link AuthenticatorSubjectEntity}
      */
-    public HashMap<Class, SubjectEntity> getSubjects() {
+    public HashMap<Class, AuthenticatorSubjectEntity> getSubjects() {
         return subjects;
-    }
-
-    /**
-     * @return the {@link PatternContext} wrapping this pattern
-     */
-    public PatternContext getContext(){
-        return this.context;
-    }
-
-    /**
-     * @return the unique identifier of this pattern
-     */
-    public String getID(){
-        return this.id;
     }
 
     /**
@@ -150,8 +133,8 @@ public class AuthenticatorPattern extends AbstractPattern {
         if (this.authenticator == null){
             Class auth = null;
             for (Class klass : PatternLibrary.getClassHierarchy(authenticatorClass)){
-                Annotation annotation = klass.getAnnotation(Authenticator.class);
-                if (annotation != null){
+                Authenticator annotation = (Authenticator) klass.getAnnotation(Authenticator.class);
+                if (annotation != null && annotation.patternID().compareTo(this.id) == 0){
                     auth = klass;
                 }
             }
@@ -175,11 +158,11 @@ public class AuthenticatorPattern extends AbstractPattern {
      * @param idProofSetter Setter method of the <code>Proof of Identity</code>
      * @param args Ordered list of <code>instance</code> getters of the <code>request</code> method parameters
      * @param authenticatorGetter Getter method of the <code>instance</code> authenticator instance
-     * @param subjectEntity {@link SubjectEntity} wrapping the instance
+     * @param authenticatorSubjectEntity {@link AuthenticatorSubjectEntity} wrapping the instance
      * @throws InvocationTargetException if an error occurred when internally invoking a method
      * @throws IllegalAccessException if an error occurred when internally invoking a method
      */
-    void performAuthentication(Object instance, Method idProofSetter, Method[] args, Method authenticatorGetter, SubjectEntity subjectEntity) throws InvocationTargetException, IllegalAccessException {
+    void performAuthentication(Object instance, Method idProofSetter, Method[] args, Method authenticatorGetter, AuthenticatorSubjectEntity authenticatorSubjectEntity) throws InvocationTargetException, IllegalAccessException {
         Object authenticatorInstance = authenticatorGetter.invoke(instance);
         Object[] instanceArgs = new Object[args.length];
         int current = 0;
@@ -188,17 +171,17 @@ public class AuthenticatorPattern extends AbstractPattern {
             current++;
         }
         Object proof = this.authenticator.getRequestMethod().invoke(authenticatorInstance, instanceArgs);
-        subjectEntity.getInstances().get(instance).setIDProof(proof);
+        authenticatorSubjectEntity.getInstances().get(instance).setIDProof(proof);
         idProofSetter.invoke(instance, proof);
     }
 
     /**
-     * Instantiate a {@link SubjectEntity} with the given class.
+     * Instantiate a {@link AuthenticatorSubjectEntity} with the given class.
      * @param klass {@link AuthenticatorSubject} annotated class
      * @throws ModelDefinitionException In case of inconsistent subject definition.
      */
     private void attachSubject(Class klass) throws ModelDefinitionException {
-        SubjectEntity subject = new SubjectEntity(this, klass);
+        AuthenticatorSubjectEntity subject = new AuthenticatorSubjectEntity(this, klass);
         if (subject.isComplete()){
             this.subjects.put(klass, subject);
         }

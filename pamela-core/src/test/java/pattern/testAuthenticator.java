@@ -7,7 +7,7 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.patterns.PatternClassWrapper;
 import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.authenticator.AuthenticatorPattern;
-import org.openflexo.pamela.patterns.authenticator.SubjectEntity;
+import org.openflexo.pamela.patterns.authenticator.AuthenticatorSubjectEntity;
 import pattern.modelAuthenticator.IAuthenticator;
 import pattern.modelAuthenticator.Subject;
 
@@ -25,7 +25,7 @@ public class testAuthenticator extends AbstractPAMELATest {
         assertEquals(IAuthenticator.class, pattern.getAuthenticator().getBaseClass());
         assertEquals(IAuthenticator.class.getMethod("request", String.class), pattern.getAuthenticator().getRequestMethod());
         assertTrue(pattern.getSubjects().containsKey(Subject.class) && pattern.getSubjects().size() == 1);
-        SubjectEntity subject = pattern.getSubjects().get(Subject.class);
+        AuthenticatorSubjectEntity subject = pattern.getSubjects().get(Subject.class);
         assertTrue(subject.getArgs().length == 1 && subject.getArgs()[0].equals(Subject.class.getMethod("getAuthInfo")));
         assertTrue(subject.getAuthenticateMethods().size() == 1 && subject.getAuthenticateMethods().get(0).equals(Subject.class.getMethod("authenticate")));
         assertEquals(Subject.class, subject.getBaseClass());
@@ -74,8 +74,8 @@ public class testAuthenticator extends AbstractPAMELATest {
         assertEquals(1, patternList.size());
         AuthenticatorPattern pattern = (AuthenticatorPattern)patternList.get(0).getPattern();
         assertTrue(pattern.getSubjects().containsKey(patternList.get(0).getKlass()));
-        SubjectEntity subjectEntity = pattern.getSubjects().get(patternList.get(0).getKlass());
-        assertTrue(subjectEntity.getInstances().size() == 1 && subjectEntity.getInstances().containsKey(subject));
+        AuthenticatorSubjectEntity authenticatorSubjectEntity = pattern.getSubjects().get(patternList.get(0).getKlass());
+        assertTrue(authenticatorSubjectEntity.getInstances().size() == 1 && authenticatorSubjectEntity.getInstances().containsKey(subject));
     }
 
     public void testIndirectInstanceDiscovery() throws Exception{

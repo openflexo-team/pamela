@@ -14,6 +14,18 @@ import java.lang.reflect.Method;
  *  @author C. SILVA
  */
 public abstract class AbstractPattern {
+    protected final PatternContext context;
+    protected final String id;
+
+    /**
+     * Constructor of the class.
+     * @param context Reference to the {@link PatternContext} instance
+     * @param id Unique identifier of the pattern
+     */
+    public AbstractPattern(PatternContext context, String id){
+        this.context = context;
+        this.id = id;
+    }
 
     /**
      * Method called before every method invoke.
@@ -49,4 +61,18 @@ public abstract class AbstractPattern {
      * @throws ModelDefinitionException In case of error during the class analysis.
      */
     public abstract void attachClass(Class baseClass) throws ModelDefinitionException;
+
+    /**
+     * @return the {@link PatternContext} wrapping this pattern
+     */
+    public PatternContext getContext(){
+        return this.context;
+    }
+
+    /**
+     * @return the unique identifier of this pattern
+     */
+    public String getID(){
+        return this.id;
+    }
 }

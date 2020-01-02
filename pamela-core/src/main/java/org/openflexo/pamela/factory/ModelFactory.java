@@ -126,6 +126,7 @@ public class ModelFactory implements IObjectGraphFactory {
 					if (aModelEntity.getJMLMethodDefinition(method) != null) {
 						return true;
 					}
+
 					if (context.getPatternContext().getRelatedPatternsFromClass(aModelEntity.getImplementedInterface()).size() > 0){
 						try {
 							aModelEntity.getImplementedInterface().getMethod(method.getName(), method.getParameterTypes());
