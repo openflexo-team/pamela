@@ -8,6 +8,7 @@ import org.openflexo.pamela.patterns.authorization.exception.InconsistentPermiss
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
+import java.util.Map;
 
 public class PermissionCheckerEntity {
     private final AuthorizationPattern pattern;
@@ -16,6 +17,7 @@ public class PermissionCheckerEntity {
     private final HashMap<String, Integer> resourceIdParameters;
     private Method checkMethod;
     private int methodIdIndex;
+    private HashMap<Object, PermissionCheckerInstance> instances;
 
     protected PermissionCheckerEntity(AuthorizationPattern pattern, Class baseClass) throws InconsistentPermissionCheckerEntityException{
         this.pattern = pattern;
@@ -23,6 +25,7 @@ public class PermissionCheckerEntity {
         this.resourceIdParameters = new HashMap<>();
         this.subjectIdParameters = new HashMap<>();
         this.methodIdIndex = -1;
+        this.instances = new HashMap<>();
         this.analyzeClass();
     }
 
@@ -88,5 +91,16 @@ public class PermissionCheckerEntity {
 
     public boolean isComplete() {
         return this.baseClass != null && this.checkMethod != null && this.pattern != null && this.methodIdIndex != -1;
+    }
+
+    public void discoverInstance(Object instance) {
+        if (!this.instances.containsKey(instance)){
+            this.instances.put(instance, new PermissionCheckerInstance(instance, this));
+            this.instances.get(instance).init();
+        }
+    }
+
+    public HashMap<Object, PermissionCheckerInstance> getInstances() {
+        return instances;
     }
 }

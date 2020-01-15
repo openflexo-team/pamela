@@ -29,7 +29,7 @@ public class AuthenticatorSubjectEntity {
     private Method idProofSetter;
     private final ArrayList<Method> authenticateMethods;
     private final HashMap<String, Method> authInfoGetters;
-    private final HashMap<Object, SubjectInstance> instances;
+    private final HashMap<Object, AuthenticatorSubjectInstance> instances;
     private Method[] args;
     private boolean successLinking;
     private Method authenticatorGetter;
@@ -89,9 +89,9 @@ public class AuthenticatorSubjectEntity {
     }
 
     /**
-     * @return the {@link HashMap} mapping known instance references with the associated {@link SubjectInstance}
+     * @return the {@link HashMap} mapping known instance references with the associated {@link AuthenticatorSubjectInstance}
      */
-    public HashMap<Object, SubjectInstance> getInstances() {
+    public HashMap<Object, AuthenticatorSubjectInstance> getInstances() {
         return instances;
     }
 
@@ -103,12 +103,12 @@ public class AuthenticatorSubjectEntity {
     }
 
     /**
-     * Method called to instantiate a new {@link SubjectInstance} if the given object is not already known
+     * Method called to instantiate a new {@link AuthenticatorSubjectInstance} if the given object is not already known
      * @param instance Instance to discover
      */
     void discoverInstance(Object instance) {
         if (!this.instances.containsKey(instance)){
-            this.instances.put(instance, new SubjectInstance(instance, this));
+            this.instances.put(instance, new AuthenticatorSubjectInstance(instance, this));
             this.instances.get(instance).init();
         }
     }

@@ -9,6 +9,7 @@ import org.openflexo.pamela.patterns.authorization.annotations.SubjectID;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
+import java.util.Map;
 
 public class AuthorizationSubjectEntity {
     private final AuthorizationPattern pattern;
@@ -19,6 +20,7 @@ public class AuthorizationSubjectEntity {
     private boolean successIDLinking;
     private boolean successAccessLinking;
     private boolean successResIDLinking;
+    private HashMap<Object, AuthorizationSubjectInstance> instances;
 
     public AuthorizationSubjectEntity(AuthorizationPattern authorizationPattern, Class klass) throws ModelDefinitionException {
         this.pattern = authorizationPattern;
@@ -26,6 +28,7 @@ public class AuthorizationSubjectEntity {
         this.idGetters = new HashMap<>();
         this.accessResourceMethods = new HashMap<>();
         this.distantAccessMethods = new HashMap<>();
+        this.instances = new HashMap<>();
         this.analyzeClass();
         this.successIDLinking = false;
         this.successAccessLinking = false;
@@ -119,5 +122,20 @@ public class AuthorizationSubjectEntity {
             }
         }
         this.successIDLinking = linked;
+    }
+
+    protected void discoverInstance(Object instance) {
+        if (!this.instances.containsKey(instance)){
+            this.instances.put(instance, new AuthorizationSubjectInstance(instance, this));
+            this.instances.get(instance).init();
+        }
+    }
+
+    public HashMap<String, Method> getIdGetters() {
+        return this.idGetters;
+    }
+
+    public Map<Object, AuthorizationSubjectInstance> getInstances() {
+        return this.instances;
     }
 }

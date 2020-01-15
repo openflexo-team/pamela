@@ -194,7 +194,7 @@ public class AuthenticatorPattern extends AbstractPattern {
 
     /**
      * Relay the check of invariant and precondition on method call to the relevant instance wrappers (i.e.
-     * {@link SubjectInstance} and\or {@link AuthenticatorInstance})
+     * {@link AuthenticatorSubjectInstance} and\or {@link AuthenticatorInstance})
      * @param instance Object on which the method is called
      * @param method Called method
      * @param klass Pattern-related class of identified im the class tree of <code>instance</code>
@@ -211,7 +211,7 @@ public class AuthenticatorPattern extends AbstractPattern {
 
     /**
      * Relay the check of invariant and postcondition after method call to the relevant instance wrappers (i.e.
-     * {@link SubjectInstance} and\or {@link AuthenticatorInstance})
+     * {@link AuthenticatorSubjectInstance} and\or {@link AuthenticatorInstance})
      * @param instance Object on which the method is called
      * @param method Called method
      * @param klass Pattern-related class of identified im the class tree of <code>instance</code>

@@ -13,6 +13,7 @@ import playground.authorization.interfaces.PermissionChecker;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Map;
 
 public class AuthorizationResourceEntity {
     private final AuthorizationPattern pattern;
@@ -21,12 +22,14 @@ public class AuthorizationResourceEntity {
     private final HashMap<String, Method> idGetters;
     private boolean successLinking;
     private Method checkerGetter;
+    private HashMap<Object, AuthorizationResourceInstance> instances;
 
     public AuthorizationResourceEntity(AuthorizationPattern authorizationPattern, Class klass) throws ModelDefinitionException {
         this.pattern = authorizationPattern;
         this.baseClass = klass;
         this.accessMethods = new HashMap<>();
         this.idGetters = new HashMap<>();
+        this.instances = new HashMap<>();
         this.analyzeClass();
         this.successLinking = false;
         this.link();
@@ -94,5 +97,24 @@ public class AuthorizationResourceEntity {
             }
             this.successLinking = linked;
         }
+    }
+
+    public void discoverInstance(Object instance) {
+        if (!this.instances.containsKey(instance)){
+            this.instances.put(instance,new AuthorizationResourceInstance(instance, this));
+            this.instances.get(instance).init();
+        }
+    }
+
+    public Map<String, Method> getIdGetters() {
+        return this.idGetters;
+    }
+
+    public Method getCheckerGetter() {
+        return this.checkerGetter;
+    }
+
+    public HashMap<Object, AuthorizationResourceInstance> getInstances() {
+        return instances;
     }
 }

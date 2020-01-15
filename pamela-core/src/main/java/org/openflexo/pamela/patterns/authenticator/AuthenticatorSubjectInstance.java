@@ -18,7 +18,7 @@ import java.util.ArrayList;
  *  @author C. SILVA
  */
 
-class SubjectInstance {
+class AuthenticatorSubjectInstance {
     private final Object instance;
     private final AuthenticatorSubjectEntity entity;
     private Object authenticatorInstance;
@@ -34,7 +34,7 @@ class SubjectInstance {
      * @param instance {@link AuthenticatorSubject} annotated class instance.
      * @param entity {@link AuthenticatorSubjectEntity} wrapping this object.
      */
-    SubjectInstance(Object instance, AuthenticatorSubjectEntity entity){
+    AuthenticatorSubjectInstance(Object instance, AuthenticatorSubjectEntity entity){
         this.instance = instance;
         this.entity = entity;
         this.authInfos = new ArrayList<>();
@@ -176,7 +176,7 @@ class SubjectInstance {
      * Method checking the invariant ensuring uniqueness of the set of <code>Authentication Information</code>.
      */
     private void checkAuthInfoUniqueness(){
-        for (SubjectInstance otherInstance : this.entity.getInstances().values()) {
+        for (AuthenticatorSubjectInstance otherInstance : this.entity.getInstances().values()) {
             int i;
             for (i = 0; i < authInfos.size(); i++) {
                 if (authInfos.get(i) != otherInstance.getAuthInfos().get(i)) {

@@ -1,5 +1,6 @@
 package org.openflexo.pamela.patterns.authorization;
 
+import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.AbstractPattern;
 import org.openflexo.pamela.patterns.PatternContext;
@@ -46,12 +47,28 @@ public class AuthorizationPattern extends AbstractPattern {
 
     @Override
     public void discoverInstance(Object instance, Class klass) {
-
+        if (this.subjects.containsKey(klass)){
+            this.subjects.get(klass).discoverInstance(instance);
+        }
+        if (this.checker.getBaseClass().equals(klass)){
+            this.checker.discoverInstance(instance);
+        }
+        if (this.resources.containsKey(klass)){
+            this.resources.get(klass).discoverInstance(instance);
+        }
     }
 
     @Override
     public void processMethodAfterInvoke(Object self, Method method, Class klass, Object returnValue, Object[] args) {
-
+        if (method.getAnnotation(Initializer.class) != null){
+            boolean changed = false;
+            if (!this.context.notInConstructor()){
+                changed = true;
+                this.context.leavingConstructor();
+            }
+            this.context.getRelatedPatternsFromInstance(self);
+            if (changed)this.context.insideConstructor();
+        }
     }
 
     public PermissionCheckerEntity getCheckerEntity() {
