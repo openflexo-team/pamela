@@ -4,7 +4,11 @@
 	<parent>
 		<groupId>org.openflexo</groupId>
 		<artifactId>pamela</artifactId>
+<<<<<<< HEAD
        		<version>1.4.1</version>
+=======
+       		<version>1.5-SNAPSHOT</version>
+>>>>>>> dev
 	</parent>
 	<artifactId>pamela-core</artifactId>
 	<name>Pamela-core</name>
@@ -38,12 +42,17 @@
 			<artifactId>flexoutils</artifactId>
 		</dependency>
 		<dependency>
+<<<<<<< HEAD
 			<groupId>org.openflexo</groupId>
 			<artifactId>connie-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
+=======
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+>>>>>>> dev
 		</dependency>
 		<!-- <dependency>
 			<groupId>org.jdom</groupId>
@@ -57,10 +66,6 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.openflexo</groupId>
-			<artifactId>testutils</artifactId>
 		</dependency>
 	    <dependency>
 			<groupId>junit</groupId>

@@ -8,7 +8,11 @@
     <!-- ************
    	Component identity and specific information
       -->
+<<<<<<< HEAD
     <version>1.4.1</version>
+=======
+    <version>1.5-SNAPSHOT</version>
+>>>>>>> dev
     <modelVersion>4.0.0</modelVersion>
     <artifactId>pamela</artifactId>
     <name>Pamela</name>
@@ -17,7 +21,7 @@
     <scm>
         <connection>scm:git:ssh://git@github.com/openflexo-team/pamela.git</connection>
         <url>https://github.com/openflexo-team/pamela</url>
-        <tag>1.4.1</tag>
+        <tag>1.5</tag>
     </scm>
     <issueManagement>
         <system>JIRA</system>
@@ -31,7 +35,11 @@
 	Properties
       -->
     <properties>
+<<<<<<< HEAD
         <connie.version>1.4.1</connie.version>
+=======
+        <connie.version>1.5-SNAPSHOT</connie.version>
+>>>>>>> dev
         <javassist.version>3.18.0-GA</javassist.version>
 	    <changes.componentfilter>AND component=*</changes.componentfilter>
         <pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>

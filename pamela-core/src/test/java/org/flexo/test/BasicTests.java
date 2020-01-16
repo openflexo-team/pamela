@@ -21,12 +21,12 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openflexo.model.AbstractPAMELATest;
-import org.openflexo.model.ModelContext;
-import org.openflexo.model.exceptions.UnitializedEntityException;
-import org.openflexo.model.factory.AccessibleProxyObject;
-import org.openflexo.model.factory.Clipboard;
-import org.openflexo.model.factory.EmbeddingType;
-import org.openflexo.model.factory.ModelFactory;
+import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.exceptions.UnitializedEntityException;
+import org.openflexo.pamela.factory.AccessibleProxyObject;
+import org.openflexo.pamela.factory.Clipboard;
+import org.openflexo.pamela.factory.EmbeddingType;
+import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.toolbox.FileUtils;
 
 public class BasicTests extends AbstractPAMELATest {

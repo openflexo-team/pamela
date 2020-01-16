@@ -10,7 +10,7 @@ import org.junit.BeforeClass;
 import org.openflexo.connie.type.ParameterizedTypeImpl;
 import org.openflexo.connie.type.WilcardTypeImpl;
 import org.openflexo.model.AbstractPAMELATest;
-import org.openflexo.model.converter.TypeConverter;
+import org.openflexo.pamela.converter.TypeConverter;
 
 public class TestTypeConverter extends AbstractPAMELATest {
 

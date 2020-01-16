@@ -10,11 +10,11 @@ import org.flexo.model.WKFObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.openflexo.model.AbstractPAMELATest;
-import org.openflexo.model.ModelContext;
-import org.openflexo.model.factory.EditingContextImpl;
-import org.openflexo.model.factory.ModelFactory;
-import org.openflexo.model.undo.CompoundEdit;
-import org.openflexo.model.undo.UndoManager;
+import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.factory.EditingContextImpl;
+import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.undo.CompoundEdit;
+import org.openflexo.pamela.undo.UndoManager;
 
 /**
  * Class of test to check if the undo/redo behavior is correct.

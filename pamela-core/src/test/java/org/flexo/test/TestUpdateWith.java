@@ -11,14 +11,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.openflexo.model.ModelContextLibrary;
-import org.openflexo.model.exceptions.ModelDefinitionException;
-import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model8.ConceptA;
 import org.openflexo.model8.ConceptB;
 import org.openflexo.model8.ConceptC;
 import org.openflexo.model8.ConceptC1;
 import org.openflexo.model8.ConceptC2;
+import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.ModelFactory;
 
 /**
  * Test PAMELA updateWith(Object) feature

@@ -36,11 +36,10 @@
 package org.flexo.test;
 
 import org.junit.Test;
-import org.openflexo.model.ModelContextLibrary;
-import org.openflexo.model.factory.ModelFactory;
 import org.openflexo.model7.AContained;
 import org.openflexo.model7.AContainer;
-
+import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.factory.ModelFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

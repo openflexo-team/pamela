@@ -1,13 +1,13 @@
 package org.flexo.model;
 
-import org.openflexo.model.annotations.CloningStrategy;
-import org.openflexo.model.annotations.CloningStrategy.StrategyType;
-import org.openflexo.model.annotations.Getter;
-import org.openflexo.model.annotations.IntegrityConstraint;
-import org.openflexo.model.annotations.IntegrityConstraints;
-import org.openflexo.model.annotations.ModelEntity;
-import org.openflexo.model.annotations.Modify;
-import org.openflexo.model.annotations.Setter;
+import org.openflexo.pamela.annotations.CloningStrategy;
+import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.IntegrityConstraint;
+import org.openflexo.pamela.annotations.IntegrityConstraints;
+import org.openflexo.pamela.annotations.ModelEntity;
+import org.openflexo.pamela.annotations.Modify;
+import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
 
 @ModelEntity(isAbstract = true)
 @IntegrityConstraints({ @IntegrityConstraint("process != null") })

@@ -35,10 +35,10 @@
 
 package org.openflexo.model7;
 
-import org.openflexo.model.annotations.Getter;
-import org.openflexo.model.annotations.Initialize;
-import org.openflexo.model.annotations.ModelEntity;
-import org.openflexo.model.annotations.Setter;
+import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.Initialize;
+import org.openflexo.pamela.annotations.ModelEntity;
+import org.openflexo.pamela.annotations.Setter;
 
 /**
  * Class Container to test auto initialize

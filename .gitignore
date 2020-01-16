@@ -3,6 +3,7 @@
 # Package Files #
 
 *.war
+/.idea/
 *.ear
 .classpath
 .project
@@ -16,5 +17,10 @@ target/
 build/
 *.iml
 **/out/
+<<<<<<< HEAD
 /bugs.txt
 /infer-out/
+=======
+/pamela-core/src/main/java/playground/
+/javaDoc/
+>>>>>>> dev

@@ -1,23 +1,12 @@
 buildscript {
-    configurations.classpath.resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
     repositories {
         maven { url uri('https://maven.openflexo.org/artifactory/openflexo-deps/') }
     }
     dependencies {
-        classpath group: 'org.openflexo', name: 'buildplugin', version: '0.1-SNAPSHOT'
-        classpath group: 'org.openflexo', name: 'buildconfig', version: '1.9.0-SNAPSHOT'
+        classpath group: 'org.openflexo', name: 'buildplugin', version: '0.2'
+        classpath group: 'org.openflexo', name: 'buildconfig', version: '2.0.0'
     }
 }
 
-version = "1.4.1"
+version = "1.5"
 apply plugin: 'org.openflexo.buildconfig'
-
-subprojects {
-	tasks.withType(Test) {
-		jvmArgs += ["-Djava.awt.headless=true"]
-    }
-}
-task gitPull(type: Exec) {
-    description 'Pulls git.'
-    commandLine "git", "pull"
-}
