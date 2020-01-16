@@ -1,13 +1,16 @@
 package org.openflexo.pamela.patterns.authorization;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
 import org.openflexo.pamela.patterns.authorization.annotations.AccessResource;
 import org.openflexo.pamela.patterns.authorization.annotations.ResourceID;
 import org.openflexo.pamela.patterns.authorization.annotations.SubjectID;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,10 +20,12 @@ public class AuthorizationSubjectEntity {
     private final HashMap<String, Method> idGetters;
     private final HashMap<Method, String > accessResourceMethods;
     private final HashMap<String, Method> distantAccessMethods;
+    private final HashMap<Method, HashMap<String, Integer>> mappingAccessMethodParameters;
+    private final HashMap<Object, AuthorizationSubjectInstance> instances;
+    private final HashMap<Method, ArrayList<Integer>> methodRealParamIndexes;
     private boolean successIDLinking;
     private boolean successAccessLinking;
     private boolean successResIDLinking;
-    private HashMap<Object, AuthorizationSubjectInstance> instances;
 
     public AuthorizationSubjectEntity(AuthorizationPattern authorizationPattern, Class klass) throws ModelDefinitionException {
         this.pattern = authorizationPattern;
@@ -29,6 +34,8 @@ public class AuthorizationSubjectEntity {
         this.accessResourceMethods = new HashMap<>();
         this.distantAccessMethods = new HashMap<>();
         this.instances = new HashMap<>();
+        this.mappingAccessMethodParameters = new HashMap<>();
+        this.methodRealParamIndexes = new HashMap<>();
         this.analyzeClass();
         this.successIDLinking = false;
         this.successAccessLinking = false;
@@ -69,9 +76,28 @@ public class AuthorizationSubjectEntity {
         }
     }
 
-    private void processAccessResource(Method method, AccessResource annotation) {
+    private void processAccessResource(Method method, AccessResource annotation) throws ModelDefinitionException {
         if (!this.accessResourceMethods.containsKey(method)){
             this.accessResourceMethods.put(method,annotation.methodID());
+            HashMap<String, Integer> paramMapping = new HashMap<>();
+            ArrayList<Integer> realParams = new ArrayList<>();
+            for (int i = 0;i<method.getParameterCount();i++){
+                Parameter param = method.getParameters()[i];
+                ResourceID a = param.getAnnotation(ResourceID.class);
+                if (a != null && a.patternID().compareTo(this.pattern.getID()) == 0){
+                    if (!paramMapping.containsKey(a.paramID())){
+                        paramMapping.put(a.paramID(), i);
+                    }
+                    else {
+                        throw new ModelDefinitionException(String.format("Duplicate ResourceID annotation with same paramID %s in method %s parameters of class %s", a.paramID(),method.getName(), this.baseClass.getSimpleName()));
+                    }
+                }
+                else {
+                    realParams.add(i);
+                }
+            }
+            this.mappingAccessMethodParameters.put(method, paramMapping);
+            this.methodRealParamIndexes.put(method, realParams);
         }
     }
 
@@ -137,5 +163,21 @@ public class AuthorizationSubjectEntity {
 
     public Map<Object, AuthorizationSubjectInstance> getInstances() {
         return this.instances;
+    }
+
+    public ReturnWrapper processMethodBeforeInvoke(Object self, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException {
+        if (this.accessResourceMethods.containsKey(method)){
+            //Récupérer parmi les arguments les identifiants de resource
+            HashMap<String, Object> resourceIDs = new HashMap<>();
+            for (String paramID : this.mappingAccessMethodParameters.get(method).keySet()){
+                resourceIDs.put(paramID,args[this.mappingAccessMethodParameters.get(method).get(paramID)]);
+            }
+            HashMap<String, Object> subjectIDs = new HashMap<>();
+            for (String paramID : this.idGetters.keySet()){
+                subjectIDs.put(paramID,this.idGetters.get(paramID).invoke(self));
+            }
+            return this.pattern.processAccessResource(subjectIDs, resourceIDs, this.accessResourceMethods.get(method), this.methodRealParamIndexes.get(method), self, method, args);
+        }
+        return new ReturnWrapper(true,null);
     }
 }

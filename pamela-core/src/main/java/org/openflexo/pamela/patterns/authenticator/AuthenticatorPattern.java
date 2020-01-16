@@ -4,6 +4,7 @@ import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.AbstractPattern;
 import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.PatternLibrary;
+import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentAuthenticatorEntityException;
@@ -62,17 +63,17 @@ public class AuthenticatorPattern extends AbstractPattern {
      * @param method Called method
      * @param klass Pattern-related class of identified im the class tree of <code>instance</code>
      * @param args Argument passed to the to-be-called method
-     * @return true if the execution should continue after this method, false if not.
+     * @return a {@link ReturnWrapper} wrapping true if the execution should continue after this method, false if not.
      * @throws InvocationTargetException if an error occurred when internally invoking a method
      * @throws IllegalAccessException if an error occurred when internally invoking a method
      * @throws NoSuchMethodException if an error occurred when internally invoking a method
      */
     @Override
-    public boolean processMethodBeforeInvoke(Object instance, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         if (context.notInConstructor()){
             this.checkBeforeInvoke(instance, method, klass, args);
         }
-        boolean returned = true;
+        ReturnWrapper returned = new ReturnWrapper(true,null);
         if (this.subjects.containsKey(klass)){
             returned = this.subjects.get(klass).processMethodBeforeInvoke(instance, method, klass, args);
         }

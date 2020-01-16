@@ -2,6 +2,7 @@ package org.openflexo.pamela.patterns.authenticator;
 
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.patterns.authenticator.annotations.*;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentAuthenticatorEntityException;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
@@ -140,22 +141,22 @@ public class AuthenticatorSubjectEntity {
      * @param method Called method
      * @param klass Pattern-related class of identified im the class tree of <code>instance</code>
      * @param args
-     * @return true if the execution of the invoke should go one after the call, false if not.
+     * @return a {@link ReturnWrapper} wrapping true if the execution of the invoke should go one after the call, false if not.
      * @throws InvocationTargetException if an error occurred when internally invoking a method
      * @throws IllegalAccessException if an error occurred when internally invoking a method
      * @throws NoSuchMethodException if an error occurred when internally invoking a method
      */
-    boolean processMethodBeforeInvoke(Object instance, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Method superMethod = klass.getMethod(method.getName(), method.getParameterTypes());
         if (this.authenticateMethods.contains(method)){
             pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticatorGetter, this);
-            return !Modifier.isAbstract(method.getModifiers());
+            return new ReturnWrapper(!Modifier.isAbstract(method.getModifiers()),null);
         }
         else if (this.authenticateMethods.contains(superMethod)){
             pattern.performAuthentication(instance,this.idProofSetter, this.args, this.authenticatorGetter, this);
-            return !Modifier.isAbstract(method.getModifiers());
+            return new ReturnWrapper(!Modifier.isAbstract(method.getModifiers()),null);
         }
-        return true;
+        return new ReturnWrapper(true, null);
     }
 
     /**

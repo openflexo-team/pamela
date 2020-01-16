@@ -1,14 +1,16 @@
 package org.openflexo.pamela.patterns.authorization;
 
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.authorization.annotations.CheckAccess;
 import org.openflexo.pamela.patterns.authorization.annotations.ResourceID;
 import org.openflexo.pamela.patterns.authorization.annotations.SubjectID;
 import org.openflexo.pamela.patterns.authorization.exception.InconsistentPermissionCheckerEntityException;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.Map;
 
 public class PermissionCheckerEntity {
     private final AuthorizationPattern pattern;
@@ -52,6 +54,9 @@ public class PermissionCheckerEntity {
 
     private void processCheckMethod(Method m, CheckAccess checkAnnotation) throws InconsistentPermissionCheckerEntityException{
         if (this.checkMethod == null){
+            if (!boolean.class.isAssignableFrom(m.getReturnType())){
+                throw new InconsistentPermissionCheckerEntityException(String.format("Check method %s in class %s does not return a boolean.", m.getName(), this.baseClass));
+            }
             this.checkMethod = m;
             for (int i=0;i<m.getParameters().length;i++){
                 Parameter param = m.getParameters()[i];
@@ -102,5 +107,17 @@ public class PermissionCheckerEntity {
 
     public HashMap<Object, PermissionCheckerInstance> getInstances() {
         return instances;
+    }
+
+    public boolean performAccessCheck(HashMap<String, Object> subjectIDs, HashMap<String, Object> resourceIDs, String methodID, Object checkerObject) throws InvocationTargetException, IllegalAccessException {
+        Object[] checkArgs = new Object[this.checkMethod.getParameterCount()];
+        for (String paramId : subjectIDs.keySet()){
+            checkArgs[this.subjectIdParameters.get(paramId)] = subjectIDs.get(paramId);
+        }
+        for (String paramId : resourceIDs.keySet()){
+            checkArgs[this.resourceIdParameters.get(paramId)] = resourceIDs.get(paramId);
+        }
+        checkArgs[this.methodIdIndex] = methodID;
+        return (boolean)this.checkMethod.invoke(checkerObject,checkArgs);
     }
 }

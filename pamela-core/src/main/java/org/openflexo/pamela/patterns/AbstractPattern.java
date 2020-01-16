@@ -33,12 +33,12 @@ public abstract class AbstractPattern {
      * @param method method to be invoked
      * @param klass Class of the class tree of <code>self</code> involved in the pattern
      * @param args Argument passed to the to-be-called method
-     * @return true if the execution of the method should be continued after the call of this method
+     * @return {@link ReturnWrapper} wrapping the return value of the method processing, if relevant, and a boolean stating whether the execution of the method should be continued after the call of this method or not.
      * @throws InvocationTargetException in case of error during internal calls
      * @throws IllegalAccessException in case of error during internal calls
      * @throws NoSuchMethodException in case of error during internal calls
      */
-    public abstract boolean processMethodBeforeInvoke(Object self, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException;
+    public abstract ReturnWrapper processMethodBeforeInvoke(Object self, Method method, Class klass, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException;
 
     /**
      * Method called when a new pattern-related instance is discovered by the {@link PatternContext}

@@ -1,5 +1,6 @@
 package org.openflexo.pamela.patterns.authorization;
 
+import javax.swing.text.html.parser.Entity;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
@@ -53,5 +54,22 @@ public class AuthorizationResourceInstance {
 
     public HashMap<String, Object> getIds() {
         return this.ids;
+    }
+
+    public AuthorizationResourceEntity getEntity() {
+        return this.entity;
+    }
+
+    public Object getInstance() {
+        return this.instance;
+    }
+
+    public boolean isIdentifiedBy(HashMap<String, Object> resourceIDs) {
+        for (String param : this.ids.keySet()){
+            if (!resourceIDs.containsKey(param) || !resourceIDs.get(param).equals(this.ids.get(param))){
+                return false;
+            }
+        }
+        return true;
     }
 }

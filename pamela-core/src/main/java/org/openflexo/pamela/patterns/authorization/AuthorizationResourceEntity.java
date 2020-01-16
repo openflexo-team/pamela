@@ -2,6 +2,7 @@ package org.openflexo.pamela.patterns.authorization;
 
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
 import org.openflexo.pamela.patterns.authorization.annotations.AccessResource;
 import org.openflexo.pamela.patterns.authorization.annotations.PermissionCheckerGetter;
@@ -11,7 +12,9 @@ import org.openflexo.pamela.patterns.authorization.exception.InconsistentPermiss
 import org.openflexo.pamela.patterns.authorization.exception.InconsistentResourceEntityException;
 import playground.authorization.interfaces.PermissionChecker;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -116,5 +119,29 @@ public class AuthorizationResourceEntity {
 
     public HashMap<Object, AuthorizationResourceInstance> getInstances() {
         return instances;
+    }
+
+    public ReturnWrapper performAccess(String methodID, Object[] args, ArrayList<Integer> paramsIndexes, Object instance) throws InvocationTargetException, IllegalAccessException {
+        Object returnValue;
+        if (paramsIndexes.isEmpty()){
+            returnValue = this.accessMethods.get(methodID).invoke(instance);
+        }
+        else {
+            Object[] accessArgs = new Object[paramsIndexes.size()];
+            for (int i=0;i<paramsIndexes.size();i++){
+                accessArgs[i] = args[paramsIndexes.get(i)];
+            }
+            returnValue = this.accessMethods.get(methodID).invoke(instance,accessArgs);
+        }
+        return new ReturnWrapper(false,returnValue);
+    }
+
+    public AuthorizationResourceInstance searchForResource(HashMap<String, Object> resourceIDs) {
+        for (AuthorizationResourceInstance instance : this.instances.values()){
+            if (instance.isIdentifiedBy(resourceIDs)){
+                return instance;
+            }
+        }
+        return null;
     }
 }

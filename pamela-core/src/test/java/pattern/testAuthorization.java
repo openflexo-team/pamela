@@ -3,6 +3,7 @@ package pattern;
 import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.patterns.PatternClassWrapper;
 import org.openflexo.pamela.patterns.PatternContext;
@@ -67,5 +68,45 @@ public class testAuthorization extends AbstractPAMELATest {
         assertEquals(rinstance.getIds().size(),1);
         assertTrue(rinstance.getIds().containsKey(PermissionChecker.RESOURCEID));
         assertTrue(rinstance.getIds().get(PermissionChecker.RESOURCEID).equals("iii"));
+    }
+
+    public void testAccessGrantedNoParameter() throws Exception{
+        ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+        ModelFactory factory = new ModelFactory(context);
+        PermissionChecker checker = factory.newInstance(PermissionChecker.class);
+        Resource resource = factory.newInstance(Resource.class, "Pool", 1., checker);
+        Resource resource1 = factory.newInstance(Resource.class, "Pool2", 17., checker);
+        Subject user = factory.newInstance(Subject.class, 1, "user");
+        Subject admin = factory.newInstance(Subject.class, 2, "admin");
+        assertEquals(user.getResource("Pool"),1.);
+        assertEquals(admin.getResource("Pool2"),17.);
+    }
+
+    public void testAccessDenied() throws Exception {
+        ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+        ModelFactory factory = new ModelFactory(context);
+        PermissionChecker checker = factory.newInstance(PermissionChecker.class);
+        Resource resource = factory.newInstance(Resource.class, "Pool", 1., checker);
+        Subject nobody = factory.newInstance(Subject.class, 2, "toto");
+        try {
+            nobody.getResource("Pool");
+            fail();
+        }
+        catch (ModelExecutionException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void testAccessGrantedWithParameter() throws Exception{
+        ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+        ModelFactory factory = new ModelFactory(context);
+        PermissionChecker checker = factory.newInstance(PermissionChecker.class);
+        Resource resource = factory.newInstance(Resource.class, "Pool", 1., checker);
+        Resource resource1 = factory.newInstance(Resource.class, "Pool2", 17., checker);
+        Subject admin = factory.newInstance(Subject.class, 2, "admin");
+        admin.setResource("Pool",42.);
+        assertEquals(admin.getResource("Pool"),42.);
+        admin.setResource("Pool2",-42.);
+        assertEquals(admin.getResource("Pool2"),-42.);
     }
 }

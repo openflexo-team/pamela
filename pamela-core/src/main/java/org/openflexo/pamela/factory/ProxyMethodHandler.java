@@ -102,6 +102,7 @@ import org.openflexo.pamela.jml.JMLRequires;
 import org.openflexo.pamela.jml.SpecificationsViolationException;
 import org.openflexo.pamela.patterns.PatternClassWrapper;
 import org.openflexo.pamela.patterns.PatternContext;
+import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.undo.AddCommand;
 import org.openflexo.pamela.undo.CreateCommand;
 import org.openflexo.pamela.undo.DeleteCommand;
@@ -345,7 +346,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 		ArrayList<PatternClassWrapper> patternsOfInterest = patternContext.getRelatedPatternsFromInstance(self);
 		for (PatternClassWrapper wrapper : patternsOfInterest){
-			keepGoing = keepGoing && wrapper.getPattern().processMethodBeforeInvoke(self, method, wrapper.getKlass(), args);
+			ReturnWrapper returnWrapper = wrapper.getPattern().processMethodBeforeInvoke(self, method, wrapper.getKlass(), args);
+			if (!returnWrapper.mustContinue()){
+				keepGoing = false;
+				invoke = returnWrapper.getReturnValue();
+			}
 		}
 
 		if (keepGoing){

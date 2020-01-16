@@ -13,7 +13,7 @@ public interface PermissionChecker {
 
     @CheckAccess(patternID = PATTERN)
     default boolean check(@SubjectID(patternID = PATTERN, paramID = SUBJECTSTRINGID) String strID, @SubjectID(patternID = PATTERN, paramID = SUBJECTID) int subId, @ResourceID(patternID = PATTERN, paramID = RESOURCEID) String resId, @MethodID(patternID = PATTERN) String methodID) {
-        return (strID != null && subId==2&&resId.compareTo("Pool")==0&&(methodID.compareTo("get") == 0||methodID.compareTo("set") == 0)) || (subId==1&&resId.compareTo("Pool")==0&&(methodID).compareTo("get") == 0);
+        return (strID.compareTo("admin") == 0 && subId==2&&(resId.compareTo("Pool")== 0 || resId.compareTo("Pool2") == 0)&&(methodID.compareTo("get") == 0||methodID.compareTo("set") == 0)) || (subId==1&&(resId.compareTo("Pool")== 0 || resId.compareTo("Pool2") == 0)&&(methodID).compareTo("get") == 0);
     }
 
 }
