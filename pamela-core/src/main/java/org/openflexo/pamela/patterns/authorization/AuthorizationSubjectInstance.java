@@ -1,5 +1,8 @@
 package org.openflexo.pamela.patterns.authorization;
 
+import org.openflexo.pamela.exceptions.ModelExecutionException;
+
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,21 +36,50 @@ public class AuthorizationSubjectInstance {
         }
     }
 
-    void checkBeforeInvoke(Method method) {
+    void checkBeforeInvoke(Method method, Object[] args) {
         if (!this.initializing && !this.checking){
             this.checking = true;
-
+            this.checkInvariant();
+            this.checkPrecondition(method,args);
             this.checking = false;
         }
     }
 
-    void checkAfterInvoke(Method method, Object returnValue) {
+    private void checkPrecondition(Method method, Object[] args) {
+    }
+
+    private void checkInvariant() {
+        this.checkIdIsFinal();
+    }
+
+    private void checkIdIsFinal() {
+        int i = 0;
+        try {
+            for (Method m : this.subjectEntity.getIdGetters().values()) {
+                Object currentID = m.invoke(this.instance);
+                if (this.ids.get(i) != null && !this.ids.get(i).equals(currentID)){
+                    throw new ModelExecutionException("Subject Invariant breach: Id has changed since initialization");
+                }
+                i++;
+            }
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    void checkAfterInvoke(Method method, Object[] args, Object returnValue) {
         if (!this.initializing && !this.checking){
             this.checking = true;
-
+            this.checkInvariant();
+            this.checkPostCondition(method,args,returnValue);
             this.checking = false;
         }
 
+    }
+
+    private void checkPostCondition(Method method, Object[] args, Object returnValue) {
     }
 
     public ArrayList<Object> getIds() {

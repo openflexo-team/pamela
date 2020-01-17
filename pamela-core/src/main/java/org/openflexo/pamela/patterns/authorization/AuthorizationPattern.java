@@ -57,13 +57,13 @@ public class AuthorizationPattern extends AbstractPattern {
 
     private void checkBeforeInvoke(Object self, Method method, Class klass, Object[] args) {
         if (this.subjects.containsKey(klass) && this.subjects.get(klass).getInstances().containsKey(self)){
-            this.subjects.get(klass).getInstances().get(self).checkBeforeInvoke(method);
+            this.subjects.get(klass).getInstances().get(self).checkBeforeInvoke(method, args);
         }
         if (this.checker.getBaseClass().equals(klass) && this.checker.getInstances().containsKey(self)){
             this.checker.getInstances().get(self).checkBeforeInvoke(method);
         }
         if (this.resources.containsKey(klass) && this.resources.get(klass).getInstances().containsKey(self)){
-            this.resources.get(klass).getInstances().get(self).checkBeforeInvoke(method);
+            this.resources.get(klass).getInstances().get(self).checkBeforeInvoke(method, args);
         }
     }
 
@@ -82,14 +82,26 @@ public class AuthorizationPattern extends AbstractPattern {
 
     @Override
     public void processMethodAfterInvoke(Object self, Method method, Class klass, Object returnValue, Object[] args) {
-        if (method.getAnnotation(Initializer.class) != null){
-            boolean changed = false;
-            if (!this.context.notInConstructor()){
-                changed = true;
-                this.context.leavingConstructor();
-            }
+        if (method.getAnnotation(Initializer.class) != null && !this.context.notInConstructor()){
+            this.context.leavingConstructor();
             this.context.getRelatedPatternsFromInstance(self);
-            if (changed)this.context.insideConstructor();
+            this.context.insideConstructor();
+        }
+        if (context.notInConstructor()) {
+            this.checkAfterInvoke(self, method, klass, returnValue, args);
+        }
+
+    }
+
+    private void checkAfterInvoke(Object self, Method method, Class klass, Object returnValue, Object[] args) {
+        if (this.subjects.containsKey(klass) && this.subjects.get(klass).getInstances().containsKey(self)){
+            this.subjects.get(klass).getInstances().get(self).checkAfterInvoke(method, args, returnValue);
+        }
+        if (this.checker.getBaseClass().equals(klass) && this.checker.getInstances().containsKey(self)){
+            this.checker.getInstances().get(self).checkAfterInvoke(method, returnValue);
+        }
+        if (this.resources.containsKey(klass) && this.resources.get(klass).getInstances().containsKey(self)){
+            this.resources.get(klass).getInstances().get(self).checkAfterInvoke(method, args, returnValue);
         }
     }
 

@@ -109,4 +109,79 @@ public class testAuthorization extends AbstractPAMELATest {
         admin.setResource("Pool2",-42.);
         assertEquals(admin.getResource("Pool2"),-42.);
     }
+
+    public void testResourceIdInvariant() throws Exception {
+        ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+        ModelFactory factory = new ModelFactory(context);
+
+        PermissionChecker checker = factory.newInstance(PermissionChecker.class);
+        Resource r1 = factory.newInstance(Resource.class, "ID", 3.14, checker);
+
+        try {
+            r1.setID("ROGUE");
+            fail();
+        }
+        catch (ModelExecutionException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void testResourceFinalCheckerInvariant() throws Exception {
+        ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+        ModelFactory factory = new ModelFactory(context);
+
+        PermissionChecker checker = factory.newInstance(PermissionChecker.class);
+        Resource r1 = factory.newInstance(Resource.class, "ID", 3.14, checker);
+
+        try {
+            r1.setChecker(null);
+            fail();
+        }
+        catch (ModelExecutionException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void testWrongInitResourceChecker() throws Exception {
+        ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+        ModelFactory factory = new ModelFactory(context);
+
+        try {
+            Resource r1 = factory.newInstance(Resource.class, "ID", 3.14, null);
+            fail();
+        }
+        catch (ModelExecutionException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void testSubjectIdInvariant() throws Exception {
+        ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+        ModelFactory factory = new ModelFactory(context);
+
+        Subject user = factory.newInstance(Subject.class, 42, "ID");
+
+        try {
+            user.setID(-1);
+            fail();
+        }
+        catch (ModelExecutionException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void testSubjectIdInvariantBis() throws Exception {
+        ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+        ModelFactory factory = new ModelFactory(context);
+
+        Subject user = factory.newInstance(Subject.class, 42, "ID");
+
+        try {
+            user.setStringID("ROGUE");
+            fail();
+        }
+        catch (ModelExecutionException e){
+            e.printStackTrace();
+        }
+    }
 }
