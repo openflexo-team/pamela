@@ -96,7 +96,7 @@ public class PatternContext {
     /**
      * Method called when entering in a pattern-related constructor
      */
-    public void insideConstructor(){
+    public void enteringConstructor(){
         this.inConstructor = true;
     }
 

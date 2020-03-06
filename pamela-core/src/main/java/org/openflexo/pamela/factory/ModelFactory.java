@@ -279,7 +279,7 @@ public class ModelFactory implements IObjectGraphFactory {
 
 	public <I> I newInstance(Class<I> implementedInterface, Object... args) {
 		try {
-			this.getModelContext().getPatternContext().insideConstructor();
+			this.getModelContext().getPatternContext().enteringConstructor();
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
 			I returned = proxyFactory.newInstance(args);
 			if (getEditingContext() != null) {

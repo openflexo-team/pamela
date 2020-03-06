@@ -85,7 +85,7 @@ public class AuthorizationPattern extends AbstractPattern {
         if (method.getAnnotation(Initializer.class) != null && !this.context.notInConstructor()){
             this.context.leavingConstructor();
             this.context.getRelatedPatternsFromInstance(self);
-            this.context.insideConstructor();
+            this.context.enteringConstructor();
         }
         if (context.notInConstructor()) {
             this.checkAfterInvoke(self, method, klass, returnValue, args);
