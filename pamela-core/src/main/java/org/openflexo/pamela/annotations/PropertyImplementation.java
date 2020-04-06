@@ -50,5 +50,5 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.METHOD)
 public @interface PropertyImplementation {
 
-	Class<? extends org.flexo.model9.PropertyImplementation> value();
+	Class<? extends org.openflexo.pamela.factory.PropertyImplementation> value();
 }

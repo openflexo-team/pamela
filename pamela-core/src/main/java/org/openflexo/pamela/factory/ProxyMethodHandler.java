@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -139,6 +140,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	private boolean modified = false;
 	private PropertyChangeSupport propertyChangeSupport;
 	protected boolean initializing;
+
+	private Map<String, PropertyImplementation<? super I, ?>> propertyImplementations;
 
 	public static Method PERFORM_SUPER_GETTER;
 	public static Method PERFORM_SUPER_SETTER;
@@ -242,6 +245,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		this.editingContext = editingContext;
 		values = new HashMap<>(getModelEntity().getPropertiesSize(), 1.0f);
 		historyValues = new HashMap<>();
+		propertyImplementations = new HashMap<>();
 		initialized = !getModelEntity().hasInitializers();
 		initDelegateImplementations();
 	}
@@ -454,14 +458,14 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		Remover remover = method.getAnnotation(Remover.class);
 		if (remover != null) {
 			String id = remover.value();
-			internallyInvokerRemover(id, args);
+			internallyInvokeRemover(id, args);
 			return null;
 		}
 
 		Reindexer reindexer = method.getAnnotation(Reindexer.class);
 		if (reindexer != null) {
 			String id = reindexer.value();
-			internallyInvokerReindexer(id, args);
+			internallyInvokeReindexer(id, args);
 			return null;
 		}
 
@@ -707,29 +711,119 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return (ModelEntity<? super I>) e;
 	}
 
+	private PropertyImplementation<? super I, ?> getPropertyImplementation(ModelProperty<? super I> property) {
+		PropertyImplementation<? super I, ?> returned = propertyImplementations.get(property.getPropertyIdentifier());
+		if (returned == null) {
+			Class<? extends PropertyImplementation<I, ?>> implementationClass = (Class<? extends PropertyImplementation<I, ?>>) property
+					.getPropertyImplementation().value();
+			try {
+				Constructor<? extends PropertyImplementation<I, ?>> constructor = implementationClass
+						.getConstructor(ProxyMethodHandler.class, ModelProperty.class);
+				returned = constructor.newInstance(this, property);
+				propertyImplementations.put(property.getPropertyIdentifier(), returned);
+				return returned;
+
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return returned;
+	}
+
 	private Object internallyInvokeGetter(String propertyIdentifier) throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
-		return internallyInvokeGetter(property);
+		if (property.getPropertyImplementation() != null) {
+			PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+			return internallyInvokeGetter(property, propertyImplementation);
+		}
+		else {
+			return internallyInvokeGetter(property);
+		}
 	}
 
 	private void internallyInvokeSetter(String propertyIdentifier, Object[] args) throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
-		internallyInvokeSetter(property, args[0], true);
+		if (property.getPropertyImplementation() != null) {
+			PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+			if (propertyImplementation instanceof SettablePropertyImplementation) {
+				internallyInvokeSetter(property, (SettablePropertyImplementation) propertyImplementation, args[0], true);
+			}
+			else {
+				throw new ModelDefinitionException(
+						"Property implementation does not support SET protocol: " + property.getPropertyImplementation());
+			}
+		}
+		else {
+			internallyInvokeSetter(property, args[0], true);
+		}
 	}
 
 	private void internallyInvokeAdder(String propertyIdentifier, Object[] args) throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
-		internallyInvokeAdder(property, args[0], true);
+		if (property.getPropertyImplementation() != null) {
+			PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+			if (propertyImplementation instanceof ListPropertyImplementation) {
+				internallyInvokeAdder(property, (ListPropertyImplementation) propertyImplementation, args[0], true);
+			}
+			else {
+				throw new ModelDefinitionException(
+						"Property implementation does not support ADD protocol: " + property.getPropertyImplementation());
+			}
+		}
+		else {
+			internallyInvokeAdder(property, args[0], true);
+		}
 	}
 
-	private void internallyInvokerRemover(String id, Object[] args) throws ModelDefinitionException {
+	private void internallyInvokeRemover(String id, Object[] args) throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(id);
-		internallyInvokeRemover(property, args[0], true);
+		if (property.getPropertyImplementation() != null) {
+			PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+			if (propertyImplementation instanceof ListPropertyImplementation) {
+				internallyInvokeRemover(property, (ListPropertyImplementation) propertyImplementation, args[0], true);
+			}
+			else {
+				throw new ModelDefinitionException(
+						"Property implementation does not support REMOVE protocol: " + property.getPropertyImplementation());
+			}
+		}
+		else {
+			internallyInvokeRemover(property, args[0], true);
+		}
 	}
 
-	private void internallyInvokerReindexer(String id, Object[] args) throws ModelDefinitionException {
+	private void internallyInvokeReindexer(String id, Object[] args) throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(id);
-		internallyInvokeReindexer(property, args[0], (Integer) args[1], true);
+		if (property.getPropertyImplementation() != null) {
+			PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+			if (propertyImplementation instanceof ReindexableListPropertyImplementation) {
+				internallyInvokeReindexer(property, (ReindexableListPropertyImplementation) propertyImplementation, args[0],
+						(Integer) args[1], true);
+			}
+			else {
+				throw new ModelDefinitionException(
+						"Property implementation does not support REINDEX protocol: " + property.getPropertyImplementation());
+			}
+		}
+		else {
+			internallyInvokeReindexer(property, args[0], (Integer) args[1], true);
+		}
 	}
 
 	/**
@@ -1648,6 +1742,51 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			}
 		}
 		throw new ModelDefinitionException("finder works only on maps and iterable");
+	}
+
+	private <T> T internallyInvokeGetter(ModelProperty<? super I> property, PropertyImplementation<? super I, T> propertyImplementation)
+			throws ModelDefinitionException {
+		return propertyImplementation.get();
+	}
+
+	private <T> void internallyInvokeSetter(ModelProperty<? super I> property, SettablePropertyImplementation<I, T> propertyImplementation,
+			T value, boolean trackAtomicEdit) throws ModelDefinitionException {
+		Object oldValue = invokeGetter(property);
+		if (trackAtomicEdit && getUndoManager() != null) {
+			if (oldValue != value) {
+				getUndoManager().addEdit(new SetCommand<>(getObject(), getModelEntity(), property, oldValue, value, getModelFactory()));
+			}
+		}
+		propertyImplementation.set(value);
+	}
+
+	private <T> void internallyInvokeAdder(ModelProperty<? super I> property, ListPropertyImplementation<I, T> propertyImplementation,
+			T value, boolean trackAtomicEdit) throws ModelDefinitionException {
+		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
+		}
+		propertyImplementation.addTo(value);
+	}
+
+	private <T> void internallyInvokeRemover(ModelProperty<? super I> property, ListPropertyImplementation<I, T> propertyImplementation,
+			T value, boolean trackAtomicEdit) throws ModelDefinitionException {
+		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
+		}
+		propertyImplementation.removeFrom(value);
+	}
+
+	private <T> void internallyInvokeReindexer(ModelProperty<? super I> property,
+			ReindexableListPropertyImplementation<I, T> propertyImplementation, T value, int index, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
+			getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
+		}
+		propertyImplementation.reindex(value, index);
 	}
 
 	private boolean isObjectAttributeEquals(Object o, String attribute, Object value) throws ModelDefinitionException {

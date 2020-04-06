@@ -35,50 +35,45 @@
 
 package org.flexo.model9;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.openflexo.pamela.annotations.Adder;
-import org.openflexo.pamela.annotations.Embedded;
-import org.openflexo.pamela.annotations.Getter;
-import org.openflexo.pamela.annotations.Getter.Cardinality;
-import org.openflexo.pamela.annotations.ModelEntity;
-import org.openflexo.pamela.annotations.PastingPoint;
-import org.openflexo.pamela.annotations.PropertyImplementation;
-import org.openflexo.pamela.annotations.Reindexer;
-import org.openflexo.pamela.annotations.Remover;
-import org.openflexo.pamela.annotations.Setter;
-import org.openflexo.pamela.annotations.XMLElement;
-import org.openflexo.pamela.factory.AccessibleProxyObject;
-import org.openflexo.pamela.factory.CloneableProxyObject;
+import org.openflexo.pamela.ModelProperty;
+import org.openflexo.pamela.exceptions.InvalidDataException;
+import org.openflexo.pamela.factory.AbstractPropertyImplementation;
+import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.factory.ReindexableListPropertyImplementation;
 
-@ModelEntity
-@XMLElement
-public interface Concept extends AccessibleProxyObject, CloneableProxyObject {
+public class MyListCardinalityPropertyImplementation<I, T> extends AbstractPropertyImplementation<I, List<T>>
+		implements ReindexableListPropertyImplementation<I, T> {
 
-	static final String VALUE = "value";
-	static final String SUB_CONCEPTS = "someSubConcepts";
+	private List<T> l;
 
-	@Getter(value = VALUE)
-	@PropertyImplementation(MyStrangePropertyImplementation.class)
-	String getValue();
+	public MyListCardinalityPropertyImplementation(ProxyMethodHandler<I> handler, ModelProperty<I> property) throws InvalidDataException {
+		super(handler, property);
+		l = new ArrayList<T>();
+	}
 
-	@Setter(VALUE)
-	public void setValue(String value);
+	@Override
+	public List<T> get() {
+		return l;
+	}
 
-	@Getter(value = SUB_CONCEPTS, cardinality = Cardinality.LIST, inverse = SubConcept.MAIN_CONCEPT)
-	@PropertyImplementation(MyListCardinalityPropertyImplementation.class)
-	@XMLElement
-	@Embedded
-	List<SubConcept> getSubConcepts();
+	@Override
+	public void addTo(T aValue) {
+		l.add(aValue);
+		System.out.println("Ajout de " + aValue + " a " + getProperty());
+	}
 
-	@Adder(SUB_CONCEPTS)
-	@PastingPoint
-	void addToSubConcepts(SubConcept subConcept);
+	@Override
+	public void removeFrom(T aValue) {
+		l.remove(aValue);
+	}
 
-	@Remover(SUB_CONCEPTS)
-	void removeFromSubConcepts(SubConcept subConcept);
-
-	@Reindexer(SUB_CONCEPTS)
-	void reindexSubConcepts(SubConcept subConcept, int index);
+	@Override
+	public void reindex(T aValue, int index) {
+		l.remove(aValue);
+		l.add(index, aValue);
+	}
 
 }

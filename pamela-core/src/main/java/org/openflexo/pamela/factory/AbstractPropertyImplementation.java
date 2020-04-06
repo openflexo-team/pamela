@@ -1,8 +1,20 @@
-package org.flexo.model9;
+package org.openflexo.pamela.factory;
 
 import org.openflexo.pamela.ModelProperty;
-import org.openflexo.pamela.factory.ProxyMethodHandler;
 
+/**
+ * Base abstract class providing property implementation
+ * 
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ *            type of entity defining such property
+ * @param <T>
+ *            accessed type for the property
+ * @param <M>
+ *            internal memory adressable for a given entity instance and property
+ */
 public abstract class AbstractPropertyImplementation<I, T> implements PropertyImplementation<I, T> {
 
 	private final ProxyMethodHandler<I> handler;
@@ -17,6 +29,7 @@ public abstract class AbstractPropertyImplementation<I, T> implements PropertyIm
 		return handler;
 	}
 
+	@Override
 	public I getObject() {
 		return getHandler().getObject();
 	}

@@ -35,50 +35,35 @@
 
 package org.flexo.model9;
 
-import java.util.List;
-
-import org.openflexo.pamela.annotations.Adder;
-import org.openflexo.pamela.annotations.Embedded;
 import org.openflexo.pamela.annotations.Getter;
-import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.annotations.ModelEntity;
-import org.openflexo.pamela.annotations.PastingPoint;
 import org.openflexo.pamela.annotations.PropertyImplementation;
-import org.openflexo.pamela.annotations.Reindexer;
-import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.annotations.XMLAttribute;
 import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.factory.AccessibleProxyObject;
 import org.openflexo.pamela.factory.CloneableProxyObject;
 
 @ModelEntity
 @XMLElement
-public interface Concept extends AccessibleProxyObject, CloneableProxyObject {
+public interface SubConcept extends AccessibleProxyObject, CloneableProxyObject {
 
-	static final String VALUE = "value";
-	static final String SUB_CONCEPTS = "someSubConcepts";
+	static final String MAIN_CONCEPT = "mainConcept";
 
-	@Getter(value = VALUE)
-	@PropertyImplementation(MyStrangePropertyImplementation.class)
-	String getValue();
+	static final String NAME = "name";
 
-	@Setter(VALUE)
-	public void setValue(String value);
+	@Getter(value = NAME)
+	@PropertyImplementation(MySingleCardinalityPropertyImplementation.class)
+	@XMLAttribute
+	String getName();
 
-	@Getter(value = SUB_CONCEPTS, cardinality = Cardinality.LIST, inverse = SubConcept.MAIN_CONCEPT)
-	@PropertyImplementation(MyListCardinalityPropertyImplementation.class)
-	@XMLElement
-	@Embedded
-	List<SubConcept> getSubConcepts();
+	@Setter(NAME)
+	public void setName(String value);
 
-	@Adder(SUB_CONCEPTS)
-	@PastingPoint
-	void addToSubConcepts(SubConcept subConcept);
+	@Getter(value = MAIN_CONCEPT)
+	Concept getMainConcept();
 
-	@Remover(SUB_CONCEPTS)
-	void removeFromSubConcepts(SubConcept subConcept);
-
-	@Reindexer(SUB_CONCEPTS)
-	void reindexSubConcepts(SubConcept subConcept, int index);
+	@Setter(MAIN_CONCEPT)
+	public void setMainConcept(Concept aConcept);
 
 }

@@ -2,9 +2,10 @@ package org.flexo.model9;
 
 import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.InvalidDataException;
+import org.openflexo.pamela.factory.DefaultSinglePropertyImplementation;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 
-public class MySingleCardinalityPropertyImplementation<I, T> extends DefaultSingleCardinalityPropertyImplementation<I, T> {
+public class MySingleCardinalityPropertyImplementation<I, T> extends DefaultSinglePropertyImplementation<I, T> {
 
 	public MySingleCardinalityPropertyImplementation(ProxyMethodHandler<I> handler, ModelProperty<I> property) throws InvalidDataException {
 		super(handler, property);

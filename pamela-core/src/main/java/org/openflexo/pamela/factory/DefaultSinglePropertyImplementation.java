@@ -1,16 +1,15 @@
-package org.flexo.model9;
+package org.openflexo.pamela.factory;
 
 import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.InvalidDataException;
-import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
-public class DefaultSingleCardinalityPropertyImplementation<I, T> extends AbstractPropertyImplementation<I, T>
-		implements SingleCardinalityPropertyImplementation<I, T> {
+public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyImplementation<I, T>
+		implements SinglePropertyImplementation<I, T> {
 
 	private T internalValue;
 
-	public DefaultSingleCardinalityPropertyImplementation(ProxyMethodHandler<I> handler, ModelProperty<I> property)
+	public DefaultSinglePropertyImplementation(ProxyMethodHandler<I> handler, ModelProperty<I> property)
 			throws InvalidDataException {
 		super(handler, property);
 		internalValue = (T) property.getDefaultValue(handler.getModelFactory());
@@ -23,8 +22,8 @@ public class DefaultSingleCardinalityPropertyImplementation<I, T> extends Abstra
 
 	@Override
 	public void set(T aValue) {
-		if ((aValue == null && internalValue != null) || (aValue != null && !aValue.equals(internalValue))) {
-			T oldValue = internalValue;
+		if ((aValue == null && get() != null) || (aValue != null && !aValue.equals(get()))) {
+			T oldValue = get();
 			this.internalValue = aValue;
 			if (this instanceof HasPropertyChangeSupport) {
 				((HasPropertyChangeSupport) this).getPropertyChangeSupport().firePropertyChange(getProperty().getPropertyIdentifier(),
