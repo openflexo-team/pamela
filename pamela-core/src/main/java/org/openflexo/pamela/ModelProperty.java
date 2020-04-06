@@ -1139,8 +1139,11 @@ public class ModelProperty<I> {
 	}
 
 	public boolean isStringConvertable() {
-		if (getGetter() != null) {
-			return getGetter().isStringConvertable();
+		if (getGetter() != null && getGetter().isStringConvertable()) {
+			return true;
+		}
+		if (getXMLAttribute() != null) {
+			return true;
 		}
 		return false;
 	}

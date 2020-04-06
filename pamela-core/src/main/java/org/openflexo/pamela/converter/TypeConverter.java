@@ -40,6 +40,7 @@ package org.openflexo.pamela.converter;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -139,19 +140,34 @@ public class TypeConverter extends Converter<Type> {
 			// Here is a quick fix
 			try {
 				if (value.equals("boolean")) {
-					return Boolean.class;
+					return Boolean.TYPE;
+				}
+				else if (value.equals("byte")) {
+					return Byte.TYPE;
 				}
 				else if (value.equals("int")) {
-					return Integer.class;
+					return Integer.TYPE;
 				}
 				else if (value.equals("long")) {
-					return Long.class;
+					return Long.TYPE;
+				}
+				else if (value.equals("short")) {
+					return Short.TYPE;
 				}
 				else if (value.equals("float")) {
-					return Float.class;
+					return Float.TYPE;
 				}
 				else if (value.equals("double")) {
-					return Double.class;
+					return Double.TYPE;
+				}
+				else if (value.equals("char")) {
+					return Character.TYPE;
+				}
+				else if (value.equals("String")) {
+					return String.class;
+				}
+				else if (value.equals("Date")) {
+					return Date.class;
 				}
 				return Class.forName(value);
 			} catch (ClassNotFoundException e) {
