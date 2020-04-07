@@ -1185,8 +1185,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				return invokeGetterForSingleCardinality(property);
 			case LIST:
 				return invokeGetterForListCardinality(property);
-			case MAP:
-				return invokeGetterForMapCardinality(property);
 			default:
 				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
 		}
@@ -1271,31 +1269,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	private Map<?, ?> invokeGetterForMapCardinality(ModelProperty<? super I> property) {
-		if (property.getGetter() == null) {
-			throw new ModelExecutionException("Getter is not defined for property " + property);
-		}
-		Map<?, ?> returned = (Map<?, ?>) values.get(property.getPropertyIdentifier());
-		if (returned != null) {
-			return returned;
-		}
-		else {
-			Class<? extends Map> mapClass = getModelFactory().getMapImplementationClass();
-			try {
-				returned = mapClass.newInstance();
-			} catch (InstantiationException e) {
-				throw new ModelExecutionException(e);
-			} catch (IllegalAccessException e) {
-				throw new ModelExecutionException(e);
-			}
-			if (returned != null) {
-				values.put(property.getPropertyIdentifier(), returned);
-				return returned;
-			}
-			return null;
-		}
-	}
-
 	public void invokeSetterForDeserialization(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
 		if (property.getSetterMethod() != null) {
 			invokeSetter(property, value);
@@ -1319,9 +1292,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				break;
 			case LIST:
 				invokeSetterForListCardinality(property, value);
-				break;
-			case MAP:
-				invokeSetterForMapCardinality(property, value);
 				break;
 			default:
 				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
@@ -1391,8 +1361,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 							// No need to remove objet from opposite property object was not inside
 						}
 						break;
-					case MAP:
-						break;
 					default:
 						throw new ModelExecutionException("Invalid cardinality: " + inverseProperty.getCardinality());
 				}
@@ -1446,8 +1414,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						else {
 							// No need to add object to inverse property, because this is already inside
 						}
-						break;
-					case MAP:
 						break;
 					default:
 						throw new ModelExecutionException("Invalid cardinality: " + inverseProperty.getCardinality());
@@ -1514,14 +1480,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	private void invokeSetterForMapCardinality(ModelProperty<? super I> property, Object value) {
-		if (property.getSetter() == null && !isDeserializing() && !initializing && !createdByCloning && !deleting && !undeleting) {
-			throw new ModelExecutionException("Setter is not defined for property " + property);
-		}
-		// TODO implement this
-		throw new UnsupportedOperationException("Setter for MAP: not implemented yet");
-	}
-
 	public void invokeAdderForDeserialization(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
 		if (property.getAdderMethod() != null) {
 			invokeAdder(property, value);
@@ -1544,9 +1502,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			case LIST:
 				invokeAdderForListCardinality(property, value, -1);
 				break;
-			case MAP:
-				invokeAdderForMapCardinality(property, value);
-				break;
 			default:
 				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
 		}
@@ -1564,9 +1519,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						"Cannot invoke ADDER on " + property.getPropertyIdentifier() + ": Invalid cardinality SINGLE");
 			case LIST:
 				invokeAdderForListCardinality(property, value, index);
-				break;
-			case MAP:
-				invokeAdderForMapCardinality(property, value);
 				break;
 			default:
 				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
@@ -1603,8 +1555,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					case LIST:
 						oppositeHandler.invokeAdder(inverseProperty, getObject());
 						break;
-					case MAP:
-						break;
 					default:
 						throw new ModelExecutionException("Invalid cardinality: " + inverseProperty.getCardinality());
 				}
@@ -1613,14 +1563,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				invokeSetModified(true);
 			}
 		}
-	}
-
-	private void invokeAdderForMapCardinality(ModelProperty<? super I> property, Object value) {
-		if (property.getAdder() == null && !isDeserializing() && !initializing && !createdByCloning) {
-			throw new ModelExecutionException("Adder is not defined for property " + property);
-		}
-		// TODO implement this
-		throw new UnsupportedOperationException("Adder for MAP: not implemented yet");
 	}
 
 	private void internallyInvokeRemover(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
@@ -1635,9 +1577,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						"Cannot invoke REMOVER on " + property.getPropertyIdentifier() + ": Invalid cardinality SINGLE");
 			case LIST:
 				invokeRemoverForListCardinality(property, value);
-				break;
-			case MAP:
-				invokeRemoverForMapCardinality(property, value);
 				break;
 			default:
 				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
@@ -1699,8 +1638,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					case LIST:
 						oppositeHandler.invokeRemover(inverseProperty, getObject());
 						break;
-					case MAP:
-						break;
 					default:
 						throw new ModelExecutionException("Invalid cardinality: " + inverseProperty.getCardinality());
 				}
@@ -1709,14 +1646,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				invokeSetModified(true);
 			}
 		}
-	}
-
-	private void invokeRemoverForMapCardinality(ModelProperty<? super I> property, Object value) {
-		if (property.getRemover() == null) {
-			throw new ModelExecutionException("Remover is not defined for property " + property);
-		}
-		// TODO implement this
-		throw new UnsupportedOperationException("Remover for MAP: not implemented yet");
 	}
 
 	private Object internallyInvokeFinder(@Nonnull Finder finder, Object[] args) throws ModelDefinitionException {
@@ -2360,9 +2289,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						}
 
 						break;
-					case MAP:
-						System.err.println("Not implemented: MAP support for updateWith()");
-						break;
 					default:
 						break;
 				}
@@ -2458,9 +2384,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						else {
 							// null values are ignored and not taken under account
 						}
-						break;
-					case MAP:
-						System.err.println("Not implemented: MAP support for getDistance()");
 						break;
 					default:
 						break;

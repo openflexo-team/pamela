@@ -60,7 +60,7 @@ import org.openflexo.pamela.factory.ModelFactory;
 public @interface Getter {
 
 	enum Cardinality {
-		SINGLE, LIST, MAP;
+		SINGLE, LIST;
 	}
 
 	String UNDEFINED = "";

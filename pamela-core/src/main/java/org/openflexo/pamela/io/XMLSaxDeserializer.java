@@ -55,9 +55,9 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.ModelContext.ModelPropertyXMLTag;
 import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.ModelProperty;
-import org.openflexo.pamela.ModelContext.ModelPropertyXMLTag;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.RestrictiveDeserializationException;
@@ -286,8 +286,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 						case LIST:
 							parent.invokeAdderForDeserialization(property, info.getObject());
 							break;
-						case MAP:
-							throw new UnsupportedOperationException("Cannot deserialize maps for now");
 						default:
 							break;
 					}

@@ -50,7 +50,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +90,6 @@ public class ModelFactory implements IObjectGraphFactory {
 
 	private Class<?> defaultModelClass = Object.class;
 	private Class<? extends List> listImplementationClass = Vector.class;
-	private Class<? extends Map> mapImplementationClass = Hashtable.class;
 
 	private final Map<Class, PAMELAProxyFactory> proxyFactories;
 	private final StringEncoder stringEncoder;
@@ -430,14 +428,6 @@ public class ModelFactory implements IObjectGraphFactory {
 
 	public void setListImplementationClass(Class<? extends List> listImplementationClass) {
 		this.listImplementationClass = listImplementationClass;
-	}
-
-	public Class<? extends Map> getMapImplementationClass() {
-		return mapImplementationClass;
-	}
-
-	public void setMapImplementationClass(Class<? extends Map> mapImplementationClass) {
-		this.mapImplementationClass = mapImplementationClass;
 	}
 
 	public boolean isProxyObject(Object object) {

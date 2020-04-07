@@ -113,7 +113,6 @@ public class ModelProperty<I> {
 
 	/* Computed values of the model property */
 	private Class<?> type;
-	private Class<?> keyType;
 	private String xmlTag;
 
 	protected static <I> ModelProperty<I> getModelProperty(String propertyIdentifier, ModelEntity<I> modelEntity)
@@ -297,10 +296,6 @@ public class ModelProperty<I> {
 				case LIST:
 					type = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[0]);
 					break;
-				case MAP:
-					keyType = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[0]);
-					type = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[1]);
-					break;
 				default:
 					break;
 			}
@@ -355,20 +350,15 @@ public class ModelProperty<I> {
 					+ ComplexEmbedded.class.getSimpleName() + " on property " + this);
 		}
 
-		switch (getCardinality()) {
-			case LIST:
-			case MAP:
-				if (getAdder() == null) {
-					throw new ModelDefinitionException(
-							"No adder defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
-				}
-				if (getRemover() == null) {
-					throw new ModelDefinitionException(
-							"No remover defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
-				}
-				break;
-			default:
-				break;
+		if (getCardinality() == Cardinality.LIST) {
+			if (getAdder() == null) {
+				throw new ModelDefinitionException(
+						"No adder defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
+			}
+			if (getRemover() == null) {
+				throw new ModelDefinitionException(
+						"No remover defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
+			}
 		}
 
 		if (getGetterMethod() != null && getGetterMethod().getParameterTypes().length > 0) {
@@ -391,61 +381,28 @@ public class ModelProperty<I> {
 		}
 
 		if (getAdderMethod() != null) {
-			switch (getCardinality()) {
-				case LIST:
-					if (getAdderMethod().getParameterTypes().length != 1) {
-						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-								+ getAdderMethod().toString() + " must have exactly 1 parameter");
-					}
-					if (!TypeUtils.isTypeAssignableFrom(type, getAdderMethod().getParameterTypes()[0])) {
-						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-								+ getAdderMethod().toString() + " parameter must be assignable to " + type.getName());
-					}
-					break;
-				case MAP:
-					if (getAdderMethod().getParameterTypes().length != 2) {
-						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-								+ getAdderMethod().toString() + " must have exactly 2 parameters");
-					}
-					if (!TypeUtils.isTypeAssignableFrom(keyType, getAdderMethod().getParameterTypes()[0])) {
-						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-								+ getAdderMethod().toString() + " first parameter must be assignable to " + keyType.getName());
-					}
-					if (!TypeUtils.isTypeAssignableFrom(type, getAdderMethod().getParameterTypes()[1])) {
-						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-								+ getAdderMethod().toString() + " second parameter must be assignable to " + type.getName());
-					}
-					break;
-				default:
-					break;
+			if (getCardinality() == Cardinality.LIST) {
+				if (getAdderMethod().getParameterTypes().length != 1) {
+					throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
+							+ getAdderMethod().toString() + " must have exactly 1 parameter");
+				}
+				if (!TypeUtils.isTypeAssignableFrom(type, getAdderMethod().getParameterTypes()[0])) {
+					throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
+							+ getAdderMethod().toString() + " parameter must be assignable to " + type.getName());
+				}
 			}
 		}
 
 		if (getRemoverMethod() != null) {
-			switch (getCardinality()) {
-				case LIST:
-					if (getRemoverMethod().getParameterTypes().length != 1) {
-						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-								+ getRemoverMethod().toString() + " must have exactly 1 parameter");
-					}
-					if (!TypeUtils.isTypeAssignableFrom(type, getRemoverMethod().getParameterTypes()[0])) {
-						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-								+ getRemoverMethod().toString() + " parameter must be assignable to " + type.getName());
-					}
-					break;
-				case MAP:
-					if (getRemoverMethod().getParameterTypes().length != 1) {
-						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-								+ getRemoverMethod().toString() + " must have exactly 1 parameter");
-					}
-					if (!TypeUtils.isTypeAssignableFrom(keyType, getRemoverMethod().getParameterTypes()[0])) {
-						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-								+ getRemoverMethod().toString() + " first parameter must be assignable to " + keyType.getName());
-					}
-
-					break;
-				default:
-					break;
+			if (getCardinality() == Cardinality.LIST) {
+				if (getRemoverMethod().getParameterTypes().length != 1) {
+					throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
+							+ getRemoverMethod().toString() + " must have exactly 1 parameter");
+				}
+				if (!TypeUtils.isTypeAssignableFrom(type, getRemoverMethod().getParameterTypes()[0])) {
+					throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
+							+ getRemoverMethod().toString() + " parameter must be assignable to " + type.getName());
+				}
 			}
 		}
 
