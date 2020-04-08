@@ -16,6 +16,7 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 		implements SinglePropertyImplementation<I, T> {
 
 	private T internalValue = null;
+	private T oldValue = null;
 
 	public DefaultSinglePropertyImplementation(ProxyMethodHandler<I> handler, ModelProperty<I> property) throws InvalidDataException {
 		super(handler, property);
@@ -213,6 +214,39 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 
 		}
 
+	}
+
+	@Override
+	public void delete(List<Object> embeddedObjects, Object... context) throws ModelDefinitionException {
+
+		// We retrieve and store old value for a potential undelete
+		oldValue = (T) getHandler().invokeGetter(getProperty());
+
+		// Otherwise nullify using setter
+		if (getProperty().getSetterMethod() != null) {
+			getHandler().invokeSetter(getProperty(), null);
+		}
+		else {
+			getHandler().internallyInvokeSetter(getProperty(), null, true);
+		}
+
+		if ((oldValue instanceof DeletableProxyObject) && embeddedObjects.contains(oldValue)) {
+			// By the way, this object was embedded, delete it
+			((DeletableProxyObject) oldValue).delete(context);
+			embeddedObjects.remove(oldValue);
+		}
+
+	}
+
+	@Override
+	public void undelete() throws ModelDefinitionException {
+		// Otherwise nullify using setter
+		if (getProperty().getSetterMethod() != null) {
+			getHandler().invokeSetter(getProperty(), oldValue);
+		}
+		else {
+			getHandler().internallyInvokeSetter(getProperty(), oldValue, true);
+		}
 	}
 
 }

@@ -1,5 +1,7 @@
 package org.openflexo.pamela.factory;
 
+import java.util.List;
+
 import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 
@@ -21,4 +23,7 @@ public interface PropertyImplementation<I, T> {
 
 	public T get() throws ModelDefinitionException;
 
+	public void delete(List<Object> embeddedObjects, Object... context) throws ModelDefinitionException;
+
+	public void undelete() throws ModelDefinitionException;
 }

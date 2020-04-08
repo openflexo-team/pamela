@@ -87,4 +87,11 @@ public class MyListCardinalityPropertyImplementation<I, T> extends AbstractPrope
 		l.add(index, aValue);
 	}
 
+	@Override
+	public void delete(List<Object> embeddedObjects, Object... context) throws ModelDefinitionException {
+	}
+
+	@Override
+	public void undelete() throws ModelDefinitionException {
+	}
 }

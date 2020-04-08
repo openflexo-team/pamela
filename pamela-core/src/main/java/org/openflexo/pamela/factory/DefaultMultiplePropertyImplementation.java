@@ -12,6 +12,7 @@ public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropert
 		MultiplePropertyImplementation<I, T>, SettablePropertyImplementation<I, List<T>>, ReindexableListPropertyImplementation<I, T> {
 
 	private List<T> internalValues;
+	private List<T> oldValues;
 
 	public DefaultMultiplePropertyImplementation(ProxyMethodHandler<I> handler, ModelProperty<I> property,
 			Class<? extends List> listImplementationClass) throws InvalidDataException, ModelExecutionException {
@@ -179,6 +180,41 @@ public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropert
 		}
 		else {
 			System.err.println("Inconsistant data: could not find object: " + value);
+		}
+	}
+
+	@Override
+	public void delete(List<Object> embeddedObjects, Object... context) throws ModelDefinitionException {
+		// We retrieve and store old value for a potential undelete
+		oldValues = new ArrayList<>((List<T>) getHandler().invokeGetter(getProperty()));
+
+		// Otherwise nullify using setter
+		if (getProperty().getSetterMethod() != null) {
+			getHandler().invokeSetter(getProperty(), null);
+		}
+		else {
+			getHandler().internallyInvokeSetter(getProperty(), null, true);
+		}
+
+		if (oldValues != null) {
+			for (Object toBeDeleted : oldValues) {
+				if ((toBeDeleted instanceof DeletableProxyObject) && embeddedObjects.contains(toBeDeleted)) {
+					// By the way, this object was embedded, delete it
+					((DeletableProxyObject) toBeDeleted).delete(context);
+					embeddedObjects.remove(toBeDeleted);
+				}
+			}
+		}
+	}
+
+	@Override
+	public void undelete() throws ModelDefinitionException {
+		// Otherwise nullify using setter
+		if (getProperty().getSetterMethod() != null) {
+			getHandler().invokeSetter(getProperty(), oldValues);
+		}
+		else {
+			getHandler().internallyInvokeSetter(getProperty(), oldValues, true);
 		}
 	}
 

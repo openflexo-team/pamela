@@ -1,8 +1,5 @@
 /**
  * 
- */
-/**
- * 
  * Copyright (c) 2013-2015, Openflexo
  * Copyright (c) 2011-2012, AgileBirds
  * 
@@ -45,7 +42,6 @@ package org.openflexo.pamela.factory;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -116,20 +112,33 @@ import com.google.common.collect.Collections2;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyObject;
 
-public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListener {
+/**
+ * Invocation Handler in the core of PAMELA
+ * 
+ * This is the class where method call dispatching is performed.
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ *            type of object this invocation handler manages
+ */
+public class ProxyMethodHandler<I> extends IProxyMethodHandler implements MethodHandler, PropertyChangeListener {
 
-	public static final String DELETED = "deleted";
-	public static final String UNDELETED = "undeleted";
-	public static final String MODIFIED = "modified";
-	public static final String DESERIALIZING = "deserializing";
-	public static final String SERIALIZING = "serializing";
-
+	/**
+	 * Object this invocation handler manages
+	 */
 	private I object;
 
-	@Deprecated
-	private Map<String, Object> values;
-	@Deprecated
-	private Map<String, Object> oldValues;
+	// @Deprecated
+	// private Map<String, Object> values;
+	// @Deprecated
+	// private Map<String, Object> oldValues;
+
+	/**
+	 * This map contains all scheduled set for a given property<br>
+	 * We need to retain values beeing set in case of bidirectional inverse properties patterns, to avoid infinite loop
+	 */
+	private final Map<ModelProperty<? super I>, Object> scheduledSets = new HashMap<>();
 
 	private boolean destroyed = false;
 	private boolean deleted = false;
@@ -146,123 +155,20 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	private Map<String, PropertyImplementation<? super I, ?>> propertyImplementations;
 
-	public static Method PERFORM_SUPER_GETTER;
-	public static Method PERFORM_SUPER_SETTER;
-	public static Method PERFORM_SUPER_ADDER;
-	public static Method PERFORM_SUPER_ADDER_AT_INDEX;
-	public static Method PERFORM_SUPER_REMOVER;
-	public static Method PERFORM_SUPER_DELETER;
-	public static Method PERFORM_SUPER_UNDELETER;
-	public static Method PERFORM_SUPER_FINDER;
-	public static Method PERFORM_SUPER_GETTER_ENTITY;
-	public static Method PERFORM_SUPER_SETTER_ENTITY;
-	public static Method PERFORM_SUPER_ADDER_ENTITY;
-	public static Method PERFORM_SUPER_REMOVER_ENTITY;
-	public static Method PERFORM_SUPER_DELETER_ENTITY;
-	public static Method PERFORM_SUPER_FINDER_ENTITY;
-	public static Method PERFORM_SUPER_SET_MODIFIED;
-	public static Method IS_MODIFIED;
-	public static Method SET_MODIFIED;
-	public static Method IS_SERIALIZING;
-	public static Method IS_DESERIALIZING;
-	public static Method TO_STRING;
-	public static Method GET_PROPERTY_CHANGE_SUPPORT;
-	public static Method GET_DELETED_PROPERTY;
-	public static Method CLONE_OBJECT;
-	public static Method CLONE_OBJECT_WITH_CONTEXT;
-	public static Method IS_CREATED_BY_CLONING;
-	public static Method IS_BEING_CLONED;
-	public static Method DELETE_OBJECT;
-	public static Method UNDELETE_OBJECT;
-	public static Method IS_DELETED;
-	public static Method EQUALS_OBJECT;
-	public static Method UPDATE_WITH_OBJECT;
-	public static Method ACCEPT_VISITOR;
-	public static Method ACCEPT_WITH_STRATEGY_VISITOR;
-	public static Method GET_EMBEDDED;
-	public static Method GET_REFERENCED;
-	public static Method DESTROY;
-	public static Method HAS_KEY;
-	public static Method OBJECT_FOR_KEY;
-	public static Method SET_OBJECT_FOR_KEY;
-	public static Method GET_TYPE_FOR_KEY;
-	public static Method ENABLE_ASSERTION_CHECKING;
-	public static Method DISABLE_ASSERTION_CHECKING;
+	private List<DelegateImplementation<? super I>> delegateImplementations;
 
 	private final PAMELAProxyFactory<I> pamelaProxyFactory;
 	private final EditingContext editingContext;
 
-	static {
-		try {
-			PERFORM_SUPER_GETTER = AccessibleProxyObject.class.getMethod("performSuperGetter", String.class);
-			PERFORM_SUPER_SETTER = AccessibleProxyObject.class.getMethod("performSuperSetter", String.class, Object.class);
-			PERFORM_SUPER_ADDER = AccessibleProxyObject.class.getMethod("performSuperAdder", String.class, Object.class);
-			PERFORM_SUPER_ADDER_AT_INDEX = AccessibleProxyObject.class.getMethod("performSuperAdder", String.class, Object.class,
-					Integer.TYPE);
-			PERFORM_SUPER_REMOVER = AccessibleProxyObject.class.getMethod("performSuperRemover", String.class, Object.class);
-			PERFORM_SUPER_DELETER = DeletableProxyObject.class.getMethod("performSuperDelete",
-					Array.newInstance(Object.class, 0).getClass());
-			PERFORM_SUPER_UNDELETER = DeletableProxyObject.class.getMethod("performSuperUndelete", Boolean.TYPE);
-			PERFORM_SUPER_FINDER = AccessibleProxyObject.class.getMethod("performSuperFinder", String.class, Object.class);
-			PERFORM_SUPER_GETTER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperGetter", String.class, Class.class);
-			PERFORM_SUPER_SETTER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperSetter", String.class, Object.class,
-					Class.class);
-			PERFORM_SUPER_ADDER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperAdder", String.class, Object.class,
-					Class.class);
-			PERFORM_SUPER_REMOVER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperRemover", String.class, Object.class,
-					Class.class);
-			PERFORM_SUPER_DELETER_ENTITY = DeletableProxyObject.class.getMethod("performSuperDelete", Class.class,
-					Array.newInstance(Object.class, 0).getClass());
-			PERFORM_SUPER_FINDER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperFinder", String.class, Object.class,
-					Class.class);
-			IS_SERIALIZING = AccessibleProxyObject.class.getMethod("isSerializing");
-			IS_DESERIALIZING = AccessibleProxyObject.class.getMethod("isDeserializing");
-			IS_MODIFIED = AccessibleProxyObject.class.getMethod("isModified");
-			IS_DELETED = DeletableProxyObject.class.getMethod("isDeleted");
-			SET_MODIFIED = AccessibleProxyObject.class.getMethod("setModified", boolean.class);
-			PERFORM_SUPER_SET_MODIFIED = AccessibleProxyObject.class.getMethod("performSuperSetModified", boolean.class);
-			DELETE_OBJECT = DeletableProxyObject.class.getMethod("delete", Array.newInstance(Object.class, 0).getClass());
-			UNDELETE_OBJECT = DeletableProxyObject.class.getMethod("undelete", Boolean.TYPE);
-			GET_PROPERTY_CHANGE_SUPPORT = HasPropertyChangeSupport.class.getMethod("getPropertyChangeSupport");
-			GET_DELETED_PROPERTY = HasPropertyChangeSupport.class.getMethod("getDeletedProperty");
-			TO_STRING = Object.class.getMethod("toString");
-			CLONE_OBJECT = CloneableProxyObject.class.getMethod("cloneObject");
-			CLONE_OBJECT_WITH_CONTEXT = CloneableProxyObject.class.getMethod("cloneObject", Array.newInstance(Object.class, 0).getClass());
-			IS_CREATED_BY_CLONING = CloneableProxyObject.class.getMethod("isCreatedByCloning");
-			IS_BEING_CLONED = CloneableProxyObject.class.getMethod("isBeingCloned");
-			EQUALS_OBJECT = AccessibleProxyObject.class.getMethod("equalsObject", Object.class);
-			UPDATE_WITH_OBJECT = AccessibleProxyObject.class.getMethod("updateWith", Object.class);
-			GET_EMBEDDED = AccessibleProxyObject.class.getMethod("getEmbeddedObjects");
-			GET_REFERENCED = AccessibleProxyObject.class.getMethod("getReferencedObjects");
-			ACCEPT_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class);
-			ACCEPT_WITH_STRATEGY_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class,
-					PAMELAVisitor.VisitingStrategy.class);
-			DESTROY = AccessibleProxyObject.class.getMethod("destroy");
-			HAS_KEY = KeyValueCoding.class.getMethod("hasKey", String.class);
-			OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("objectForKey", String.class);
-			SET_OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("setObjectForKey", Object.class, String.class);
-			GET_TYPE_FOR_KEY = KeyValueCoding.class.getMethod("getTypeForKey", String.class);
-			ENABLE_ASSERTION_CHECKING = SpecifiableProxyObject.class.getMethod("enableAssertionChecking");
-			DISABLE_ASSERTION_CHECKING = SpecifiableProxyObject.class.getMethod("disableAssertionChecking");
-
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		}
-	}
-
 	public ProxyMethodHandler(PAMELAProxyFactory<I> pamelaProxyFactory, EditingContext editingContext) throws ModelDefinitionException {
 		this.pamelaProxyFactory = pamelaProxyFactory;
 		this.editingContext = editingContext;
-		values = new HashMap<>(getModelEntity().getPropertiesSize(), 1.0f);
+		// values = new HashMap<>(getModelEntity().getPropertiesSize(), 1.0f);
 		historyValues = new HashMap<>();
-		propertyImplementations = new HashMap<>();
+		propertyImplementations = new HashMap<>(getModelEntity().getPropertiesSize(), 1.0f);
 		initialized = !getModelEntity().hasInitializers();
 		initDelegateImplementations();
 	}
-
-	private List<DelegateImplementation<? super I>> delegateImplementations;
 
 	private void initDelegateImplementations() throws ModelDefinitionException {
 		// System.out.println("***** init delegate implementations");
@@ -352,7 +258,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return invoke;
 	}
 
-	public Object _invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
+	private Object _invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 
 		// System.out.println("_invoke " + method);
 
@@ -775,29 +681,24 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return returned;
 	}
 
-	private Object internallyInvokeGetter(String propertyIdentifier) throws ModelDefinitionException {
+	protected Object internallyInvokeGetter(String propertyIdentifier) throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
 		return internallyInvokeGetter(property);
 	}
 
-	private Object internallyInvokeGetter(ModelProperty<? super I> property) throws ModelDefinitionException {
-		// if (property.getPropertyImplementation() != null) {
+	protected Object internallyInvokeGetter(ModelProperty<? super I> property) throws ModelDefinitionException {
 		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
 		return internallyInvokeGetter(property, propertyImplementation);
-		/*}
-		else {
-			return _internallyInvokeGetter(property);
-		}*/
 	}
 
-	private void internallyInvokeSetter(String propertyIdentifier, Object value, boolean trackAtomicEdit) throws ModelDefinitionException {
+	protected void internallyInvokeSetter(String propertyIdentifier, Object value, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
 		internallyInvokeSetter(property, value, trackAtomicEdit);
 	}
 
-	private void internallyInvokeSetter(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
+	protected void internallyInvokeSetter(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
-		// if (property.getPropertyImplementation() != null) {
 		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
 		if (propertyImplementation instanceof SettablePropertyImplementation) {
 			internallyInvokeSetter(property, (SettablePropertyImplementation) propertyImplementation, value, trackAtomicEdit);
@@ -806,31 +707,26 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			throw new ModelDefinitionException(
 					"Property implementation does not support SET protocol: " + property.getPropertyImplementation());
 		}
-		/*}
-		else {
-			_internallyInvokeSetter(property, value, trackAtomicEdit);
-		}*/
 	}
 
-	private void internallyInvokeAdder(String propertyIdentifier, Object addedValue, boolean trackAtomicEdit)
+	protected void internallyInvokeAdder(String propertyIdentifier, Object addedValue, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
 		internallyInvokeAdder(propertyIdentifier, addedValue, -1, trackAtomicEdit);
 	}
 
-	private void internallyInvokeAdder(String propertyIdentifier, Object addedValue, int index, boolean trackAtomicEdit)
+	protected void internallyInvokeAdder(String propertyIdentifier, Object addedValue, int index, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
 		internallyInvokeAdder(property, addedValue, index, trackAtomicEdit);
 	}
 
-	private void internallyInvokeAdder(ModelProperty<? super I> property, Object addedValue, boolean trackAtomicEdit)
+	protected void internallyInvokeAdder(ModelProperty<? super I> property, Object addedValue, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
 		internallyInvokeAdder(property, addedValue, -1, trackAtomicEdit);
 	}
 
-	private void internallyInvokeAdder(ModelProperty<? super I> property, Object addedValue, int index, boolean trackAtomicEdit)
+	protected void internallyInvokeAdder(ModelProperty<? super I> property, Object addedValue, int index, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
-		// if (property.getPropertyImplementation() != null) {
 		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
 		if (propertyImplementation instanceof MultiplePropertyImplementation) {
 			internallyInvokeAdder(property, (MultiplePropertyImplementation) propertyImplementation, addedValue, index, trackAtomicEdit);
@@ -839,21 +735,16 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			throw new ModelDefinitionException(
 					"Property implementation does not support ADD protocol: " + property.getPropertyImplementation());
 		}
-		/*}
-		else {
-			_internallyInvokeAdder(property, addedValue, true);
-		}*/
 	}
 
-	private void internallyInvokeRemover(String propertyIdentifier, Object removedValue, boolean trackAtomicEdit)
+	protected void internallyInvokeRemover(String propertyIdentifier, Object removedValue, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
 		internallyInvokeRemover(property, removedValue, trackAtomicEdit);
 	}
 
-	private void internallyInvokeRemover(ModelProperty<? super I> property, Object removedValue, boolean trackAtomicEdit)
+	protected void internallyInvokeRemover(ModelProperty<? super I> property, Object removedValue, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
-		// if (property.getPropertyImplementation() != null) {
 		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
 		if (propertyImplementation instanceof MultiplePropertyImplementation) {
 			internallyInvokeRemover(property, (MultiplePropertyImplementation) propertyImplementation, removedValue, trackAtomicEdit);
@@ -862,21 +753,16 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			throw new ModelDefinitionException(
 					"Property implementation does not support REMOVE protocol: " + property.getPropertyImplementation());
 		}
-		/*}
-		else {
-			_internallyInvokeRemover(property, args[0], true);
-		}*/
 	}
 
-	private void internallyInvokeReindexer(String propertyIdentifier, Object value, int index, boolean trackAtomicEdit)
+	protected void internallyInvokeReindexer(String propertyIdentifier, Object value, int index, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
 		internallyInvokeReindexer(property, value, index, trackAtomicEdit);
 	}
 
-	private void internallyInvokeReindexer(ModelProperty<? super I> property, Object value, int index, boolean trackAtomicEdit)
+	protected void internallyInvokeReindexer(ModelProperty<? super I> property, Object value, int index, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
-		// if (property.getPropertyImplementation() != null) {
 		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
 		if (propertyImplementation instanceof ReindexableListPropertyImplementation) {
 			internallyInvokeReindexer(property, (ReindexableListPropertyImplementation) propertyImplementation, value, index,
@@ -886,10 +772,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			throw new ModelDefinitionException(
 					"Property implementation does not support REINDEX protocol: " + property.getPropertyImplementation());
 		}
-		/*}
-		else {
-			internallyInvokeReindexer(property, args[0], (Integer) args[1], true);
-		}*/
 	}
 
 	/**
@@ -904,7 +786,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * @see Embedded#deletionConditions()
 	 * @see ComplexEmbedded#deletionConditions()
 	 */
-	private boolean internallyInvokeDeleter(boolean trackAtomicEdit, Object... context) throws ModelDefinitionException {
+	protected boolean internallyInvokeDeleter(boolean trackAtomicEdit, Object... context) throws ModelDefinitionException {
 
 		// System.out.println("Called internallyInvokeDeleter() for " + getObject());
 
@@ -920,7 +802,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			context = Arrays.copyOf(context, context.length + 1);
 			context[context.length - 1] = getObject();
 		}
-		oldValues = new HashMap<>();
+		// oldValues = new HashMap<>();
 		ModelEntity<I> modelEntity = getModelEntity();
 		Set<Object> objects = new HashSet<>();
 		for (Object o : context) {
@@ -943,14 +825,19 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			}
 			else {
 
+				PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+
+				propertyImplementation.delete(embeddedObjects, context);
+
+				/*
 				// We retrieve and store old value for a potential undelete
 				Object oldValue = invokeGetter(property);
-
+				
 				List<Object> oldValuesList = null;
 				if (property.getCardinality() == Cardinality.LIST) {
 					oldValuesList = new ArrayList<>((List) oldValue);
 				}
-
+				
 				oldValues.put(property.getPropertyIdentifier(), oldValue);
 				// Otherwise nullify using setter
 				if (property.getSetterMethod() != null) {
@@ -959,7 +846,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				else {
 					internallyInvokeSetter(property, null, true);
 				}
-
+				
 				if (property.getCardinality() == Cardinality.SINGLE) {
 					if ((oldValue instanceof DeletableProxyObject) && embeddedObjects.contains(oldValue)) {
 						// By the way, this object was embedded, delete it
@@ -967,7 +854,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						embeddedObjects.remove(oldValue);
 					}
 				}
-
+				
 				else if (property.getCardinality() == Cardinality.LIST) {
 					if (oldValuesList != null) {
 						for (Object toBeDeleted : oldValuesList) {
@@ -979,7 +866,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						}
 					}
 				}
-
+				*/
 			}
 		}
 
@@ -1026,7 +913,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return deleted;
 	}
 
-	private boolean internallyInvokeUndeleter(boolean restoreProperties, boolean trackAtomicEdit) throws ModelDefinitionException {
+	protected boolean internallyInvokeUndeleter(boolean restoreProperties, boolean trackAtomicEdit) throws ModelDefinitionException {
 
 		if (!deleted || deleting) {
 			return false;
@@ -1048,13 +935,17 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					// Do nothing
 				}
 				else {
+
+					PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+					propertyImplementation.undelete();
+
 					// Otherwise nullify using setter
-					if (property.getSetterMethod() != null) {
+					/*if (property.getSetterMethod() != null) {
 						invokeSetter(property, oldValues.get(property.getPropertyIdentifier()));
 					}
 					else {
 						internallyInvokeSetter(property, oldValues.get(property.getPropertyIdentifier()), true);
-					}
+					}*/
 				}
 			}
 		}
@@ -1071,14 +962,20 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * To implements deleting/undeleting facilities, use {@link DeletableProxyObject} interface instead
 	 */
 	public void destroy() {
-		if (values != null) {
+		/*if (values != null) {
 			values.clear();
 		}
 		values = null;
 		if (oldValues != null) {
 			oldValues.clear();
 		}
-		oldValues = null;
+		oldValues = null;*/
+
+		if (propertyImplementations != null) {
+			propertyImplementations.clear();
+		}
+		propertyImplementations = null;
+
 		destroyed = true;
 	}
 
@@ -1227,12 +1124,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			internallyInvokeSetter(property, value, true);
 		}
 	}
-
-	/**
-	 * This map contains all scheduled set for a given property<br>
-	 * We need to retain values beeing set in case of bidirectional inverse properties patterns, to avoid infinite loop
-	 */
-	private final Map<ModelProperty<? super I>, Object> scheduledSets = new HashMap<>();
 
 	protected Map<ModelProperty<? super I>, Object> getScheduledSets() {
 		return scheduledSets;
@@ -2746,16 +2637,21 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	@Override
 	public String toString() {
-		return internallyInvokeToString();
+		try {
+			return internallyInvokeToString();
+		} catch (ModelDefinitionException e) {
+			e.printStackTrace();
+			return super.toString();
+		}
 	}
 
-	private String internallyInvokeToString() {
+	private String internallyInvokeToString() throws ModelDefinitionException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getModelEntity().getImplementedInterface().getSimpleName() + "[");
-		List<String> variables = new ArrayList<>(values.keySet());
+		List<String> variables = new ArrayList<>(propertyImplementations.keySet());
 		Collections.sort(variables);
 		for (String var : variables) {
-			Object obj = values.get(var);
+			Object obj = propertyImplementations.get(var).get();
 			String s = null;
 			if (obj != null) {
 				if (!(obj instanceof ProxyObject)) {
