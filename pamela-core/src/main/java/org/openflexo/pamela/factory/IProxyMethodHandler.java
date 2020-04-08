@@ -40,6 +40,8 @@ package org.openflexo.pamela.factory;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Set;
 
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
@@ -152,6 +154,39 @@ public class IProxyMethodHandler {
 		} catch (NoSuchMethodException e) {
 			e.printStackTrace();
 		}
+	}
+
+	protected static boolean isEqual(Object oldValue, Object newValue, Set<Object> seen) {
+		seen.add(oldValue);
+		if (oldValue == null) {
+			return newValue == null;
+		}
+		if (oldValue == newValue) {
+			return true;
+		}
+		if (oldValue instanceof AccessibleProxyObject && newValue instanceof AccessibleProxyObject) {
+			return ((AccessibleProxyObject) oldValue).equalsObject(newValue);
+		}
+		if (oldValue instanceof List && newValue instanceof List) {
+			List<Object> l1 = (List<Object>) oldValue;
+			List<Object> l2 = (List<Object>) newValue;
+			if (l1.size() != l2.size()) {
+				return false;
+			}
+			for (int i = 0; i < l1.size(); i++) {
+				Object v1 = l1.get(i);
+				Object v2 = l2.get(i);
+				if (seen.contains(v1))
+					continue;
+
+				if (!isEqual(v1, v2, seen)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return oldValue.equals(newValue);
+
 	}
 
 }
