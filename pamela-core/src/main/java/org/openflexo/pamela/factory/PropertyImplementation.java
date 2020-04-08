@@ -1,6 +1,7 @@
 package org.openflexo.pamela.factory;
 
 import org.openflexo.pamela.ModelProperty;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
 
 /**
  * Represent a particular property implementation
@@ -18,6 +19,6 @@ public interface PropertyImplementation<I, T> {
 
 	public I getObject();
 
-	public T get();
+	public T get() throws ModelDefinitionException;
 
 }

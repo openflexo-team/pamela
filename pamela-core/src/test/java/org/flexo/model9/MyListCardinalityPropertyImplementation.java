@@ -40,6 +40,7 @@ import java.util.List;
 
 import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.InvalidDataException;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.AbstractPropertyImplementation;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.factory.ReindexableListPropertyImplementation;
@@ -60,8 +61,18 @@ public class MyListCardinalityPropertyImplementation<I, T> extends AbstractPrope
 	}
 
 	@Override
-	public void addTo(T aValue) {
-		l.add(aValue);
+	public void addTo(T aValue) throws ModelDefinitionException {
+		addTo(aValue, -1);
+	}
+
+	@Override
+	public void addTo(T aValue, int index) throws ModelDefinitionException {
+		if (index < 0) {
+			l.add(aValue);
+		}
+		else {
+			l.add(index, aValue);
+		}
 		System.out.println("Ajout de " + aValue + " a " + getProperty());
 	}
 

@@ -1,6 +1,8 @@
 package org.openflexo.pamela.factory;
 
-public interface ReindexableListPropertyImplementation<I, T> extends ListPropertyImplementation<I, T> {
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
 
-	public void reindex(T aValue, int index);
+public interface ReindexableListPropertyImplementation<I, T> extends MultiplePropertyImplementation<I, T> {
+
+	public void reindex(T aValue, int index) throws ModelDefinitionException;
 }

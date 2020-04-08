@@ -119,6 +119,10 @@ public class BasicTests extends AbstractPAMELATest {
 		// startNode.addToOutgoingEdges(edge1);
 		// activityNode.addToIncomingEdges(edge1);
 		System.out.println("edge1=" + edge1);
+		System.out.println("startNode=" + edge1.getStartNode());
+		System.out.println("endNode=" + edge1.getEndNode());
+		System.out.println("startNode.getProcess()=" + edge1.getStartNode().getProcess());
+
 		assertEquals(process, edge1.getProcess());
 
 		TokenEdge edge2 = factory.newInstance(TokenEdge.class, "edge2", activityNode, endNode);

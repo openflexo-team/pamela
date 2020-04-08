@@ -1,5 +1,7 @@
 package org.openflexo.pamela.factory;
 
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
+
 /**
  * Represent a settable property implementation
  * 
@@ -12,6 +14,6 @@ package org.openflexo.pamela.factory;
  */
 public interface SettablePropertyImplementation<I, T> extends PropertyImplementation<I, T> {
 
-	public void set(T value);
+	public void set(T value) throws ModelDefinitionException;
 
 }
