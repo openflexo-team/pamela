@@ -652,13 +652,13 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				}
 				else {
 					if (property.getCardinality() == Cardinality.SINGLE) {
-						implementationClass = (Class<? extends PropertyImplementation<? super I, ?>>) DefaultSinglePropertyImplementation.class;
+						implementationClass = (Class) DefaultSinglePropertyImplementation.class;
 						Constructor<? extends PropertyImplementation<? super I, ?>> constructor = implementationClass
 								.getConstructor(ProxyMethodHandler.class, ModelProperty.class);
 						returned = constructor.newInstance(this, property);
 					}
 					else if (property.getCardinality() == Cardinality.LIST) {
-						implementationClass = (Class<? extends PropertyImplementation<? super I, ?>>) DefaultMultiplePropertyImplementation.class;
+						implementationClass = (Class) DefaultMultiplePropertyImplementation.class;
 						Constructor<? extends PropertyImplementation<? super I, ?>> constructor = implementationClass
 								.getConstructor(ProxyMethodHandler.class, ModelProperty.class, Class.class);
 						returned = constructor.newInstance(this, property, getModelFactory().getListImplementationClass());
