@@ -1,6 +1,5 @@
 package org.openflexo.pamela.patterns.authorization;
 
-import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.authorization.annotations.CheckAccess;
 import org.openflexo.pamela.patterns.authorization.annotations.ResourceID;
 import org.openflexo.pamela.patterns.authorization.annotations.SubjectID;
@@ -9,7 +8,6 @@ import org.openflexo.pamela.patterns.authorization.exception.InconsistentPermiss
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 
 public class PermissionCheckerEntity {

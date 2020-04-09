@@ -5,7 +5,6 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.List;
 
 public class AuthorizationSubjectInstance {
     private AuthorizationSubjectEntity subjectEntity;

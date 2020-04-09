@@ -3,14 +3,10 @@ package org.openflexo.pamela.patterns.authorization;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.ReturnWrapper;
-import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
 import org.openflexo.pamela.patterns.authorization.annotations.AccessResource;
 import org.openflexo.pamela.patterns.authorization.annotations.PermissionCheckerGetter;
 import org.openflexo.pamela.patterns.authorization.annotations.ResourceID;
-import org.openflexo.pamela.patterns.authorization.annotations.SubjectID;
-import org.openflexo.pamela.patterns.authorization.exception.InconsistentPermissionCheckerEntityException;
 import org.openflexo.pamela.patterns.authorization.exception.InconsistentResourceEntityException;
-import playground.authorization.interfaces.PermissionChecker;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
