@@ -1,14 +1,14 @@
 package org.openflexo.pamela.patterns.authorization;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.HashMap;
-
 import org.openflexo.pamela.patterns.authorization.annotations.CheckAccess;
 import org.openflexo.pamela.patterns.authorization.annotations.ResourceID;
 import org.openflexo.pamela.patterns.authorization.annotations.SubjectID;
 import org.openflexo.pamela.patterns.authorization.exception.InconsistentPermissionCheckerEntityException;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.HashMap;
 
 public class PermissionCheckerEntity {
     private final AuthorizationPattern pattern;
