@@ -255,15 +255,15 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 
 		ArrayList<PatternClassWrapper> patternsOfInterest = patternContext.getRelatedPatternsFromInstance(self);
-		for (PatternClassWrapper wrapper : patternsOfInterest){
+		for (PatternClassWrapper wrapper : patternsOfInterest) {
 			ReturnWrapper returnWrapper = wrapper.getPattern().processMethodBeforeInvoke(self, method, wrapper.getKlass(), args);
-			if (!returnWrapper.mustContinue()){
+			if (!returnWrapper.mustContinue()) {
 				keepGoing = false;
 				invoke = returnWrapper.getReturnValue();
 			}
 		}
 
-		if (keepGoing){
+		if (keepGoing) {
 			invoke = _invoke(self, method, proceed, args);
 			if (method.getReturnType().isPrimitive() && invoke == null) {
 				// Avoids an NPE
@@ -1319,7 +1319,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	}
 
 	private static void acceptVisitorEmbeddingStrategy(AccessibleProxyObject object, PAMELAVisitor pamelaVisitor,
-													   Set<Object> visitedObjects) {
+			Set<Object> visitedObjects) {
 		if (!visitedObjects.contains(object)) {
 			visitedObjects.add(object);
 			pamelaVisitor.visit(object);
@@ -1336,7 +1336,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	}
 
 	private static void acceptVisitorExhaustiveStrategy(AccessibleProxyObject object, PAMELAVisitor pamelaVisitor,
-														Set<Object> visitedObjects) {
+			Set<Object> visitedObjects) {
 		if (!visitedObjects.contains(object)) {
 			visitedObjects.add(object);
 			pamelaVisitor.visit(object);
@@ -1583,7 +1583,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	 * Internally used for cloning computation
 	 */
 	private Object appendToClonedObjects(Hashtable<CloneableProxyObject, Object> clonedObjects,
-										 CloneableProxyObject objectToCloneOrReference) throws ModelExecutionException, ModelDefinitionException {
+			CloneableProxyObject objectToCloneOrReference) throws ModelExecutionException, ModelDefinitionException {
 		Object returned = clonedObjects.get(objectToCloneOrReference);
 		if (returned != null) {
 			return returned;
