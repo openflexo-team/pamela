@@ -1,11 +1,11 @@
 package org.openflexo.pamela.patterns.authenticator;
 
-import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+
+import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
 
 /**
  * This class wraps all the dynamic authenticator pattern related information extracted from a

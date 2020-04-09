@@ -1,9 +1,9 @@
 package org.openflexo.pamela.patterns;
 
-import org.openflexo.pamela.exceptions.ModelDefinitionException;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
 
 /**
  * This abstract class represents a pattern. Its instances are to be wrapped in the patternContext.<br>

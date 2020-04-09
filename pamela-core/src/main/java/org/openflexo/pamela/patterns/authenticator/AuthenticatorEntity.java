@@ -1,10 +1,10 @@
 package org.openflexo.pamela.patterns.authenticator;
 
-import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
-import org.openflexo.pamela.patterns.authenticator.annotations.RequestAuthentication;
-
 import java.lang.reflect.Method;
 import java.util.HashMap;
+
+import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
+import org.openflexo.pamela.patterns.authenticator.annotations.RequestAuthentication;
 
 /**
  * This class wraps all the static authenticator pattern related information extracted from parsing a

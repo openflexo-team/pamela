@@ -1,20 +1,20 @@
 package org.openflexo.pamela.patterns.authenticator;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.AbstractPattern;
 import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.pamela.patterns.ReturnWrapper;
+import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticateMethod;
 import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
+import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorGetter;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentAuthenticatorEntityException;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
-import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticateMethod;
-import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorGetter;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
 
 /**
  * This class represents an instance of an <code>Authenticator Pattern</code>. An instance is uniquely identified by

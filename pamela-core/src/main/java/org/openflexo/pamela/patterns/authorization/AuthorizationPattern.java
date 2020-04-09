@@ -1,5 +1,10 @@
 package org.openflexo.pamela.patterns.authorization;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
@@ -8,14 +13,11 @@ import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
-import org.openflexo.pamela.patterns.authorization.annotations.*;
+import org.openflexo.pamela.patterns.authorization.annotations.AuthorizationChecker;
+import org.openflexo.pamela.patterns.authorization.annotations.AuthorizationSubject;
+import org.openflexo.pamela.patterns.authorization.annotations.ProtectedResource;
 import org.openflexo.pamela.patterns.authorization.exception.InconsistentPermissionCheckerEntityException;
 import org.openflexo.pamela.patterns.authorization.exception.InconsistentResourceEntityException;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 public class AuthorizationPattern extends AbstractPattern {
     private final HashMap<Class, AuthorizationSubjectEntity> subjects;

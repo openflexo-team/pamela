@@ -1,18 +1,22 @@
 package org.openflexo.pamela.patterns.authenticator;
 
-import org.openflexo.pamela.annotations.Setter;
-import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.patterns.ReturnWrapper;
-import org.openflexo.pamela.patterns.authenticator.annotations.*;
-import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentAuthenticatorEntityException;
-import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.patterns.ReturnWrapper;
+import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticateMethod;
+import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticationInformation;
+import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorGetter;
+import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
+import org.openflexo.pamela.patterns.authenticator.annotations.ProofOfIdentitySetter;
+import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentAuthenticatorEntityException;
+import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
 
 /**
  * This class wraps all the static authenticator pattern related information extracted from parsing a

@@ -1,8 +1,8 @@
 package org.openflexo.pamela.patterns.authenticator;
 
-import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
-
 import java.lang.reflect.Method;
+
+import org.openflexo.pamela.patterns.authenticator.annotations.Authenticator;
 
 /**
  * This class wraps all the dynamic authenticator pattern related information extracted from a

@@ -56,7 +56,6 @@ import javax.annotation.Nonnull;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.patterns.PatternContext;
-import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.toolbox.StringUtils;
 
 public class ModelContext {

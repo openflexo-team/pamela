@@ -1,18 +1,18 @@
 package org.openflexo.pamela.patterns.authorization;
 
-import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.patterns.ReturnWrapper;
-import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
-import org.openflexo.pamela.patterns.authorization.annotations.AccessResource;
-import org.openflexo.pamela.patterns.authorization.annotations.ResourceID;
-import org.openflexo.pamela.patterns.authorization.annotations.SubjectID;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.patterns.ReturnWrapper;
+import org.openflexo.pamela.patterns.authenticator.exceptions.InconsistentSubjectEntityException;
+import org.openflexo.pamela.patterns.authorization.annotations.AccessResource;
+import org.openflexo.pamela.patterns.authorization.annotations.ResourceID;
+import org.openflexo.pamela.patterns.authorization.annotations.SubjectID;
 
 public class AuthorizationSubjectEntity {
     private final AuthorizationPattern pattern;

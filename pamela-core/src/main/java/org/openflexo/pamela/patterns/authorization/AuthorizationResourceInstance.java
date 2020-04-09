@@ -1,10 +1,10 @@
 package org.openflexo.pamela.patterns.authorization;
 
-import org.openflexo.pamela.exceptions.ModelExecutionException;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+
+import org.openflexo.pamela.exceptions.ModelExecutionException;
 
 public class AuthorizationResourceInstance {
     private Object instance;

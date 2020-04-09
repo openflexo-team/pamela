@@ -38,7 +38,7 @@
 
 package org.openflexo.pamela.converter;
 
-import java.awt.*;
+import java.awt.Rectangle;
 
 import org.openflexo.pamela.StringConverterLibrary.Converter;
 import org.openflexo.pamela.factory.ModelFactory;

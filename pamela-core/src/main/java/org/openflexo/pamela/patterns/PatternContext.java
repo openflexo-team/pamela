@@ -1,16 +1,18 @@
 package org.openflexo.pamela.patterns;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.patterns.authenticator.AuthenticatorPattern;
 import org.openflexo.pamela.patterns.authenticator.annotations.AuthenticatorSubject;
-import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.patterns.authorization.AuthorizationPattern;
 import org.openflexo.pamela.patterns.authorization.annotations.AuthorizationSubject;
 import org.openflexo.pamela.patterns.authorization.annotations.ProtectedResource;
-
-import java.lang.annotation.Annotation;
-import java.util.*;
 
 /**
  * Class wrapping all the known patterns of the model.<br>
