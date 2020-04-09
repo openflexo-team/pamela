@@ -286,8 +286,6 @@ public class XMLSaxDeserializer extends DefaultHandler {
 						case LIST:
 							parent.invokeAdderForDeserialization(property, info.getObject());
 							break;
-						case MAP:
-							throw new UnsupportedOperationException("Cannot deserialize maps for now");
 						default:
 							break;
 					}

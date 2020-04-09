@@ -60,6 +60,7 @@ import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.annotations.Initialize;
 import org.openflexo.pamela.annotations.PastingPoint;
+import org.openflexo.pamela.annotations.PropertyImplementation;
 import org.openflexo.pamela.annotations.Reindexer;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.ReturnedValue;
@@ -80,6 +81,7 @@ public class ModelProperty<I> {
 	private final String propertyIdentifier;
 
 	/* Model property static definition */
+	private final PropertyImplementation propertyImplementation;
 	private final Getter getter;
 	private final Setter setter;
 	private final Adder adder;
@@ -111,11 +113,11 @@ public class ModelProperty<I> {
 
 	/* Computed values of the model property */
 	private Class<?> type;
-	private Class<?> keyType;
 	private String xmlTag;
 
 	protected static <I> ModelProperty<I> getModelProperty(String propertyIdentifier, ModelEntity<I> modelEntity)
 			throws ModelDefinitionException {
+		PropertyImplementation propertyImplementation = null;
 		Getter getter = null;
 		Setter setter = null;
 		Adder adder = null;
@@ -175,6 +177,7 @@ public class ModelProperty<I> {
 					else {
 						getter = aGetter;
 						getterMethod = m;
+						propertyImplementation = m.getAnnotation(PropertyImplementation.class);
 						xmlAttribute = m.getAnnotation(XMLAttribute.class);
 						xmlElement = m.getAnnotation(XMLElement.class);
 						returnedValue = m.getAnnotation(ReturnedValue.class);
@@ -238,18 +241,19 @@ public class ModelProperty<I> {
 				}
 			}
 		}
-		return new ModelProperty<>(modelEntity, propertyIdentifier, getter, setter, adder, remover, reindexer, updater, xmlAttribute,
-				xmlElement, returnedValue, embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint, addPastingPoint,
-				getterMethod, setterMethod, adderMethod, removerMethod, reindexerMethod, updaterMethod);
+		return new ModelProperty<>(modelEntity, propertyIdentifier, propertyImplementation, getter, setter, adder, remover, reindexer,
+				updater, xmlAttribute, xmlElement, returnedValue, embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint,
+				addPastingPoint, getterMethod, setterMethod, adderMethod, removerMethod, reindexerMethod, updaterMethod);
 	}
 
-	protected ModelProperty(ModelEntity<I> modelEntity, String propertyIdentifier, Getter getter, Setter setter, Adder adder,
-			Remover remover, Reindexer reindexer, Updater updater, XMLAttribute xmlAttribute, XMLElement xmlElement,
-			ReturnedValue returnedValue, Embedded embedded, Initialize initialize, ComplexEmbedded complexEmbedded,
+	protected ModelProperty(ModelEntity<I> modelEntity, String propertyIdentifier, PropertyImplementation propertyImplementation,
+			Getter getter, Setter setter, Adder adder, Remover remover, Reindexer reindexer, Updater updater, XMLAttribute xmlAttribute,
+			XMLElement xmlElement, ReturnedValue returnedValue, Embedded embedded, Initialize initialize, ComplexEmbedded complexEmbedded,
 			CloningStrategy cloningStrategy, PastingPoint setPastingPoint, PastingPoint addPastingPoint, Method getterMethod,
 			Method setterMethod, Method adderMethod, Method removerMethod, Method reindexerMethod, Method updaterMethod) {
 		this.modelEntity = modelEntity;
 		this.propertyIdentifier = propertyIdentifier;
+		this.propertyImplementation = propertyImplementation;
 		this.getter = getter;
 		this.setter = setter;
 		this.adder = adder;
@@ -291,10 +295,6 @@ public class ModelProperty<I> {
 					break;
 				case LIST:
 					type = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[0]);
-					break;
-				case MAP:
-					keyType = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[0]);
-					type = TypeUtils.getBaseClass(((ParameterizedType) getterMethod.getGenericReturnType()).getActualTypeArguments()[1]);
 					break;
 				default:
 					break;
@@ -350,20 +350,15 @@ public class ModelProperty<I> {
 					+ ComplexEmbedded.class.getSimpleName() + " on property " + this);
 		}
 
-		switch (getCardinality()) {
-			case LIST:
-			case MAP:
-				if (getAdder() == null) {
-					throw new ModelDefinitionException(
-							"No adder defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
-				}
-				if (getRemover() == null) {
-					throw new ModelDefinitionException(
-							"No remover defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
-				}
-				break;
-			default:
-				break;
+		if (getCardinality() == Cardinality.LIST) {
+			if (getAdder() == null) {
+				throw new ModelDefinitionException(
+						"No adder defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
+			}
+			if (getRemover() == null) {
+				throw new ModelDefinitionException(
+						"No remover defined for " + propertyIdentifier + ", interface " + modelEntity.getImplementedInterface());
+			}
 		}
 
 		if (getGetterMethod() != null && getGetterMethod().getParameterTypes().length > 0) {
@@ -386,61 +381,28 @@ public class ModelProperty<I> {
 		}
 
 		if (getAdderMethod() != null) {
-			switch (getCardinality()) {
-				case LIST:
-					if (getAdderMethod().getParameterTypes().length != 1) {
-						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-								+ getAdderMethod().toString() + " must have exactly 1 parameter");
-					}
-					if (!TypeUtils.isTypeAssignableFrom(type, getAdderMethod().getParameterTypes()[0])) {
-						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-								+ getAdderMethod().toString() + " parameter must be assignable to " + type.getName());
-					}
-					break;
-				case MAP:
-					if (getAdderMethod().getParameterTypes().length != 2) {
-						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-								+ getAdderMethod().toString() + " must have exactly 2 parameters");
-					}
-					if (!TypeUtils.isTypeAssignableFrom(keyType, getAdderMethod().getParameterTypes()[0])) {
-						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-								+ getAdderMethod().toString() + " first parameter must be assignable to " + keyType.getName());
-					}
-					if (!TypeUtils.isTypeAssignableFrom(type, getAdderMethod().getParameterTypes()[1])) {
-						throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
-								+ getAdderMethod().toString() + " second parameter must be assignable to " + type.getName());
-					}
-					break;
-				default:
-					break;
+			if (getCardinality() == Cardinality.LIST) {
+				if (getAdderMethod().getParameterTypes().length != 1) {
+					throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
+							+ getAdderMethod().toString() + " must have exactly 1 parameter");
+				}
+				if (!TypeUtils.isTypeAssignableFrom(type, getAdderMethod().getParameterTypes()[0])) {
+					throw new ModelDefinitionException("Invalid adder method for property '" + propertyIdentifier + "': method "
+							+ getAdderMethod().toString() + " parameter must be assignable to " + type.getName());
+				}
 			}
 		}
 
 		if (getRemoverMethod() != null) {
-			switch (getCardinality()) {
-				case LIST:
-					if (getRemoverMethod().getParameterTypes().length != 1) {
-						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-								+ getRemoverMethod().toString() + " must have exactly 1 parameter");
-					}
-					if (!TypeUtils.isTypeAssignableFrom(type, getRemoverMethod().getParameterTypes()[0])) {
-						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-								+ getRemoverMethod().toString() + " parameter must be assignable to " + type.getName());
-					}
-					break;
-				case MAP:
-					if (getRemoverMethod().getParameterTypes().length != 1) {
-						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-								+ getRemoverMethod().toString() + " must have exactly 1 parameter");
-					}
-					if (!TypeUtils.isTypeAssignableFrom(keyType, getRemoverMethod().getParameterTypes()[0])) {
-						throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
-								+ getRemoverMethod().toString() + " first parameter must be assignable to " + keyType.getName());
-					}
-
-					break;
-				default:
-					break;
+			if (getCardinality() == Cardinality.LIST) {
+				if (getRemoverMethod().getParameterTypes().length != 1) {
+					throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
+							+ getRemoverMethod().toString() + " must have exactly 1 parameter");
+				}
+				if (!TypeUtils.isTypeAssignableFrom(type, getRemoverMethod().getParameterTypes()[0])) {
+					throw new ModelDefinitionException("Invalid remover method for property '" + propertyIdentifier + "': method "
+							+ getRemoverMethod().toString() + " parameter must be assignable to " + type.getName());
+				}
 			}
 		}
 
@@ -710,6 +672,7 @@ public class ModelProperty<I> {
 		if (property == null && (rulingProperty == null || rulingProperty == this)) {
 			return this;
 		}
+		PropertyImplementation propertyImplementation = null;
 		Getter getter = null;
 		Setter setter = null;
 		Adder adder = null;
@@ -873,6 +836,16 @@ public class ModelProperty<I> {
 			cloningStrategy = property.cloningStrategy;
 		}
 
+		if (rulingProperty != null && rulingProperty.propertyImplementation != null) {
+			propertyImplementation = rulingProperty.propertyImplementation;
+		}
+		else if (this.propertyImplementation != null) {
+			propertyImplementation = this.propertyImplementation;
+		}
+		else if (property.propertyImplementation != null) {
+			propertyImplementation = property.propertyImplementation;
+		}
+
 		if (rulingProperty != null && rulingProperty.getGetterMethod() != null) {
 			getterMethod = rulingProperty.getGetterMethod();
 		}
@@ -1012,9 +985,9 @@ public class ModelProperty<I> {
 			setPastingPoint = rulingProperty.getSetPastingPoint();
 		}
 
-		return new ModelProperty<>(getModelEntity(), getPropertyIdentifier(), getter, setter, adder, remover, reindexer, updater,
-				xmlAttribute, xmlElement, returnedValue, embedded, initialize, complexEmbedded, cloningStrategy, setPastingPoint,
-				addPastingPoint, getterMethod, setterMethod, adderMethod, removerMethod, reindexerMethod, updaterMethod);
+		return new ModelProperty<>(getModelEntity(), getPropertyIdentifier(), propertyImplementation, getter, setter, adder, remover,
+				reindexer, updater, xmlAttribute, xmlElement, returnedValue, embedded, initialize, complexEmbedded, cloningStrategy,
+				setPastingPoint, addPastingPoint, getterMethod, setterMethod, adderMethod, removerMethod, reindexerMethod, updaterMethod);
 	}
 
 	final public ModelEntity<I> getModelEntity() {
@@ -1027,6 +1000,10 @@ public class ModelProperty<I> {
 
 	public String getPropertyIdentifier() {
 		return propertyIdentifier;
+	}
+
+	public PropertyImplementation getPropertyImplementation() {
+		return propertyImplementation;
 	}
 
 	public Getter getGetter() {

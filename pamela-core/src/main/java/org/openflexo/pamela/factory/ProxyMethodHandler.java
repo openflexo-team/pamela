@@ -45,7 +45,7 @@ package org.openflexo.pamela.factory;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -57,12 +57,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.StringTokenizer;
 
 import javax.annotation.Nonnull;
 
@@ -110,7 +108,6 @@ import org.openflexo.pamela.undo.RemoveCommand;
 import org.openflexo.pamela.undo.SetCommand;
 import org.openflexo.pamela.undo.UndoManager;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
-import org.openflexo.toolbox.StringUtils;
 
 import com.google.common.base.Defaults;
 import com.google.common.base.Predicate;
@@ -119,148 +116,61 @@ import com.google.common.collect.Collections2;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyObject;
 
-public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListener {
+/**
+ * Invocation Handler in the core of PAMELA
+ * 
+ * This is the class where method call dispatching is performed.
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ *            type of object this invocation handler manages
+ */
+public class ProxyMethodHandler<I> extends IProxyMethodHandler implements MethodHandler, PropertyChangeListener {
 
-	public static final String DELETED = "deleted";
-	public static final String UNDELETED = "undeleted";
-	public static final String MODIFIED = "modified";
-	public static final String DESERIALIZING = "deserializing";
-	public static final String SERIALIZING = "serializing";
-
+	/**
+	 * Object this invocation handler manages
+	 */
 	private I object;
 
-	private Map<String, Object> values;
-	private Map<String, Object> oldValues;
+	/**
+	 * This map contains all scheduled set for a given property<br>
+	 * We need to retain values beeing set in case of bidirectional inverse properties patterns, to avoid infinite loop
+	 */
+	private final Map<ModelProperty<? super I>, Object> scheduledSets = new HashMap<>();
 
 	private boolean destroyed = false;
 	private boolean deleted = false;
-	private boolean deleting = false;
-	private boolean undeleting = false;
+	protected boolean deleting = false;
+	protected boolean undeleting = false;
 	protected boolean initialized = false;
 	private boolean serializing = false;
 	private boolean deserializing = false;
-	private boolean createdByCloning = false;
+	protected boolean createdByCloning = false;
 	private boolean beingCloned = false;
 	private boolean modified = false;
 	private PropertyChangeSupport propertyChangeSupport;
 	protected boolean initializing;
 
-	public static Method PERFORM_SUPER_GETTER;
-	public static Method PERFORM_SUPER_SETTER;
-	public static Method PERFORM_SUPER_ADDER;
-	public static Method PERFORM_SUPER_ADDER_AT_INDEX;
-	public static Method PERFORM_SUPER_REMOVER;
-	public static Method PERFORM_SUPER_DELETER;
-	public static Method PERFORM_SUPER_UNDELETER;
-	public static Method PERFORM_SUPER_FINDER;
-	public static Method PERFORM_SUPER_GETTER_ENTITY;
-	public static Method PERFORM_SUPER_SETTER_ENTITY;
-	public static Method PERFORM_SUPER_ADDER_ENTITY;
-	public static Method PERFORM_SUPER_REMOVER_ENTITY;
-	public static Method PERFORM_SUPER_DELETER_ENTITY;
-	public static Method PERFORM_SUPER_FINDER_ENTITY;
-	public static Method PERFORM_SUPER_SET_MODIFIED;
-	public static Method IS_MODIFIED;
-	public static Method SET_MODIFIED;
-	public static Method IS_SERIALIZING;
-	public static Method IS_DESERIALIZING;
-	public static Method TO_STRING;
-	public static Method GET_PROPERTY_CHANGE_SUPPORT;
-	public static Method GET_DELETED_PROPERTY;
-	public static Method CLONE_OBJECT;
-	public static Method CLONE_OBJECT_WITH_CONTEXT;
-	public static Method IS_CREATED_BY_CLONING;
-	public static Method IS_BEING_CLONED;
-	public static Method DELETE_OBJECT;
-	public static Method UNDELETE_OBJECT;
-	public static Method IS_DELETED;
-	public static Method EQUALS_OBJECT;
-	public static Method UPDATE_WITH_OBJECT;
-	public static Method ACCEPT_VISITOR;
-	public static Method ACCEPT_WITH_STRATEGY_VISITOR;
-	public static Method GET_EMBEDDED;
-	public static Method GET_REFERENCED;
-	public static Method DESTROY;
-	public static Method HAS_KEY;
-	public static Method OBJECT_FOR_KEY;
-	public static Method SET_OBJECT_FOR_KEY;
-	public static Method GET_TYPE_FOR_KEY;
-	public static Method ENABLE_ASSERTION_CHECKING;
-	public static Method DISABLE_ASSERTION_CHECKING;
+	private Map<String, PropertyImplementation<? super I, ?>> propertyImplementations;
+
+	private List<DelegateImplementation<? super I>> delegateImplementations;
 
 	private final PAMELAProxyFactory<I> pamelaProxyFactory;
 	private final EditingContext editingContext;
 
-	static {
-		try {
-			PERFORM_SUPER_GETTER = AccessibleProxyObject.class.getMethod("performSuperGetter", String.class);
-			PERFORM_SUPER_SETTER = AccessibleProxyObject.class.getMethod("performSuperSetter", String.class, Object.class);
-			PERFORM_SUPER_ADDER = AccessibleProxyObject.class.getMethod("performSuperAdder", String.class, Object.class);
-			PERFORM_SUPER_ADDER_AT_INDEX = AccessibleProxyObject.class.getMethod("performSuperAdder", String.class, Object.class,
-					Integer.TYPE);
-			PERFORM_SUPER_REMOVER = AccessibleProxyObject.class.getMethod("performSuperRemover", String.class, Object.class);
-			PERFORM_SUPER_DELETER = DeletableProxyObject.class.getMethod("performSuperDelete",
-					Array.newInstance(Object.class, 0).getClass());
-			PERFORM_SUPER_UNDELETER = DeletableProxyObject.class.getMethod("performSuperUndelete", Boolean.TYPE);
-			PERFORM_SUPER_FINDER = AccessibleProxyObject.class.getMethod("performSuperFinder", String.class, Object.class);
-			PERFORM_SUPER_GETTER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperGetter", String.class, Class.class);
-			PERFORM_SUPER_SETTER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperSetter", String.class, Object.class,
-					Class.class);
-			PERFORM_SUPER_ADDER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperAdder", String.class, Object.class,
-					Class.class);
-			PERFORM_SUPER_REMOVER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperRemover", String.class, Object.class,
-					Class.class);
-			PERFORM_SUPER_DELETER_ENTITY = DeletableProxyObject.class.getMethod("performSuperDelete", Class.class,
-					Array.newInstance(Object.class, 0).getClass());
-			PERFORM_SUPER_FINDER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperFinder", String.class, Object.class,
-					Class.class);
-			IS_SERIALIZING = AccessibleProxyObject.class.getMethod("isSerializing");
-			IS_DESERIALIZING = AccessibleProxyObject.class.getMethod("isDeserializing");
-			IS_MODIFIED = AccessibleProxyObject.class.getMethod("isModified");
-			IS_DELETED = DeletableProxyObject.class.getMethod("isDeleted");
-			SET_MODIFIED = AccessibleProxyObject.class.getMethod("setModified", boolean.class);
-			PERFORM_SUPER_SET_MODIFIED = AccessibleProxyObject.class.getMethod("performSuperSetModified", boolean.class);
-			DELETE_OBJECT = DeletableProxyObject.class.getMethod("delete", Array.newInstance(Object.class, 0).getClass());
-			UNDELETE_OBJECT = DeletableProxyObject.class.getMethod("undelete", Boolean.TYPE);
-			GET_PROPERTY_CHANGE_SUPPORT = HasPropertyChangeSupport.class.getMethod("getPropertyChangeSupport");
-			GET_DELETED_PROPERTY = HasPropertyChangeSupport.class.getMethod("getDeletedProperty");
-			TO_STRING = Object.class.getMethod("toString");
-			CLONE_OBJECT = CloneableProxyObject.class.getMethod("cloneObject");
-			CLONE_OBJECT_WITH_CONTEXT = CloneableProxyObject.class.getMethod("cloneObject", Array.newInstance(Object.class, 0).getClass());
-			IS_CREATED_BY_CLONING = CloneableProxyObject.class.getMethod("isCreatedByCloning");
-			IS_BEING_CLONED = CloneableProxyObject.class.getMethod("isBeingCloned");
-			EQUALS_OBJECT = AccessibleProxyObject.class.getMethod("equalsObject", Object.class);
-			UPDATE_WITH_OBJECT = AccessibleProxyObject.class.getMethod("updateWith", Object.class);
-			GET_EMBEDDED = AccessibleProxyObject.class.getMethod("getEmbeddedObjects");
-			GET_REFERENCED = AccessibleProxyObject.class.getMethod("getReferencedObjects");
-			ACCEPT_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class);
-			ACCEPT_WITH_STRATEGY_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class,
-					PAMELAVisitor.VisitingStrategy.class);
-			DESTROY = AccessibleProxyObject.class.getMethod("destroy");
-			HAS_KEY = KeyValueCoding.class.getMethod("hasKey", String.class);
-			OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("objectForKey", String.class);
-			SET_OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("setObjectForKey", Object.class, String.class);
-			GET_TYPE_FOR_KEY = KeyValueCoding.class.getMethod("getTypeForKey", String.class);
-			ENABLE_ASSERTION_CHECKING = SpecifiableProxyObject.class.getMethod("enableAssertionChecking");
-			DISABLE_ASSERTION_CHECKING = SpecifiableProxyObject.class.getMethod("disableAssertionChecking");
-
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
-		}
-	}
+	private Stack<Method> assertionCheckingStack = new Stack<>();
+	private Map<Method, Map<String, Object>> historyValues;
 
 	public ProxyMethodHandler(PAMELAProxyFactory<I> pamelaProxyFactory, EditingContext editingContext) throws ModelDefinitionException {
 		this.pamelaProxyFactory = pamelaProxyFactory;
 		this.editingContext = editingContext;
-		values = new HashMap<>(getModelEntity().getPropertiesSize(), 1.0f);
+		// values = new HashMap<>(getModelEntity().getPropertiesSize(), 1.0f);
 		historyValues = new HashMap<>();
+		propertyImplementations = new HashMap<>(getModelEntity().getPropertiesSize(), 1.0f);
 		initialized = !getModelEntity().hasInitializers();
 		initDelegateImplementations();
 	}
-
-	private List<DelegateImplementation<? super I>> delegateImplementations;
 
 	private void initDelegateImplementations() throws ModelDefinitionException {
 		// System.out.println("***** init delegate implementations");
@@ -372,7 +282,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return invoke;
 	}
 
-	public Object _invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
+	private Object _invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 
 		// System.out.println("_invoke " + method);
 
@@ -476,28 +386,28 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		Setter setter = method.getAnnotation(Setter.class);
 		if (setter != null) {
 			String id = setter.value();
-			internallyInvokeSetter(id, args);
+			internallyInvokeSetter(id, args[0], true);
 			return null;
 		}
 
 		Adder adder = method.getAnnotation(Adder.class);
 		if (adder != null) {
 			String id = adder.value();
-			internallyInvokeAdder(id, args);
+			internallyInvokeAdder(id, args[0], true);
 			return null;
 		}
 
 		Remover remover = method.getAnnotation(Remover.class);
 		if (remover != null) {
 			String id = remover.value();
-			internallyInvokerRemover(id, args);
+			internallyInvokeRemover(id, args[0], true);
 			return null;
 		}
 
 		Reindexer reindexer = method.getAnnotation(Reindexer.class);
 		if (reindexer != null) {
 			String id = reindexer.value();
-			internallyInvokerReindexer(id, args);
+			internallyInvokeReindexer(id, args[0], (int) args[1], true);
 			return null;
 		}
 
@@ -510,22 +420,22 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return getPropertyChangeSuppport();
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_GETTER)) {
-			return internallyInvokeGetter(getModelEntity().getModelProperty((String) args[0]));
+			return internallyInvokeGetter((String) args[0] /*getModelEntity().getModelProperty((String) args[0])*/);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_SETTER)) {
-			internallyInvokeSetter(getModelEntity().getModelProperty((String) args[0]), args[1], false);
+			internallyInvokeSetter((String) args[0] /*getModelEntity().getModelProperty((String) args[0])*/, args[1], false);
 			return null;
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_ADDER)) {
-			internallyInvokeAdder(getModelEntity().getModelProperty((String) args[0]), args[1], false);
+			internallyInvokeAdder((String) args[0] /*getModelEntity().getModelProperty((String) args[0])*/, args[1], false);
 			return null;
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_ADDER_AT_INDEX)) {
-			internallyInvokeAdderAtIndex(getModelEntity().getModelProperty((String) args[0]), args[1], (int) args[2], false);
+			internallyInvokeAdder((String) args[0] /*getModelEntity().getModelProperty((String) args[0])*/, args[1], (int) args[2], false);
 			return null;
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_REMOVER)) {
-			internallyInvokeRemover(getModelEntity().getModelProperty((String) args[0]), args[1], false);
+			internallyInvokeRemover((String) args[0] /*getModelEntity().getModelProperty((String) args[0])*/, args[1], false);
 			return null;
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_FINDER)) {
@@ -534,16 +444,16 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_GETTER_ENTITY)) {
 			ModelEntity<? super I> e = getModelEntityFromArg((Class<?>) args[1]);
-			return internallyInvokeGetter(e.getModelProperty((String) args[0]));
+			return internallyInvokeGetter((String) args[0]/*e.getModelProperty((String) args[0])*/);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_SETTER_ENTITY)) {
 			ModelEntity<? super I> e = getModelEntityFromArg((Class<?>) args[2]);
-			internallyInvokeSetter(e.getModelProperty((String) args[0]), args[1], false);
+			internallyInvokeSetter((String) args[0] /*e.getModelProperty((String) args[0])*/, args[1], false);
 			return null;
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_ADDER_ENTITY)) {
 			ModelEntity<? super I> e = getModelEntityFromArg((Class<?>) args[2]);
-			internallyInvokeAdder(e.getModelProperty((String) args[0]), args[1], false);
+			internallyInvokeAdder((String) args[0] /*e.getModelProperty((String) args[0])*/, args[1], false);
 			return null;
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_REMOVER_ENTITY)) {
@@ -604,7 +514,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			return equalsObject(args[0]);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, UPDATE_WITH_OBJECT)) {
-			return updateWith(args[0]);
+			return updateWith((I) args[0]);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, GET_EMBEDDED)) {
 			return getDirectEmbeddedObjects();
@@ -755,29 +665,137 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return (ModelEntity<? super I>) e;
 	}
 
-	private Object internallyInvokeGetter(String propertyIdentifier) throws ModelDefinitionException {
+	private PropertyImplementation<? super I, ?> getPropertyImplementation(ModelProperty<? super I> property)
+			throws ModelExecutionException {
+		PropertyImplementation<? super I, ?> returned = propertyImplementations.get(property.getPropertyIdentifier());
+		if (returned == null) {
+			Class<? extends PropertyImplementation<? super I, ?>> implementationClass = null;
+			try {
+				if (property.getPropertyImplementation() != null) {
+					implementationClass = (Class<? extends PropertyImplementation<? super I, ?>>) property.getPropertyImplementation()
+							.value();
+					Constructor<? extends PropertyImplementation<? super I, ?>> constructor = implementationClass
+							.getConstructor(ProxyMethodHandler.class, ModelProperty.class);
+					returned = constructor.newInstance(this, property);
+				}
+				else {
+					if (property.getCardinality() == Cardinality.SINGLE) {
+						implementationClass = (Class) DefaultSinglePropertyImplementation.class;
+						Constructor<? extends PropertyImplementation<? super I, ?>> constructor = implementationClass
+								.getConstructor(ProxyMethodHandler.class, ModelProperty.class);
+						returned = constructor.newInstance(this, property);
+					}
+					else if (property.getCardinality() == Cardinality.LIST) {
+						implementationClass = (Class) DefaultMultiplePropertyImplementation.class;
+						Constructor<? extends PropertyImplementation<? super I, ?>> constructor = implementationClass
+								.getConstructor(ProxyMethodHandler.class, ModelProperty.class, Class.class);
+						returned = constructor.newInstance(this, property, getModelFactory().getListImplementationClass());
+					}
+					else {
+						throw new ModelExecutionException("Unexpected cardinality for property " + property);
+					}
+				}
+				propertyImplementations.put(property.getPropertyIdentifier(), returned);
+				return returned;
+
+			} catch (Exception e) {
+				throw new ModelExecutionException(e);
+			}
+		}
+		return returned;
+	}
+
+	protected Object internallyInvokeGetter(String propertyIdentifier) throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
 		return internallyInvokeGetter(property);
 	}
 
-	private void internallyInvokeSetter(String propertyIdentifier, Object[] args) throws ModelDefinitionException {
+	protected Object internallyInvokeGetter(ModelProperty<? super I> property) throws ModelDefinitionException {
+		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+		return internallyInvokeGetter(property, propertyImplementation);
+	}
+
+	protected void internallyInvokeSetter(String propertyIdentifier, Object value, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
-		internallyInvokeSetter(property, args[0], true);
+		internallyInvokeSetter(property, value, trackAtomicEdit);
 	}
 
-	private void internallyInvokeAdder(String propertyIdentifier, Object[] args) throws ModelDefinitionException {
+	protected void internallyInvokeSetter(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+		if (propertyImplementation instanceof SettablePropertyImplementation) {
+			internallyInvokeSetter(property, (SettablePropertyImplementation) propertyImplementation, value, trackAtomicEdit);
+		}
+		else {
+			throw new ModelDefinitionException(
+					"Property implementation does not support SET protocol: " + property.getPropertyImplementation());
+		}
+	}
+
+	protected void internallyInvokeAdder(String propertyIdentifier, Object addedValue, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		internallyInvokeAdder(propertyIdentifier, addedValue, -1, trackAtomicEdit);
+	}
+
+	protected void internallyInvokeAdder(String propertyIdentifier, Object addedValue, int index, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
 		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
-		internallyInvokeAdder(property, args[0], true);
+		internallyInvokeAdder(property, addedValue, index, trackAtomicEdit);
 	}
 
-	private void internallyInvokerRemover(String id, Object[] args) throws ModelDefinitionException {
-		ModelProperty<? super I> property = getModelEntity().getModelProperty(id);
-		internallyInvokeRemover(property, args[0], true);
+	protected void internallyInvokeAdder(ModelProperty<? super I> property, Object addedValue, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		internallyInvokeAdder(property, addedValue, -1, trackAtomicEdit);
 	}
 
-	private void internallyInvokerReindexer(String id, Object[] args) throws ModelDefinitionException {
-		ModelProperty<? super I> property = getModelEntity().getModelProperty(id);
-		internallyInvokeReindexer(property, args[0], (Integer) args[1], true);
+	protected void internallyInvokeAdder(ModelProperty<? super I> property, Object addedValue, int index, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+		if (propertyImplementation instanceof MultiplePropertyImplementation) {
+			internallyInvokeAdder(property, (MultiplePropertyImplementation) propertyImplementation, addedValue, index, trackAtomicEdit);
+		}
+		else {
+			throw new ModelDefinitionException(
+					"Property implementation does not support ADD protocol: " + property.getPropertyImplementation());
+		}
+	}
+
+	protected void internallyInvokeRemover(String propertyIdentifier, Object removedValue, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
+		internallyInvokeRemover(property, removedValue, trackAtomicEdit);
+	}
+
+	protected void internallyInvokeRemover(ModelProperty<? super I> property, Object removedValue, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+		if (propertyImplementation instanceof MultiplePropertyImplementation) {
+			internallyInvokeRemover(property, (MultiplePropertyImplementation) propertyImplementation, removedValue, trackAtomicEdit);
+		}
+		else {
+			throw new ModelDefinitionException(
+					"Property implementation does not support REMOVE protocol: " + property.getPropertyImplementation());
+		}
+	}
+
+	protected void internallyInvokeReindexer(String propertyIdentifier, Object value, int index, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
+		internallyInvokeReindexer(property, value, index, trackAtomicEdit);
+	}
+
+	protected void internallyInvokeReindexer(ModelProperty<? super I> property, Object value, int index, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+		if (propertyImplementation instanceof ReindexableListPropertyImplementation) {
+			internallyInvokeReindexer(property, (ReindexableListPropertyImplementation) propertyImplementation, value, index,
+					trackAtomicEdit);
+		}
+		else {
+			throw new ModelDefinitionException(
+					"Property implementation does not support REINDEX protocol: " + property.getPropertyImplementation());
+		}
 	}
 
 	/**
@@ -792,7 +810,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * @see Embedded#deletionConditions()
 	 * @see ComplexEmbedded#deletionConditions()
 	 */
-	private boolean internallyInvokeDeleter(boolean trackAtomicEdit, Object... context) throws ModelDefinitionException {
+	protected boolean internallyInvokeDeleter(boolean trackAtomicEdit, Object... context) throws ModelDefinitionException {
 
 		// System.out.println("Called internallyInvokeDeleter() for " + getObject());
 
@@ -808,7 +826,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			context = Arrays.copyOf(context, context.length + 1);
 			context[context.length - 1] = getObject();
 		}
-		oldValues = new HashMap<>();
+		// oldValues = new HashMap<>();
 		ModelEntity<I> modelEntity = getModelEntity();
 		Set<Object> objects = new HashSet<>();
 		for (Object o : context) {
@@ -831,14 +849,19 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			}
 			else {
 
+				PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+
+				propertyImplementation.delete(embeddedObjects, context);
+
+				/*
 				// We retrieve and store old value for a potential undelete
 				Object oldValue = invokeGetter(property);
-
+				
 				List<Object> oldValuesList = null;
 				if (property.getCardinality() == Cardinality.LIST) {
 					oldValuesList = new ArrayList<>((List) oldValue);
 				}
-
+				
 				oldValues.put(property.getPropertyIdentifier(), oldValue);
 				// Otherwise nullify using setter
 				if (property.getSetterMethod() != null) {
@@ -847,7 +870,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 				else {
 					internallyInvokeSetter(property, null, true);
 				}
-
+				
 				if (property.getCardinality() == Cardinality.SINGLE) {
 					if ((oldValue instanceof DeletableProxyObject) && embeddedObjects.contains(oldValue)) {
 						// By the way, this object was embedded, delete it
@@ -855,7 +878,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						embeddedObjects.remove(oldValue);
 					}
 				}
-
+				
 				else if (property.getCardinality() == Cardinality.LIST) {
 					if (oldValuesList != null) {
 						for (Object toBeDeleted : oldValuesList) {
@@ -867,7 +890,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 						}
 					}
 				}
-
+				*/
 			}
 		}
 
@@ -914,7 +937,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		return deleted;
 	}
 
-	private boolean internallyInvokeUndeleter(boolean restoreProperties, boolean trackAtomicEdit) throws ModelDefinitionException {
+	protected boolean internallyInvokeUndeleter(boolean restoreProperties, boolean trackAtomicEdit) throws ModelDefinitionException {
 
 		if (!deleted || deleting) {
 			return false;
@@ -936,13 +959,17 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					// Do nothing
 				}
 				else {
+
+					PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+					propertyImplementation.undelete();
+
 					// Otherwise nullify using setter
-					if (property.getSetterMethod() != null) {
+					/*if (property.getSetterMethod() != null) {
 						invokeSetter(property, oldValues.get(property.getPropertyIdentifier()));
 					}
 					else {
 						internallyInvokeSetter(property, oldValues.get(property.getPropertyIdentifier()), true);
-					}
+					}*/
 				}
 			}
 		}
@@ -959,14 +986,20 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 * To implements deleting/undeleting facilities, use {@link DeletableProxyObject} interface instead
 	 */
 	public void destroy() {
-		if (values != null) {
+		/*if (values != null) {
 			values.clear();
 		}
 		values = null;
 		if (oldValues != null) {
 			oldValues.clear();
 		}
-		oldValues = null;
+		oldValues = null;*/
+
+		if (propertyImplementations != null) {
+			propertyImplementations.clear();
+		}
+		propertyImplementations = null;
+
 		destroyed = true;
 	}
 
@@ -1060,6 +1093,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 			throw new ModelExecutionException(e);
 		} catch (InvocationTargetException e) {
 			throw new ModelExecutionException(e);
+		} catch (ModelDefinitionException e) {
+			throw new ModelExecutionException(e);
 		}
 	}
 
@@ -1104,129 +1139,7 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		invokeReindexer(getModelEntity().getModelProperty(propertyIdentifier), value, index);
 	}
 
-	private Object internallyInvokeGetter(ModelProperty<? super I> property) throws ModelDefinitionException {
-		if (property == null) {
-			throw new ModelExecutionException("null property while calling getter");
-		}
-		if (property.getCardinality() == null) {
-			throw new ModelExecutionException("Invalid null cardinality for " + property);
-		}
-		switch (property.getCardinality()) {
-			case SINGLE:
-				return invokeGetterForSingleCardinality(property);
-			case LIST:
-				return invokeGetterForListCardinality(property);
-			case MAP:
-				return invokeGetterForMapCardinality(property);
-			default:
-				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
-		}
-	}
-
-	private Object invokeGetterForSingleCardinality(ModelProperty<? super I> property) throws ModelDefinitionException {
-		if (property.getGetter() == null) {
-			throw new ModelExecutionException("Getter is not defined for property " + property);
-		}
-		if (property.getReturnedValue() != null) {
-			// Simple implementation of ReturnedValue. This can be drastically improved
-			String returnedValue = property.getReturnedValue().value();
-			StringTokenizer st = new StringTokenizer(returnedValue, ".");
-			Object value = this;
-			ProxyMethodHandler<?> handler = this;
-			while (st.hasMoreTokens()) {
-				String token = st.nextToken();
-				value = handler.invokeGetter(token);
-				if (value != null) {
-					if (st.hasMoreTokens()) {
-						if (!(value instanceof ProxyObject)) {
-							throw new ModelExecutionException("Cannot invoke " + st.nextToken() + " on object of type "
-									+ value.getClass().getName() + " (caused by returned value: " + returnedValue + ")");
-						}
-						handler = (ProxyMethodHandler<?>) ((ProxyObject) value).getHandler();
-					}
-				}
-				else {
-					return null;
-				}
-			}
-			return value;
-		}
-		Object returned = null;
-		if (values != null) {
-			returned = values.get(property.getPropertyIdentifier());
-		}
-		if (returned != null) {
-			return returned;
-		}
-		else {
-			Object defaultValue;
-			try {
-				defaultValue = property.getDefaultValue(getModelFactory());
-			} catch (InvalidDataException e) {
-				throw new ModelExecutionException("Invalid default value '" + property.getGetter().defaultValue() + "' for property "
-						+ property + " with type " + property.getType(), e);
-			}
-			if (defaultValue != null) {
-				values.put(property.getPropertyIdentifier(), defaultValue);
-				return defaultValue;
-			}
-			if (property.getType().isPrimitive()) {
-				throw new ModelExecutionException("No default value defined for primitive property " + property);
-			}
-			return null;
-		}
-	}
-
-	private List<?> invokeGetterForListCardinality(ModelProperty<? super I> property) {
-		if (property.getGetter() == null) {
-			throw new ModelExecutionException("Getter is not defined for property " + property);
-		}
-		List<?> returned = (List<?>) values.get(property.getPropertyIdentifier());
-		if (returned != null) {
-			return returned;
-		}
-		else {
-			Class<? extends List> listClass = getModelFactory().getListImplementationClass();
-			try {
-				returned = listClass.newInstance();
-			} catch (InstantiationException e) {
-				throw new ModelExecutionException(e);
-			} catch (IllegalAccessException e) {
-				throw new ModelExecutionException(e);
-			}
-			if (returned != null) {
-				values.put(property.getPropertyIdentifier(), returned);
-				return returned;
-			}
-			return null;
-		}
-	}
-
-	private Map<?, ?> invokeGetterForMapCardinality(ModelProperty<? super I> property) {
-		if (property.getGetter() == null) {
-			throw new ModelExecutionException("Getter is not defined for property " + property);
-		}
-		Map<?, ?> returned = (Map<?, ?>) values.get(property.getPropertyIdentifier());
-		if (returned != null) {
-			return returned;
-		}
-		else {
-			Class<? extends Map> mapClass = getModelFactory().getMapImplementationClass();
-			try {
-				returned = mapClass.newInstance();
-			} catch (InstantiationException e) {
-				throw new ModelExecutionException(e);
-			} catch (IllegalAccessException e) {
-				throw new ModelExecutionException(e);
-			}
-			if (returned != null) {
-				values.put(property.getPropertyIdentifier(), returned);
-				return returned;
-			}
-			return null;
-		}
-	}
-
+	// TODO: why do we need this ?
 	public void invokeSetterForDeserialization(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
 		if (property.getSetterMethod() != null) {
 			invokeSetter(property, value);
@@ -1236,162 +1149,11 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	private void internallyInvokeSetter(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
-			throws ModelDefinitionException {
-		Object oldValue = invokeGetter(property);
-		if (trackAtomicEdit && getUndoManager() != null) {
-			if (oldValue != value) {
-				getUndoManager().addEdit(new SetCommand<>(getObject(), getModelEntity(), property, oldValue, value, getModelFactory()));
-			}
-		}
-		switch (property.getCardinality()) {
-			case SINGLE:
-				invokeSetterForSingleCardinality(property, value);
-				break;
-			case LIST:
-				invokeSetterForListCardinality(property, value);
-				break;
-			case MAP:
-				invokeSetterForMapCardinality(property, value);
-				break;
-			default:
-				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
-		}
+	protected Map<ModelProperty<? super I>, Object> getScheduledSets() {
+		return scheduledSets;
 	}
 
-	/**
-	 * This map contains all scheduled set for a given property<br>
-	 * We need to retain values beeing set in case of bidirectional inverse properties patterns, to avoid infinite loop
-	 */
-	private final Map<ModelProperty<? super I>, Object> scheduledSets = new HashMap<>();
-
-	private void invokeSetterForSingleCardinality(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
-
-		if (scheduledSets.get(property) == value) {
-			// This set was already scheduled (we are entering in an infinite loop): break NOW
-			return;
-		}
-
-		scheduledSets.remove(property);
-
-		// System.out.println("Object " + getModelEntity().getImplementedInterface().getSimpleName() + " set "
-		// + property.getPropertyIdentifier() + " with " + value);
-
-		if (property.getSetter() == null && !isDeserializing() && !initializing && !createdByCloning && !deleting && !undeleting) {
-			throw new ModelExecutionException("Setter is not defined for property " + property);
-		}
-		// Object oldValue = invokeGetter(property);
-		Object oldValue = internallyInvokeGetter(property);
-
-		// Is it a real change ?
-		if (!isEqual(oldValue, value, new HashSet<>())) {
-			// System.out.println("Change for " + oldValue + " to " + value);
-			boolean hasInverse = property.hasExplicitInverseProperty();
-
-			scheduledSets.put(property, value);
-
-			// First handle inverse property for oldValue
-			if (hasInverse && oldValue != null) {
-				ProxyMethodHandler<Object> oppositeHandler = getModelFactory().getHandler(oldValue);
-				if (oppositeHandler == null) {
-					// Should not happen
-					throw new ModelExecutionException(
-							"Opposite entity of " + property + " is of type " + oldValue.getClass().getName() + " is not a ModelEntity.");
-				}
-				ModelProperty<? super Object> inverseProperty = property.getInverseProperty(oppositeHandler.getModelEntity());
-				switch (inverseProperty.getCardinality()) {
-					case SINGLE:
-						Object oppositeOldValue = oppositeHandler.invokeGetter(inverseProperty);
-						if (oppositeOldValue != null) {
-							// System.out.println("Object " + inverseProperty.getModelEntity().getImplementedInterface().getSimpleName() +
-							// " set "
-							// + inverseProperty.getPropertyIdentifier() + " with " + null);
-							oppositeHandler.invokeSetter(inverseProperty, null);
-						}
-						else {
-							// No need to reset inverse setter, as it is already set to null
-						}
-						break;
-					case LIST:
-						// TODO: what is same object has multiple occurences in the list ???
-						List<Object> oppositeListValue = (List<Object>) oppositeHandler.invokeGetter(inverseProperty);
-						if (oppositeListValue.contains(getObject())) {
-							oppositeHandler.invokeRemover(inverseProperty, getObject());
-						}
-						else {
-							// No need to remove objet from opposite property object was not inside
-						}
-						break;
-					case MAP:
-						break;
-					default:
-						throw new ModelExecutionException("Invalid cardinality: " + inverseProperty.getCardinality());
-				}
-			}
-
-			// Now do the job, internally
-			if (value == null) {
-				values.remove(property.getPropertyIdentifier());
-			}
-			else {
-				values.put(property.getPropertyIdentifier(), value);
-			}
-			firePropertyChange(property.getPropertyIdentifier(), oldValue, value);
-			if (getModelEntity().getModify() != null && getModelEntity().getModify().synchWithForward()
-					&& property.getPropertyIdentifier().equals(getModelEntity().getModify().forward())) {
-				if (oldValue instanceof HasPropertyChangeSupport) {
-					((HasPropertyChangeSupport) oldValue).getPropertyChangeSupport().removePropertyChangeListener(MODIFIED, this);
-				}
-				if (value instanceof HasPropertyChangeSupport) {
-					((HasPropertyChangeSupport) value).getPropertyChangeSupport().addPropertyChangeListener(MODIFIED, this);
-				}
-			}
-			// Now handle inverse property for newValue
-			if (hasInverse && value != null) {
-				ProxyMethodHandler<Object> oppositeHandler = getModelFactory().getHandler(value);
-				if (oppositeHandler == null) {
-					// Should not happen
-					throw new ModelExecutionException(
-							"Opposite entity of " + property + " is of type " + value.getClass().getName() + " is not a ModelEntity.");
-				}
-				ModelProperty<? super Object> inverseProperty = property.getInverseProperty(oppositeHandler.getModelEntity());
-				switch (inverseProperty.getCardinality()) {
-					case SINGLE:
-						Object oppositeOldValue = oppositeHandler.invokeGetter(inverseProperty);
-						if (oppositeOldValue != getObject()) {
-							// System.out.println("Object " + inverseProperty.getModelEntity().getImplementedInterface().getSimpleName() +
-							// " set "
-							// + inverseProperty.getPropertyIdentifier() + " with " + getObject());
-							oppositeHandler.invokeSetter(inverseProperty, getObject());
-						}
-						else {
-							// No need to set inverse property, because this is already right value
-						}
-						break;
-					case LIST:
-						// TODO: what is same object has multiple occurences in the list ???
-						List<Object> oppositeListValue = (List<Object>) oppositeHandler.invokeGetter(inverseProperty);
-						if (!oppositeListValue.contains(getObject())) {
-							oppositeHandler.invokeAdder(inverseProperty, getObject());
-						}
-						else {
-							// No need to add object to inverse property, because this is already inside
-						}
-						break;
-					case MAP:
-						break;
-					default:
-						throw new ModelExecutionException("Invalid cardinality: " + inverseProperty.getCardinality());
-				}
-			}
-
-			if (property.isSerializable()) {
-				invokeSetModified(true);
-			}
-
-		}
-	}
-
+	@Deprecated
 	private void firePropertyChange(String propertyIdentifier, Object oldValue, Object value) {
 		if (getObject() instanceof HasPropertyChangeSupport && !deleting) {
 			PropertyChangeSupport propertyChangeSupport = ((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport();
@@ -1417,40 +1179,14 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	private void invokeSetModified(boolean modified) throws ModelDefinitionException {
+	@Deprecated
+	protected void invokeSetModified(boolean modified) throws ModelDefinitionException {
 		if (getObject() instanceof AccessibleProxyObject) {
 			((AccessibleProxyObject) getObject()).setModified(modified);
 		}
 		else {
 			internallyInvokeSetModified(modified);
 		}
-	}
-
-	private void invokeSetterForListCardinality(ModelProperty<? super I> property, Object value) {
-		if (property.getSetter() == null && !isDeserializing() && !initializing && !createdByCloning && !deleting) {
-			throw new ModelExecutionException("Setter is not defined for property " + property);
-		}
-		if (value != null && !(value instanceof List)) {
-			throw new ModelExecutionException("Trying to set a " + value.getClass().getName() + " on property " + property + " but only "
-					+ List.class.getName() + " instances or null is allowed");
-		}
-		List<?> oldValue = (List<?>) invokeGetter(property);
-		for (Object o : new ArrayList<>(oldValue)) {
-			invokeRemover(property, o);
-		}
-		if (value != null) {
-			for (Object o : (List<?>) value) {
-				invokeAdder(property, o);
-			}
-		}
-	}
-
-	private void invokeSetterForMapCardinality(ModelProperty<? super I> property, Object value) {
-		if (property.getSetter() == null && !isDeserializing() && !initializing && !createdByCloning && !deleting && !undeleting) {
-			throw new ModelExecutionException("Setter is not defined for property " + property);
-		}
-		// TODO implement this
-		throw new UnsupportedOperationException("Setter for MAP: not implemented yet");
 	}
 
 	public void invokeAdderForDeserialization(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
@@ -1460,194 +1196,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		else {
 			internallyInvokeAdder(property, value, true);
 		}
-	}
-
-	private void internallyInvokeAdder(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
-			throws ModelDefinitionException {
-		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
-		if (trackAtomicEdit && getUndoManager() != null) {
-			getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
-		}
-		switch (property.getCardinality()) {
-			case SINGLE:
-				throw new ModelExecutionException(
-						"Cannot invoke ADDER on " + property.getPropertyIdentifier() + ": Invalid cardinality SINGLE");
-			case LIST:
-				invokeAdderForListCardinality(property, value, -1);
-				break;
-			case MAP:
-				invokeAdderForMapCardinality(property, value);
-				break;
-			default:
-				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
-		}
-	}
-
-	private void internallyInvokeAdderAtIndex(ModelProperty<? super I> property, Object value, int index, boolean trackAtomicEdit)
-			throws ModelDefinitionException {
-		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
-		if (trackAtomicEdit && getUndoManager() != null) {
-			getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, value, index, getModelFactory()));
-		}
-		switch (property.getCardinality()) {
-			case SINGLE:
-				throw new ModelExecutionException(
-						"Cannot invoke ADDER on " + property.getPropertyIdentifier() + ": Invalid cardinality SINGLE");
-			case LIST:
-				invokeAdderForListCardinality(property, value, index);
-				break;
-			case MAP:
-				invokeAdderForMapCardinality(property, value);
-				break;
-			default:
-				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
-		}
-	}
-
-	private void invokeAdderForListCardinality(ModelProperty<? super I> property, Object value, int index) throws ModelDefinitionException {
-		if (property.getAdder() == null && !isDeserializing() && !initializing && !createdByCloning && !deleting && !undeleting) {
-			throw new ModelExecutionException("Adder is not defined for property " + property);
-		}
-		List list = (List) invokeGetter(property);
-
-		if (property.getAllowsMultipleOccurences() || !list.contains(value)) {
-			if (index == -1) {
-				list.add(value);
-			}
-			else {
-				list.add(index, value);
-			}
-			firePropertyChange(property.getPropertyIdentifier(), null, value);
-			// Handle inverse property for new value
-			if (property.hasExplicitInverseProperty() && value != null) {
-				ProxyMethodHandler<Object> oppositeHandler = getModelFactory().getHandler(value);
-				if (oppositeHandler == null) {
-					// Should not happen
-					throw new ModelExecutionException(
-							"Opposite entity of " + property + " is of type " + value.getClass().getName() + " is not a ModelEntity.");
-				}
-				ModelProperty<? super Object> inverseProperty = property.getInverseProperty(oppositeHandler.getModelEntity());
-				switch (inverseProperty.getCardinality()) {
-					case SINGLE:
-						oppositeHandler.invokeSetter(inverseProperty, getObject());
-						break;
-					case LIST:
-						oppositeHandler.invokeAdder(inverseProperty, getObject());
-						break;
-					case MAP:
-						break;
-					default:
-						throw new ModelExecutionException("Invalid cardinality: " + inverseProperty.getCardinality());
-				}
-			}
-			if (property.isSerializable()) {
-				invokeSetModified(true);
-			}
-		}
-	}
-
-	private void invokeAdderForMapCardinality(ModelProperty<? super I> property, Object value) {
-		if (property.getAdder() == null && !isDeserializing() && !initializing && !createdByCloning) {
-			throw new ModelExecutionException("Adder is not defined for property " + property);
-		}
-		// TODO implement this
-		throw new UnsupportedOperationException("Adder for MAP: not implemented yet");
-	}
-
-	private void internallyInvokeRemover(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
-			throws ModelDefinitionException {
-		// System.out.println("Invoke REMOVER "+property.getPropertyIdentifier());
-		if (trackAtomicEdit && getUndoManager() != null) {
-			getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
-		}
-		switch (property.getCardinality()) {
-			case SINGLE:
-				throw new ModelExecutionException(
-						"Cannot invoke REMOVER on " + property.getPropertyIdentifier() + ": Invalid cardinality SINGLE");
-			case LIST:
-				invokeRemoverForListCardinality(property, value);
-				break;
-			case MAP:
-				invokeRemoverForMapCardinality(property, value);
-				break;
-			default:
-				throw new ModelExecutionException("Invalid cardinality: " + property.getCardinality());
-		}
-	}
-
-	private void internallyInvokeReindexer(ModelProperty<? super I> property, Object value, int index, boolean trackAtomicEdit) {
-		// System.out.println("Invoke REINDEXER "+property.getPropertyIdentifier());
-		if (trackAtomicEdit && getUndoManager() != null) {
-			getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
-			getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
-		}
-
-		List list = (List) invokeGetter(property);
-		int oldIndex = list.indexOf(value);
-
-		if (oldIndex > -1) {
-			if (oldIndex != index) {
-				list.remove(value);
-				if (index == -1) {
-					list.add(value);
-				}
-				else {
-					list.add(index, value);
-				}
-				firePropertyChange(property.getPropertyIdentifier(), oldIndex, index);
-			}
-			else {
-				// Index is already correct
-			}
-		}
-		else {
-			System.err.println("Inconsistant data: could not find object: " + value);
-		}
-	}
-
-	private void invokeRemoverForListCardinality(ModelProperty<? super I> property, Object value) throws ModelDefinitionException {
-		if (property.getRemover() == null) {
-			throw new ModelExecutionException("Remover is not defined for property " + property);
-		}
-		List<?> list = (List<?>) invokeGetter(property);
-
-		if (list.contains(value)) {
-			list.remove(value);
-			firePropertyChange(property.getPropertyIdentifier(), value, null);
-			// Handle inverse property for new value
-			if (property.hasExplicitInverseProperty() && value != null) {
-				ProxyMethodHandler<Object> oppositeHandler = getModelFactory().getHandler(value);
-				if (oppositeHandler == null) {
-					// Should not happen
-					throw new ModelExecutionException(
-							"Opposite entity of " + property + " is of type " + value.getClass().getName() + " is not a ModelEntity.");
-				}
-				ModelProperty<? super Object> inverseProperty = property.getInverseProperty(oppositeHandler.getModelEntity());
-				switch (inverseProperty.getCardinality()) {
-					case SINGLE:
-						oppositeHandler.invokeSetter(inverseProperty, null);
-						break;
-					case LIST:
-						oppositeHandler.invokeRemover(inverseProperty, getObject());
-						break;
-					case MAP:
-						break;
-					default:
-						throw new ModelExecutionException("Invalid cardinality: " + inverseProperty.getCardinality());
-				}
-			}
-			if (property.isSerializable()) {
-				invokeSetModified(true);
-			}
-		}
-	}
-
-	private void invokeRemoverForMapCardinality(ModelProperty<? super I> property, Object value) {
-		if (property.getRemover() == null) {
-			throw new ModelExecutionException("Remover is not defined for property " + property);
-		}
-		// TODO implement this
-		throw new UnsupportedOperationException("Remover for MAP: not implemented yet");
 	}
 
 	private Object internallyInvokeFinder(@Nonnull Finder finder, Object[] args) throws ModelDefinitionException {
@@ -1698,6 +1246,51 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		throw new ModelDefinitionException("finder works only on maps and iterable");
 	}
 
+	private <T> T internallyInvokeGetter(ModelProperty<? super I> property, PropertyImplementation<? super I, T> propertyImplementation)
+			throws ModelDefinitionException {
+		return propertyImplementation.get();
+	}
+
+	private <T> void internallyInvokeSetter(ModelProperty<? super I> property, SettablePropertyImplementation<I, T> propertyImplementation,
+			T value, boolean trackAtomicEdit) throws ModelDefinitionException {
+		Object oldValue = invokeGetter(property);
+		if (trackAtomicEdit && getUndoManager() != null) {
+			if (oldValue != value) {
+				getUndoManager().addEdit(new SetCommand<>(getObject(), getModelEntity(), property, oldValue, value, getModelFactory()));
+			}
+		}
+		propertyImplementation.set(value);
+	}
+
+	private <T> void internallyInvokeAdder(ModelProperty<? super I> property, MultiplePropertyImplementation<I, T> propertyImplementation,
+			T value, int index, boolean trackAtomicEdit) throws ModelDefinitionException {
+		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
+		}
+		propertyImplementation.addTo(value, index);
+	}
+
+	private <T> void internallyInvokeRemover(ModelProperty<? super I> property, MultiplePropertyImplementation<I, T> propertyImplementation,
+			T value, boolean trackAtomicEdit) throws ModelDefinitionException {
+		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
+		}
+		propertyImplementation.removeFrom(value);
+	}
+
+	private <T> void internallyInvokeReindexer(ModelProperty<? super I> property,
+			ReindexableListPropertyImplementation<I, T> propertyImplementation, T value, int index, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
+		if (trackAtomicEdit && getUndoManager() != null) {
+			getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
+			getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
+		}
+		propertyImplementation.reindex(value, index);
+	}
+
 	private boolean isObjectAttributeEquals(Object o, String attribute, Object value) throws ModelDefinitionException {
 		ProxyMethodHandler<?> handler = getModelFactory().getHandler(o);
 		if (handler != null) {
@@ -1709,221 +1302,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 					"Found object of type " + o.getClass().getName() + " but is not an instanceof ProxyObject:\n" + o);
 		}
 	}
-
-	private static boolean isEqual(Object oldValue, Object newValue, Set<Object> seen) {
-		seen.add(oldValue);
-		if (oldValue == null) {
-			return newValue == null;
-		}
-		if (oldValue == newValue) {
-			return true;
-		}
-		if (oldValue instanceof AccessibleProxyObject && newValue instanceof AccessibleProxyObject) {
-			return ((AccessibleProxyObject) oldValue).equalsObject(newValue);
-		}
-		if (oldValue instanceof List && newValue instanceof List) {
-			List<Object> l1 = (List<Object>) oldValue;
-			List<Object> l2 = (List<Object>) newValue;
-			if (l1.size() != l2.size()) {
-				return false;
-			}
-			for (int i = 0; i < l1.size(); i++) {
-				Object v1 = l1.get(i);
-				Object v2 = l2.get(i);
-				if (seen.contains(v1))
-					continue;
-
-				if (!isEqual(v1, v2, seen)) {
-					return false;
-				}
-			}
-			return true;
-		}
-		return oldValue.equals(newValue);
-
-	}
-
-	/*private Object cloneObject() throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException
-		{
-		System.out.println("Tiens je clone "+getObject());
-
-		if (!(getObject() instanceof CloneableProxyObject)) throw new CloneNotSupportedException();
-
-		Hashtable<CloneableProxyObject,Object> clonedObjects = new Hashtable<>();
-		Object returned = performClone(clonedObjects);
-		for (CloneableProxyObject o : clonedObjects.keySet()) {
-			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(o);
-			clonedObjectHandler.finalizeClone(clonedObjects);
-		}
-
-		private Object appendToClonedObjects(Hashtable<CloneableProxyObject,Object> clonedObjects, CloneableProxyObject objectToCloneOrReference) throws ModelExecutionException, ModelDefinitionException
-		{
-			Object returned = clonedObjects.get(objectToCloneOrReference);
-			if (returned != null) return returned;
-			ProxyMethodHandler<?> clonedValueHandler = getModelFactory().getHandler(objectToCloneOrReference);
-			returned = clonedValueHandler.performClone(clonedObjects);
-			System.out.println("for "+objectToCloneOrReference+" clone is "+returned);
-			return returned;
-		}
-
-		private Object performClone(Hashtable<CloneableProxyObject,Object> clonedObjects) throws ModelExecutionException, ModelDefinitionException
-		{
-			System.out.println("******* performClone "+getObject());
-
-			Object returned = null;
-			try {
-				returned = getModelEntity().newInstance();
-			} catch (IllegalArgumentException e) {
-				throw new ModelExecutionException(e);
-			} catch (NoSuchMethodException e) {
-				throw new ModelExecutionException(e);
-			} catch (InstantiationException e) {
-				throw new ModelExecutionException(e);
-			} catch (IllegalAccessException e) {
-				throw new ModelExecutionException(e);
-			} catch (InvocationTargetException e) {
-				throw new ModelExecutionException(e);
-			}
-			clonedObjects.put((CloneableProxyObject)getObject(),returned);
-
-			ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(returned);
-			Enumeration<ModelProperty<? super I>> properties = getModelEntity().getProperties();
-			while(properties.hasMoreElements()) {
-				ModelProperty p = properties.nextElement();
-				switch (p.getCardinality()) {
-				case SINGLE:
-					Object singleValue = invokeGetter(p);
-					switch (p.getCloningStrategy()) {
-					case CLONE:
-						if (getModelFactory().isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
-							appendToClonedObjects(clonedObjects, (CloneableProxyObject)singleValue);
-						}
-						break;
-					case REFERENCE:
-						break;
-					case FACTORY:
-						break;
-					case IGNORE:
-						break;
-					}
-					break;
-				case LIST:
-					List values = (List)invokeGetter(p);
-					for (Object value : values) {
-						switch (p.getCloningStrategy()) {
-						case CLONE:
-							if (getModelFactory().isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
-								appendToClonedObjects(clonedObjects, (CloneableProxyObject)value);
-							}
-							break;
-						case REFERENCE:
-							break;
-						case FACTORY:
-							break;
-						case IGNORE:
-							break;
-						}
-					}
-					break;
-				default:
-					break;
-				}
-
-			}
-
-			return returned;
-		}
-
-		private Object finalizeClone(Hashtable<CloneableProxyObject,Object> clonedObjects) throws ModelExecutionException, ModelDefinitionException
-		{
-			Object clonedObject = clonedObjects.get(getObject());
-
-			System.out.println("Tiens je finalise le clone pour "+getObject()+" le clone c'est "+clonedObject);
-
-		ProxyMethodHandler<?> clonedObjectHandler = getModelFactory().getHandler(clonedObject);
-
-			Enumeration<ModelProperty<? super I>> properties = getModelEntity().getProperties();
-
-			while(properties.hasMoreElements()) {
-				ModelProperty p = properties.nextElement();
-				switch (p.getCardinality()) {
-				case SINGLE:
-					Object singleValue = invokeGetter(p);
-					switch (p.getCloningStrategy()) {
-					case CLONE:
-						if (getModelFactory().getStringEncoder().isConvertable(p.getType())) {
-							Object clonedValue = null;
-							try {
-								String clonedValueAsString = getModelFactory().getStringEncoder().toString(singleValue);
-								clonedValue = getModelFactory().getStringEncoder().fromString(p.getType(),clonedValueAsString);
-							} catch (InvalidDataException e) {
-								throw new ModelExecutionException(e);
-							}
-							clonedObjectHandler.invokeSetter(p,clonedValue);
-						}
-						else if (getModelFactory().isModelEntity(p.getType()) && singleValue instanceof CloneableProxyObject) {
-							Object clonedValue = clonedObjects.get(singleValue);
-							clonedObjectHandler.invokeSetter(p,clonedValue);
-						}
-						break;
-					case REFERENCE:
-						Object referenceValue = (singleValue != null ? clonedObjects.get(singleValue) : null);
-						if (referenceValue == null) referenceValue = singleValue;
-						clonedObjectHandler.invokeSetter(p,referenceValue);
-						break;
-					case FACTORY:
-						// TODO Not implemented
-						break;
-					case IGNORE:
-						break;
-					}
-					break;
-				case LIST:
-					List values = (List)invokeGetter(p);
-					System.out.println("values:"+values.hashCode()+" "+values);
-					List valuesToClone = new ArrayList<>(values);
-					for (Object value : valuesToClone) {
-						switch (p.getCloningStrategy()) {
-						case CLONE:
-							if (getModelFactory().getStringEncoder().isConvertable(p.getType())) {
-								Object clonedValue = null;
-								try {
-									String clonedValueAsString = getModelFactory().getStringEncoder().toString(value);
-									clonedValue = getModelFactory().getStringEncoder().fromString(p.getType(),clonedValueAsString);
-								} catch (InvalidDataException e) {
-									throw new ModelExecutionException(e);
-								}
-								List l = (List)clonedObjectHandler.invokeGetter(p);
-								System.out.println("l:"+l.hashCode()+" "+l);
-								clonedObjectHandler.invokeAdder(p,clonedValue);
-							}
-							else if (getModelFactory().isModelEntity(p.getType()) && value instanceof CloneableProxyObject) {
-								Object clonedValue = clonedObjects.get(value);
-								clonedObjectHandler.invokeAdder(p,clonedValue);
-							}
-							break;
-						case REFERENCE:
-							Object referenceValue = (value != null ? clonedObjects.get(value) : null);
-							if (referenceValue == null) referenceValue = value;
-							clonedObjectHandler.invokeAdder(p,referenceValue);
-							break;
-						case FACTORY:
-							// TODO Not implemented
-							break;
-						case IGNORE:
-							break;
-						}
-
-					}
-					break;
-				default:
-					break;
-				}
-
-			}
-
-			return clonedObject;
-		}*/
 
 	private Object acceptVisitor(PAMELAVisitor pamelaVisitor, VisitingStrategy visitingStrategy) {
 		switch (visitingStrategy) {
@@ -2147,280 +1525,8 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	 *            object to update with, which must be of same type
 	 * @return boolean indicating if update was successfull
 	 */
-	public boolean updateWith(Object obj) {
-
-		// System.out.println("updateWith between " + getObject() + " and " + obj);
-
-		if (getObject() == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		ProxyMethodHandler<?> oppositeObjectHandler = getModelFactory().getHandler(obj);
-		if (oppositeObjectHandler == null) {
-			// Other object is not handled by the same factory
-			return false;
-		}
-		if (getModelEntity() != oppositeObjectHandler.getModelEntity()) {
-			return false;
-		}
-
-		// System.out.println("Distance: " + getDistance(obj));
-
-		Iterator<ModelProperty<? super I>> properties;
-		try {
-			properties = getModelEntity().getProperties();
-		} catch (ModelDefinitionException e) {
-			return false;
-		}
-
-		// System.out.println("****** updateWith in " + getModelEntity());
-
-		while (properties.hasNext()) {
-			ModelProperty p = properties.next();
-
-			// System.out.println(" > " + p.getPropertyIdentifier() + " derived=" + p.isDerived());
-
-			if (!p.isDerived()) {
-				// System.out.println("[" + Thread.currentThread().getName() + "] Propriete " + p.getPropertyIdentifier());
-
-				switch (p.getCardinality()) {
-					case SINGLE:
-						Object singleValue = invokeGetter(p);
-						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
-						// System.out.println("[" + Thread.currentThread().getName() + "] Ici-1 avec " + p.getPropertyIdentifier());
-						if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
-							if (p.getUpdater() != null) {
-								invokeUpdater(p, oppositeValue);
-							}
-							else {
-								if (p.getAccessedEntity() != null && singleValue instanceof AccessibleProxyObject) {
-									// System.out
-									// .println("[" + Thread.currentThread().getName() + "] Ici-3 avec " + p.getPropertyIdentifier());
-									((AccessibleProxyObject) singleValue).updateWith(oppositeValue);
-								}
-								else {
-									// System.out
-									// .println("[" + Thread.currentThread().getName() + "] Ici-4 avec " + p.getPropertyIdentifier());
-									invokeSetter(p, oppositeValue);
-								}
-							}
-						}
-						break;
-					case LIST:
-						Map<Object, Integer> reindex = new LinkedHashMap<>();
-						List<Object> values = invokeGetterForListCardinality(p);
-						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
-						ListMatching matching = match(values, oppositeValues);
-						// System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
-						for (Matched m : matching.matchedList) {
-							// System.out.println("match " + m.idx1 + " with " + m.idx2);
-							Object o1 = values.get(m.idx1);
-							Object o2 = oppositeValues.get(m.idx2);
-							if (o1 instanceof AccessibleProxyObject) {
-								((AccessibleProxyObject) o1).updateWith(o2);
-							}
-							// Store desired index
-							reindex.put(o1, m.idx2);
-						}
-						// Do it in reverse order to avoid IndexOutOfBoundException !!!
-						for (int i = matching.removed.size() - 1; i >= 0; i--) {
-							Removed r = matching.removed.get(i);
-							Object removedObject = values.get(r.removedIndex);
-							invokeRemover(p, removedObject);
-						}
-						for (Added a : matching.added) {
-							Object addedObject = oppositeValues.get(a.originalIndex);
-							invokeAdder(p, addedObject);
-							// Store desired index
-							reindex.put(addedObject, a.insertedIndex);
-						}
-						// Now handle eventual reindexing of property values
-						for (Object o : reindex.keySet()) {
-							int idx = reindex.get(o);
-							if (values.indexOf(o) != idx) {
-								// System.out.println("Moving " + values.indexOf(o) + " to " + idx);
-								invokeReindexer(p, o, idx);
-							}
-						}
-
-						break;
-					case MAP:
-						System.err.println("Not implemented: MAP support for updateWith()");
-						break;
-					default:
-						break;
-				}
-			}
-		}
-
-		// System.out.println("ok, equals return true for " + getObject() + " and " + object);
-		return true;
-	}
-
-	/**
-	 * Compute the distance (double value between 0.0 and 1.0) between this object and an opposite object (which must be of right type!) If
-	 * two objects are equals, return 0. If two objects are totally differents, return 1.
-	 *
-	 * @param
-	 * @return
-	 */
-	public double getDistance(Object obj) {
-		if (getObject() == obj) {
-			return 0.0;
-		}
-		if (obj == null) {
-			return 1.0;
-		}
-		ProxyMethodHandler oppositeObjectHandler = getModelFactory().getHandler(obj);
-		if (oppositeObjectHandler == null) {
-			// Other object is not handled by the same factory
-			return 1.0;
-		}
-		if (getModelEntity() != oppositeObjectHandler.getModelEntity()) {
-			return 1.0;
-		}
-
-		Iterator<ModelProperty<? super I>> properties;
-		try {
-			properties = getModelEntity().getProperties();
-		} catch (ModelDefinitionException e) {
-			return 1.0;
-		}
-
-		double distance = 0.0;
-		double totalPonderation = 0.0;
-
-		while (properties.hasNext()) {
-			ModelProperty p = properties.next();
-
-			if (p.isSerializable()) {
-
-				double propertyPonderation = 1.0;
-
-				switch (p.getCardinality()) {
-					case SINGLE:
-						Object singleValue = invokeGetter(p);
-						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
-						propertyPonderation = getPropertyPonderation(p);
-						if (singleValue != null || oppositeValue != null) {
-							totalPonderation += propertyPonderation;
-							if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
-								double valueDistance = getDistanceBetweenValues(singleValue, oppositeValue);
-								distance = distance + valueDistance * propertyPonderation;
-								// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + "
-								// ponderation="
-								// + propertyPonderation);
-							}
-							else {
-								// System.out.println(
-								// "Property " + p.getPropertyIdentifier() + " distance=0.0" + " ponderation=" + propertyPonderation);
-							}
-						}
-						else {
-							// null values are ignored and not taken under account
-						}
-						break;
-					case LIST:
-						List<Object> values = invokeGetterForListCardinality(p);
-						List<Object> oppositeValues = oppositeObjectHandler.invokeGetterForListCardinality(p);
-						propertyPonderation = Math.max(values != null ? values.size() : 0,
-								oppositeValues != null ? oppositeValues.size() : 0);
-						if ((values != null && values.size() > 0) || (oppositeValues != null && oppositeValues.size() > 0)) {
-							totalPonderation += propertyPonderation;
-							if (!isEqual(values, oppositeValues, new HashSet<>())) {
-								double valueDistance = getDistanceBetweenListValues(values, oppositeValues);
-								distance = distance + valueDistance * propertyPonderation;
-								// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + "
-								// ponderation="
-								// + propertyPonderation);
-							}
-							else {
-								// System.out.println(
-								// "Property " + p.getPropertyIdentifier() + " distance=0.0" + " ponderation=" + propertyPonderation);
-							}
-						}
-						else {
-							// null values are ignored and not taken under account
-						}
-						break;
-					case MAP:
-						System.err.println("Not implemented: MAP support for getDistance()");
-						break;
-					default:
-						break;
-				}
-			}
-		}
-
-		if (totalPonderation > 0) {
-			return distance / totalPonderation;
-		}
-
-		return 0.0;
-	}
-
-	private static double getPropertyPonderation(ModelProperty<?> p) {
-		double propertyPonderation = 1.0;
-		if (TypeUtils.isPrimitive(p.getType()) || p.getType().equals(String.class) || p.isStringConvertable()) {
-			propertyPonderation = 1.0;
-		}
-		if (p.getAccessedEntity() != null) {
-			propertyPonderation = p.getAccessedEntity().getPropertiesSize();
-		}
-		// System.out.println("Ponderation for property: " + p.getPropertyIdentifier() + " " + propertyPonderation);
-		return propertyPonderation;
-	}
-
-	public double getDistanceBetweenValues(Object v1, Object v2) {
-		if (v1 == null) {
-			return (v2 == null ? 0.0 : 1.0);
-		}
-		if (v2 == null) {
-			return (v1 == null ? 0.0 : 1.0);
-		}
-		if (v1 == v2) {
-			return 0;
-		}
-		if (v1.equals(v2)) {
-			return 0;
-		}
-		if (TypeUtils.isPrimitive(v1.getClass()) || v1 instanceof String) {
-			String s1 = v1.toString();
-			String s2 = v2.toString();
-			return (double) StringUtils.levenshteinDistance(s1, s2) / (double) Math.max(s1.length(), s2.length());
-		}
-		if (v1 instanceof AccessibleProxyObject && v2 instanceof AccessibleProxyObject) {
-			ProxyMethodHandler<?> handler = getModelFactory().getHandler(v1);
-			return handler.getDistance(v2);
-		}
-		return 1.0;
-	}
-
-	private double getDistanceBetweenListValues(List<Object> l1, List<Object> l2) {
-		if (l1 == null) {
-			return (l2 == null ? 0.0 : 1.0);
-		}
-		if (l2 == null) {
-			return (l1 == null ? 0.0 : 1.0);
-		}
-		if (l1 == l2) {
-			return 0;
-		}
-		if (l1.equals(l2)) {
-			return 0;
-		}
-		ListMatching matching = match(l1, l2);
-		// System.out.println("Matching=" + matching);
-		double total = matching.added.size() + matching.removed.size() + matching.matchedList.size();
-		double score = matching.added.size() + matching.removed.size();
-		for (Matched m : matching.matchedList) {
-			Object o1 = l1.get(m.idx1);
-			Object o2 = l2.get(m.idx2);
-			score += getDistanceBetweenValues(o1, o2);
-		}
-		return score / total;
+	public boolean updateWith(I obj) {
+		return CompareAndMergeUtils.updateWith(this, obj);
 	}
 
 	/**
@@ -3073,16 +2179,21 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 
 	@Override
 	public String toString() {
-		return internallyInvokeToString();
+		try {
+			return internallyInvokeToString();
+		} catch (ModelDefinitionException e) {
+			e.printStackTrace();
+			return super.toString();
+		}
 	}
 
-	private String internallyInvokeToString() {
+	private String internallyInvokeToString() throws ModelDefinitionException {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getModelEntity().getImplementedInterface().getSimpleName() + "[");
-		List<String> variables = new ArrayList<>(values.keySet());
+		List<String> variables = new ArrayList<>(propertyImplementations.keySet());
 		Collections.sort(variables);
 		for (String var : variables) {
-			Object obj = values.get(var);
+			Object obj = propertyImplementations.get(var).get();
 			String s = null;
 			if (obj != null) {
 				if (!(obj instanceof ProxyObject)) {
@@ -3179,224 +2290,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 		}
 	}
 
-	static class Matched {
-		int idx1 = -1;
-		int idx2 = -1;
-
-		public Matched(int idx1, int idx2) {
-			super();
-			this.idx1 = idx1;
-			this.idx2 = idx2;
-		}
-
-		@Override
-		public String toString() {
-			return "Matched(" + idx1 + "," + idx2 + ")";
-		}
-	}
-
-	static class Added {
-		// Index of object in new list
-		int originalIndex = -1;
-		int insertedIndex = -1;
-
-		public Added(int originalIndex, int insertedIndex) {
-			super();
-			this.originalIndex = originalIndex;
-			this.insertedIndex = insertedIndex;
-		}
-
-		@Override
-		public String toString() {
-			return "Added(" + originalIndex + "," + insertedIndex + ")";
-		}
-	}
-
-	static class Removed {
-		// Index of object in initial list
-		int removedIndex = -1;
-
-		public Removed(int removedIndex) {
-			super();
-			this.removedIndex = removedIndex;
-		}
-
-		@Override
-		public String toString() {
-			return "Removed(" + removedIndex + ")";
-		}
-	}
-
-	static class ListMatching {
-		List<Removed> removed = new ArrayList<>();
-		List<Added> added = new ArrayList<>();
-		List<Matched> matchedList = new ArrayList<>();
-
-		public Matched getMatchedForList2Index(int index) {
-			for (Matched m : matchedList) {
-				if (m.idx2 == index) {
-					return m;
-				}
-			}
-			return null;
-		}
-
-		public Matched getMatchedForList1Index(int index) {
-			for (Matched m : matchedList) {
-				if (m.idx1 == index) {
-					return m;
-				}
-			}
-			return null;
-		}
-
-		@Override
-		public String toString() {
-			StringBuffer sb = new StringBuffer();
-			sb.append("Matched:" + matchedList);
-			sb.append(" Added:" + added);
-			sb.append(" Removed:" + removed);
-			return sb.toString();
-		}
-	}
-
-	/**
-	 * Compute optimal matching between two lists of objects
-	 *
-	 * @param l1
-	 * @param l2
-	 * @return
-	 */
-	private ListMatching match(List<Object> l1, List<Object> l2) {
-		ListMatching returned = bruteForceMatch(l1, l2);
-		return returned;
-	}
-
-	/**
-	 * A functional algorithm, but not really optimal
-	 *
-	 * @param l1
-	 * @param l2
-	 * @return
-	 */
-	private ListMatching bruteForceMatch(List<Object> l1, List<Object> l2) {
-		ListMatching returned = new ListMatching();
-
-		List<Object> list1 = new ArrayList<>(l1);
-		List<Object> list2 = new ArrayList<>(l2);
-
-		while (list1.size() > 0 && list2.size() > 0) {
-			Matched matched = getBestMatch(list1, list2);
-			if (matched == null) {
-				break;
-			}
-			Object o1 = list1.get(matched.idx1);
-			Object o2 = list2.get(matched.idx2);
-			matched.idx1 = l1.indexOf(list1.get(matched.idx1));
-			matched.idx2 = l2.indexOf(list2.get(matched.idx2));
-			// System.out.println(
-			// "Matched " + getModelFactory().stringRepresentation(o1) + " and " + getModelFactory().stringRepresentation(o2));
-			returned.matchedList.add(matched);
-			list1.remove(o1);
-			list2.remove(o2);
-		}
-
-		if (list1.size() > 0) {
-			// Removed
-			for (int i = 0; i < list1.size(); i++) {
-				returned.removed.add(new Removed(l1.indexOf(list1.get(i))));
-			}
-		}
-
-		if (list2.size() > 0) {
-			// Added
-			for (int i = 0; i < list2.size(); i++) {
-				int insertionIndex = -1;
-				int originalIndex = l2.indexOf(list2.get(i));
-				int current = originalIndex - 1;
-				while (insertionIndex == -1 && current >= 0) {
-					Matched m = returned.getMatchedForList2Index(current);
-					if (m != null) {
-						insertionIndex = m.idx1 + 1;
-					}
-					current--;
-				}
-				if (insertionIndex == -1) {
-					insertionIndex = 0;
-				}
-				returned.added.add(new Added(l2.indexOf(list2.get(i)), insertionIndex));
-			}
-		}
-
-		return returned;
-	}
-
-	/**
-	 * Retrieve best match between the two lists.<br>
-	 * Best match is represented by a couple of objects (one in each list) of exactely same type, whose distance is the minimal found.<br>
-	 * A minimal distance is required as a threshold (here 0.7)
-	 *
-	 * @param l1
-	 * @param l2
-	 * @return
-	 */
-	private Matched getBestMatch(List<Object> l1, List<Object> l2) {
-		Matched returned = null;
-		double bestDistance = 0.7; // Double.POSITIVE_INFINITY;
-		int m1 = 0, m2 = 0;
-		for (int i = 0; i < l1.size(); i++) {
-			Object o1 = l1.get(i);
-			for (int j = 0; j < l2.size(); j++) {
-				Object o2 = l2.get(j);
-				if (o1 instanceof AccessibleProxyObject && o2 instanceof AccessibleProxyObject) {
-					ProxyMethodHandler<?> h1 = getModelFactory().getHandler(o1);
-					ProxyMethodHandler<?> h2 = getModelFactory().getHandler(o1);
-					if (h1.getModelEntity() == h2.getModelEntity()) {
-						// Matching is possible only for exact same type
-						double d = getDistanceBetweenValues(o1, o2);
-						if (d < bestDistance) {
-							returned = new Matched(i, j);
-							bestDistance = d;
-							m1 = i;
-							m2 = j;
-						}
-					}
-				}
-			}
-		}
-		return returned;
-	}
-
-	/**
-	 * Stupid implementation, do not use it in production
-	 *
-	 * @param l1
-	 * @param l2
-	 * @return
-	 */
-	private ListMatching stupidMatch(List<Object> l1, List<Object> l2) {
-		System.out.println("On matche les deux listes " + l1 + " et " + l2);
-		ListMatching returned = new ListMatching();
-		if (l1.size() <= l2.size()) {
-			for (int i = 0; i < l1.size(); i++) {
-				returned.matchedList.add(new Matched(i, i));
-			}
-			for (int i = l1.size(); i < l2.size(); i++) {
-				returned.added.add(new Added(i, i));
-			}
-		}
-		else if (l1.size() > l2.size()) {
-			for (int i = 0; i < l1.size(); i++) {
-				returned.matchedList.add(new Matched(i, i));
-			}
-			for (int i = l2.size(); i < l1.size(); i++) {
-				returned.removed.add(new Removed(i));
-			}
-		}
-		System.out.println("Return " + returned);
-		return returned;
-	}
-
 	private boolean enableAssertionChecking = false;
 
 	private void invokeEnableAssertionChecking() {
@@ -3406,9 +2299,6 @@ public class ProxyMethodHandler<I> implements MethodHandler, PropertyChangeListe
 	private void invokeDisableAssertionChecking() {
 		this.enableAssertionChecking = false;
 	}
-
-	private Stack<Method> assertionCheckingStack = new Stack<>();
-	private Map<Method, Map<String, Object>> historyValues;
 
 	public Stack<Method> getAssertionCheckingStack() {
 		return assertionCheckingStack;
