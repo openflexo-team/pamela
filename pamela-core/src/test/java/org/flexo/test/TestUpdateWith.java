@@ -18,6 +18,7 @@ import org.openflexo.model8.ConceptC1;
 import org.openflexo.model8.ConceptC2;
 import org.openflexo.pamela.ModelContextLibrary;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.CompareAndMergeUtils;
 import org.openflexo.pamela.factory.ModelFactory;
 
 /**
@@ -72,7 +73,7 @@ public class TestUpdateWith {
 	}
 
 	private static double getDistance(ModelFactory factory, Object o1, Object o2) {
-		return factory.getHandler(o1).getDistance(o2);
+		return CompareAndMergeUtils.getDistance(factory, o1, o2);
 	}
 
 	@Test
