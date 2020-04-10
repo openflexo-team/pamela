@@ -1,7 +1,7 @@
 package org.openflexo.pamela.securitypatterns;
 
 import org.junit.Test;
-import org.openflexo.model.AbstractPAMELATest;
+import junit.framework.TestCase;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
@@ -9,7 +9,7 @@ import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternD
 import org.openflexo.pamela.securitypatterns.modelAuthenticator.IAuthenticator;
 import org.openflexo.pamela.securitypatterns.modelAuthenticator.Subject;
 
-public class TestAuthenticator extends AbstractPAMELATest {
+public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testPatternAnalysis() throws Exception {

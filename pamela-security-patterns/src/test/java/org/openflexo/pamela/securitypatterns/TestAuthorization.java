@@ -2,7 +2,7 @@ package org.openflexo.pamela.securitypatterns;
 
 import java.util.ArrayList;
 
-import org.openflexo.model.AbstractPAMELATest;
+import junit.framework.TestCase;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelContextLibrary;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
@@ -19,7 +19,7 @@ import org.openflexo.pamela.securitypatterns.modelAuthorization.PermissionChecke
 import org.openflexo.pamela.securitypatterns.modelAuthorization.Resource;
 import org.openflexo.pamela.securitypatterns.modelAuthorization.Subject;
 
-public class TestAuthorization extends AbstractPAMELATest {
+public class TestAuthorization extends TestCase {
 
 	public void testPatternAnalysis() throws Exception {
 		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
