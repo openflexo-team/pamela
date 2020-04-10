@@ -40,6 +40,7 @@
 package org.openflexo.pamela;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,6 +62,7 @@ import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.patterns.DeclarePatterns;
 import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.PatternDefinition;
+import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.toolbox.StringUtils;
 
@@ -170,14 +172,53 @@ public class ModelContext {
 		}
 	}
 
-	private List<AbstractPatternFactory<?>> patternFactories = new ArrayList<>();
-
-	public void notifiedNewInstance(Object newInstance) {
+	public <P extends PatternDefinition> List<P> getPatternDefinitions(Class<P> patternDefinitionClass) {
+		List<P> returned = new ArrayList<>();
 		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
 			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
-				patternDefinition.notifiedNewInstance(newInstance);
+				if (patternDefinitionClass.isAssignableFrom(patternDefinition.getClass())) {
+					returned.add((P) patternDefinition);
+				}
 			}
 		}
+		return returned;
+	}
+
+	private List<AbstractPatternFactory<?>> patternFactories = new ArrayList<>();
+	private Map<Object, Set<PatternInstance<?>>> patternInstances = new HashMap<>();
+
+	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
+		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
+			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
+				patternDefinition.notifiedNewInstance(newInstance, modelEntity);
+			}
+		}
+	}
+
+	public boolean isMethodInvolvedInPattern(Method method) {
+		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
+			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
+				if (patternDefinition.isMethodInvolvedInPattern(method)) {
+					return true;
+				}
+			}
+		}
+		return false;
+
+	}
+
+	public void registerStakeHolderForPatternInstance(Object stakeHolder, String role, PatternInstance<?> patternInstance) {
+		Set<PatternInstance<?>> s = patternInstances.get(stakeHolder);
+		if (s == null) {
+			s = new HashSet<>();
+			patternInstances.put(stakeHolder, s);
+		}
+		System.out.println("Registering " + stakeHolder + " as " + role + " for pattern instance " + patternInstance);
+		s.add(patternInstance);
+	}
+
+	public Set<PatternInstance<?>> getPatternInstances(Object stakeholder) {
+		return patternInstances.get(stakeholder);
 	}
 
 	@Deprecated

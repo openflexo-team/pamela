@@ -18,24 +18,24 @@ import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequestAu
 @ImplementationClass(IAuthenticator.AuthenticatorImp.class)
 @Authenticator(patternID = Subject.PATTERN_ID)
 public interface IAuthenticator {
-	String LIST = "list";
+	String USERS = "users";
 	String ID = "id";
 
 	@Initializer
 	default void init() {
-		setList(new ArrayList<>());
+		setUsers(new ArrayList<>());
 	}
 
-	@Getter(value = LIST, cardinality = Getter.Cardinality.LIST)
-	List<String> getList();
+	@Getter(value = USERS, cardinality = Getter.Cardinality.LIST)
+	List<String> getUsers();
 
-	@Setter(LIST)
-	void setList(List<String> val);
+	@Setter(USERS)
+	void setUsers(List<String> users);
 
-	@Adder(LIST)
+	@Adder(USERS)
 	void addUser(String val);
 
-	@Remover(LIST)
+	@Remover(USERS)
 	void removeUser(String val);
 
 	@RequestAuthentication(patternID = Subject.PATTERN_ID)
@@ -57,7 +57,7 @@ public interface IAuthenticator {
 		}
 
 		private boolean check(String id) {
-			for (String userID : this.getList()) {
+			for (String userID : this.getUsers()) {
 				if (userID.compareTo(id) == 0)
 					return true;
 			}

@@ -1,85 +1,79 @@
 package org.openflexo.pamela.securitypatterns;
 
-import org.junit.Test;
+import java.util.ArrayList;
+
 import org.openflexo.model.AbstractPAMELATest;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternDefinition;
+import org.openflexo.pamela.patterns.PatternClassWrapper;
+import org.openflexo.pamela.patterns.PatternContext;
+import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPattern;
+import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorSubjectEntity;
 import org.openflexo.pamela.securitypatterns.modelAuthenticator.IAuthenticator;
 import org.openflexo.pamela.securitypatterns.modelAuthenticator.Subject;
 
-public class TestAuthenticator extends AbstractPAMELATest {
+@Deprecated
+public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 
-	@Test
 	public void testPatternAnalysis() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
-		assertEquals(1, context.getPatternDefinitions(AuthenticatorPatternDefinition.class).size());
-		AuthenticatorPatternDefinition patternDefinition = context.getPatternDefinitions(AuthenticatorPatternDefinition.class).get(0);
-		assertEquals(Subject.PATTERN_ID, patternDefinition.getIdentifier());
-
-		assertEquals(IAuthenticator.class, patternDefinition.authenticatorModelEntity.getImplementedInterface());
-		assertEquals(IAuthenticator.class.getMethod("request", String.class), patternDefinition.requestAuthentificationMethod);
-
-		assertEquals(Subject.class, patternDefinition.subjectModelEntity.getImplementedInterface());
-		assertEquals(Subject.class.getMethod("getAuthInfo"), patternDefinition.authentificationInfoMethod);
-		assertEquals(Subject.class.getMethod("setIdProof", int.class), patternDefinition.proofOfIdentitySetterMethod);
-		assertEquals(Subject.class.getMethod("getManager"), patternDefinition.authenticatorGetterMethod);
-		assertEquals(Subject.class.getMethod("authenticate"), patternDefinition.authenticateMethod);
-
+		PatternContext patternContext = context.getPatternContext();
+		assertNotNull(patternContext);
+		assertNotNull(patternContext.getPatterns().get(Subject.PATTERN_ID));
+		AuthenticatorPattern pattern = (AuthenticatorPattern) patternContext.getPatterns().get(Subject.PATTERN_ID);
+		assertEquals(IAuthenticator.class, pattern.getAuthenticator().getBaseClass());
+		assertEquals(IAuthenticator.class.getMethod("request", String.class), pattern.getAuthenticator().getRequestMethod());
+		assertTrue(pattern.getSubjects().containsKey(Subject.class) && pattern.getSubjects().size() == 1);
+		AuthenticatorSubjectEntity subject = pattern.getSubjects().get(Subject.class);
+		assertTrue(subject.getArgs().length == 1 && subject.getArgs()[0].equals(Subject.class.getMethod("getAuthInfo")));
+		assertTrue(subject.getAuthenticateMethods().size() == 1
+				&& subject.getAuthenticateMethods().get(0).equals(Subject.class.getMethod("authenticate")));
+		assertEquals(Subject.class, subject.getBaseClass());
+		assertEquals(Subject.class.getMethod("setIdProof", int.class), subject.getIdProofSetter());
 	}
 
-	@Test
 	public void testAuthenticateValid() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, "id1");
+		Subject subject = factory.newInstance(Subject.class, manager, "id1");
 		subject.setManager(manager);
 		manager.addUser(subject.getAuthInfo());
 		subject.authenticate();
 		assertEquals(subject.getIDProof(), manager.generateFromAuthInfo(subject.getAuthInfo()));
-		System.out.println("IDProof=" + subject.getIDProof());
 	}
 
-	@Test
-	public void testRequiresAuthentication() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
-		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, "id1");
-		subject.setManager(manager);
-		manager.addUser(subject.getAuthInfo());
-		// We haven't call the authenticate() method, but this method is tagged with "@RequiresAuthentication", thus this call the
-		// authenticate() method
-		subject.thisMethodRequiresToBeAuthenticated();
-		assertEquals(subject.getIDProof(), manager.generateFromAuthInfo(subject.getAuthInfo()));
-	}
-
-	@Test
 	public void testAuthenticatorInvalidReturn() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, "id");
+		Subject subject = factory.newInstance(Subject.class, manager, "id");
 		subject.setManager(manager);
 		subject.authenticate();
 		assertEquals(subject.getIDProof(), manager.getDefaultToken());
 	}
 
-	@Test
 	public void testInstanceDiscovery() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
+		assertTrue(context.getPatternContext().getKnownInstances().isEmpty());
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		assertNull(context.getPatternInstances(manager));
-		Subject subject = factory.newInstance(Subject.class, "id");
-		assertNull(context.getPatternInstances(manager));
-		assertEquals(1, context.getPatternInstances(subject).size());
-		subject.setManager(manager);
-		assertEquals(1, context.getPatternInstances(manager).size());
-		assertEquals(1, context.getPatternInstances(subject).size());
-		assertSame(context.getPatternInstances(manager).iterator().next(), context.getPatternInstances(subject).iterator().next());
+		assertTrue(context.getPatternContext().getKnownInstances().isEmpty());
+		manager.getDefaultToken();
+		assertTrue(context.getPatternContext().getKnownInstances().containsKey(manager));
+		assertEquals(1, context.getPatternContext().getKnownInstances().size());
+		Subject subject = factory.newInstance(Subject.class, manager, "id");
+		assertEquals(1, context.getPatternContext().getKnownInstances().size());
+		subject.getAuthInfo();
+		assertTrue(context.getPatternContext().getKnownInstances().containsKey(subject));
+		assertEquals(2, context.getPatternContext().getKnownInstances().size());
+		ArrayList<PatternClassWrapper> patternList = context.getPatternContext().getKnownInstances().get(subject);
+		assertEquals(1, patternList.size());
+		AuthenticatorPattern pattern = (AuthenticatorPattern) patternList.get(0).getPattern();
+		assertTrue(pattern.getSubjects().containsKey(patternList.get(0).getKlass()));
+		AuthenticatorSubjectEntity authenticatorSubjectEntity = pattern.getSubjects().get(patternList.get(0).getKlass());
+		assertTrue(authenticatorSubjectEntity.getInstances().size() == 1 && authenticatorSubjectEntity.getInstances().containsKey(subject));
 	}
 
 	public void testIndirectInstanceDiscovery() throws Exception {

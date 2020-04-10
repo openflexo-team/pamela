@@ -1,6 +1,7 @@
 package org.openflexo.pamela.securitypatterns.modelAuthenticator;
 
 import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.ImplementationClass;
 import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.annotations.Setter;
@@ -10,8 +11,10 @@ import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authentic
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticatorGetter;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticatorSubject;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.ProofOfIdentitySetter;
+import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequiresAuthentication;
 
 @ModelEntity
+@ImplementationClass(Subject.SubjectImp.class)
 @AuthenticatorSubject(patternID = Subject.PATTERN_ID)
 public interface Subject extends AccessibleProxyObject {
 	String PATTERN_ID = "patternID";
@@ -20,8 +23,7 @@ public interface Subject extends AccessibleProxyObject {
 	String ID_PROOF = "id_proof";
 
 	@Initializer
-	default void init(IAuthenticator manager, String id) {
-		setManager(manager);
+	default void init(String id) {
 		setAuthInfo(id);
 	}
 
@@ -49,4 +51,14 @@ public interface Subject extends AccessibleProxyObject {
 	@AuthenticateMethod(patternID = PATTERN_ID)
 	void authenticate();
 
+	@RequiresAuthentication
+	public void thisMethodRequiresToBeAuthenticated();
+
+	abstract class SubjectImp implements Subject {
+
+		@Override
+		public void thisMethodRequiresToBeAuthenticated() {
+			System.out.println("I need to be authenticated to execute this");
+		}
+	}
 }

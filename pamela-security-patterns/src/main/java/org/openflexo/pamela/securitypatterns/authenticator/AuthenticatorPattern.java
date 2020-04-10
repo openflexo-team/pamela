@@ -31,6 +31,7 @@ import org.openflexo.pamela.securitypatterns.authenticator.exceptions.Inconsiste
  *
  * @author C. SILVA
  */
+@Deprecated
 public class AuthenticatorPattern extends AbstractPattern {
 	private final HashMap<Class, AuthenticatorSubjectEntity> subjects;
 	private AuthenticatorEntity authenticator;

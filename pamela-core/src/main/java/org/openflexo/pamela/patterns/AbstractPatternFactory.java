@@ -11,9 +11,11 @@ import org.openflexo.pamela.ModelEntity;
 public abstract class AbstractPatternFactory<P extends PatternDefinition> {
 
 	private Map<String, P> patternDefinitions;
+	private ModelContext modelContext;
 
 	public AbstractPatternFactory(ModelContext modelContext) {
 		patternDefinitions = new HashMap<>();
+		this.modelContext = modelContext;
 	}
 
 	private Class<P> getPatternDefinitionClass() {
@@ -24,8 +26,8 @@ public abstract class AbstractPatternFactory<P extends PatternDefinition> {
 		P returned = patternDefinitions.get(patternId);
 		if (returned == null && createWhenNonExistant) {
 			try {
-				Constructor<P> constructor = getPatternDefinitionClass().getConstructor(String.class);
-				returned = constructor.newInstance(patternId);
+				Constructor<P> constructor = getPatternDefinitionClass().getConstructor(String.class, ModelContext.class);
+				returned = constructor.newInstance(patternId, modelContext);
 				patternDefinitions.put(patternId, returned);
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -98,8 +98,8 @@ import org.openflexo.pamela.jml.JMLEnsures;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.jml.JMLRequires;
 import org.openflexo.pamela.jml.SpecificationsViolationException;
-import org.openflexo.pamela.patterns.PatternClassWrapper;
 import org.openflexo.pamela.patterns.PatternContext;
+import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.undo.AddCommand;
 import org.openflexo.pamela.undo.CreateCommand;
@@ -254,14 +254,25 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			assertionChecking = checkOnEntry(method, args);
 		}
 
-		ArrayList<PatternClassWrapper> patternsOfInterest = patternContext.getRelatedPatternsFromInstance(self);
+		Set<PatternInstance<?>> patternInstances = getModelFactory().getModelContext().getPatternInstances(self);
+		if (patternInstances != null) {
+			for (PatternInstance<?> patternInstance : patternInstances) {
+				ReturnWrapper returnWrapper = patternInstance.processMethodBeforeInvoke(self, method, args);
+				if (returnWrapper != null && !returnWrapper.mustContinue()) {
+					keepGoing = false;
+					invoke = returnWrapper.getReturnValue();
+				}
+			}
+		}
+
+		/*ArrayList<PatternClassWrapper> patternsOfInterest = patternContext.getRelatedPatternsFromInstance(self);
 		for (PatternClassWrapper wrapper : patternsOfInterest) {
 			ReturnWrapper returnWrapper = wrapper.getPattern().processMethodBeforeInvoke(self, method, wrapper.getKlass(), args);
 			if (!returnWrapper.mustContinue()) {
 				keepGoing = false;
 				invoke = returnWrapper.getReturnValue();
 			}
-		}
+		}*/
 
 		if (keepGoing) {
 			invoke = _invoke(self, method, proceed, args);
@@ -271,9 +282,9 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			}
 		}
 
-		for (PatternClassWrapper wrapper : patternsOfInterest) {
+		/*for (PatternClassWrapper wrapper : patternsOfInterest) {
 			wrapper.getPattern().processMethodAfterInvoke(self, method, wrapper.getKlass(), invoke, args);
-		}
+		}*/
 
 		if (enableAssertionChecking && assertionChecking) {
 			checkOnExit(method, args);
@@ -890,7 +901,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 						}
 					}
 				}
-				*/
+				 */
 			}
 		}
 
