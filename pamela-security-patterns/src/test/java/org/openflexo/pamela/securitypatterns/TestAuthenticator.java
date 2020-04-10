@@ -1,13 +1,14 @@
 package org.openflexo.pamela.securitypatterns;
 
 import org.junit.Test;
-import junit.framework.TestCase;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternDefinition;
 import org.openflexo.pamela.securitypatterns.modelAuthenticator.IAuthenticator;
 import org.openflexo.pamela.securitypatterns.modelAuthenticator.Subject;
+
+import junit.framework.TestCase;
 
 public class TestAuthenticator extends TestCase {
 
@@ -82,18 +83,7 @@ public class TestAuthenticator extends TestCase {
 		assertSame(context.getPatternInstances(manager).iterator().next(), context.getPatternInstances(subject).iterator().next());
 	}
 
-	public void testIndirectInstanceDiscovery() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
-		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, manager, "id");
-		assertEquals(0, context.getPatternContext().getKnownInstances().size());
-		subject.authenticate();
-		assertEquals(2, context.getPatternContext().getKnownInstances().size());
-		assertTrue(context.getPatternContext().getKnownInstances().containsKey(manager));
-		assertTrue(context.getPatternContext().getKnownInstances().containsKey(subject));
-	}
-
+	@Test
 	public void testAuthInfoUniqueness() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);

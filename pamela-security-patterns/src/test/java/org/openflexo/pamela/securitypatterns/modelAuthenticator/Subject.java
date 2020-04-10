@@ -23,6 +23,12 @@ public interface Subject extends AccessibleProxyObject {
 	String ID_PROOF = "id_proof";
 
 	@Initializer
+	default void init(IAuthenticator authenticator, String id) {
+		setManager(authenticator);
+		setAuthInfo(id);
+	}
+
+	@Initializer
 	default void init(String id) {
 		setAuthInfo(id);
 	}
