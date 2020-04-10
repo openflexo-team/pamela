@@ -39,6 +39,7 @@
 
 package org.openflexo.pamela;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -55,7 +57,11 @@ import javax.annotation.Nonnull;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.patterns.AbstractPatternFactory;
+import org.openflexo.pamela.patterns.DeclarePatterns;
 import org.openflexo.pamela.patterns.PatternContext;
+import org.openflexo.pamela.patterns.PatternDefinition;
+import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.toolbox.StringUtils;
 
 public class ModelContext {
@@ -139,8 +145,42 @@ public class ModelContext {
 			modelEntity.finalizeImport();
 			this.patternContext.attachClass(modelEntity.getImplementedInterface());
 		}
+
+		ServiceLoader<PatternLibrary> loader = ServiceLoader.load(PatternLibrary.class);
+
+		System.out.println("je charge maintenant les PatternLibrary");
+		for (PatternLibrary patternLibrary : loader) {
+			System.out.println("Found PatternLibrary: " + patternLibrary);
+			DeclarePatterns declarePatterns = patternLibrary.getClass().getAnnotation(DeclarePatterns.class);
+			for (Class<? extends AbstractPatternFactory<?>> factoryClass : declarePatterns.value()) {
+				System.out.println("Analysing pattern: " + factoryClass);
+				try {
+					Constructor<? extends AbstractPatternFactory<?>> constructor = factoryClass.getConstructor(ModelContext.class);
+					AbstractPatternFactory<?> patternFactory = constructor.newInstance(this);
+					patternFactories.add(patternFactory);
+					for (ModelEntity<?> modelEntity : modelEntities.values()) {
+						patternFactory.discoverEntity(modelEntity);
+					}
+					System.out.println("patternDefinitions= " + patternFactory.getPatternDefinitions());
+				} catch (Exception e) {
+					e.printStackTrace();
+					continue;
+				}
+			}
+		}
 	}
 
+	private List<AbstractPatternFactory<?>> patternFactories = new ArrayList<>();
+
+	public void notifiedNewInstance(Object newInstance) {
+		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
+			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
+				patternDefinition.notifiedNewInstance(newInstance);
+			}
+		}
+	}
+
+	@Deprecated
 	public PatternContext getPatternContext() { // CAINE
 		return patternContext;
 	}

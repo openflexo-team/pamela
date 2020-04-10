@@ -1,0 +1,5 @@
+dependencies {
+  compile project(':pamela-core')
+
+  testCompile testUtils()
+}

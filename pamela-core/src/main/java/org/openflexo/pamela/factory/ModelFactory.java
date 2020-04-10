@@ -125,12 +125,11 @@ public class ModelFactory implements IObjectGraphFactory {
 						return true;
 					}
 
-					if (context.getPatternContext().getRelatedPatternsFromClass(aModelEntity.getImplementedInterface()).size() > 0){
+					if (context.getPatternContext().getRelatedPatternsFromClass(aModelEntity.getImplementedInterface()).size() > 0) {
 						try {
 							aModelEntity.getImplementedInterface().getMethod(method.getName(), method.getParameterTypes());
 							return true;
-						}
-						catch (NoSuchMethodException e){
+						} catch (NoSuchMethodException e) {
 						}
 					}
 
@@ -286,6 +285,7 @@ public class ModelFactory implements IObjectGraphFactory {
 				}
 			}
 			this.getModelContext().getPatternContext().leavingConstructor();
+			getModelContext().notifiedNewInstance(returned);
 			return returned;
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
