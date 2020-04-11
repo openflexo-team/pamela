@@ -138,24 +138,28 @@ public class ModelContext {
 		appendEntity(modelEntity, new HashSet<>());
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
-		finalizeImport();
+		discoverPatterns();
 	}
 
-	private void finalizeImport() throws ModelDefinitionException {
-		this.patternContext = new PatternContext(this);
+	/**
+	 * Browse the {@link ModelEntity} code to identify {@link PatternDefinition}
+	 * 
+	 * @throws ModelDefinitionException
+	 */
+	private void discoverPatterns() throws ModelDefinitionException {
+		/*this.patternContext = new PatternContext(this);
 		for (ModelEntity<?> modelEntity : modelEntities.values()) {
 			modelEntity.finalizeImport();
 			this.patternContext.attachClass(modelEntity.getImplementedInterface());
-		}
+		}*/
 
 		ServiceLoader<PatternLibrary> loader = ServiceLoader.load(PatternLibrary.class);
 
-		System.out.println("je charge maintenant les PatternLibrary");
 		for (PatternLibrary patternLibrary : loader) {
-			System.out.println("Found PatternLibrary: " + patternLibrary);
+			// System.out.println("Found PatternLibrary: " + patternLibrary);
 			DeclarePatterns declarePatterns = patternLibrary.getClass().getAnnotation(DeclarePatterns.class);
 			for (Class<? extends AbstractPatternFactory<?>> factoryClass : declarePatterns.value()) {
-				System.out.println("Analysing pattern: " + factoryClass);
+				// System.out.println("Analysing pattern: " + factoryClass);
 				try {
 					Constructor<? extends AbstractPatternFactory<?>> constructor = factoryClass.getConstructor(ModelContext.class);
 					AbstractPatternFactory<?> patternFactory = constructor.newInstance(this);
@@ -163,7 +167,10 @@ public class ModelContext {
 					for (ModelEntity<?> modelEntity : modelEntities.values()) {
 						patternFactory.discoverEntity(modelEntity);
 					}
-					System.out.println("patternDefinitions= " + patternFactory.getPatternDefinitions());
+					// System.out.println("patternDefinitions= " + patternFactory.getPatternDefinitions());
+					for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
+						patternDefinition.finalizeDefinition();
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 					continue;
@@ -186,6 +193,7 @@ public class ModelContext {
 
 	private List<AbstractPatternFactory<?>> patternFactories = new ArrayList<>();
 	private Map<Object, Set<PatternInstance<?>>> patternInstances = new HashMap<>();
+	private Map<PatternDefinition, Set<PatternInstance<?>>> registeredPatternInstances = new HashMap<>();
 
 	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
 		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
@@ -207,6 +215,17 @@ public class ModelContext {
 
 	}
 
+	public <P extends PatternDefinition> void registerPatternInstance(PatternInstance<P> patternInstance) {
+		P definition = patternInstance.getPatternDefinition();
+		Set<PatternInstance<?>> s = registeredPatternInstances.get(definition);
+		if (s == null) {
+			s = new HashSet<>();
+			registeredPatternInstances.put(definition, s);
+		}
+		System.out.println("Registering " + patternInstance);
+		s.add(patternInstance);
+	}
+
 	public void registerStakeHolderForPatternInstance(Object stakeHolder, String role, PatternInstance<?> patternInstance) {
 		Set<PatternInstance<?>> s = patternInstances.get(stakeHolder);
 		if (s == null) {
@@ -219,6 +238,10 @@ public class ModelContext {
 
 	public Set<PatternInstance<?>> getPatternInstances(Object stakeholder) {
 		return patternInstances.get(stakeholder);
+	}
+
+	public <P extends PatternDefinition> Set<PatternInstance<P>> getPatternInstances(P patternDefinition) {
+		return (Set) registeredPatternInstances.get(patternDefinition);
 	}
 
 	@Deprecated
@@ -249,7 +272,7 @@ public class ModelContext {
 		}
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
-		finalizeImport();
+		discoverPatterns();
 	}
 
 	public ModelContext(List<Class<?>> baseClasses) throws ModelDefinitionException {

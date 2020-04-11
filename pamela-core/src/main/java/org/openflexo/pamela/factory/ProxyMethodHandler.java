@@ -257,10 +257,15 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		Set<PatternInstance<?>> patternInstances = getModelFactory().getModelContext().getPatternInstances(self);
 		if (patternInstances != null) {
 			for (PatternInstance<?> patternInstance : patternInstances) {
-				ReturnWrapper returnWrapper = patternInstance.processMethodBeforeInvoke(self, method, args);
-				if (returnWrapper != null && !returnWrapper.mustContinue()) {
-					keepGoing = false;
-					invoke = returnWrapper.getReturnValue();
+				try {
+					ReturnWrapper returnWrapper = patternInstance.processMethodBeforeInvoke(self, method, args);
+					if (returnWrapper != null && !returnWrapper.mustContinue()) {
+						keepGoing = false;
+						invoke = returnWrapper.getReturnValue();
+					}
+				} catch (InvocationTargetException e) {
+					e.getTargetException().printStackTrace();
+					throw e.getTargetException();
 				}
 			}
 		}
@@ -279,6 +284,17 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			if (method.getReturnType().isPrimitive() && invoke == null) {
 				// Avoids an NPE
 				invoke = Defaults.defaultValue(method.getReturnType());
+			}
+		}
+
+		if (patternInstances != null) {
+			for (PatternInstance<?> patternInstance : patternInstances) {
+				try {
+					patternInstance.processMethodAfterInvoke(self, method, invoke, args);
+				} catch (InvocationTargetException e) {
+					e.getTargetException().printStackTrace();
+					throw e.getTargetException();
+				}
 			}
 		}
 

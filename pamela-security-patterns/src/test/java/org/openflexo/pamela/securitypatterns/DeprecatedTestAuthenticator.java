@@ -1,22 +1,11 @@
 package org.openflexo.pamela.securitypatterns;
 
-import java.util.ArrayList;
-
 import org.openflexo.model.AbstractPAMELATest;
-import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.patterns.PatternClassWrapper;
-import org.openflexo.pamela.patterns.PatternContext;
-import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPattern;
-import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorSubjectEntity;
-import org.openflexo.pamela.securitypatterns.modelAuthenticator.IAuthenticator;
-import org.openflexo.pamela.securitypatterns.modelAuthenticator.Subject;
 
 @Deprecated
 public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 
-	public void testPatternAnalysis() throws Exception {
+	/*public void testPatternAnalysis() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		PatternContext patternContext = context.getPatternContext();
 		assertNotNull(patternContext);
@@ -32,7 +21,7 @@ public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 		assertEquals(Subject.class, subject.getBaseClass());
 		assertEquals(Subject.class.getMethod("setIdProof", int.class), subject.getIdProofSetter());
 	}
-
+	
 	public void testAuthenticateValid() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -43,7 +32,7 @@ public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 		subject.authenticate();
 		assertEquals(subject.getIDProof(), manager.generateFromAuthInfo(subject.getAuthInfo()));
 	}
-
+	
 	public void testAuthenticatorInvalidReturn() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -53,7 +42,7 @@ public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 		subject.authenticate();
 		assertEquals(subject.getIDProof(), manager.getDefaultToken());
 	}
-
+	
 	public void testInstanceDiscovery() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -75,7 +64,7 @@ public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 		AuthenticatorSubjectEntity authenticatorSubjectEntity = pattern.getSubjects().get(patternList.get(0).getKlass());
 		assertTrue(authenticatorSubjectEntity.getInstances().size() == 1 && authenticatorSubjectEntity.getInstances().containsKey(subject));
 	}
-
+	
 	public void testIndirectInstanceDiscovery() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -87,7 +76,7 @@ public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 		assertTrue(context.getPatternContext().getKnownInstances().containsKey(manager));
 		assertTrue(context.getPatternContext().getKnownInstances().containsKey(subject));
 	}
-
+	
 	public void testAuthInfoUniqueness() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -107,7 +96,7 @@ public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 			}
 		}
 	}
-
+	
 	public void testAuthenticatorInvariant() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -124,7 +113,7 @@ public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 			}
 		}
 	}
-
+	
 	public void testAuthInfoInvariant() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -141,7 +130,7 @@ public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 			}
 		}
 	}
-
+	
 	public void testIdProofForgery() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -160,7 +149,7 @@ public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 			}
 		}
 	}
-
+	
 	public void testInvariantValidityWithDynamicPrivilegeRules() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -170,5 +159,5 @@ public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
 		manager.addUser(subject.getAuthInfo());
 		subject.getAuthInfo();
 		subject.authenticate();
-	}
+	}*/
 }

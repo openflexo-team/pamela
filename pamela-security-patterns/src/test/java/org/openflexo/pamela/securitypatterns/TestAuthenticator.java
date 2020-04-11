@@ -89,21 +89,19 @@ public class TestAuthenticator extends TestCase {
 		ModelFactory factory = new ModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, manager, "id");
-		Subject subject2 = factory.newInstance(Subject.class, manager, "id2");
-		Subject subject3 = factory.newInstance(Subject.class, manager, "id");
 		subject.getAuthInfo();
+		Subject subject2 = factory.newInstance(Subject.class, manager, "id2");
 		subject2.getAuthInfo();
+		Subject subject3 = factory.newInstance(Subject.class, manager, "id");
 		try {
 			subject3.getAuthInfo();
 			fail();
 		} catch (ModelExecutionException e) {
-			e.printStackTrace();
-			if (e.getMessage().compareTo("Subject Invariant Violation: Authentication information are not unique") != 0) {
-				fail();
-			}
+			assertTrue(e.getMessage().contains("Subject Invariant Violation: Authentication information are not unique"));
 		}
 	}
 
+	@Test
 	public void testAuthenticatorInvariant() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -121,6 +119,7 @@ public class TestAuthenticator extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAuthInfoInvariant() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -138,6 +137,7 @@ public class TestAuthenticator extends TestCase {
 		}
 	}
 
+	@Test
 	public void testIdProofForgery() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
@@ -157,12 +157,14 @@ public class TestAuthenticator extends TestCase {
 		}
 	}
 
+	@Test
 	public void testInvariantValidityWithDynamicPrivilegeRules() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);
 		ModelFactory factory = new ModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, manager, "id");
 		subject.authenticate();
+		assertEquals(subject.getIDProof(), manager.getDefaultToken());
 		manager.addUser(subject.getAuthInfo());
 		subject.getAuthInfo();
 		subject.authenticate();

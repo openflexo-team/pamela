@@ -4,12 +4,19 @@ import java.lang.reflect.Method;
 
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelEntity;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.PatternDefinition;
 
 public class AuthorizationPatternDefinition extends PatternDefinition {
 
 	public AuthorizationPatternDefinition(String identifier, ModelContext modelContext) {
 		super(identifier, modelContext);
+	}
+
+	@Override
+	public void finalizeDefinition() throws ModelDefinitionException {
+		// TODO Auto-generated method stub
+
 	}
 
 	@Override

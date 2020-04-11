@@ -1,8 +1,9 @@
 /**
  * 
- * Copyright (c) 2014-2015, Openflexo
+ * Copyright (c) 2013-2020, Openflexo
+ * Copyright (c) 2011-2012, AgileBirds
  * 
- * This file is part of Flexo-foundation, a component of the software infrastructure 
+ * This file is part of pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
  * 
  * 

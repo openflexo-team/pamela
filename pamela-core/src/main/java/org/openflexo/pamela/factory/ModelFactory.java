@@ -129,13 +129,13 @@ public class ModelFactory implements IObjectGraphFactory {
 						return true;
 					}
 
-					if (context.getPatternContext().getRelatedPatternsFromClass(aModelEntity.getImplementedInterface()).size() > 0) {
+					/*if (context.getPatternContext().getRelatedPatternsFromClass(aModelEntity.getImplementedInterface()).size() > 0) {
 						try {
 							aModelEntity.getImplementedInterface().getMethod(method.getName(), method.getParameterTypes());
 							return true;
 						} catch (NoSuchMethodException e) {
 						}
-					}
+					}*/
 
 					// TODO perf issue ??? Check this !
 					if (modelEntity.getPropertyForMethod(method) != null) {
@@ -280,7 +280,7 @@ public class ModelFactory implements IObjectGraphFactory {
 
 	public <I> I newInstance(Class<I> implementedInterface, Object... args) {
 		try {
-			this.getModelContext().getPatternContext().enteringConstructor();
+			// this.getModelContext().getPatternContext().enteringConstructor();
 			PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
 			I returned = proxyFactory.newInstance(args);
 			if (getEditingContext() != null) {
@@ -288,7 +288,7 @@ public class ModelFactory implements IObjectGraphFactory {
 					getEditingContext().getUndoManager().addEdit(new CreateCommand<>(returned, proxyFactory.getModelEntity(), this));
 				}
 			}
-			this.getModelContext().getPatternContext().leavingConstructor();
+			// this.getModelContext().getPatternContext().leavingConstructor();
 			getModelContext().notifiedNewInstance(returned, getModelEntityForInstance(returned));
 			return returned;
 		} catch (IllegalArgumentException e) {
