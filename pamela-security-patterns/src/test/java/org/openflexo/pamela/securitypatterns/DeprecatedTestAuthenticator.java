@@ -1,9 +1,9 @@
 package org.openflexo.pamela.securitypatterns;
 
-import org.openflexo.model.AbstractPAMELATest;
+import junit.framework.TestCase;
 
 @Deprecated
-public class DeprecatedTestAuthenticator extends AbstractPAMELATest {
+public class DeprecatedTestAuthenticator extends TestCase {
 
 	/*public void testPatternAnalysis() throws Exception {
 		ModelContext context = new ModelContext(Subject.class);

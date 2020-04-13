@@ -9,12 +9,7 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.patterns.PatternClassWrapper;
 import org.openflexo.pamela.patterns.PatternContext;
-import org.openflexo.pamela.securitypatterns.authorization.AuthorizationPattern;
-import org.openflexo.pamela.securitypatterns.authorization.AuthorizationResourceEntity;
-import org.openflexo.pamela.securitypatterns.authorization.AuthorizationResourceInstance;
-import org.openflexo.pamela.securitypatterns.authorization.AuthorizationSubjectEntity;
-import org.openflexo.pamela.securitypatterns.authorization.AuthorizationSubjectInstance;
-import org.openflexo.pamela.securitypatterns.authorization.PermissionCheckerEntity;
+import org.openflexo.pamela.securitypatterns.authorization.*;
 import org.openflexo.pamela.securitypatterns.modelAuthorization.PermissionChecker;
 import org.openflexo.pamela.securitypatterns.modelAuthorization.Resource;
 import org.openflexo.pamela.securitypatterns.modelAuthorization.Subject;
@@ -23,15 +18,15 @@ public class TestAuthorization extends TestCase {
 
 	public void testPatternAnalysis() throws Exception {
 		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		PatternContext patternContext = context.getPatternContext();
-		assertNotNull(patternContext);
-		assertNotNull(patternContext.getPatterns().get(PermissionChecker.PATTERN));
-		AuthorizationPattern pattern = (AuthorizationPattern) patternContext.getPatterns().get(PermissionChecker.PATTERN);
-		assertEquals(PermissionChecker.class, pattern.getCheckerEntity().getBaseClass());
-		assertTrue(pattern.getSubjects().containsKey(Subject.class) && pattern.getSubjects().size() == 1);
-		assertTrue(pattern.getResources().containsKey(Resource.class) && pattern.getResources().size() == 1);
-		AuthorizationSubjectEntity subject = pattern.getSubjects().get(Subject.class);
-		assertTrue(subject.isLinked());
+		assertEquals(1, context.getPatternDefinitions(AuthorizationPatternDefinition.class).size());
+		AuthorizationPatternDefinition pattern = context.getPatternDefinitions(AuthorizationPatternDefinition.class).get(0);
+
+		assertEquals(PermissionChecker.PATTERN,pattern.getIdentifier());
+		assertEquals(1, pattern.getSubjects().size());
+		assertEquals(Subject.class,pattern.getSubjects().iterator().next().getImplementedInterface());
+		assertEquals(1, pattern.getResources().size());
+		assertEquals(Resource.class,pattern.getResources().iterator().next().getImplementedInterface());
+		assertEquals(PermissionChecker.class, pattern.getChecker().getImplementedInterface());
 	}
 
 	public void testInstanceDiscovery() throws Exception {
