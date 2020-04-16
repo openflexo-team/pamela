@@ -1,15 +1,10 @@
 package org.openflexo.pamela.securitypatterns;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import junit.framework.TestCase;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelContextLibrary;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.patterns.PatternClassWrapper;
 import org.openflexo.pamela.securitypatterns.authorization.*;
 import org.openflexo.pamela.securitypatterns.modelAuthorization.PermissionChecker;
 import org.openflexo.pamela.securitypatterns.modelAuthorization.Resource;
@@ -179,7 +174,7 @@ public class TestAuthorization extends TestCase {
 		}
 	}
 
-	/*
+
 	public void testResourceIdInvariant() throws Exception {
 		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
 		ModelFactory factory = new ModelFactory(context);
@@ -204,18 +199,6 @@ public class TestAuthorization extends TestCase {
 
 		try {
 			r1.setChecker(null);
-			fail();
-		} catch (ModelExecutionException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void testWrongInitResourceChecker() throws Exception {
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);
-
-		try {
-			Resource r1 = factory.newInstance(Resource.class, "ID", 3.14, null);
 			fail();
 		} catch (ModelExecutionException e) {
 			e.printStackTrace();
@@ -248,6 +231,6 @@ public class TestAuthorization extends TestCase {
 		} catch (ModelExecutionException e) {
 			e.printStackTrace();
 		}
-	}*/
+	}
 
 }

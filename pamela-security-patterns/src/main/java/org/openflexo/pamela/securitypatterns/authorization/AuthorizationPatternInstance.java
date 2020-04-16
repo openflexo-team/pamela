@@ -94,14 +94,16 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
         }
         else if (this.resources.containsKey(instance)){
             System.out.println("Handling method " + method.getName() + " for resource");
-            return this.processResourceMethodBeforeInvoke(instance, method, args);
+            return this.processResourceMethodBeforeInvoke((R) instance, method, args);
         }
         return new ReturnWrapper(true, null);
     }
 
-    private ReturnWrapper processResourceMethodBeforeInvoke(Object instance, Method method, Object[] args) {
+    private ReturnWrapper processResourceMethodBeforeInvoke(R instance, Method method, Object[] args) {
         if (!this.checking){
-            //this.checkResourceInvariant(instance);
+            this.checking = true;
+            this.checkResourceInvariant(instance);
+            this.checking = false;
         }
         for (Method m : this.getPatternDefinition().getResourceAccessMethods().values()){
             if (PamelaUtils.methodIsEquivalentTo(m,method)){
@@ -117,9 +119,44 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
         return new ReturnWrapper(true, null);
     }
 
+    private void checkResourceInvariant(R instance) {
+        this.checkCheckerIsFinal(instance);
+        this.checkResourceIdIsFinal(instance);
+    }
+
+    private void checkResourceIdIsFinal(R instance) {
+        try {
+            for (String paramID : this.getPatternDefinition().getResourceIdGetters().keySet()) {
+                Object currentID = this.getPatternDefinition().getResourceIdGetters().get(paramID).invoke(instance);
+                if (this.resources.get(instance).getIdentifiers().get(paramID) != null && !this.resources.get(instance).getIdentifiers().get(paramID).equals(currentID)) {
+                    throw new ModelExecutionException(
+                            String.format("Resource Invariant Violation: Id %s has changed since initialization", paramID));
+                }
+            }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
+    private void checkCheckerIsFinal(R instance) {
+        Object currentChecker = null;
+        try {
+            currentChecker = this.getPatternDefinition().getCheckerGetter().invoke(instance);
+            if (this.resources.get(instance).getChecker() != null && !this.resources.get(instance).getChecker().equals(currentChecker)) {
+                throw new ModelExecutionException("Resource Invariant Violation: PermissionChecker has changed since initialization");
+            }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
+
     private ReturnWrapper processSubjectMethodBeforeInvoke(Object instance, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException {
-        if (this.checking){
-            //this.checkSubjectInvariant(instance);
+        if (!this.checking){
+            this.checking = true;
+            this.checkSubjectInvariant((S)instance);
+            this.checking = false;
         }
         for (Method m : this.getPatternDefinition().getSubjectAccessMethods().keySet()){
             if (PamelaUtils.methodIsEquivalentTo(m, method)){
@@ -127,6 +164,26 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
             }
         }
         return new ReturnWrapper(true, null);
+    }
+
+    private void checkSubjectInvariant(S instance) {
+        this.checkIdIsFinal(instance);
+    }
+
+    private void checkIdIsFinal(S instance) {
+        int i = 0;
+        try {
+            for (String s : getPatternDefinition().getSubjectIdGetters().keySet()) {
+                Object currentID = getPatternDefinition().getSubjectIdGetters().get(s).invoke(instance);
+                if (this.subjects.get(instance).getIdentifiers().get(s) != null && !this.subjects.get(instance).getIdentifiers().get(s).equals(currentID)) {
+                    throw new ModelExecutionException("Subject Invariant breach: Id has changed since initialization");
+                }
+                i++;
+            }
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     private ReturnWrapper processSubjectAccess(Object instance, Method m, Object[] args) throws InvocationTargetException, IllegalAccessException {
@@ -200,6 +257,11 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
     }
 
     private void processResourceMethodAfterInvoke(Object instance, Method method, Object returnValue, Object[] args) {
+        if (!this.checking){
+            this.checking = true;
+            this.checkResourceInvariant((R)instance);
+            this.checking = false;
+        }
         for (Method m : this.getPatternDefinition().getResourceAccessMethods().values()){
             if (PamelaUtils.methodIsEquivalentTo(m,method)){
                 if (!this.resources.get(instance).isValid()){
@@ -210,6 +272,11 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
     }
 
     private void processSubjectMethodAfterInvoke(Object instance, Method method, Object returnValue, Object[] args) {
+        if (!this.checking){
+            this.checking = true;
+            this.checkSubjectInvariant((S)instance);
+            this.checking = false;
+        }
     }
 
     @Override
