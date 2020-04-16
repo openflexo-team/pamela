@@ -4,16 +4,22 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelEntity;
+import org.openflexo.pamela.PamelaUtils;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.PatternDefinition;
+import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternInstance;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.*;
 
 public class AuthorizationPatternDefinition extends PatternDefinition {
 
-	public class SubjectAccessMethodWrapper{
+	protected final static String SUBJECT_ROLE = "Subject";
+	protected final static String RESOURCE_ROLE = "Resource";
+
+	public static class SubjectAccessMethodWrapper{
 
 		private final String methodID;
 		private final ArrayList<Integer> realIndexes;
@@ -57,7 +63,6 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 	private Method checkMethod; //@CheckAccess
 	private int methodIdIndex; //@MethodID
 
-
 	private boolean isValid;
 	private String message;
 
@@ -71,10 +76,36 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 		this.subjectAccessMethods = new HashMap<>();
 		this.methodIdIndex = -1;
 		this.isValid = true;
+		this.message = "\n";
 	}
 
 	@Override
 	public void finalizeDefinition() throws ModelDefinitionException {
+		for (SubjectAccessMethodWrapper wrapper : this.subjectAccessMethods.values()){
+			if (!this.resourceAccessMethods.containsKey(wrapper.getMethodID())){ //Check if access methods are coherent between subjects and resources
+				this.isValid = false;
+				message += String.format("Unknown access method %s in Resource class.\n", wrapper.getMethodID());
+			}
+			for (String id : wrapper.getParamMapping().keySet()){ //Check if resource ids as subject access method parameters are valid
+				if (!this.resourceIdParameters.containsKey(id)){
+					this.isValid = false;
+					message += String.format("Unknown resource identifier %s in subject accessMethod.\n", id);
+				}
+			}
+		}
+		//Check if ids are coherent with check method
+		for (String subjectId : subjectIdParameters.keySet()){
+			if (!this.subjectIdGetters.containsKey(subjectId)){
+				this.isValid = false;
+				this.message += String.format("Unknown subject identifier %s in check method.\n", subjectId);
+			}
+		}
+		for (String resourceId : resourceIdParameters.keySet()){
+			if (!this.resourceIdGetters.containsKey(resourceId)){
+				this.isValid = false;
+				this.message += String.format("Unknown subject identifier %s in check method.\n", resourceId);
+			}
+		}
 		if (!this.isValid){
 			throw new ModelDefinitionException(this.message);
 		}
@@ -83,6 +114,23 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 	@Override
 	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
 		System.out.println("Tiens on cree un " + newInstance + " of " + newInstance.getClass());
+		System.out.println(modelEntity.getImplementedInterface());
+		if (modelEntity == this.subject || modelEntity == this.resource){
+			Set<?> instanceSet = this.getModelContext().getPatternInstances(this);
+			AuthorizationPatternInstance patternInstance;
+			if (instanceSet == null){
+				patternInstance = new AuthorizationPatternInstance(this);
+			}
+			else {
+				patternInstance = (AuthorizationPatternInstance) instanceSet.iterator().next();
+			}
+			if (modelEntity == this.subject){
+				patternInstance.attachSubject(newInstance);
+			}
+			else if (modelEntity == this.resource){
+				patternInstance.attachResource(newInstance);
+			}
+		}
 	}
 
 	public boolean isValid() {
@@ -91,7 +139,19 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 
 	@Override
 	public boolean isMethodInvolvedInPattern(Method m) {
-		// TODO Auto-generated method stub
+		for (Method method: this.resourceAccessMethods.values()){
+			if (PamelaUtils.methodIsEquivalentTo(m, method)){
+				return true;
+			}
+		}
+		for (Method method : this.subjectAccessMethods.keySet()){
+			if (PamelaUtils.methodIsEquivalentTo(m, method)){
+				return true;
+			}
+		}
+		if (PamelaUtils.methodIsEquivalentTo(m, this.checkMethod)) {
+			return true;
+		}
 		return false;
 	}
 

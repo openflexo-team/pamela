@@ -1,9 +1,6 @@
 package org.openflexo.pamela.securitypatterns.modelAuthorization;
 
-import org.openflexo.pamela.annotations.Getter;
-import org.openflexo.pamela.annotations.Initializer;
-import org.openflexo.pamela.annotations.ModelEntity;
-import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.annotations.*;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.AccessResource;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.PermissionCheckerGetter;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.ProtectedResource;
@@ -11,6 +8,7 @@ import org.openflexo.pamela.securitypatterns.authorization.annotations.ResourceI
 
 @ProtectedResource(patternID = PermissionChecker.PATTERN)
 @ModelEntity
+@ImplementationClass(Resource.ResourceImp.class)
 public interface Resource {
 	String ID = "resid";
 	String R1 = "r1";
@@ -19,6 +17,12 @@ public interface Resource {
 	@Initializer
 	default void init(String id, Double R1, PermissionChecker checker) {
 		setChecker(checker);
+		setID(id);
+		setR1(R1);
+	}
+
+	@Initializer
+	default void init(String id, Double R1){
 		setID(id);
 		setR1(R1);
 	}
@@ -45,4 +49,14 @@ public interface Resource {
 	@AccessResource(patternID = PermissionChecker.PATTERN, methodID = "set")
 	void setR1(double val);
 
+	@Override
+	String toString();
+
+	abstract class ResourceImp implements Resource{
+
+		@Override
+		public String toString() {
+			return "Resource " + getID();
+		}
+	}
 }

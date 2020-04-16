@@ -10,7 +10,6 @@ import org.openflexo.pamela.ModelContextLibrary;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.patterns.PatternClassWrapper;
-import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.securitypatterns.authorization.*;
 import org.openflexo.pamela.securitypatterns.modelAuthorization.PermissionChecker;
 import org.openflexo.pamela.securitypatterns.modelAuthorization.Resource;
@@ -78,46 +77,55 @@ public class TestAuthorization extends TestCase {
 	public void testInstanceDiscovery() throws Exception {
 		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
 		ModelFactory factory = new ModelFactory(context);
+		AuthorizationPatternDefinition patternDefinition = context.getPatternDefinitions(AuthorizationPatternDefinition.class).iterator().next();
+		AuthorizationPatternInstance<Subject, Resource, PermissionChecker> patternInstance;
 
 		Subject subject = factory.newInstance(Subject.class, 42, "id");
-		assertTrue(context.getPatternContext().getKnownInstances().containsKey(subject));
-		ArrayList<PatternClassWrapper> wrappers = context.getPatternContext().getKnownInstances().get(subject);
-		assertEquals(1, wrappers.size());
-		assertTrue(wrappers.get(0).getPattern() instanceof AuthorizationPattern);
-		AuthorizationPattern pattern = (AuthorizationPattern) wrappers.get(0).getPattern();
-		assertTrue(pattern.getSubjects().containsKey(wrappers.get(0).getKlass()));
-		AuthorizationSubjectEntity subjectEntity = pattern.getSubjects().get(wrappers.get(0).getKlass());
-		assertTrue(subjectEntity.getInstances().containsKey(subject));
-		AuthorizationSubjectInstance instance = subjectEntity.getInstances().get(subject);
-		assertEquals(instance.getIds().size(), 2);
-		assertTrue(instance.getIds().contains("id"));
-		assertTrue(instance.getIds().contains(42));
+		assertEquals(1, context.getPatternInstances(patternDefinition).size());
+		patternInstance = (AuthorizationPatternInstance<Subject, Resource, PermissionChecker>) context.getPatternInstances(patternDefinition).iterator().next();
+		assertEquals(1,patternInstance.getSubjects().size());
+		assertTrue(patternInstance.getSubjects().containsKey(subject));
+		AuthorizationPatternInstance.SubjectWrapper wrapper = patternInstance.getSubjects().get(subject);
+		assertTrue(wrapper.getIdentifiers().containsKey(PermissionChecker.SUBJECTID));
+		assertEquals(subject.getID(),wrapper.getIdentifiers().get(PermissionChecker.SUBJECTID));
+		assertTrue(wrapper.getIdentifiers().containsKey(PermissionChecker.SUBJECTSTRINGID));
+		assertEquals(subject.getStringID(),wrapper.getIdentifiers().get(PermissionChecker.SUBJECTSTRINGID));
 
 		PermissionChecker checker = factory.newInstance(PermissionChecker.class);
-		checker.toString();
-		assertTrue(context.getPatternContext().getKnownInstances().containsKey(checker));
-		wrappers = context.getPatternContext().getKnownInstances().get(checker);
-		assertEquals(1, wrappers.size());
-		assertTrue(wrappers.get(0).getPattern() instanceof AuthorizationPattern);
-		pattern = (AuthorizationPattern) wrappers.get(0).getPattern();
-		PermissionCheckerEntity checkerEntity = pattern.getCheckerEntity();
-		assertTrue(checkerEntity.getInstances().containsKey(checker));
-
-		Resource resource = factory.newInstance(Resource.class, "iii", 3.14, checker);
-		assertTrue(context.getPatternContext().getKnownInstances().containsKey(resource));
-		wrappers = context.getPatternContext().getKnownInstances().get(resource);
-		assertEquals(1, wrappers.size());
-		assertTrue(wrappers.get(0).getPattern() instanceof AuthorizationPattern);
-		pattern = (AuthorizationPattern) wrappers.get(0).getPattern();
-		assertTrue(pattern.getResources().containsKey(wrappers.get(0).getKlass()));
-		AuthorizationResourceEntity resourceEntity = pattern.getResources().get(wrappers.get(0).getKlass());
-		assertTrue(resourceEntity.getInstances().containsKey(resource));
-		AuthorizationResourceInstance rinstance = resourceEntity.getInstances().get(resource);
-		assertEquals(rinstance.getIds().size(), 1);
-		assertTrue(rinstance.getIds().containsKey(PermissionChecker.RESOURCEID));
-		assertTrue(rinstance.getIds().get(PermissionChecker.RESOURCEID).equals("iii"));
+		Resource r1 = factory.newInstance(Resource.class, "resource id", 42., checker);
+		assertEquals(1, context.getPatternInstances(patternDefinition).size());
+		patternInstance = (AuthorizationPatternInstance<Subject, Resource, PermissionChecker>) context.getPatternInstances(patternDefinition).iterator().next();
+		assertEquals(1, patternInstance.getResources().size());
+		assertTrue(patternInstance.getResources().containsKey(r1));
+		AuthorizationPatternInstance.ResourceWrapper<PermissionChecker> rWrapper = patternInstance.getResources().get(r1);
+		assertTrue(rWrapper.isValid());
+		assertEquals(checker, rWrapper.getChecker());
+		assertTrue(rWrapper.getIdentifiers().containsKey(PermissionChecker.RESOURCEID));
+		assertEquals(r1.getID(),  rWrapper.getIdentifiers().get(PermissionChecker.RESOURCEID));
 	}
 
+	public void testCheckerChange() throws Exception{
+		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		ModelFactory factory = new ModelFactory(context);AuthorizationPatternDefinition patternDefinition = context.getPatternDefinitions(AuthorizationPatternDefinition.class).iterator().next();
+		AuthorizationPatternInstance<Subject, Resource, PermissionChecker> patternInstance;
+		PermissionChecker checker = factory.newInstance(PermissionChecker.class);
+		Resource r1 = factory.newInstance(Resource.class, "resource id", 42.);
+		assertEquals(1, context.getPatternInstances(patternDefinition).size());
+		patternInstance = (AuthorizationPatternInstance<Subject, Resource, PermissionChecker>) context.getPatternInstances(patternDefinition).iterator().next();
+		assertEquals(1, patternInstance.getResources().size());
+		assertTrue(patternInstance.getResources().containsKey(r1));
+		AuthorizationPatternInstance.ResourceWrapper<PermissionChecker> rWrapper = patternInstance.getResources().get(r1);
+		assertNull(rWrapper.getChecker());
+		assertFalse(rWrapper.isValid());
+		r1.setChecker(checker);
+		assertTrue(rWrapper.isValid());
+		assertEquals(checker, rWrapper.getChecker());
+		assertTrue(rWrapper.getIdentifiers().containsKey(PermissionChecker.RESOURCEID));
+		assertEquals(r1.getID(),  rWrapper.getIdentifiers().get(PermissionChecker.RESOURCEID));
+
+	}
+
+	/*
 	public void testAccessGrantedNoParameter() throws Exception {
 		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
 		ModelFactory factory = new ModelFactory(context);
@@ -225,5 +233,6 @@ public class TestAuthorization extends TestCase {
 		} catch (ModelExecutionException e) {
 			e.printStackTrace();
 		}
-	}
+	}*/
+
 }
