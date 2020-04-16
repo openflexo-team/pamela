@@ -32,11 +32,13 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
         HashSet<Method> allowedMethods;
         T checker;
         boolean valid;
+        boolean processing;
 
         private ResourceWrapper(HashMap<String, Object> identifiers){
             this.identifiers = identifiers;
             this.allowedMethods = new HashSet<>();
             this.valid = false;
+            this.processing = false;
         }
 
         public HashMap<String, Object> getIdentifiers(){
@@ -47,12 +49,14 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
             return this.checker;
         }
 
-        private void allowMethod(Method m){
+        private void allowMethod(Method m, AuthorizationPatternDefinition patternDefinition){
             this.allowedMethods.add(m);
+            this.processing = true;
         }
 
         private void removeMethod(Method m){
             this.allowedMethods.remove(m);
+            this.processing = false;
         }
 
         private void attachChecker(T checker){
@@ -60,6 +64,10 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
             if (checker != null){
                 this.valid = true;
             }
+        }
+
+        private  boolean isProcessing(){
+            return this.processing;
         }
 
         public boolean isValid(){
@@ -81,9 +89,11 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
     @Override
     public ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         if (this.subjects.containsKey(instance)){
+            System.out.println("Handling method " + method.getName() + " for subject");
             return this.processSubjectMethodBeforeInvoke(instance, method, args);
         }
         else if (this.resources.containsKey(instance)){
+            System.out.println("Handling method " + method.getName() + " for resource");
             return this.processResourceMethodBeforeInvoke(instance, method, args);
         }
         return new ReturnWrapper(true, null);
@@ -98,7 +108,7 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
                 if (!this.resources.get(instance).isValid()){
                     throw new ModelExecutionException("Attempt to access a resource without permission checker.");
                 }
-                if (!this.resources.get(instance).allowedMethods.contains(m)){
+                if (!this.resources.get(instance).allowedMethods.contains(m) && !this.resources.get(instance).isProcessing()){
                     throw new ModelExecutionException("Attempt to override access checking on protected resource");
                 }
 
@@ -143,7 +153,7 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
         }
         boolean allowed = this.performAccessCheck(m, instance, resourceInstance);
         if (allowed){
-            this.resources.get(resourceInstance).allowMethod(getPatternDefinition().getResourceAccessMethods().get(getPatternDefinition().getSubjectAccessMethods().get(m).getMethodID()));
+            this.resources.get(resourceInstance).allowMethod(getPatternDefinition().getResourceAccessMethods().get(getPatternDefinition().getSubjectAccessMethods().get(m).getMethodID()), getPatternDefinition());
             return this.processAllowedAccess(m, instance, resourceInstance, args);
         }
         else {

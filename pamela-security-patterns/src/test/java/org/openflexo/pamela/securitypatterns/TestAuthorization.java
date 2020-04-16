@@ -122,10 +122,9 @@ public class TestAuthorization extends TestCase {
 		assertEquals(checker, rWrapper.getChecker());
 		assertTrue(rWrapper.getIdentifiers().containsKey(PermissionChecker.RESOURCEID));
 		assertEquals(r1.getID(),  rWrapper.getIdentifiers().get(PermissionChecker.RESOURCEID));
-
 	}
 
-	/*
+
 	public void testAccessGrantedNoParameter() throws Exception {
 		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
 		ModelFactory factory = new ModelFactory(context);
@@ -134,8 +133,8 @@ public class TestAuthorization extends TestCase {
 		Resource resource1 = factory.newInstance(Resource.class, "Pool2", 17., checker);
 		Subject user = factory.newInstance(Subject.class, 1, "user");
 		Subject admin = factory.newInstance(Subject.class, 2, "admin");
-		assertEquals(user.getResource("Pool"), 1.);
-		assertEquals(admin.getResource("Pool2"), 17.);
+		assertEquals(1. ,user.getResource("Pool"));
+		assertEquals(17., admin.getResource( "Pool2"));
 	}
 
 	public void testAccessDenied() throws Exception {
@@ -152,6 +151,7 @@ public class TestAuthorization extends TestCase {
 		}
 	}
 
+
 	public void testAccessGrantedWithParameter() throws Exception {
 		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
 		ModelFactory factory = new ModelFactory(context);
@@ -160,11 +160,26 @@ public class TestAuthorization extends TestCase {
 		Resource resource1 = factory.newInstance(Resource.class, "Pool2", 17., checker);
 		Subject admin = factory.newInstance(Subject.class, 2, "admin");
 		admin.setResource("Pool", 42.);
-		assertEquals(admin.getResource("Pool"), 42.);
+		assertEquals(42., admin.getResource("Pool"));
 		admin.setResource("Pool2", -42.);
-		assertEquals(admin.getResource("Pool2"), -42.);
+		assertEquals(-42., admin.getResource("Pool2"));
 	}
 
+	public void testOverrideAttempt() throws Exception{
+		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		ModelFactory factory = new ModelFactory(context);
+		PermissionChecker checker = factory.newInstance(PermissionChecker.class);
+		Resource resource = factory.newInstance(Resource.class, "Pool", 1., checker);
+		try {
+			resource.getR1();
+			fail();
+		}
+		catch (ModelExecutionException e){
+			e.printStackTrace();
+		}
+	}
+
+	/*
 	public void testResourceIdInvariant() throws Exception {
 		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
 		ModelFactory factory = new ModelFactory(context);
