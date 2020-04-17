@@ -107,14 +107,13 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 			}
 		}
 		if (!this.isValid){
-			throw new ModelDefinitionException(this.message);
+			//throw new ModelDefinitionException(this.message);
+			System.err.println(this.message);
 		}
 	}
 
 	@Override
 	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
-		System.out.println("Tiens on cree un " + newInstance + " of " + newInstance.getClass());
-		System.out.println(modelEntity.getImplementedInterface());
 		if (modelEntity == this.subject || modelEntity == this.resource){
 			Set<?> instanceSet = this.getModelContext().getPatternInstances(this);
 			AuthorizationPatternInstance patternInstance;

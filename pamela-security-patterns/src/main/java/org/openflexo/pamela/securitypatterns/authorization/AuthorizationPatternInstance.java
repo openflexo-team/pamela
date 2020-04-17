@@ -89,11 +89,9 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
     @Override
     public ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         if (this.subjects.containsKey(instance)){
-            System.out.println("Handling method " + method.getName() + " for subject");
             return this.processSubjectMethodBeforeInvoke(instance, method, args);
         }
         else if (this.resources.containsKey(instance)){
-            System.out.println("Handling method " + method.getName() + " for resource");
             return this.processResourceMethodBeforeInvoke((R) instance, method, args);
         }
         return new ReturnWrapper(true, null);

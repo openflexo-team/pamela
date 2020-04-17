@@ -1,6 +1,7 @@
 package org.openflexo.pamela.securitypatterns.modelAuthorization;
 
 import org.openflexo.pamela.annotations.*;
+import org.openflexo.pamela.factory.AccessibleProxyObject;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.AccessResource;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.PermissionCheckerGetter;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.ProtectedResource;
@@ -9,7 +10,7 @@ import org.openflexo.pamela.securitypatterns.authorization.annotations.ResourceI
 @ProtectedResource(patternID = PermissionChecker.PATTERN)
 @ModelEntity
 @ImplementationClass(Resource.ResourceImp.class)
-public interface Resource {
+public interface Resource extends AccessibleProxyObject {
 	String ID = "resid";
 	String R1 = "r1";
 	String CHECKER = "checker";
