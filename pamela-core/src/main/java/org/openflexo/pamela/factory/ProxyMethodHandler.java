@@ -247,7 +247,6 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 		boolean assertionChecking = false;
 		boolean keepGoing = true;
-		PatternContext patternContext = this.getModelFactory().getModelContext().getPatternContext();
 		Object invoke = null;
 
 		if (enableAssertionChecking) {

@@ -130,7 +130,7 @@ public class ModelContext {
 	private final Class<?> baseClass;
 	private PatternContext patternContext; // CAINE
 
-	public ModelContext(@Nonnull Class<?> baseClass) throws ModelDefinitionException {
+	public ModelContext(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
 		this.baseClass = baseClass;
 		modelEntities = new HashMap<>();
 		modelEntitiesByXmlTag = new HashMap<>();
@@ -139,7 +139,9 @@ public class ModelContext {
 		appendEntity(modelEntity, new HashSet<>());
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
-		discoverPatterns();
+		if (isFinalModel){
+			discoverPatterns();
+		}
 	}
 
 	/**
@@ -260,11 +262,6 @@ public class ModelContext {
 		return (Set) registeredPatternInstances.get(patternDefinition);
 	}
 
-	@Deprecated
-	public PatternContext getPatternContext() { // CAINE
-		return patternContext;
-	}
-
 	public ModelContext(Class<?> baseClass, List<ModelContext> contexts) throws ModelDefinitionException {
 		this.baseClass = baseClass;
 		modelEntities = new HashMap<>();
@@ -298,7 +295,7 @@ public class ModelContext {
 	private static List<ModelContext> makeModelContextList(List<Class<?>> baseClasses) throws ModelDefinitionException {
 		List<ModelContext> returned = new ArrayList<>();
 		for (Class<?> c : baseClasses) {
-			returned.add(ModelContextLibrary.getModelContext(c));
+			returned.add(ModelContextLibrary.getModelContext(c, false));
 		}
 		return returned;
 	}
