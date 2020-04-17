@@ -40,6 +40,7 @@
 package org.openflexo.pamela;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -171,9 +172,24 @@ public class ModelContext {
 					for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
 						patternDefinition.finalizeDefinition();
 					}
-				} catch (Exception e) {
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
 					e.printStackTrace();
-					continue;
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchMethodException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		}
