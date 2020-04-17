@@ -107,8 +107,8 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 			}
 		}
 		if (!this.isValid){
-			//throw new ModelDefinitionException(this.message);
-			System.err.println(this.message);
+			throw new ModelDefinitionException(this.message);
+			//System.err.println(this.message);
 		}
 	}
 

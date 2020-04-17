@@ -61,7 +61,6 @@ import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.patterns.DeclarePatterns;
-import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.PatternDefinition;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.PatternLibrary;
@@ -128,7 +127,6 @@ public class ModelContext {
 	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
 	private final Map<ModelEntity<?>, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
 	private final Class<?> baseClass;
-	private PatternContext patternContext; // CAINE
 
 	public ModelContext(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
 		this.baseClass = baseClass;

@@ -98,7 +98,6 @@ import org.openflexo.pamela.jml.JMLEnsures;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.jml.JMLRequires;
 import org.openflexo.pamela.jml.SpecificationsViolationException;
-import org.openflexo.pamela.patterns.PatternContext;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.undo.AddCommand;
