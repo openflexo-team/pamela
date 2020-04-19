@@ -11,6 +11,7 @@ import org.openflexo.pamela.securitypatterns.owner.annotations.Pure;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+@Deprecated
 public class OwnerPatternFactory extends AbstractPatternFactory<OwnerPatternDefinition> {
 
     public OwnerPatternFactory(ModelContext modelContext) {

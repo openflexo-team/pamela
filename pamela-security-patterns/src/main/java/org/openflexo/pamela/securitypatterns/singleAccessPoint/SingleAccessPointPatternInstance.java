@@ -9,6 +9,7 @@ import org.openflexo.pamela.patterns.ReturnWrapper;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+@Deprecated
 public class SingleAccessPointPatternInstance<S> extends PatternInstance<SingleAccessPointPatternDefinition> {
     public static String PROTECTED_SYSTEM = "SAP Protected System";
 

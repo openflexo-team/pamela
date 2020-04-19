@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Stack;
 
+@Deprecated
 public class SingleAccessPointPatternInstanceContext extends PatternInstance<SingleAccessPointPatternDefinition> {
     public final static String ACCESSOR = "SAP Accessor";
 

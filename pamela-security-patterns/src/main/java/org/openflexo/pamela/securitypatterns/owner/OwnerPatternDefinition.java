@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
+@Deprecated
 public class OwnerPatternDefinition extends PatternDefinition {
     protected ModelEntity<?> ownedObjectEntity;
     protected Method ownerGetter;

@@ -11,6 +11,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+@Deprecated
 public class OwnerPatternInstance<OO> extends PatternInstance<OwnerPatternDefinition> implements PropertyChangeListener {
     public final static String OWNED_OBJECT = "Owned Object";
 

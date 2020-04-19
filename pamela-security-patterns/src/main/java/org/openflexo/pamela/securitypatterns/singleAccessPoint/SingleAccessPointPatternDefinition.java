@@ -10,6 +10,7 @@ import org.openflexo.pamela.securitypatterns.singleAccessPoint.annotations.Requi
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+@Deprecated
 public class SingleAccessPointPatternDefinition extends PatternDefinition {
 
     public static class AccessorWrapper{

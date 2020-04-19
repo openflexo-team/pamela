@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Stack;
 
+@Deprecated
 public class OwnerPatternInstanceContext extends PatternInstance<OwnerPatternDefinition> {
     public final static String POTENTIAL_OWNER = "Potential Owner";
 
