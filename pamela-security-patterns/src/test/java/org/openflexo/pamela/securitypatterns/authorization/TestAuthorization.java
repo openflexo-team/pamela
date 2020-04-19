@@ -1,14 +1,13 @@
-package org.openflexo.pamela.securitypatterns;
+package org.openflexo.pamela.securitypatterns.authorization;
 
 import junit.framework.TestCase;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelContextLibrary;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.securitypatterns.authorization.*;
-import org.openflexo.pamela.securitypatterns.modelAuthorization.PermissionChecker;
-import org.openflexo.pamela.securitypatterns.modelAuthorization.Resource;
-import org.openflexo.pamela.securitypatterns.modelAuthorization.Subject;
+import org.openflexo.pamela.securitypatterns.authorization.model.PermissionChecker;
+import org.openflexo.pamela.securitypatterns.authorization.model.Resource;
+import org.openflexo.pamela.securitypatterns.authorization.model.Subject;
 
 public class TestAuthorization extends TestCase {
 

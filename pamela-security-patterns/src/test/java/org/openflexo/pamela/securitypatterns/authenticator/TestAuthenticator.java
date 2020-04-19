@@ -1,12 +1,11 @@
-package org.openflexo.pamela.securitypatterns;
+package org.openflexo.pamela.securitypatterns.authenticator;
 
 import org.junit.Test;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternDefinition;
-import org.openflexo.pamela.securitypatterns.modelAuthenticator.IAuthenticator;
-import org.openflexo.pamela.securitypatterns.modelAuthenticator.Subject;
+import org.openflexo.pamela.securitypatterns.authenticator.model.IAuthenticator;
+import org.openflexo.pamela.securitypatterns.authenticator.model.Subject;
 
 import junit.framework.TestCase;
 

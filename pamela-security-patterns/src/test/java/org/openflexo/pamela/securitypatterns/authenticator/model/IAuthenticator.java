@@ -1,4 +1,4 @@
-package org.openflexo.pamela.securitypatterns.modelAuthenticator;
+package org.openflexo.pamela.securitypatterns.authenticator.model;
 
 import java.util.ArrayList;
 import java.util.List;

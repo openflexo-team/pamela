@@ -1,4 +1,4 @@
-package org.openflexo.pamela.securitypatterns.modelAuthenticator;
+package org.openflexo.pamela.securitypatterns.authenticator.model;
 
 import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.ImplementationClass;

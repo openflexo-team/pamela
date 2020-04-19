@@ -1,4 +1,4 @@
-package org.openflexo.pamela.securitypatterns.modelAuthorization;
+package org.openflexo.pamela.securitypatterns.authorization.model;
 
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.AuthorizationChecker;

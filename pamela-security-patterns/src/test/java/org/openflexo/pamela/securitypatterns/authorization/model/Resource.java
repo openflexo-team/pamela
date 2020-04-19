@@ -1,4 +1,4 @@
-package org.openflexo.pamela.securitypatterns.modelAuthorization;
+package org.openflexo.pamela.securitypatterns.authorization.model;
 
 import org.openflexo.pamela.annotations.*;
 import org.openflexo.pamela.factory.AccessibleProxyObject;

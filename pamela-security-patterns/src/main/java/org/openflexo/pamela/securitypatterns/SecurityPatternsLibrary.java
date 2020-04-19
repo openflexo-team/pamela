@@ -43,8 +43,9 @@ import org.openflexo.pamela.patterns.DeclarePatterns;
 import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternFactory;
 import org.openflexo.pamela.securitypatterns.authorization.AuthorizationPatternFactory;
+import org.openflexo.pamela.securitypatterns.singleAccessPoint.SingleAccessPointPatternFactory;
 
-@DeclarePatterns({ AuthenticatorPatternFactory.class, AuthorizationPatternFactory.class })
+@DeclarePatterns({ AuthenticatorPatternFactory.class, AuthorizationPatternFactory.class, SingleAccessPointPatternFactory.class})
 public class SecurityPatternsLibrary implements PatternLibrary {
 
 }
