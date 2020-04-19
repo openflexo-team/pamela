@@ -27,6 +27,7 @@ public class SingleAccessPointPatternInstance<S> extends PatternInstance<SingleA
 
     @Override
     public ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+
         if (!this.checking && !this.getPatternDefinition().getInstanceContext().accessorStack.isEmpty()){
             System.out.println(method);
             this.checking = true;
@@ -46,7 +47,7 @@ public class SingleAccessPointPatternInstance<S> extends PatternInstance<SingleA
             }
             else {
                 this.checking = false;
-                this.getPatternDefinition().getInstanceContext().accessorStack.pop();
+                if (!this.getPatternDefinition().getInstanceContext().accessorStack.isEmpty())this.getPatternDefinition().getInstanceContext().accessorStack.pop();
                 throw new ModelExecutionException("Unauthorized access to protected system.");
             }
         }
