@@ -3,14 +3,15 @@ package org.openflexo.pamela.securitypatterns.singleAccessPoint;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.patterns.ExecutionMonitor;
 import org.openflexo.pamela.patterns.PatternDefinition;
+import org.openflexo.pamela.securitypatterns.executionMonitors.CustomStack;
 import org.openflexo.pamela.securitypatterns.singleAccessPoint.annotations.Checkpoint;
 import org.openflexo.pamela.securitypatterns.singleAccessPoint.annotations.RequiredForAccess;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-@Deprecated
 public class SingleAccessPointPatternDefinition extends PatternDefinition {
 
     public static class AccessorWrapper{
@@ -25,9 +26,6 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
         }
 
     }
-
-    private SingleAccessPointPatternInstanceContext context;
-
     private ModelEntity<?> systemEntity;
     private HashMap<ModelEntity<?>, AccessorWrapper> accessorEntities;
 
@@ -36,7 +34,7 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
 
     private String message;
     private boolean isValid;
-    private boolean hasContext;
+    protected CustomStack customStack;
 
     public SingleAccessPointPatternDefinition(String identifier, ModelContext modelContext) {
         super(identifier, modelContext);
@@ -44,7 +42,6 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
         this.checkpointParams = new HashMap<>();
         this.message = "\n";
         this.isValid = true;
-        this.hasContext = false;
     }
 
     @Override
@@ -56,6 +53,15 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
                     this.isValid = false;
                     this.message += "Invalid SingleAccessPointClient entity (class " + accessor.getImplementedInterface().getSimpleName() + ") for pattern " + this.getIdentifier() + ": missing RequiredForAccess annotation with paramID " + paramID + ".\n";
                 }
+            }
+            for (ExecutionMonitor monitor : this.getModelContext().getExecutionMonitors()){
+                if (monitor instanceof CustomStack){
+                    this.customStack = (CustomStack) monitor;
+                }
+            }
+            if (this.customStack == null){
+                this.customStack = new CustomStack(getModelContext());
+                this.getModelContext().addExecutionMonitor(this.customStack);
             }
         }
         if (!this.isValid){
@@ -71,30 +77,23 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
             return true;
         }
         catch (NoSuchMethodException e){
-           for (ModelEntity<?> accessor : this.accessorEntities.keySet()){
-              try {
-                accessor.getImplementedInterface().getMethod(m.getName(), m.getParameterTypes());
-                return true;
-              }
-              catch (NoSuchMethodException ignored) {
+            for (ModelEntity<?> accessorEntity : this.accessorEntities.keySet()){
+                try {
+                    accessorEntity.getImplementedInterface().getMethod(m.getName(),m.getParameterTypes());
+                    return true;
+                }
+                catch (NoSuchMethodException ee){
 
-              }
-           }
+                }
+            }
+            return false;
         }
-        return false;
     }
 
     @Override
     public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
-        if (!this.hasContext){
-            this.hasContext = true;
-            this.context = new SingleAccessPointPatternInstanceContext(this);
-        }
         if (modelEntity == this.systemEntity){
             SingleAccessPointPatternInstance<I> patternInstance = new SingleAccessPointPatternInstance<I>(this, newInstance);
-        }
-        if (this.accessorEntities.containsKey(modelEntity)){
-            this.context.attachInstance(newInstance, modelEntity);
         }
     }
 
@@ -173,7 +172,4 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
         return this.checkpointParams;
     }
 
-    protected SingleAccessPointPatternInstanceContext getInstanceContext() {
-        return this.context;
-    }
 }

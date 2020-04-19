@@ -98,6 +98,7 @@ import org.openflexo.pamela.jml.JMLEnsures;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.jml.JMLRequires;
 import org.openflexo.pamela.jml.SpecificationsViolationException;
+import org.openflexo.pamela.patterns.ExecutionMonitor;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.undo.AddCommand;
@@ -252,6 +253,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			assertionChecking = checkOnEntry(method, args);
 		}
 
+		for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()){
+			monitor.enteringMethod(self,method,args);
+		}
+
 		Set<PatternInstance<?>> patternInstances = getModelFactory().getModelContext().getPatternInstances(self);
 		if (patternInstances != null) {
 			for (PatternInstance<?> patternInstance : patternInstances) {
@@ -263,6 +268,9 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 					}
 				} catch (InvocationTargetException e) {
 					e.getTargetException().printStackTrace();
+					for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()){
+						monitor.throwingException(self,method,args, e);
+					}
 					throw e.getTargetException();
 				}
 			}
@@ -291,9 +299,16 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 					patternInstance.processMethodAfterInvoke(self, method, invoke, args);
 				} catch (InvocationTargetException e) {
 					e.getTargetException().printStackTrace();
+					for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()){
+						monitor.throwingException(self,method,args, e);
+					}
 					throw e.getTargetException();
 				}
 			}
+		}
+
+		for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()){
+			monitor.leavingMethod(self,method, args, invoke);
 		}
 
 		/*for (PatternClassWrapper wrapper : patternsOfInterest) {

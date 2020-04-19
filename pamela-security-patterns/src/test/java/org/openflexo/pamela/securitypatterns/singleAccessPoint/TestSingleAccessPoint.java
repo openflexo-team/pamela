@@ -8,6 +8,7 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.securitypatterns.singleAccessPoint.model.*;
 
 public class TestSingleAccessPoint extends TestCase {
+    static ModelContext context;
 
     @Test
     public void testPatternAnalysis() throws Exception{
@@ -29,7 +30,7 @@ public class TestSingleAccessPoint extends TestCase {
 
     @Test
     public void testValidAccess() throws Exception{
-        ModelContext context = new ModelContext(Accessor.class);
+        context = new ModelContext(Accessor.class);
         ModelFactory factory = new ModelFactory(context);
 
         ProtectedSystem system = factory.newInstance(ProtectedSystem.class);
@@ -37,13 +38,13 @@ public class TestSingleAccessPoint extends TestCase {
         accessor.setSystem(system);
         accessor.setToken(42);
         accessor.first();
-        assertEquals(1,system.getCounter());
-        assertTrue(system.HasChecked());
-        assertTrue(system.getCheck1());
-        system.setHasChecked(false);
+        assertTrue(accessor.getCounter() >= 1);
+        assertTrue(accessor.HasChecked());
+        assertTrue(accessor.getCheck1());
+        accessor.setHasChecked(false);
         assertEquals(18, accessor.second());
-        assertTrue(system.HasChecked());
-        assertEquals(2,system.getCounter());
+        assertTrue(accessor.HasChecked());
+        assertTrue(accessor.getCounter() >= 2);
 
     }
 
@@ -61,18 +62,20 @@ public class TestSingleAccessPoint extends TestCase {
             fail();
         }
         catch (ModelExecutionException e){
-            System.out.println("toto");
-            assertEquals(1,system.getCounter());
-            assertTrue(system.HasChecked());
-            assertFalse(system.getCheck1());
-            system.setHasChecked(false);
+            accessor.setToken(42);
+            assertTrue(accessor.getCounter() >= 1);
+            assertTrue(accessor.HasChecked());
+            assertFalse(accessor.getCheck1());
+            accessor.setHasChecked(false);
+            accessor.setToken(0);
             try {
                 accessor.second();
                 fail();
             }
             catch (ModelExecutionException ee){
-                assertTrue(system.HasChecked());
-                assertEquals(2,system.getCounter());
+                accessor.setToken(42);
+                assertTrue(accessor.HasChecked());
+                assertTrue(accessor.getCounter() >= 2);
             }
         }
     }

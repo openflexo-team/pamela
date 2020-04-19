@@ -59,11 +59,7 @@ import javax.annotation.Nonnull;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.patterns.AbstractPatternFactory;
-import org.openflexo.pamela.patterns.DeclarePatterns;
-import org.openflexo.pamela.patterns.PatternDefinition;
-import org.openflexo.pamela.patterns.PatternInstance;
-import org.openflexo.pamela.patterns.PatternLibrary;
+import org.openflexo.pamela.patterns.*;
 import org.openflexo.toolbox.StringUtils;
 
 public class ModelContext {
@@ -127,6 +123,7 @@ public class ModelContext {
 	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
 	private final Map<ModelEntity<?>, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
 	private final Class<?> baseClass;
+	private final List<ExecutionMonitor> executionMonitors;
 
 	public ModelContext(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
 		this.baseClass = baseClass;
@@ -137,9 +134,22 @@ public class ModelContext {
 		appendEntity(modelEntity, new HashSet<>());
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
+		executionMonitors = new ArrayList<>();
 		if (isFinalModel){
 			discoverPatterns();
 		}
+	}
+
+	public void addExecutionMonitor(ExecutionMonitor m){
+		this.executionMonitors.add(m);
+	}
+
+	public List<ExecutionMonitor> getExecutionMonitors() {
+		return this.executionMonitors;
+	}
+
+	public boolean removeExecutionMonitor(ExecutionMonitor m){
+		return this.executionMonitors.remove(m);
 	}
 
 	/**
@@ -148,12 +158,6 @@ public class ModelContext {
 	 * @throws ModelDefinitionException
 	 */
 	private void discoverPatterns() throws ModelDefinitionException {
-		/*this.patternContext = new PatternContext(this);
-		for (ModelEntity<?> modelEntity : modelEntities.values()) {
-			modelEntity.finalizeImport();
-			this.patternContext.attachClass(modelEntity.getImplementedInterface());
-		}*/
-
 		ServiceLoader<PatternLibrary> loader = ServiceLoader.load(PatternLibrary.class);
 
 		for (PatternLibrary patternLibrary : loader) {
@@ -283,6 +287,7 @@ public class ModelContext {
 		}
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
+		executionMonitors = new ArrayList<>();
 		discoverPatterns();
 	}
 

@@ -1,23 +1,19 @@
 package org.openflexo.pamela.securitypatterns.singleAccessPoint;
 
-import org.openflexo.pamela.ModelContextLibrary;
-import org.openflexo.pamela.PamelaUtils;
+import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
+import org.openflexo.pamela.securitypatterns.executionMonitors.CustomStack;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-@Deprecated
 public class SingleAccessPointPatternInstance<S> extends PatternInstance<SingleAccessPointPatternDefinition> {
     public static String PROTECTED_SYSTEM = "SAP Protected System";
 
     private S systemInstance;
     private boolean checking;
-    private Method checkedMethod;
-    private Object checkedInstance;
-    private Object[] checkedArgs;
 
     public SingleAccessPointPatternInstance(SingleAccessPointPatternDefinition patternDefinition, S systemInstance) {
         super(patternDefinition);
@@ -28,15 +24,26 @@ public class SingleAccessPointPatternInstance<S> extends PatternInstance<SingleA
 
     @Override
     public ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-
-        if (!this.checking && !this.getPatternDefinition().getInstanceContext().accessorStack.isEmpty()){
-            System.out.println(method);
+        if (!this.checking){
             this.checking = true;
-            this.checkedMethod = method;
-            this.checkedInstance = instance;
-            this.checkedArgs = args;
-            Object callingInstance = this.getPatternDefinition().getInstanceContext().accessorStack.firstElement();
-            SingleAccessPointPatternDefinition.AccessorWrapper callerWrapper = this.getPatternDefinition().getAccessorEntities().get(this.getPatternDefinition().getInstanceContext().accessorDB.get(callingInstance));
+            CustomStack.Frame callingFrame = this.getPatternDefinition().customStack.getFrame(1);
+            if (callingFrame == null){
+                this.checking = false;
+                throw new ModelExecutionException("Calling method from protected system from non accessor entity");
+            }
+            Object callingInstance = callingFrame.getInstance();
+            if (callingInstance == instance){ //nested call
+                this.checking = false;
+                return new ReturnWrapper(true, null);
+            }
+            SingleAccessPointPatternDefinition.AccessorWrapper callerWrapper = null;
+            for (ModelEntity<?> modelEntity : this.getModelContext().getUpperEntities(callingInstance)){
+                callerWrapper = this.getPatternDefinition().getAccessorEntities().get(modelEntity);
+            }
+            if (callerWrapper == null){
+                this.checking = false;
+                throw new ModelExecutionException("Calling method from protected system from non accessor entity");
+            }
             Object[] checkParams = new Object[this.getPatternDefinition().getCheckpoint().getParameterCount()];
             for (String paramID : this.getPatternDefinition().getCheckpointParams().keySet()){
                 int i = this.getPatternDefinition().getCheckpointParams().get(paramID);
@@ -44,23 +51,17 @@ public class SingleAccessPointPatternInstance<S> extends PatternInstance<SingleA
             }
             boolean authorized =  (boolean)(this.getPatternDefinition().getCheckpoint().invoke(this.systemInstance, checkParams));
             if (authorized){
+                this.checking = false;
                 return new ReturnWrapper(true, null);
             }
-            else {
-                this.checking = false;
-                if (!this.getPatternDefinition().getInstanceContext().accessorStack.isEmpty())this.getPatternDefinition().getInstanceContext().accessorStack.pop();
-                throw new ModelExecutionException("Unauthorized access to protected system.");
-            }
+            this.checking = false;
+            throw new ModelExecutionException("Unauthorized access to protected system");
         }
-
-
         return new ReturnWrapper(true,null);
     }
 
     @Override
     public void processMethodAfterInvoke(Object instance, Method method, Object returnValue, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-        if (this.checking && PamelaUtils.methodIsEquivalentTo(method, this.checkedMethod) && this.checkedInstance == instance && this.checkedArgs == args){
-            this.checking = false;
-        }
+
     }
 }

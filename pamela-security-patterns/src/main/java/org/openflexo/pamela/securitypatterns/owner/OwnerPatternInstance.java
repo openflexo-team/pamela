@@ -1,9 +1,9 @@
 package org.openflexo.pamela.securitypatterns.owner;
 
-import org.openflexo.pamela.PamelaUtils;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
+import org.openflexo.pamela.securitypatterns.executionMonitors.CustomStack;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 import java.beans.PropertyChangeEvent;
@@ -11,7 +11,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-@Deprecated
 public class OwnerPatternInstance<OO> extends PatternInstance<OwnerPatternDefinition> implements PropertyChangeListener {
     public final static String OWNED_OBJECT = "Owned Object";
 
@@ -19,8 +18,6 @@ public class OwnerPatternInstance<OO> extends PatternInstance<OwnerPatternDefini
     protected Object currentOwner;
 
     private boolean checking = false;
-    private Method checkedMethod;
-    private Object[] checkedArgs;
     private final boolean isPAMELA;
 
     public OwnerPatternInstance(OwnerPatternDefinition patternDefinition, OO instance) {
@@ -41,22 +38,21 @@ public class OwnerPatternInstance<OO> extends PatternInstance<OwnerPatternDefini
 
     @Override
     public ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-        if (!checking && (!this.getPatternDefinition().pureMethods.contains(method) && !PamelaUtils.methodIsEquivalentTo(method, this.getPatternDefinition().ownerGetter))){
+        if (!this.checking){
             this.checking = true;
-            this.checkedMethod = method;
-            this.checkedArgs = args;
             if (!this.isPAMELA){
                 this.retrieveCurrentOwmer();
             }
-            if (this.currentOwner == null || (!this.getPatternDefinition().instanceContext.customStack.isEmpty() && this.getPatternDefinition().instanceContext.customStack.firstElement() == this.currentOwner)){
-                return new ReturnWrapper(true, null);
-            }
-            else {
+            CustomStack.Frame callingFrame = this.getPatternDefinition().customStack.getFrame(1);
+            if (this.currentOwner == null || // no current owner
+            this.getPatternDefinition().pureMethods.contains(method) || // pure method
+            (callingFrame != null && callingFrame.getInstance() == instance) || //nested call
+            (callingFrame != null && callingFrame.getInstance() == this.currentOwner)){ //valid Owner
                 this.checking = false;
-                if (!this.getPatternDefinition().instanceContext.customStack.isEmpty())this.getPatternDefinition().instanceContext.customStack.pop();
-                throw new ModelExecutionException("Attempt to call a non pure method by non owner object.");
+                return new ReturnWrapper(true,null);
             }
-
+            this.checking = false;
+            throw new ModelExecutionException("Method " + method + " called by non owner object");
         }
         return new ReturnWrapper(true, null);
     }
@@ -72,9 +68,7 @@ public class OwnerPatternInstance<OO> extends PatternInstance<OwnerPatternDefini
 
     @Override
     public void processMethodAfterInvoke(Object instance, Method method, Object returnValue, Object[] args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-        if (this.checking && PamelaUtils.methodIsEquivalentTo(method, this.checkedMethod) && this.checkedArgs == args){
-            this.checking = false;
-        }
+
     }
 
     @Override

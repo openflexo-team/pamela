@@ -26,19 +26,28 @@ public interface Accessor {
     void setToken(int val);
 
     default void first(){
-        System.out.println("Trying to call method1 from the protected system");
+        System.out.println("Trying to call method1 from the accessor");
         getSystem().method1();
     }
 
     default int second(){
-        System.out.println("Trying to call method2 from the protected system");
+        System.out.println("Trying to call method2 from the accessor");
         return getSystem().method2(18);
     }
 
-    public abstract class AccessorImp implements Accessor{
-        @Override
-        public String toString(){
-            return "Accessor";
-        }
+    default boolean HasChecked(){
+        return getSystem().HasChecked();
+    }
+
+    default int getCounter(){
+        return getSystem().getCounter();
+    }
+
+    default void setHasChecked(boolean val){
+        getSystem().setHasChecked(val);
+    }
+
+    default boolean getCheck1(){
+        return getSystem().getCheck1();
     }
 }

@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {ElementType.METHOD, ElementType.PARAMETER})
-@Deprecated
 public @interface RequiredForAccess {
 
     String patternID();

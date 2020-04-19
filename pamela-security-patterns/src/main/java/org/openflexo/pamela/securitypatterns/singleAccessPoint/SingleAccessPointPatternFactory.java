@@ -8,7 +8,6 @@ import org.openflexo.pamela.securitypatterns.singleAccessPoint.annotations.Singl
 
 import java.lang.annotation.Annotation;
 
-@Deprecated
 public class SingleAccessPointPatternFactory extends AbstractPatternFactory<SingleAccessPointPatternDefinition> {
 
     public SingleAccessPointPatternFactory(ModelContext modelContext) {

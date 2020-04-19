@@ -4,22 +4,23 @@ import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.patterns.ExecutionMonitor;
 import org.openflexo.pamela.patterns.PatternDefinition;
+import org.openflexo.pamela.securitypatterns.executionMonitors.CustomStack;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
-@Deprecated
 public class OwnerPatternDefinition extends PatternDefinition {
     protected ModelEntity<?> ownedObjectEntity;
     protected Method ownerGetter;
     protected String message;
     protected boolean isValid;
     protected Set<Method> pureMethods;
-    protected OwnerPatternInstanceContext instanceContext;
     protected ModelEntity<?> ownerEntity;
     protected ModelProperty ownerProperty;
+    protected CustomStack customStack;
 
     public OwnerPatternDefinition(String identifier, ModelContext modelContext) {
         super(identifier, modelContext);
@@ -39,7 +40,16 @@ public class OwnerPatternDefinition extends PatternDefinition {
         }
         this.ownerProperty = this.ownedObjectEntity.getPropertyForMethod(this.ownerGetter);
         this.ownerEntity = this.getModelContext().getModelEntity(this.ownerGetter.getReturnType());
-        this.instanceContext = new OwnerPatternInstanceContext(this);
+
+        for (ExecutionMonitor monitor : this.getModelContext().getExecutionMonitors()){
+            if (monitor instanceof CustomStack){
+                this.customStack = (CustomStack) monitor;
+            }
+        }
+        if (this.customStack == null){
+            this.customStack = new CustomStack(getModelContext());
+            this.getModelContext().addExecutionMonitor(this.customStack);
+        }
     }
 
     @Override
@@ -64,9 +74,6 @@ public class OwnerPatternDefinition extends PatternDefinition {
     public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
         if (modelEntity == this.ownedObjectEntity){
             OwnerPatternInstance<I> patternInstance = new OwnerPatternInstance<>(this, newInstance);
-        }
-        if (modelEntity == this.ownerEntity) {
-            this.instanceContext.attachInstance(newInstance, modelEntity);
         }
     }
 }
