@@ -2191,14 +2191,14 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				}
 				Object valueToSet = clipboard.getSingleContents();
 				invokeSetter(modelProperty, valueToSet);
-				clipboard.consume();
+				// clipboard.consume();
 				return valueToSet;
 			}
 			else if (modelProperty.getAddPastingPoint() == pp) {
 				if (clipboard.isSingleObject()) {
 					Object valueToAdd = clipboard.getSingleContents();
 					invokeAdder(modelProperty, valueToAdd);
-					clipboard.consume();
+					// clipboard.consume();
 					return valueToAdd;
 				}
 				else {
@@ -2213,7 +2213,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 							// System.out.println("PASTE: cannot add " + o + " to " + getObject() + " with " + modelProperty);
 						}
 					}
-					clipboard.consume();
+					// clipboard.consume();
 					return returned;
 				}
 			}
