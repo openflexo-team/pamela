@@ -123,7 +123,7 @@ public class ModelContext {
 	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
 	private final Map<ModelEntity<?>, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
 	private final Class<?> baseClass;
-	private final List<ExecutionMonitor> executionMonitors;
+	private final Set<ExecutionMonitor> executionMonitors;
 
 	public ModelContext(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
 		this.baseClass = baseClass;
@@ -134,7 +134,7 @@ public class ModelContext {
 		appendEntity(modelEntity, new HashSet<>());
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
-		executionMonitors = new ArrayList<>();
+		executionMonitors = new HashSet<>();
 		if (isFinalModel){
 			discoverPatterns();
 		}
@@ -144,7 +144,7 @@ public class ModelContext {
 		this.executionMonitors.add(m);
 	}
 
-	public List<ExecutionMonitor> getExecutionMonitors() {
+	public Set<ExecutionMonitor> getExecutionMonitors() {
 		return this.executionMonitors;
 	}
 
@@ -287,7 +287,7 @@ public class ModelContext {
 		}
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
-		executionMonitors = new ArrayList<>();
+		executionMonitors = new HashSet<>();
 		discoverPatterns();
 	}
 
