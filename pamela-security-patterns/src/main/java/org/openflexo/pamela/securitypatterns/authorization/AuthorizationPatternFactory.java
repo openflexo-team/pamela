@@ -3,18 +3,17 @@ package org.openflexo.pamela.securitypatterns.authorization;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
-import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternDefinition;
-import org.openflexo.pamela.securitypatterns.authenticator.annotations.*;
-import org.openflexo.pamela.securitypatterns.authorization.annotations.AccessResource;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.AuthorizationChecker;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.AuthorizationSubject;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.ProtectedResource;
-import playground.authorization.interfaces.PermissionChecker;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
-import java.lang.reflect.Method;
 
+/**
+ * Represent the factory for {@link AuthorizationPatternDefinition}
+ *
+ * @author Caine Silva, Sylvain Guerin
+ */
 public class AuthorizationPatternFactory extends AbstractPatternFactory<AuthorizationPatternDefinition> {
 
 	public AuthorizationPatternFactory(ModelContext modelContext) {

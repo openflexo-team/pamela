@@ -7,7 +7,7 @@ import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authentic
  * This exception extends the {@link ModelDefinitionException}. <br>
  * It will be thrown when analyzing an {@link AuthenticatorSubject} annotated class with missing or invalid annotations.
  *
- * @author C. SILVA
+ * @author Caine Silva, Sylvain Guerin
  */
 public class InconsistentSubjectEntityException extends ModelDefinitionException {
     /**

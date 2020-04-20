@@ -8,7 +8,12 @@ import org.openflexo.pamela.patterns.ExecutionMonitor;
 import java.lang.reflect.Method;
 import java.util.Stack;
 
-public class CustomStack implements ExecutionMonitor {
+/**
+ * Execution monitor storing a call stack for all method handled by the ProxyMethodHandler.
+ * This monitor is used when there is a need for a pattern to know previous calls (check a call
+ * sequence, check a calling instance or method, etc.)
+ */
+public class CustomStack extends ExecutionMonitor {
 
     public class Frame {
         Object instance;
@@ -34,11 +39,10 @@ public class CustomStack implements ExecutionMonitor {
         }
     }
     private Stack<Frame> customStack;
-    private ModelContext modelContext;
 
     public CustomStack(ModelContext context){
+        super(context);
         this.customStack = new Stack<>();
-        this.modelContext = context;
     }
 
     @Override

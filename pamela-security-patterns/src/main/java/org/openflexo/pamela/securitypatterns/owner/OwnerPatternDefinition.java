@@ -48,7 +48,6 @@ public class OwnerPatternDefinition extends PatternDefinition {
         }
         if (this.customStack == null){
             this.customStack = new CustomStack(getModelContext());
-            this.getModelContext().addExecutionMonitor(this.customStack);
         }
     }
 

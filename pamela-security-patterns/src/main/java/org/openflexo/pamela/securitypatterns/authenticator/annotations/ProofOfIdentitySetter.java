@@ -52,7 +52,7 @@ import org.openflexo.pamela.annotations.Setter;
  * The associated field must always be either its initial value (set in constructor) or the result of the {@link RequestAuthentication}
  * method of the pattern.
  *
- * @author C. SILVA
+ * @author Caine Silva, Sylvain Guerin
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)

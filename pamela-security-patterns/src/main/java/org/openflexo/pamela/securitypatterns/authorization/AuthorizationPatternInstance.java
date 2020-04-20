@@ -13,6 +13,18 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 
+/**
+ * Represents an instance of a given {@link AuthorizationPatternDefinition}
+ *
+ * It has the responsibility of:
+ * <ul>
+ * <li>Maintaining state variables of the pattern instance</li>
+ * <li>Enforcing the pattern contract</li>
+ * <li><Implementing the pattern functional behavior/li>
+ * </ul>
+ *
+ * @author Caine Silva, Sylvain Guerin
+ */
 public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<AuthorizationPatternDefinition> implements PropertyChangeListener {
 
     public static class SubjectWrapper{
@@ -22,7 +34,7 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
             this.identifiers = identifiers;
         }
 
-        public HashMap<String, Object> getIdentifiers(){
+        protected HashMap<String, Object> getIdentifiers(){
             return this.identifiers;
         }
     }
@@ -41,11 +53,11 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
             this.processing = false;
         }
 
-        public HashMap<String, Object> getIdentifiers(){
+        protected HashMap<String, Object> getIdentifiers(){
             return this.identifiers;
         }
 
-        public T getChecker(){
+        protected T getChecker(){
             return this.checker;
         }
 
@@ -70,7 +82,7 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
             return this.processing;
         }
 
-        public boolean isValid(){
+        protected boolean isValid(){
             return this.valid;
         }
     }
@@ -79,7 +91,7 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
     private HashMap<R, ResourceWrapper<C>> resources;
     private boolean checking;
 
-    protected <I> AuthorizationPatternInstance(AuthorizationPatternDefinition patternDefinition) {
+    public <I> AuthorizationPatternInstance(AuthorizationPatternDefinition patternDefinition) {
         super(patternDefinition);
         this.subjects = new HashMap<>();
         this.resources = new HashMap<>();
@@ -279,7 +291,7 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (this.resources.containsKey(evt.getSource()) && !this.resources.get((R)evt.getSource()).isValid()) {
+        if (this.resources.containsKey(evt.getSource()) && !this.resources.get(evt.getSource()).isValid()) {
             if (this.updateChecker((R) evt.getSource())){
                 ((HasPropertyChangeSupport)evt.getSource()).getPropertyChangeSupport().removePropertyChangeListener(this);
             }
@@ -342,11 +354,11 @@ public class AuthorizationPatternInstance<S, R, C>  extends PatternInstance<Auth
         return valid;
     }
 
-    public HashMap<S, SubjectWrapper> getSubjects(){
+    protected HashMap<S, SubjectWrapper> getSubjects(){
         return this.subjects;
     }
 
-    public HashMap<R, ResourceWrapper<C>> getResources(){
+    protected HashMap<R, ResourceWrapper<C>> getResources(){
         return this.resources;
     }
 }

@@ -49,7 +49,7 @@ import java.lang.annotation.Target;
  * This annotation is to be put on the authenticator class. <br>
  * An <code>Authenticator Pattern</code> should have exactly one {@link Authenticator} annotated class.
  *
- * @author C. SILVA
+ * @author Caine Silva, Sylvain Guerin
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.TYPE)

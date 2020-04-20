@@ -96,10 +96,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 	public boolean isValid() {
 		// Perform here required checks
-		if (subject == null || authenticator == null) {
-			return false;
-		}
-		return true;
+		return subject != null && authenticator != null;
 	}
 
 	public S getSubject() {
@@ -184,8 +181,6 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	 *            Object on which the method is called
 	 * @param method
 	 *            Called method
-	 * @param klass
-	 *            Pattern-related class of identified im the class tree of <code>instance</code>
 	 * @param args
 	 * @return a {@link ReturnWrapper} wrapping true if the execution of the invoke should go one after the call, false if not.
 	 * @throws InvocationTargetException

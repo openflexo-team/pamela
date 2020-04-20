@@ -61,7 +61,6 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
             }
             if (this.customStack == null){
                 this.customStack = new CustomStack(getModelContext());
-                this.getModelContext().addExecutionMonitor(this.customStack);
             }
         }
         if (!this.isValid){
@@ -82,7 +81,7 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
                     accessorEntity.getImplementedInterface().getMethod(m.getName(),m.getParameterTypes());
                     return true;
                 }
-                catch (NoSuchMethodException ee){
+                catch (NoSuchMethodException ignored){
 
                 }
             }
@@ -171,5 +170,4 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
     protected HashMap<String, Integer> getCheckpointParams(){
         return this.checkpointParams;
     }
-
 }

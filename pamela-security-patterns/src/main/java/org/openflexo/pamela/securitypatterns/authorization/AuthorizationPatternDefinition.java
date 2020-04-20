@@ -11,19 +11,35 @@ import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.PamelaUtils;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.patterns.PatternDefinition;
-import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternInstance;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.*;
 
+/**
+ * Represents an occurrence of an <code>Authorization Pattern</code>. An instance is uniquely identified by the <code>patternID</code> field
+ * of associated annotations.<br>
+ *
+ * It has the responsibility of:
+ * <ul>
+ * <li>Managing life-cycle of {@link org.openflexo.pamela.securitypatterns.authorization.AuthorizationPatternInstance}, while being notified of the creation of new instances by the
+ * {@link org.openflexo.pamela.factory.ModelFactory} and {@link org.openflexo.pamela.ModelContext}</li>
+ * <li>Tagging and storing methods which are relevant to the pattern</li>
+ * </ul>
+ *
+ * @author Caine Silva, Sylvain Guerin
+ *
+ */
 public class AuthorizationPatternDefinition extends PatternDefinition {
 
 	protected final static String SUBJECT_ROLE = "Subject";
 	protected final static String RESOURCE_ROLE = "Resource";
 
+	/**
+	 * Wrapper of all relevant information related to subject accessMethods.
+	 */
 	public static class SubjectAccessMethodWrapper{
 
-		private final String methodID;
-		private final ArrayList<Integer> realIndexes;
-		private final HashMap<String, Integer> paramMapping;
+		private final String methodID; //method id of the access method
+		private final ArrayList<Integer> realIndexes; // indexes of the actual parameter of the corresponding resource access method.
+		private final HashMap<String, Integer> paramMapping; // map between the resource identifier paramID and the index of the parameter for the method
 
 		private SubjectAccessMethodWrapper(String methodID, ArrayList<Integer> realIndexes, HashMap<String, Integer> paramMapping){
 			this.methodID = methodID;
@@ -31,15 +47,15 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 			this.paramMapping = paramMapping;
 		}
 
-		public String getMethodID() {
+		protected String getMethodID() {
 			return methodID;
 		}
 
-		public ArrayList<Integer> getRealIndexes() {
+		protected ArrayList<Integer> getRealIndexes() {
 			return realIndexes;
 		}
 
-		public HashMap<String, Integer> getParamMapping() {
+		protected HashMap<String, Integer> getParamMapping() {
 			return paramMapping;
 		}
 	}
@@ -108,12 +124,11 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 		}
 		if (!this.isValid){
 			throw new ModelDefinitionException(this.message);
-			//System.err.println(this.message);
 		}
 	}
 
 	@Override
-	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
+	public  <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
 		if (modelEntity == this.subject || modelEntity == this.resource){
 			Set<?> instanceSet = this.getModelContext().getPatternInstances(this);
 			AuthorizationPatternInstance patternInstance;
@@ -132,7 +147,7 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 		}
 	}
 
-	public boolean isValid() {
+	protected boolean isValid() {
 		return this.isValid;
 	}
 
@@ -148,13 +163,10 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 				return true;
 			}
 		}
-		if (PamelaUtils.methodIsEquivalentTo(m, this.checkMethod)) {
-			return true;
-		}
-		return false;
+		return PamelaUtils.methodIsEquivalentTo(m, this.checkMethod);
 	}
 
-	public void addSubjectModelEntity(ModelEntity<?> entity) {
+	protected void addSubjectModelEntity(ModelEntity<?> entity) {
 		if (this.subject != null){
 			this.isValid = false;
 			this.message += "Duplicate @AuthorizationSubject annotation with same pattern id " + getIdentifier() + "in model." + System.lineSeparator();
@@ -198,7 +210,7 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 		}
 	}
 
-	public void addResourceModelEntity(ModelEntity<?> entity) {
+	protected void addResourceModelEntity(ModelEntity<?> entity) {
 		if (this.resource != null){
 			this.isValid = false;
 			this.message += "Duplicate @ProtectedResource annotation with same pattern id " + getIdentifier() + "in model." + System.lineSeparator();
@@ -239,7 +251,7 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 		}
 	}
 
-	public void addCheckerModelEntity(ModelEntity<?> entity) {
+	protected void addCheckerModelEntity(ModelEntity<?> entity) {
 		if (this.checker != null){
 			this.isValid = false;
 			this.message += "Duplicate @AuthorizationChecker annotation with same pattern id " + getIdentifier() + "in model." + System.lineSeparator();
@@ -305,51 +317,51 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 		}
 	}
 
-	public ModelEntity<?> getChecker() {
+	protected ModelEntity<?> getChecker() {
 		return checker;
 	}
 
-	public ModelEntity<?> getResource() {
+	protected ModelEntity<?> getResource() {
 		return this.resource;
 	}
 
-	public ModelEntity<?> getSubject() {
+	protected ModelEntity<?> getSubject() {
 		return this.subject;
 	}
 
-	public HashMap<String, Method> getResourceAccessMethods() {
+	protected HashMap<String, Method> getResourceAccessMethods() {
 		return resourceAccessMethods;
 	}
 
-	public HashMap<String, Method> getResourceIdGetters() {
+	protected HashMap<String, Method> getResourceIdGetters() {
 		return resourceIdGetters;
 	}
 
-	public Method getCheckerGetter() {
+	protected Method getCheckerGetter() {
 		return checkerGetter;
 	}
 
-	public HashMap<String, Integer> getSubjectIdParameters() {
+	protected HashMap<String, Integer> getSubjectIdParameters() {
 		return subjectIdParameters;
 	}
 
-	public HashMap<String, Integer> getResourceIdParameters() {
+	protected HashMap<String, Integer> getResourceIdParameters() {
 		return resourceIdParameters;
 	}
 
-	public Method getCheckMethod() {
+	protected Method getCheckMethod() {
 		return checkMethod;
 	}
 
-	public int getMethodIdIndex() {
+	protected int getMethodIdIndex() {
 		return methodIdIndex;
 	}
 
-	public HashMap<String, Method> getSubjectIdGetters() {
+	protected HashMap<String, Method> getSubjectIdGetters() {
 		return subjectIdGetters;
 	}
 
-	public HashMap<Method, SubjectAccessMethodWrapper> getSubjectAccessMethods() {
+	protected HashMap<Method, SubjectAccessMethodWrapper> getSubjectAccessMethods() {
 		return subjectAccessMethods;
 	}
 }

@@ -3,7 +3,6 @@ package org.openflexo.pamela.securitypatterns.owner;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
-import org.openflexo.pamela.patterns.PatternDefinition;
 import org.openflexo.pamela.securitypatterns.owner.annotations.OwnedObject;
 import org.openflexo.pamela.securitypatterns.owner.annotations.Owner;
 import org.openflexo.pamela.securitypatterns.owner.annotations.Pure;
