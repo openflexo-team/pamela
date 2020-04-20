@@ -54,7 +54,7 @@ import org.openflexo.pamela.annotations.Getter;
  * A class can have multiple {@link AuthenticationInformation} annotations. The set of all of these fields is supposed to be unique. (i.e.
  * two different instances must have a different set of <code>Authentication Information</code>).
  *
- * @author C. SILVA
+ * @author Caine Silva, Sylvain Guerin
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = { ElementType.METHOD, ElementType.PARAMETER })

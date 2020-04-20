@@ -54,9 +54,13 @@ public class ModelContextLibrary {
 	private static final Map<Set<Class<?>>, ModelContext> setContexts = new Hashtable<>();
 
 	public static synchronized ModelContext getModelContext(Class<?> baseClass) throws ModelDefinitionException {
+		return getModelContext(baseClass, true);
+	}
+
+	public static synchronized ModelContext getModelContext(Class<?> baseClass, boolean isFinalModelContext) throws ModelDefinitionException {
 		ModelContext context = contexts.get(baseClass);
 		if (context == null) {
-			contexts.put(baseClass, context = new ModelContext(baseClass));
+			contexts.put(baseClass, context = new ModelContext(baseClass, isFinalModelContext));
 		}
 		return context;
 	}
@@ -67,7 +71,7 @@ public class ModelContextLibrary {
 
 	public static ModelContext getCompoundModelContext(List<Class<?>> classes) throws ModelDefinitionException {
 		if (classes.size() == 1) {
-			return getModelContext(classes.get(0));
+			return getModelContext(classes.get(0), true);
 		}
 
 		Set<Class<?>> set = new HashSet<>(classes);

@@ -51,7 +51,7 @@ import java.lang.annotation.Target;
  * <code>Proof of Identity</code> of the {@link RequestAuthentication} annotated method of the associated {@link Authenticator} annotated
  * class.
  *
- * @author C. SILVA
+ * @author Caine Silva, Sylvain Guerin
  */
 
 @Retention(RetentionPolicy.RUNTIME)

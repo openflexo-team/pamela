@@ -49,7 +49,7 @@ import java.lang.annotation.Target;
  * This annotation is to be put on a subject class. <br>
  * An <code>Authenticator Pattern</code> can have exactly multiple {@link AuthenticatorSubject} annotated class.
  *
- * @author C. SILVA
+ * @author Caine Silva, Sylvain Guerin
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.TYPE)

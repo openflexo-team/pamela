@@ -49,7 +49,7 @@ import java.lang.annotation.Target;
  * This annotation is to be put on method in a {@link AuthenticatorSubject} annotated class and indicates that calling this method requires
  * for the subject to be authenticated
  *
- * @author C. SILVA
+ * @author Caine Silva, Sylvain Guerin
  */
 
 @Retention(RetentionPolicy.RUNTIME)

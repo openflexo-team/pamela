@@ -50,7 +50,7 @@ import java.lang.annotation.Target;
  * The annotated method will call the {@link ProofOfIdentitySetter} should check the {@link AuthenticationInformation} annotated parameters
  * and return the adequate Proof of Identity.
  *
- * @author C. SILVA
+ * @author Caine Silva, Sylvain Guerin
  */
 
 @Retention(RetentionPolicy.RUNTIME)

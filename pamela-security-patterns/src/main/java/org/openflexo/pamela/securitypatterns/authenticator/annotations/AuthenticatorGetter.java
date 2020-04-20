@@ -52,7 +52,7 @@ import org.openflexo.pamela.annotations.Getter;
  * The annotated method should return the instance of the associated {@link Authenticator} annotated class. <br>
  * The associated filed must be initialized in constructor and must not change througout runtime.
  *
- * @author C. SILVA
+ * @author Caine Silva, Sylvain Guerin
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)
