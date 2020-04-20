@@ -27,120 +27,64 @@ public class TestUnsecuredAuthenticator extends TestCase {
 		// We haven't call the authenticate() method, but this method is tagged with "@RequiresAuthentication", thus this call the
 		// authenticate() method
 		subject.thisMethodRequiresToBeAuthenticated();
-		assertFalse(subject.getAuthenticatedMethodHasBeenSuccessfullyCalled());
-		assertEquals(subject.getIDProof(), manager.generateFromAuthInfo(subject.getAuthInfo()));
+		// We should NOT be able to call this, but we did it
+		assertTrue(subject.getAuthenticatedMethodHasBeenSuccessfullyCalled());
 	}
 
-	/*@Test
+	@Test
 	public void testAuthenticatorInvalidReturn() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
-		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, "id");
-		subject.setManager(manager);
+		MyAuthenticator manager = new MyAuthenticator();
+		MySubject subject = new MySubject(manager, "id1");
 		subject.authenticate();
+		// We are not authenticated: this is the default token
 		assertEquals(subject.getIDProof(), manager.getDefaultToken());
 	}
-	
-	@Test
-	public void testInstanceDiscovery() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
-		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		assertNull(context.getPatternInstances(manager));
-		Subject subject = factory.newInstance(Subject.class, "id");
-		assertNull(context.getPatternInstances(manager));
-		assertEquals(1, context.getPatternInstances(subject).size());
-		subject.setManager(manager);
-		assertEquals(1, context.getPatternInstances(manager).size());
-		assertEquals(1, context.getPatternInstances(subject).size());
-		assertSame(context.getPatternInstances(manager).iterator().next(), context.getPatternInstances(subject).iterator().next());
-	}
-	
+
 	@Test
 	public void testAuthInfoUniqueness() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
-		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, manager, "id");
+		MyAuthenticator manager = new MyAuthenticator();
+		MySubject subject = new MySubject(manager, "id");
 		subject.getAuthInfo();
-		Subject subject2 = factory.newInstance(Subject.class, manager, "id2");
+		MySubject subject2 = new MySubject(manager, "id2");
 		subject2.getAuthInfo();
-		Subject subject3 = factory.newInstance(Subject.class, manager, "id");
-		try {
-			subject3.getAuthInfo();
-			fail();
-		} catch (ModelExecutionException e) {
-			assertTrue(e.getMessage().contains("Subject Invariant Violation: Authentication information are not unique"));
-		}
+		MySubject subject3 = new MySubject(manager, "id");
+		// This should raise an exception, because this authInfo is not unique
+		// Unsecure code
+		subject3.getAuthInfo();
 	}
-	
+
 	@Test
 	public void testAuthenticatorInvariant() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
-		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, manager, "id");
+		MyAuthenticator manager = new MyAuthenticator();
+		MySubject subject = new MySubject(manager, "id");
+		manager.addUser(subject.getAuthInfo());
 		subject.setManager(manager);
-		try {
-			subject.setManager(factory.newInstance(IAuthenticator.class));
-			fail();
-		} catch (ModelExecutionException e) {
-			e.printStackTrace();
-			if (e.getMessage().compareTo("Subject Invariant Violation: Authenticator has changed since initialization") != 0) {
-				fail();
-			}
-		}
+		// This should raise an exception, because this authInfo is not unique
+		// Unsecure code
+		subject.setManager(new MyAuthenticator());
 	}
-	
+
 	@Test
 	public void testAuthInfoInvariant() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
-		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, manager, "id");
+		MyAuthenticator manager = new MyAuthenticator();
+		MySubject subject = new MySubject(manager, "id");
+		subject.setManager(manager);
 		subject.setAuthInfo("id");
-		try {
-			subject.setAuthInfo(null);
-			fail();
-		} catch (ModelExecutionException e) {
-			e.printStackTrace();
-			if (e.getMessage().compareTo("Subject Invariant Violation: Authentication Information has changed since initialization") != 0) {
-				fail();
-			}
-		}
+		// This should raise an exception, because this authInfo is not unique
+		// Unsecure code
+		subject.setAuthInfo("id2");
 	}
-	
+
 	@Test
 	public void testIdProofForgery() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
-		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, manager, "id");
-		subject.setIdProof(-1);
+		MyAuthenticator manager = new MyAuthenticator();
+		MySubject subject = new MySubject(manager, "id");
+		subject.setIDProof(-1);
 		subject.authenticate();
-		subject.setIdProof(subject.getIDProof());
-		try {
-			subject.setIdProof(subject.getIDProof() + 1);
-			fail();
-		} catch (ModelExecutionException e) {
-			e.printStackTrace();
-			if (e.getMessage().compareTo("Subject Invariant Violation: Proof of identity has been forged") != 0) {
-				fail();
-			}
-		}
+		subject.setIDProof(subject.getIDProof());
+		// This should raise an exception, because this authInfo is not unique
+		// Unsecure code
+		subject.setIDProof(subject.getIDProof() + 1);
 	}
-	
-	@Test
-	public void testInvariantValidityWithDynamicPrivilegeRules() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
-		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, manager, "id");
-		subject.authenticate();
-		assertEquals(subject.getIDProof(), manager.getDefaultToken());
-		manager.addUser(subject.getAuthInfo());
-		subject.getAuthInfo();
-		subject.authenticate();
-	}*/
+
 }

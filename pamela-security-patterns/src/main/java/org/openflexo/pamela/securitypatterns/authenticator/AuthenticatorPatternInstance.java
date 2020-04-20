@@ -96,7 +96,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 	public boolean isValid() {
 		// Perform here required checks
-		return subject != null && authenticator != null;
+		return subject != null && getAuthenticator() /*authenticator*/ != null;
 	}
 
 	public S getSubject() {
@@ -104,6 +104,9 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	}
 
 	public A getAuthenticator() {
+		if (authenticator == null) {
+			checkAuthenticator();
+		}
 		return authenticator;
 	}
 
@@ -112,6 +115,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	}
 
 	private void checkAuthenticator() {
+		isChecking = true;
 		A retrievedAuthenticator;
 		try {
 			retrievedAuthenticator = retrieveAuthenticator();
@@ -122,6 +126,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		isChecking = false;
 	}
 
 	@Override
@@ -331,7 +336,8 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	private void checkAuthInfoIsFinal() {
 		try {
 			AI currentAuthInfo = retrieveAuthentificationInformation();
-			if (currentAuthInfo != authInfo) {
+			if (authInfo != null && currentAuthInfo != authInfo) {
+				System.out.println("Was: " + authInfo + " is now " + currentAuthInfo);
 				throw new ModelExecutionException(
 						"Subject Invariant Violation: Authentication Information has changed since initialization");
 			}

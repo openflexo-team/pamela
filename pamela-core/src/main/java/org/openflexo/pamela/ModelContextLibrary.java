@@ -96,4 +96,8 @@ public class ModelContextLibrary {
 		return getCompoundModelContext(newArray);
 	}
 
+	public static void clearCache() {
+		contexts.clear();
+		setContexts.clear();
+	}
 }

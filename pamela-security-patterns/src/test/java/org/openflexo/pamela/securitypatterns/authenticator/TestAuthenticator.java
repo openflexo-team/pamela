@@ -88,12 +88,9 @@ public class TestAuthenticator extends TestCase {
 		ModelFactory factory = new ModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, manager, "id");
-		subject.getAuthInfo();
 		Subject subject2 = factory.newInstance(Subject.class, manager, "id2");
-		subject2.getAuthInfo();
-		Subject subject3 = factory.newInstance(Subject.class, manager, "id");
 		try {
-			subject3.getAuthInfo();
+			Subject subject3 = factory.newInstance(Subject.class, manager, "id");
 			fail();
 		} catch (ModelExecutionException e) {
 			assertTrue(e.getMessage().contains("Subject Invariant Violation: Authentication information are not unique"));

@@ -59,7 +59,12 @@ import javax.annotation.Nonnull;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.patterns.*;
+import org.openflexo.pamela.patterns.AbstractPatternFactory;
+import org.openflexo.pamela.patterns.DeclarePatterns;
+import org.openflexo.pamela.patterns.ExecutionMonitor;
+import org.openflexo.pamela.patterns.PatternDefinition;
+import org.openflexo.pamela.patterns.PatternInstance;
+import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.toolbox.StringUtils;
 
 public class ModelContext {
@@ -135,12 +140,12 @@ public class ModelContext {
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
 		executionMonitors = new HashSet<>();
-		if (isFinalModel){
+		if (isFinalModel) {
 			discoverPatterns();
 		}
 	}
 
-	public void addExecutionMonitor(ExecutionMonitor m){
+	public void addExecutionMonitor(ExecutionMonitor m) {
 		this.executionMonitors.add(m);
 	}
 
@@ -148,7 +153,7 @@ public class ModelContext {
 		return this.executionMonitors;
 	}
 
-	public boolean removeExecutionMonitor(ExecutionMonitor m){
+	public boolean removeExecutionMonitor(ExecutionMonitor m) {
 		return this.executionMonitors.remove(m);
 	}
 
