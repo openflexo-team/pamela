@@ -57,7 +57,7 @@ public class ModelContextLibrary {
 		return getModelContext(baseClass, true);
 	}
 
-	public static synchronized ModelContext getModelContext(Class<?> baseClass, boolean isFinalModelContext) throws ModelDefinitionException {
+	static synchronized ModelContext getModelContext(Class<?> baseClass, boolean isFinalModelContext) throws ModelDefinitionException {
 		ModelContext context = contexts.get(baseClass);
 		if (context == null) {
 			contexts.put(baseClass, context = new ModelContext(baseClass, isFinalModelContext));

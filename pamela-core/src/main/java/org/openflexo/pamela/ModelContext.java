@@ -125,7 +125,7 @@ public class ModelContext {
 	private final Class<?> baseClass;
 	private final Set<ExecutionMonitor> executionMonitors;
 
-	public ModelContext(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
+	ModelContext(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
 		this.baseClass = baseClass;
 		modelEntities = new HashMap<>();
 		modelEntitiesByXmlTag = new HashMap<>();
