@@ -773,6 +773,10 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return implementedInterface;
 	}
 
+	public boolean isSimplePamelaInstrumentation() {
+		return !getImplementedInterface().isInterface();
+	}
+
 	public boolean isAbstract() {
 		return isAbstract;
 	}
