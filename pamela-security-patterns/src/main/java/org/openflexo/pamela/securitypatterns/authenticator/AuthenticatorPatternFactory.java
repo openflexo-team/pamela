@@ -51,6 +51,7 @@ import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authentic
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authenticator;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticatorGetter;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticatorSubject;
+import org.openflexo.pamela.securitypatterns.authenticator.annotations.ProofOfIdentityGetter;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.ProofOfIdentitySetter;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequestAuthentication;
 
@@ -103,6 +104,11 @@ public class AuthenticatorPatternFactory extends AbstractPatternFactory<Authenti
 			if (proofOfIdentitySetterAnnotation != null) {
 				AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(proofOfIdentitySetterAnnotation.patternID(), true);
 				patternDefinition.proofOfIdentitySetterMethod = m;
+			}
+			ProofOfIdentityGetter proofOfIdentityGetterAnnotation = m.getAnnotation(ProofOfIdentityGetter.class);
+			if (proofOfIdentityGetterAnnotation != null) {
+				AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(proofOfIdentityGetterAnnotation.patternID(), true);
+				patternDefinition.proofOfIdentityGetterMethod = m;
 			}
 			AuthenticatorGetter authenticatorGetterAnnotation = m.getAnnotation(AuthenticatorGetter.class);
 			if (authenticatorGetterAnnotation != null) {

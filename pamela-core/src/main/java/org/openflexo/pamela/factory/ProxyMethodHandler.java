@@ -2067,9 +2067,9 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 					new Predicate<ModelProperty<?>>() {
 						@Override
 						public boolean apply(ModelProperty<?> arg0) {
-							System.out.println("Property " + arg0);
-							System.out.println("Add PP=" + arg0.getAddPastingPoint());
-							System.out.println("Set PP=" + arg0.getSetPastingPoint());
+							// System.out.println("Property " + arg0);
+							// System.out.println("Add PP=" + arg0.getAddPastingPoint());
+							// System.out.println("Set PP=" + arg0.getSetPastingPoint());
 							return arg0.getAddPastingPoint() != null || arg0.getSetPastingPoint() != null;
 						}
 					});
@@ -2189,13 +2189,17 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				if (!clipboard.isSingleObject()) {
 					throw new ClipboardOperationException("Cannot paste here: multiple cardinality clipboard for a SINGLE property");
 				}
-				invokeSetter(modelProperty, clipboard.getSingleContents());
-				return clipboard.getSingleContents();
+				Object valueToSet = clipboard.getSingleContents();
+				invokeSetter(modelProperty, valueToSet);
+				clipboard.consume();
+				return valueToSet;
 			}
 			else if (modelProperty.getAddPastingPoint() == pp) {
 				if (clipboard.isSingleObject()) {
-					invokeAdder(modelProperty, clipboard.getSingleContents());
-					return clipboard.getSingleContents();
+					Object valueToAdd = clipboard.getSingleContents();
+					invokeAdder(modelProperty, valueToAdd);
+					clipboard.consume();
+					return valueToAdd;
 				}
 				else {
 					List<Object> returned = new ArrayList<>();
@@ -2209,6 +2213,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 							// System.out.println("PASTE: cannot add " + o + " to " + getObject() + " with " + modelProperty);
 						}
 					}
+					clipboard.consume();
 					return returned;
 				}
 			}

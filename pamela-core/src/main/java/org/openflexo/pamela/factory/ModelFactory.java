@@ -148,12 +148,20 @@ public class ModelFactory implements IObjectGraphFactory {
 				}
 			});
 			Class<?> implementingClass = modelEntity.getImplementingClass();
-			if (implementingClass == null) {
-				implementingClass = defaultModelClass;
+
+			if (implementingClass == null && modelEntity.isSimplePamelaInstrumentation()) {
+				// Special case for a Pamela entity defined for a basic Java class
+				implementingClass = modelEntity.getImplementedInterface();
+				super.setSuperclass(modelEntity.getImplementedInterface());
 			}
-			super.setSuperclass(implementingClass);
-			Class<?>[] interfaces = { modelEntity.getImplementedInterface() };
-			setInterfaces(interfaces);
+			else {
+				if (implementingClass == null) {
+					implementingClass = defaultModelClass;
+				}
+				super.setSuperclass(implementingClass);
+				Class<?>[] interfaces = { modelEntity.getImplementedInterface() };
+				setInterfaces(interfaces);
+			}
 
 		}
 
@@ -194,44 +202,57 @@ public class ModelFactory implements IObjectGraphFactory {
 			}
 			locked = true;
 			ProxyMethodHandler<I> handler = new ProxyMethodHandler<>(this, getEditingContext());
-			I returned = (I) create(new Class<?>[0], new Object[0], handler);
-			handler.setObject(returned);
+
 			if (args == null) {
 				args = new Object[0];
 			}
-			if (args.length > 0 || modelEntity.hasInitializers()) {
-				Class<?>[] types = new Class<?>[args.length];
+
+			I returned = null;
+			if (modelEntity.isSimplePamelaInstrumentation()) {
+				Class<?>[] paramTypesArray = new Class<?>[args.length];
 				for (int i = 0; i < args.length; i++) {
-					Object o = args[i];
-					if (isProxyObject(o)) {
-						ModelEntity<?> modelEntity = getModelEntityForInstance(o);
-						types[i] = modelEntity.getImplementedInterface();
+					paramTypesArray[i] = args[i].getClass();
+				}
+				returned = (I) create(paramTypesArray, args, handler);
+				handler.setObject(returned);
+			}
+			else {
+				returned = (I) create(new Class<?>[0], new Object[0], handler);
+				handler.setObject(returned);
+				if (args.length > 0 || modelEntity.hasInitializers()) {
+					Class<?>[] types = new Class<?>[args.length];
+					for (int i = 0; i < args.length; i++) {
+						Object o = args[i];
+						if (isProxyObject(o)) {
+							ModelEntity<?> modelEntity = getModelEntityForInstance(o);
+							types[i] = modelEntity.getImplementedInterface();
+						}
+						else {
+							types[i] = o != null ? o.getClass() : null;
+						}
+					}
+					ModelInitializer initializerForArgs = modelEntity.getInitializerForArgs(types);
+					if (initializerForArgs != null) {
+						handler.initializing = true;
+						try {
+							initializerForArgs.getInitializingMethod().invoke(returned, args);
+						} finally {
+							handler.initializing = false;
+							handler.initialized = true;
+						}
 					}
 					else {
-						types[i] = o != null ? o.getClass() : null;
-					}
-				}
-				ModelInitializer initializerForArgs = modelEntity.getInitializerForArgs(types);
-				if (initializerForArgs != null) {
-					handler.initializing = true;
-					try {
-						initializerForArgs.getInitializingMethod().invoke(returned, args);
-					} finally {
-						handler.initializing = false;
-						handler.initialized = true;
-					}
-				}
-				else {
-					if (args.length > 0) {
-						StringBuilder sb = new StringBuilder();
-						for (Class<?> c : types) {
-							if (sb.length() > 0) {
-								sb.append(',');
-							}
-							sb.append(c != null ? c.getName() : "<null>");
+						if (args.length > 0) {
+							StringBuilder sb = new StringBuilder();
+							for (Class<?> c : types) {
+								if (sb.length() > 0) {
+									sb.append(',');
+								}
+								sb.append(c != null ? c.getName() : "<null>");
 
+							}
+							throw new NoSuchMethodException("Could not find any initializer with args " + sb.toString());
 						}
-						throw new NoSuchMethodException("Could not find any initializer with args " + sb.toString());
 					}
 				}
 			}
@@ -351,7 +372,7 @@ public class ModelFactory implements IObjectGraphFactory {
 		private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I> implementedInterface) throws ModelDefinitionException {
 			return getProxyFactory(implementedInterface, true);
 		}
-	*/
+	 */
 	private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I> implementedInterface, boolean create) throws ModelDefinitionException {
 		return getProxyFactory(implementedInterface, create, false);
 	}

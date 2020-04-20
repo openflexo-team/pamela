@@ -88,11 +88,14 @@ public class AuthenticatorPatternDefinition extends PatternDefinition {
 	@Override
 	public void finalizeDefinition() throws ModelDefinitionException {
 
-		Iterator properties = subjectModelEntity.getProperties();
-		while (properties.hasNext()) {
-			ModelProperty<?> p = (ModelProperty<?>) properties.next();
-			if (PamelaUtils.methodIsEquivalentTo(proofOfIdentitySetterMethod, p.getSetterMethod())) {
-				proofOfIdentityGetterMethod = p.getGetterMethod();
+		if (proofOfIdentityGetterMethod == null) {
+			// attempt to retrieve it
+			Iterator properties = subjectModelEntity.getProperties();
+			while (properties.hasNext()) {
+				ModelProperty<?> p = (ModelProperty<?>) properties.next();
+				if (PamelaUtils.methodIsEquivalentTo(proofOfIdentitySetterMethod, p.getSetterMethod())) {
+					proofOfIdentityGetterMethod = p.getGetterMethod();
+				}
 			}
 		}
 		if (proofOfIdentityGetterMethod == null) {
