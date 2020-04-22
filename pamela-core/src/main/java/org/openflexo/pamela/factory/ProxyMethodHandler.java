@@ -1481,10 +1481,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	}
 
 	static class Compared<O> {
-
 		O o1;
 		O o2;
-		Boolean equals;
 
 		public Compared(O o1, O o2) {
 			this.o1 = o1;
@@ -1495,7 +1493,6 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result + ((equals == null) ? 0 : equals.hashCode());
 			result = prime * result + ((o1 == null) ? 0 : o1.hashCode());
 			result = prime * result + ((o2 == null) ? 0 : o2.hashCode());
 			return result;
@@ -1510,12 +1507,6 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			if (getClass() != obj.getClass())
 				return false;
 			Compared other = (Compared) obj;
-			if (equals == null) {
-				if (other.equals != null)
-					return false;
-			}
-			else if (!equals.equals(other.equals))
-				return false;
 			if (o1 == null) {
 				if (other.o1 != null)
 					return false;
@@ -1539,25 +1530,20 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 
 	private boolean equalsObject(Object obj, Set<Compared> seen) {
 
-		Compared returned = new Compared(getObject(), obj);
-		seen.add(returned);
+		seen.add(new Compared(getObject(), obj));
 
 		if (getObject() == obj) {
-			returned.equals = true;
 			return true;
 		}
 		if (obj == null) {
-			returned.equals = false;
 			return false;
 		}
 		ProxyMethodHandler<?> oppositeObjectHandler = getModelFactory().getHandler(obj);
 		if (oppositeObjectHandler == null) {
 			// Other object is not handled by the same factory
-			returned.equals = false;
 			return false;
 		}
 		if (getModelEntity() != oppositeObjectHandler.getModelEntity()) {
-			returned.equals = false;
 			return false;
 		}
 
@@ -1565,7 +1551,6 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		try {
 			properties = getModelEntity().getProperties();
 		} catch (ModelDefinitionException e) {
-			returned.equals = false;
 			return false;
 		}
 		while (properties.hasNext()) {
@@ -1589,7 +1574,6 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 									// + " opposite=" + oppositeValue);
 									// System.out.println("object1=" + getObject() + " of " + getObject().getClass());
 									// System.out.println("object2=" + obj + " of " + obj.getClass());
-									returned.equals = false;
 									return false;
 								}
 							} catch (InvalidDataException e) {
@@ -1604,7 +1588,6 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								// System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + "
 								// opposite="
 								// + oppositeValue);
-								returned.equals = false;
 								return false;
 							}
 						}
@@ -1616,7 +1599,6 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 							// System.out.println("values=" + values);
 							// System.out.println("oppositeValues=" + oppositeValues);
 							// System.out.println("Equals fails because of LIST property difference" + p);
-							returned.equals = false;
 							return false;
 						}
 						break;
@@ -1626,34 +1608,26 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			}
 		}
 		// System.out.println("ok, equals return true for " + getObject() + " and " + object);
-		returned.equals = true;
 		return true;
 	}
 
 	private boolean _isEqual(Object oldValue, Object newValue, Set<Compared> seen) {
-		Compared returned = new Compared(oldValue, newValue);
-		seen.add(returned);
+		seen.add(new Compared(oldValue, newValue));
 
 		if (oldValue == null) {
-			returned.equals = (newValue == null);
 			return newValue == null;
 		}
 		if (oldValue == newValue) {
-			returned.equals = true;
 			return true;
 		}
 		if (oldValue instanceof AccessibleProxyObject && newValue instanceof AccessibleProxyObject) {
 			ProxyMethodHandler<Object> handler = getModelFactory().getHandler(oldValue);
-			boolean returnedValue = handler.equalsObject(newValue, seen);
-
-			returned.equals = returnedValue;
-			return returnedValue;
+			return handler.equalsObject(newValue, seen);
 		}
 		if (oldValue instanceof List && newValue instanceof List) {
 			List<Object> l1 = (List<Object>) oldValue;
 			List<Object> l2 = (List<Object>) newValue;
 			if (l1.size() != l2.size()) {
-				returned.equals = false;
 				return false;
 			}
 			for (int i = 0; i < l1.size(); i++) {
@@ -1663,13 +1637,11 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 					continue;
 
 				if (!_isEqual(v1, v2, seen)) {
-					returned.equals = false;
 					return false;
 				}
 			}
 			return true;
 		}
-		returned.equals = (oldValue.equals(newValue));
 		return oldValue.equals(newValue);
 
 	}
