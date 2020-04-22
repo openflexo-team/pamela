@@ -133,7 +133,7 @@ public class Permission {
 }
 ~~~
 - Finally you need to annotate the _Check_ method with `@CheckAccess(patternID = <patternID>)`. This method have several parameters which all need to be annotated:
-    + _Subject identifier(s)_ and _Resource Identifier(s). Every time a _Subject access method_ will be called, the _Subject and Resource identifiers_ will be given to this method. They are annotated with the same annotation used to declare the associated getters.
+    + _Subject identifier(s)_ and _Resource Identifier(s)_. Every time a _Subject access method_ will be called, the _Subject and Resource identifiers_ will be given to this method. They are annotated with the same annotation used to declare the associated getters.
     + _MethodID_. This argument is a String and identify the access method that is currently processed by the pattern. This parameter is annotated with `@MethodID(patternID = <patternID>)`
 You could, for instance, have the following code:
 ~~~java
