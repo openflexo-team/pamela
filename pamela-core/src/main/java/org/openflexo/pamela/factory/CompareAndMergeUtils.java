@@ -40,12 +40,10 @@
 package org.openflexo.pamela.factory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.ModelProperty;
@@ -108,7 +106,7 @@ public class CompareAndMergeUtils {
 						Object singleValue = source.invokeGetter(p);
 						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
 						// System.out.println("[" + Thread.currentThread().getName() + "] Ici-1 avec " + p.getPropertyIdentifier());
-						if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
+						if (!isEqual(singleValue, oppositeValue)) {
 							if (p.getUpdater() != null) {
 								source.invokeUpdater(p, oppositeValue);
 							}
@@ -403,7 +401,7 @@ public class CompareAndMergeUtils {
 
 						if (singleValue != null || oppositeValue != null) {
 							totalPonderation += propertyPonderation;
-							if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
+							if (!isEqual(singleValue, oppositeValue)) {
 								double valueDistance = getDistanceBetweenValues(source, singleValue, oppositeValue);
 								distance = distance + valueDistance * propertyPonderation;
 								// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + "
@@ -431,7 +429,7 @@ public class CompareAndMergeUtils {
 
 						if ((values != null && values.size() > 0) || (oppositeValues != null && oppositeValues.size() > 0)) {
 							totalPonderation += propertyPonderation;
-							if (!isEqual(values, oppositeValues, new HashSet<>())) {
+							if (!isEqual(values, oppositeValues)) {
 								double valueDistance = getDistanceBetweenListValues(source, values, oppositeValues);
 								distance = distance + valueDistance * propertyPonderation;
 								// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + "
@@ -497,8 +495,8 @@ public class CompareAndMergeUtils {
 		return score / total;
 	}
 
-	protected static boolean isEqual(Object oldValue, Object newValue, Set<Object> seen) {
-		return IProxyMethodHandler.isEqual(oldValue, newValue, seen);
+	protected static boolean isEqual(Object oldValue, Object newValue) {
+		return IProxyMethodHandler.isEqual(oldValue, newValue);
 
 	}
 

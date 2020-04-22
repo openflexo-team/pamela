@@ -253,8 +253,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			assertionChecking = checkOnEntry(method, args);
 		}
 
-		for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()){
-			monitor.enteringMethod(self,method,args);
+		for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()) {
+			monitor.enteringMethod(self, method, args);
 		}
 
 		Set<PatternInstance<?>> patternInstances = getModelFactory().getModelContext().getPatternInstances(self);
@@ -268,8 +268,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 					}
 				} catch (InvocationTargetException e) {
 					e.getTargetException().printStackTrace();
-					for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()){
-						monitor.throwingException(self,method,args, e);
+					for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()) {
+						monitor.throwingException(self, method, args, e);
 					}
 					throw e.getTargetException();
 				}
@@ -299,16 +299,16 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 					patternInstance.processMethodAfterInvoke(self, method, invoke, args);
 				} catch (InvocationTargetException e) {
 					e.getTargetException().printStackTrace();
-					for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()){
-						monitor.throwingException(self,method,args, e);
+					for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()) {
+						monitor.throwingException(self, method, args, e);
 					}
 					throw e.getTargetException();
 				}
 			}
 		}
 
-		for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()){
-			monitor.leavingMethod(self,method, args, invoke);
+		for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()) {
+			monitor.leavingMethod(self, method, args, invoke);
 		}
 
 		/*for (PatternClassWrapper wrapper : patternsOfInterest) {
@@ -1335,7 +1335,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		ProxyMethodHandler<?> handler = getModelFactory().getHandler(o);
 		if (handler != null) {
 			Object attributeValue = handler.invokeGetter(attribute);
-			return isEqual(attributeValue, value, new HashSet<>());
+			return isEqual(attributeValue, value);
 		}
 		else {
 			throw new ModelDefinitionException(
@@ -1480,19 +1480,84 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return returned;
 	}
 
+	static class Compared<O> {
+
+		O o1;
+		O o2;
+		Boolean equals;
+
+		public Compared(O o1, O o2) {
+			this.o1 = o1;
+			this.o2 = o2;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((equals == null) ? 0 : equals.hashCode());
+			result = prime * result + ((o1 == null) ? 0 : o1.hashCode());
+			result = prime * result + ((o2 == null) ? 0 : o2.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Compared other = (Compared) obj;
+			if (equals == null) {
+				if (other.equals != null)
+					return false;
+			}
+			else if (!equals.equals(other.equals))
+				return false;
+			if (o1 == null) {
+				if (other.o1 != null)
+					return false;
+			}
+			else if (!o1.equals(other.o1))
+				return false;
+			if (o2 == null) {
+				if (other.o2 != null)
+					return false;
+			}
+			else if (!o2.equals(other.o2))
+				return false;
+			return true;
+		}
+
+	}
+
 	public boolean equalsObject(Object obj) {
+		return equalsObject(obj, new HashSet<>());
+	}
+
+	private boolean equalsObject(Object obj, Set<Compared> seen) {
+
+		Compared returned = new Compared(getObject(), obj);
+		seen.add(returned);
+
 		if (getObject() == obj) {
+			returned.equals = true;
 			return true;
 		}
 		if (obj == null) {
+			returned.equals = false;
 			return false;
 		}
 		ProxyMethodHandler<?> oppositeObjectHandler = getModelFactory().getHandler(obj);
 		if (oppositeObjectHandler == null) {
 			// Other object is not handled by the same factory
+			returned.equals = false;
 			return false;
 		}
 		if (getModelEntity() != oppositeObjectHandler.getModelEntity()) {
+			returned.equals = false;
 			return false;
 		}
 
@@ -1500,6 +1565,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		try {
 			properties = getModelEntity().getProperties();
 		} catch (ModelDefinitionException e) {
+			returned.equals = false;
 			return false;
 		}
 		while (properties.hasNext()) {
@@ -1523,25 +1589,34 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 									// + " opposite=" + oppositeValue);
 									// System.out.println("object1=" + getObject() + " of " + getObject().getClass());
 									// System.out.println("object2=" + obj + " of " + obj.getClass());
+									returned.equals = false;
 									return false;
 								}
 							} catch (InvalidDataException e) {
 								e.printStackTrace();
 							}
 						}
-						else if (!isEqual(singleValue, oppositeValue, new HashSet<>())) {
-							// System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + " opposite="
-							// + oppositeValue);
-							return false;
+						else {
+							if (seen.contains(new Compared(singleValue, oppositeValue))) {
+								// Ignore
+							}
+							else if (!_isEqual(singleValue, oppositeValue, seen)) {
+								// System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + "
+								// opposite="
+								// + oppositeValue);
+								returned.equals = false;
+								return false;
+							}
 						}
 						break;
 					case LIST:
 						List<Object> values = (List) invokeGetter(p);
 						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
-						if (!isEqual(values, oppositeValues, new HashSet<>())) {
+						if (!_isEqual(values, oppositeValues, seen)) {
 							// System.out.println("values=" + values);
 							// System.out.println("oppositeValues=" + oppositeValues);
 							// System.out.println("Equals fails because of LIST property difference" + p);
+							returned.equals = false;
 							return false;
 						}
 						break;
@@ -1551,7 +1626,52 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			}
 		}
 		// System.out.println("ok, equals return true for " + getObject() + " and " + object);
+		returned.equals = true;
 		return true;
+	}
+
+	private boolean _isEqual(Object oldValue, Object newValue, Set<Compared> seen) {
+		Compared returned = new Compared(oldValue, newValue);
+		seen.add(returned);
+
+		if (oldValue == null) {
+			returned.equals = (newValue == null);
+			return newValue == null;
+		}
+		if (oldValue == newValue) {
+			returned.equals = true;
+			return true;
+		}
+		if (oldValue instanceof AccessibleProxyObject && newValue instanceof AccessibleProxyObject) {
+			ProxyMethodHandler<Object> handler = getModelFactory().getHandler(oldValue);
+			boolean returnedValue = handler.equalsObject(newValue, seen);
+
+			returned.equals = returnedValue;
+			return returnedValue;
+		}
+		if (oldValue instanceof List && newValue instanceof List) {
+			List<Object> l1 = (List<Object>) oldValue;
+			List<Object> l2 = (List<Object>) newValue;
+			if (l1.size() != l2.size()) {
+				returned.equals = false;
+				return false;
+			}
+			for (int i = 0; i < l1.size(); i++) {
+				Object v1 = l1.get(i);
+				Object v2 = l2.get(i);
+				if (seen.contains(new Compared(v1, v2)))
+					continue;
+
+				if (!_isEqual(v1, v2, seen)) {
+					returned.equals = false;
+					return false;
+				}
+			}
+			return true;
+		}
+		returned.equals = (oldValue.equals(newValue));
+		return oldValue.equals(newValue);
+
 	}
 
 	/**

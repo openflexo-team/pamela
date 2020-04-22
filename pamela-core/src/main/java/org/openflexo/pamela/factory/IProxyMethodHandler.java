@@ -41,7 +41,6 @@ package org.openflexo.pamela.factory;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Set;
 
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
@@ -156,8 +155,7 @@ public class IProxyMethodHandler {
 		}
 	}
 
-	protected static boolean isEqual(Object oldValue, Object newValue, Set<Object> seen) {
-		seen.add(oldValue);
+	protected static boolean isEqual(Object oldValue, Object newValue) {
 		if (oldValue == null) {
 			return newValue == null;
 		}
@@ -176,10 +174,7 @@ public class IProxyMethodHandler {
 			for (int i = 0; i < l1.size(); i++) {
 				Object v1 = l1.get(i);
 				Object v2 = l2.get(i);
-				if (seen.contains(v1))
-					continue;
-
-				if (!isEqual(v1, v2, seen)) {
+				if (!isEqual(v1, v2)) {
 					return false;
 				}
 			}

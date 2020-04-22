@@ -1,7 +1,6 @@
 package org.openflexo.pamela.factory;
 
 import java.beans.PropertyChangeSupport;
-import java.util.Set;
 
 import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.ModelProperty;
@@ -66,8 +65,8 @@ public abstract class AbstractPropertyImplementation<I, T> implements PropertyIm
 		}
 	}
 
-	protected static boolean isEqual(Object oldValue, Object newValue, Set<Object> seen) {
-		return IProxyMethodHandler.isEqual(oldValue, newValue, seen);
+	protected static boolean isEqual(Object oldValue, Object newValue) {
+		return IProxyMethodHandler.isEqual(oldValue, newValue);
 
 	}
 

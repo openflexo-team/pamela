@@ -1,6 +1,5 @@
 package org.openflexo.pamela.factory;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -104,7 +103,7 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 		T oldValue = (T) getHandler().invokeGetter(getProperty());
 
 		// Is it a real change ?
-		if (!isEqual(oldValue, aValue, new HashSet<>())) {
+		if (!isEqual(oldValue, aValue)) {
 			// System.out.println("Change for " + oldValue + " to " + value);
 			boolean hasInverse = getProperty().hasExplicitInverseProperty();
 
