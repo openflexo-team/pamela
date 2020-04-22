@@ -12,7 +12,7 @@ This pattern allows _Subject_ to be authenticated using a set of objects known a
 
 ### Subject entity
 
-- Identify the _Subject_ class. It is the class whose instance you need to authenticate. This class should be annotated with `@ModelEntity` (to let the PAMELA Framework that it is part of your model) and `@AuthenticationSubject(<patternID>)` (to declare this model entity as a subject for the authentication pattern). The `<patternid>` is a String that identify you pattern. You could, for instance, have the following code:
+- Identify the _Subject_ class. It is the class whose instance you need to authenticate. This class should be annotated with `@ModelEntity` (to let the PAMELA Framework that it is part of your model) and `@AuthenticationSubject(patternID = <patternID>)` (to declare this model entity as a subject for the authentication pattern). The `<patternid>` is a String that identify you pattern. You could, for instance, have the following code:
 ~~~java
 
 @ModelEntity
@@ -21,7 +21,7 @@ public class MySubject {
     ...
 }
 ~~~
-- Identify the getter(s) of the _Authentication Information_ of the subject class. The _Authentication information_ are the objects provided by _Subjects_ to be authenticated. These method should be annotated with `@AuthenticationInformation(<patternID>, <paramID>)`. Make sure to use the same `<patternID>` for all the annotations related to the same pattern.. The `<paramID>` is a string identifying a getter. You could, for instance, have the following code:
+- Identify the getter(s) of the _Authentication Information_ of the subject class. The _Authentication information_ are the objects provided by _Subjects_ to be authenticated. These method should be annotated with `@AuthenticationInformation(patternID = <patternID>, paramID = <paramID>)`. Make sure to use the same `<patternID>` for all the annotations related to the same pattern.. The `<paramID>` is a string identifying a getter. You could, for instance, have the following code:
 ~~~java
 @ModelEntity
 @AuthenticatorSubject(patternID = "Authenticator pattern 1")
@@ -38,7 +38,7 @@ public class MySubject {
     }
 }
 ~~~
-- Identify the _Proof of Identity_ getter and setter of the _Subject_. The _Proof of Identity_ is the security token that will be given the _Subjects_ by the _Authenticator_, once the authentication is done. You should annotate theses methods respectively with `@ProofOfIdentityGetter(<patternID>)` and `@ProofOfIdentitySetter(<patternID>)`. You could, for instance, have the following code:
+- Identify the _Proof of Identity_ getter and setter of the _Subject_. The _Proof of Identity_ is the security token that will be given the _Subjects_ by the _Authenticator_, once the authentication is done. You should annotate theses methods respectively with `@ProofOfIdentityGetter(patternID = <patternID>)` and `@ProofOfIdentitySetter(patternID = <patternID>)`. You could, for instance, have the following code:
 ~~~java
 @ModelEntity
 @AuthenticatorSubject(patternID = "Authenticator pattern 1")
@@ -65,7 +65,7 @@ public class MySubject {
     }
 }
 ~~~
-- Identify the getter of the _Authenticator_ class and annotated it with `@AuthenticatorGetter(<patternID>)`. Your could, for instance have the following code.
+- Identify the getter of the _Authenticator_ class and annotated it with `@AuthenticatorGetter(patternID = <patternID>)`. Your could, for instance have the following code.
 ~~~java
 @ModelEntity
 @AuthenticatorSubject(patternID = "Authenticator pattern 1")
@@ -97,7 +97,7 @@ public class MySubject {
     }
 }
 ~~~
-- Finally, you just need to add an abstract method (or empty method if the class is not abstract) with the annotation `@AuthenticateMethod(<patternID>)`. Note that you this method can have a body if you want. This method is the one which will be trigger the authentication at each call. You could for instance have the following code:
+- Finally, you just need to add an abstract method (or empty method if the class is not abstract) with the annotation `@AuthenticateMethod(patternID = <patternID>)`. Note that this method can have a body if you want. This method is the one which will be trigger the authentication at each call. You could for instance have the following code:
 ~~~java
 @ModelEntity
 @AuthenticatorSubject(patternID = "Authenticator pattern 1")
@@ -137,7 +137,7 @@ public class MySubject {
 
 ### Authenticator entity
 
-- Identify the _Authenticator_ class. It is the class whose instance will authenticate _Subjects_. This class should be annotated with `@ModelEntity` and `@Authenticator(<patternID>)`. Once again, the `<patternID>` should be the same as the one used to annotated the`_Subject_ class. You could, for instance, have the following code:
+- Identify the _Authenticator_ class. It is the class whose instance will authenticate _Subjects_. This class should be annotated with `@ModelEntity` and `@Authenticator(patternID = <patternID>)`. Once again, the `<patternID>` should be the same as the one used to annotated the`_Subject_ class. You could, for instance, have the following code:
 ~~~java
 @ModelEntity
 @Authenticator("Authenticator pattern 1")
@@ -145,7 +145,7 @@ public class MyAuthenticator {
     ...
 }
 ~~~
-- Identify the _request_ method. This method is the one which is called when a subject try to authenticate. Its role is to check the _Authentication Information_ (given as parameter of the method) and return a _Proof of Identity_. it should be annotated with `@RequestMethod(<patternID>)`. The parameter of this method should also be annotated with the annotation of the associated _Authentication Information_ getters. You could, for instance, have the following code:
+- Identify the _request_ method. This method is the one which is called when a subject try to authenticate. Its role is to check the _Authentication Information_ (given as parameter of the method) and return a _Proof of Identity_. it should be annotated with `@RequestMethod(patternID = <patternID>)`. The parameter of this method should also be annotated with the annotation of the associated _Authentication Information_ getters. You could, for instance, have the following code:
 ~~~java
 @ModelEntity
 @Authenticator(patternID = "Authenticator pattern 1")
@@ -167,5 +167,5 @@ Once the _Subject_ and _Authenticator_ classes are correctly annotated, the PAME
 - That different _Subjects_ have different _Authentication Information_. In the example above, different couples (login, hash). 
 
 
-Extra: You can annotated has many _Subject_ methods as you want with `@RequiresAuthentication(<patternID>`. This annotation will ensure that every call to the method will first trigger the authentication process (call to the _Subject authenticate_ method).
+Extra: You can annotated has many _Subject_ methods as you want with `@RequiresAuthentication(patternID = <patternID>`. This annotation will ensure that every call to the method will first trigger the authentication process (call to the _Subject authenticate_ method).
 
