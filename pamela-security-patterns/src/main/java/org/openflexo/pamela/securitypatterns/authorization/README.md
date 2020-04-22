@@ -144,8 +144,8 @@ public class Permission {
     @CheckAccess(patternID = "Authorization pattern 1")
     public boolean check(
         @SubjectID(patternID = "Authorization pattern 1", paramID = "username") String username,
-            @SubjectID(patternID = "Authorization pattern 1", paramID = "password") int password,
-            @ResourceID(patternID = "Authorization pattern 1", paramID = "path") String path,
+        @SubjectID(patternID = "Authorization pattern 1", paramID = "password") int password,
+        @ResourceID(patternID = "Authorization pattern 1", paramID = "path") String path,
         @MethodID(patternID = "Authorization pattern 1") String accessType
         ) 
     {
