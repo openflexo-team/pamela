@@ -167,5 +167,5 @@ Once the _Subject_ and _Authenticator_ classes are correctly annotated, the PAME
 - That different _Subjects_ have different _Authentication Information_. In the example above, different couples (login, hash). 
 
 
-Extra: You can annotated has many _Subject_ methods as you want with `@RequiresAuthentication(patternID = <patternID>`. This annotation will ensure that every call to the method will first trigger the authentication process (call to the _Subject authenticate_ method).
+Extra: You can annotate has many _Subject_ methods as you want with `@RequiresAuthentication(patternID = <patternID>`. This annotation will ensure that every call to the method will first trigger the authentication process (call to the _Subject authenticate_ method).
 
