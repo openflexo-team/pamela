@@ -330,6 +330,9 @@ public class ModelFactory implements IObjectGraphFactory {
 		} catch (ModelDefinitionException e) {
 			e.printStackTrace();
 			throw new ModelExecutionException(e);
+		} catch (ExceptionInInitializerError e) {
+			e.getCause().printStackTrace();
+			throw new ModelExecutionException(e);
 		}
 	}
 
