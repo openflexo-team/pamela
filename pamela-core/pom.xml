@@ -35,10 +35,10 @@
 		</plugins>
 	</build>
 	<dependencies>
-		<dependency>
+		<!--  <dependency>
 			<groupId>org.openflexo</groupId>
 			<artifactId>flexoutils</artifactId>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>org.openflexo</groupId>
 			<artifactId>connie-core</artifactId>
