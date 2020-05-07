@@ -223,6 +223,13 @@ public class TestUpdateWith {
 
 		assertEquals(0.066, getDistance(factory, c11, c21), 0.01);
 		assertEquals(0.0, getDistance(factory, b1, b2), 0.01);
+
+		System.out.println("----------> a1:");
+		System.out.println(factory.stringRepresentation(a1));
+		System.out.println("----------> a2:");
+		System.out.println(factory.stringRepresentation(a2));
+		System.out.println("Distance: " + getDistance(factory, a1, a2));
+
 		assertEquals(0.011, getDistance(factory, a1, a2), 0.01);
 
 		c21.setV1("Donald");

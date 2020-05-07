@@ -40,6 +40,7 @@
 package org.openflexo.pamela.factory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,6 +65,21 @@ public class CompareAndMergeUtils {
 	 * @return boolean indicating if update was successfull
 	 */
 	public static <I> boolean updateWith(ProxyMethodHandler<I> source, I obj) {
+		return updateWith(source, obj, new HashMap<>());
+	}
+
+	/**
+	 * Called to update source object while comparing it to opposite object, (which must be of right type!), examining each property
+	 * values.<br>
+	 * Collections are handled while trying to match updated objects with a given strategy<br>
+	 * Perform required changes on this object so that at the end of the call, equalsObject(object) shoud return true<br>
+	 * Also perform required notifications, so that it is safe to call that method in a deployed environment
+	 * 
+	 * @param obj
+	 *            object to update with, which must be of same type
+	 * @return boolean indicating if update was successfull
+	 */
+	private static <I> boolean updateWith(ProxyMethodHandler<I> source, I obj, Map updatedObjects) {
 
 		// System.out.println("updateWith between " + getObject() + " and " + obj);
 
@@ -83,6 +99,8 @@ public class CompareAndMergeUtils {
 		}
 
 		// System.out.println("Distance: " + getDistance(obj));
+
+		updatedObjects.put(source.getObject(), obj);
 
 		Iterator<ModelProperty<? super I>> properties;
 		try {
@@ -112,9 +130,18 @@ public class CompareAndMergeUtils {
 							}
 							else {
 								if (p.getAccessedEntity() != null && singleValue instanceof AccessibleProxyObject) {
+
+									if (updatedObjects.get(singleValue) == oppositeValue) {
+										// Cycle detected
+									}
+									else {
+										updateWith(source.getModelFactory().getHandler(singleValue), oppositeValue, updatedObjects);
+									}
+
 									// System.out
 									// .println("[" + Thread.currentThread().getName() + "] Ici-3 avec " + p.getPropertyIdentifier());
-									((AccessibleProxyObject) singleValue).updateWith(oppositeValue);
+									// ((AccessibleProxyObject) singleValue).updateWith(oppositeValue);
+
 								}
 								else {
 									// System.out
@@ -135,7 +162,12 @@ public class CompareAndMergeUtils {
 							Object o1 = values.get(m.idx1);
 							Object o2 = oppositeValues.get(m.idx2);
 							if (o1 instanceof AccessibleProxyObject) {
-								((AccessibleProxyObject) o1).updateWith(o2);
+								if (updatedObjects.get(o1) == o2) {
+									// Cycle detected
+								}
+								else {
+									updateWith(source.getModelFactory().getHandler(o1), o2, updatedObjects);
+								}
 							}
 							// Store desired index
 							reindex.put(o1, m.idx2);
@@ -180,7 +212,7 @@ public class CompareAndMergeUtils {
 	 * @return
 	 */
 	private static ListMatching match(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2) {
-		ListMatching returned = bruteForceMatch(source, l1, l2);
+		ListMatching returned = bruteForceMatch(source, l1, l2, new HashMap<>());
 		return returned;
 	}
 
@@ -191,14 +223,14 @@ public class CompareAndMergeUtils {
 	 * @param l2
 	 * @return
 	 */
-	private static ListMatching bruteForceMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2) {
+	private static ListMatching bruteForceMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2, Map updatedObjects) {
 		ListMatching returned = new ListMatching();
 
 		List<Object> list1 = new ArrayList<>(l1);
 		List<Object> list2 = new ArrayList<>(l2);
 
 		while (list1.size() > 0 && list2.size() > 0) {
-			Matched matched = getBestMatch(source, list1, list2);
+			Matched matched = getBestMatch(source, list1, list2, updatedObjects);
 			if (matched == null) {
 				break;
 			}
@@ -252,7 +284,7 @@ public class CompareAndMergeUtils {
 	 * @param l2
 	 * @return
 	 */
-	private static Matched getBestMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2) {
+	private static Matched getBestMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2, Map updatedObjects) {
 		Matched returned = null;
 		double bestDistance = 0.7; // Double.POSITIVE_INFINITY;
 		int m1 = 0, m2 = 0;
@@ -265,7 +297,7 @@ public class CompareAndMergeUtils {
 					ProxyMethodHandler<?> h2 = source.getModelFactory().getHandler(o1);
 					if (h1.getModelEntity() == h2.getModelEntity()) {
 						// Matching is possible only for exact same type
-						double d = getDistanceBetweenValues(source, o1, o2);
+						double d = getDistanceBetweenValues(source, o1, o2, updatedObjects);
 						if (d < bestDistance) {
 							returned = new Matched(i, j);
 							bestDistance = d;
@@ -286,8 +318,8 @@ public class CompareAndMergeUtils {
 	 * @param l2
 	 * @return
 	 */
-	private static ListMatching stupidMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2) {
-		System.out.println("On matche les deux listes " + l1 + " et " + l2);
+	private static ListMatching stupidMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2, Map updatedObjects) {
+		// System.out.println("On matche les deux listes " + l1 + " et " + l2);
 		ListMatching returned = new ListMatching();
 		if (l1.size() <= l2.size()) {
 			for (int i = 0; i < l1.size(); i++) {
@@ -309,7 +341,7 @@ public class CompareAndMergeUtils {
 		return returned;
 	}
 
-	public static double getDistanceBetweenValues(ProxyMethodHandler<?> source, Object v1, Object v2) {
+	private static double getDistanceBetweenValues(ProxyMethodHandler<?> source, Object v1, Object v2, Map visitedObjects) {
 		if (v1 == null) {
 			return (v2 == null ? 0.0 : 1.0);
 		}
@@ -329,7 +361,7 @@ public class CompareAndMergeUtils {
 		}
 		if (v1 instanceof AccessibleProxyObject && v2 instanceof AccessibleProxyObject) {
 			ProxyMethodHandler<?> handler = source.getModelFactory().getHandler(v1);
-			return getDistance(handler, v2);
+			return getDistance(handler, v2, visitedObjects);
 		}
 		return 1.0;
 	}
@@ -357,12 +389,28 @@ public class CompareAndMergeUtils {
 	 * @return
 	 */
 	public static <I> double getDistance(ProxyMethodHandler<I> source, Object obj) {
+		return getDistance(source, obj, new HashMap<>());
+	}
+
+	/**
+	 * Compute the distance (double value between 0.0 and 1.0) between this object and an opposite object (which must be of right type!) If
+	 * two objects are equals, return 0. If two objects are totally different, return 1.
+	 * 
+	 * @param object
+	 * @return
+	 */
+	private static <I> double getDistance(ProxyMethodHandler<I> source, Object obj, Map visitedObjects) {
 		if (source.getObject() == obj) {
 			return 0.0;
 		}
 		if (obj == null) {
 			return 1.0;
 		}
+
+		visitedObjects.put(source.getObject(), obj);
+
+		// System.out.println("visitedObjects=" + visitedObjects);
+
 		ProxyMethodHandler oppositeObjectHandler = source.getModelFactory().getHandler(obj);
 		if (oppositeObjectHandler == null) {
 			// Other object is not handled by the same factory
@@ -399,10 +447,13 @@ public class CompareAndMergeUtils {
 							System.out.println("SINGLE Property " + p.getPropertyIdentifier() + " ponderation=" + propertyPonderation);
 						}
 
-						if (singleValue != null || oppositeValue != null) {
+						if (visitedObjects.get(singleValue) == oppositeValue) {
+							// Cycle detected, don't go further
+						}
+						else if (singleValue != null || oppositeValue != null) {
 							totalPonderation += propertyPonderation;
 							if (!isEqual(singleValue, oppositeValue)) {
-								double valueDistance = getDistanceBetweenValues(source, singleValue, oppositeValue);
+								double valueDistance = getDistanceBetweenValues(source, singleValue, oppositeValue, visitedObjects);
 								distance = distance + valueDistance * propertyPonderation;
 								// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + "
 								// ponderation="
@@ -430,7 +481,7 @@ public class CompareAndMergeUtils {
 						if ((values != null && values.size() > 0) || (oppositeValues != null && oppositeValues.size() > 0)) {
 							totalPonderation += propertyPonderation;
 							if (!isEqual(values, oppositeValues)) {
-								double valueDistance = getDistanceBetweenListValues(source, values, oppositeValues);
+								double valueDistance = getDistanceBetweenListValues(source, values, oppositeValues, visitedObjects);
 								distance = distance + valueDistance * propertyPonderation;
 								// System.out.println("Property " + p.getPropertyIdentifier() + " distance=" + valueDistance + "
 								// ponderation="
@@ -470,7 +521,7 @@ public class CompareAndMergeUtils {
 		return propertyPonderation;
 	}
 
-	private static double getDistanceBetweenListValues(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2) {
+	private static double getDistanceBetweenListValues(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2, Map visitedObjects) {
 		if (l1 == null) {
 			return (l2 == null ? 0.0 : 1.0);
 		}
@@ -490,7 +541,12 @@ public class CompareAndMergeUtils {
 		for (Matched m : matching.matchedList) {
 			Object o1 = l1.get(m.idx1);
 			Object o2 = l2.get(m.idx2);
-			score += getDistanceBetweenValues(source, o1, o2);
+			if (visitedObjects.get(o1) == o2) {
+				// Cycle detected, don't go further
+			}
+			else {
+				score += getDistanceBetweenValues(source, o1, o2, visitedObjects);
+			}
 		}
 		return score / total;
 	}
