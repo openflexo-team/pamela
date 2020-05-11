@@ -118,4 +118,8 @@ public abstract class ValidationRule<R extends ValidationRule<R, V>, V extends V
 			getPropertyChangeSupport().firePropertyChange("isEnabled", !isEnabled, isEnabled);
 		}
 	}
+
+	public String getFragmentContext() {
+		return null;
+	}
 }
