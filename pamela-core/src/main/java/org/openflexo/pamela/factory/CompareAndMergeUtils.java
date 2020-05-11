@@ -81,7 +81,7 @@ public class CompareAndMergeUtils {
 	 */
 	private static <I> boolean updateWith(ProxyMethodHandler<I> source, I obj, Map updatedObjects) {
 
-		// System.out.println("updateWith between " + getObject() + " and " + obj);
+		// System.out.println("updateWith() between " + source.getObject() + " and " + obj);
 
 		if (source.getObject() == obj) {
 			return true;
@@ -133,9 +133,14 @@ public class CompareAndMergeUtils {
 
 									if (updatedObjects.get(singleValue) == oppositeValue) {
 										// Cycle detected
+										//System.out.println("On laisse tomber pour la propriete " + p + " singleValue=" + singleValue
+										//		+ " oppositeValue=" + oppositeValue);
 									}
 									else {
-										updateWith(source.getModelFactory().getHandler(singleValue), oppositeValue, updatedObjects);
+										if (!updateWith(source.getModelFactory().getHandler(singleValue), oppositeValue, updatedObjects)) {
+											System.out.println("Oupala, va falloir remplacer " + singleValue + " par " + oppositeValue);
+											source.invokeSetter(p, oppositeValue);
+										}
 									}
 
 									// System.out
@@ -153,10 +158,12 @@ public class CompareAndMergeUtils {
 						break;
 					case LIST:
 						Map<Object, Integer> reindex = new LinkedHashMap<>();
-						List<Object> values = (List<Object>) source.invokeGetter(p);// invokeGetterForListCardinality(p);
-						List<Object> oppositeValues = (List<Object>) oppositeObjectHandler.invokeGetter(p); // invokeGetterForListCardinality(p);
+						List<Object> values = new ArrayList<>((List<Object>) source.invokeGetter(p));// invokeGetterForListCardinality(p);
+						List<Object> oppositeValues = new ArrayList<>((List<Object>) oppositeObjectHandler.invokeGetter(p)); // invokeGetterForListCardinality(p);
 						ListMatching matching = match(source, values, oppositeValues);
-						// System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
+						//System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
+						//System.out.println("values=" + values);
+						//System.out.println("oppositeValues=" + oppositeValues);
 						for (Matched m : matching.matchedList) {
 							// System.out.println("match " + m.idx1 + " with " + m.idx2);
 							Object o1 = values.get(m.idx1);
@@ -178,7 +185,10 @@ public class CompareAndMergeUtils {
 							Object removedObject = values.get(r.removedIndex);
 							source.invokeRemover(p, removedObject);
 						}
-						for (Added a : matching.added) {
+
+						// Do it in reverse order too, to keep original order in the case of multiple adds
+						for (int i = matching.added.size() - 1; i >= 0; i--) {
+							Added a = matching.added.get(i);
 							Object addedObject = oppositeValues.get(a.originalIndex);
 							source.invokeAdder(p, addedObject);
 							// Store desired index
