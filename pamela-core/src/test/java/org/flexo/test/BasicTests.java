@@ -650,7 +650,7 @@ public class BasicTests extends AbstractPAMELATest {
 			startNode.delete();
 		} catch (Throwable t) {
 			t.printStackTrace();
-			System.exit(-1);
+			fail();
 		}
 		assertTrue(startNode.isDeleted());
 		assertFalse(edge1.isDeleted());
