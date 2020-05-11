@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.openflexo</groupId>
 		<artifactId>pamela</artifactId>
-<<<<<<< HEAD
-       		<version>1.4.1</version>
-=======
-       		<version>1.5-SNAPSHOT</version>
->>>>>>> dev
+		<version>1.5-SNAPSHOT</version>
 	</parent>
 	<artifactId>pamela-core</artifactId>
 	<name>Pamela-core</name>
@@ -37,43 +35,37 @@
 		</plugins>
 	</build>
 	<dependencies>
-		<dependency>
+		<!--  <dependency>
 			<groupId>org.openflexo</groupId>
 			<artifactId>flexoutils</artifactId>
-		</dependency>
+		</dependency> -->
 		<dependency>
-<<<<<<< HEAD
 			<groupId>org.openflexo</groupId>
 			<artifactId>connie-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-=======
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
->>>>>>> dev
-		</dependency>
-		<!-- <dependency>
-			<groupId>org.jdom</groupId>
-			<artifactId>jdom2</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-		</dependency>-->
+		</dependency>
+		<!-- <dependency> <groupId>org.jdom</groupId> <artifactId>jdom2</artifactId> 
+			</dependency> <dependency> <groupId>com.google.guava</groupId> <artifactId>guava</artifactId> 
+			</dependency> -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-	    <dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 			<version>${junit.version}</version>
 		</dependency>
 	</dependencies>
-	<description>Modelling framework core component.</description>
+	<!--  <description>Modelling framework core component.</description>-->
 </project>
 
