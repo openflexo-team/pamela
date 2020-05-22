@@ -51,6 +51,9 @@ import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.toolbox.StringUtils;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 public class CompareAndMergeUtils {
 
 	/**
@@ -65,7 +68,49 @@ public class CompareAndMergeUtils {
 	 * @return boolean indicating if update was successfull
 	 */
 	public static <I> boolean updateWith(ProxyMethodHandler<I> source, I obj) {
-		return updateWith(source, obj, new HashMap<>());
+		List<AccessibleProxyObject> outsideReferences = new ArrayList<>();
+		BiMap<Object, Object> updatedObjects = HashBiMap.create();
+		boolean returned = updateWith(source, obj, updatedObjects, outsideReferences);
+		System.out.println("-------> Apres l'update, j'ai les objets suivants a verifier:");
+		for (AccessibleProxyObject object : outsideReferences) {
+			System.out.println("  > " + object);
+			rebindOutsideReferences(updatedObjects, source.getModelFactory().getHandler(object));
+		}
+		return returned;
+	}
+
+	private static <I> void rebindOutsideReferences(BiMap<Object, Object> mappedObjects, ProxyMethodHandler<I> objectHandler) {
+		Iterator<ModelProperty<? super I>> properties;
+		try {
+			properties = objectHandler.getModelEntity().getProperties();
+		} catch (ModelDefinitionException e) {
+			return;
+		}
+		while (properties.hasNext()) {
+			ModelProperty p = properties.next();
+			if (!p.isDerived()) {
+				switch (p.getCardinality()) {
+					case SINGLE:
+						Object singleValue = objectHandler.invokeGetter(p);
+						Object validReference = mappedObjects.inverse().get(singleValue);
+						if (validReference != null) {
+							System.out.println(
+									"Tiens la faudrait rebinder correctement " + singleValue + " > " + validReference + " pour " + p);
+							objectHandler.invokeSetter(p, validReference);
+							System.out.println("Et donc: " + objectHandler.invokeGetter(p));
+							System.out.println("Equals: " + validReference.equals(singleValue));
+							System.out.println("EqualsObject: " + ((AccessibleProxyObject) validReference).equalsObject(singleValue));
+						}
+						break;
+					case LIST:
+						List<Object> values = new ArrayList<>((List<Object>) objectHandler.invokeGetter(p));// invokeGetterForListCardinality(p);
+						break;
+					default:
+						break;
+				}
+			}
+		}
+
 	}
 
 	/**
@@ -79,7 +124,8 @@ public class CompareAndMergeUtils {
 	 *            object to update with, which must be of same type
 	 * @return boolean indicating if update was successfull
 	 */
-	private static <I> boolean updateWith(ProxyMethodHandler<I> source, I obj, Map updatedObjects) {
+	private static <I> boolean updateWith(ProxyMethodHandler<I> source, I obj, BiMap<Object, Object> mappedObjects,
+			List<AccessibleProxyObject> outsideReferences) {
 
 		// System.out.println("updateWith() between " + source.getObject() + " and " + obj);
 
@@ -100,7 +146,7 @@ public class CompareAndMergeUtils {
 
 		// System.out.println("Distance: " + getDistance(obj));
 
-		updatedObjects.put(source.getObject(), obj);
+		mappedObjects.put(source.getObject(), obj);
 
 		Iterator<ModelProperty<? super I>> properties;
 		try {
@@ -109,21 +155,61 @@ public class CompareAndMergeUtils {
 			return false;
 		}
 
-		// System.out.println("****** updateWith in " + getModelEntity());
+		boolean debug2 = false;
+		System.out.println(">>>>>>> updateWith " + source.getObject() + " with " + obj);
+		if (source.getObject().toString().contains("FMLRTVirtualModelInstanceModelSlotImpl")) {
+			debug2 = true;
+		}
 
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
 
-			// System.out.println(" > " + p.getPropertyIdentifier() + " derived=" + p.isDerived());
+			if (debug2) {
+				System.out.println(" > " + p.getPropertyIdentifier() + " derived=" + p.isDerived());
+			}
 
 			if (!p.isDerived()) {
-				// System.out.println("[" + Thread.currentThread().getName() + "] Propriete " + p.getPropertyIdentifier());
+				boolean debug = false;
+
+				if (p.getPropertyIdentifier().contains("flexoBehaviour")) {
+					debug = true;
+				}
 
 				switch (p.getCardinality()) {
 					case SINGLE:
 						Object singleValue = source.invokeGetter(p);
 						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
 						// System.out.println("[" + Thread.currentThread().getName() + "] Ici-1 avec " + p.getPropertyIdentifier());
+
+						/*if (p.getPropertyIdentifier().equals("accessedVirtualModelResource")) {
+							System.out.println("OK, je m'occupe de accessedVirtualModelResource pour " + source.getModelEntity());
+							System.out.println("singleValue=" + singleValue);
+							System.out.println("oppositeValue=" + oppositeValue);
+						}*/
+
+						if (debug2) {
+							System.out.println("Pour p=" + p);
+							System.out.println("singleValue=" + singleValue + " oppositeValue=" + oppositeValue + " equals="
+									+ isEqual(singleValue, oppositeValue));
+						}
+
+						/*if (isEqual(singleValue, oppositeValue)) {
+							if (singleValue != oppositeValue) {
+								if (debug2) {
+									System.out.println("Hopala, c'est pas les meme meme s'il sont egaux");
+								}
+								source.invokeSetter(p, oppositeValue);
+								if (debug2) {
+									System.out.println("Et donc: " + source.invokeGetter(p));
+								}
+							}
+							else {
+								if (debug2) {
+									System.out.println("Cool c'est vraiment les memes");
+								}
+							}
+						}
+						else {*/
 						if (!isEqual(singleValue, oppositeValue)) {
 							if (p.getUpdater() != null) {
 								source.invokeUpdater(p, oppositeValue);
@@ -131,15 +217,42 @@ public class CompareAndMergeUtils {
 							else {
 								if (p.getAccessedEntity() != null && singleValue instanceof AccessibleProxyObject) {
 
-									if (updatedObjects.get(singleValue) == oppositeValue) {
-										// Cycle detected
-										//System.out.println("On laisse tomber pour la propriete " + p + " singleValue=" + singleValue
-										//		+ " oppositeValue=" + oppositeValue);
+									if (oppositeValue == null) {
+										source.invokeSetter(p, oppositeValue);
 									}
 									else {
-										if (!updateWith(source.getModelFactory().getHandler(singleValue), oppositeValue, updatedObjects)) {
-											System.out.println("Oupala, va falloir remplacer " + singleValue + " par " + oppositeValue);
-											source.invokeSetter(p, oppositeValue);
+										if (mappedObjects.get(singleValue) == oppositeValue) {
+											// Cycle detected
+											// System.out.println("On laisse tomber pour la propriete " + p + " singleValue=" + singleValue
+											// + " oppositeValue=" + oppositeValue);
+										}
+										else {
+											if (debug2) {
+												System.out.println("OK on met a jour " + singleValue + " avec " + oppositeValue);
+												for (Object o : mappedObjects.keySet()) {
+													System.out.println(" > " + o + " -> " + mappedObjects.get(o));
+												}
+											}
+											if (mappedObjects.get(singleValue) == oppositeValue) {
+												System.out.println("YES !!");
+												System.exit(-1);
+											}
+											if (!updateWith(source.getModelFactory().getHandler(singleValue), oppositeValue, mappedObjects,
+													outsideReferences)) {
+												// System.out.println("Oupala, va falloir remplacer " + singleValue + " par " +
+												// oppositeValue);
+												source.invokeSetter(p, oppositeValue);
+												if (oppositeValue instanceof AccessibleProxyObject) {
+													outsideReferences.add((AccessibleProxyObject) oppositeValue);
+												}
+											}
+											if (debug2) {
+												System.out.println("Et on fait un set de " + oppositeValue);
+											}
+											// source.invokeSetter(p, oppositeValue);
+											if (debug2) {
+												System.out.println("En sortie on a donc " + source.invokeGetter(p));
+											}
 										}
 									}
 
@@ -151,7 +264,12 @@ public class CompareAndMergeUtils {
 								else {
 									// System.out
 									// .println("[" + Thread.currentThread().getName() + "] Ici-4 avec " + p.getPropertyIdentifier());
+									// System.out.println(">>>>> Donc je sette pour " + p.getPropertyIdentifier() + " value=" +
+									// oppositeValue);
 									source.invokeSetter(p, oppositeValue);
+									if (oppositeValue instanceof AccessibleProxyObject) {
+										outsideReferences.add((AccessibleProxyObject) oppositeValue);
+									}
 								}
 							}
 						}
@@ -161,19 +279,22 @@ public class CompareAndMergeUtils {
 						List<Object> values = new ArrayList<>((List<Object>) source.invokeGetter(p));// invokeGetterForListCardinality(p);
 						List<Object> oppositeValues = new ArrayList<>((List<Object>) oppositeObjectHandler.invokeGetter(p)); // invokeGetterForListCardinality(p);
 						ListMatching matching = match(source, values, oppositeValues);
-						//System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
-						//System.out.println("values=" + values);
-						//System.out.println("oppositeValues=" + oppositeValues);
+						if (debug) {
+							System.out.println("For property " + p.getPropertyIdentifier() + " matching=" + matching);
+							System.out.println("values=" + values);
+							System.out.println("oppositeValues=" + oppositeValues);
+						}
 						for (Matched m : matching.matchedList) {
-							// System.out.println("match " + m.idx1 + " with " + m.idx2);
+							System.out.println("match " + m.idx1 + " with " + m.idx2);
 							Object o1 = values.get(m.idx1);
 							Object o2 = oppositeValues.get(m.idx2);
 							if (o1 instanceof AccessibleProxyObject) {
-								if (updatedObjects.get(o1) == o2) {
+								if (mappedObjects.get(o1) == o2) {
 									// Cycle detected
+									System.out.println("Cycle detected, abort");
 								}
 								else {
-									updateWith(source.getModelFactory().getHandler(o1), o2, updatedObjects);
+									updateWith(source.getModelFactory().getHandler(o1), o2, mappedObjects, outsideReferences);
 								}
 							}
 							// Store desired index
@@ -190,17 +311,26 @@ public class CompareAndMergeUtils {
 						for (int i = matching.added.size() - 1; i >= 0; i--) {
 							Added a = matching.added.get(i);
 							Object addedObject = oppositeValues.get(a.originalIndex);
+							System.out.println("Add in " + source.getObject() + " : " + addedObject);
 							source.invokeAdder(p, addedObject);
+							if (addedObject instanceof AccessibleProxyObject) {
+								outsideReferences.add((AccessibleProxyObject) addedObject);
+							}
 							// Store desired index
 							reindex.put(addedObject, a.insertedIndex);
 						}
 						// Now handle eventual reindexing of property values
 						for (Object o : reindex.keySet()) {
 							int idx = reindex.get(o);
-							if (values.indexOf(o) != idx) {
-								// System.out.println("Moving " + values.indexOf(o) + " to " + idx);
+							if (values.indexOf(o) != idx && values.indexOf(o) != -1) {
+								System.out.println("Moving " + values.indexOf(o) + " to " + idx);
 								source.invokeReindexer(p, o, idx);
 							}
+						}
+
+						if (debug) {
+							System.out.println("A la fin: " + source.invokeGetter(p));
+							Thread.dumpStack();
 						}
 
 						break;
@@ -210,7 +340,8 @@ public class CompareAndMergeUtils {
 			}
 		}
 
-		// System.out.println("ok, equals return true for " + getObject() + " and " + object);
+		System.out.println("<<<<<<< DONE updateWith " + source.getObject() + " with " + obj);
+
 		return true;
 	}
 
@@ -233,14 +364,15 @@ public class CompareAndMergeUtils {
 	 * @param l2
 	 * @return
 	 */
-	private static ListMatching bruteForceMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2, Map updatedObjects) {
+	private static ListMatching bruteForceMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2,
+			Map<Object, Object> mappedObjects) {
 		ListMatching returned = new ListMatching();
 
 		List<Object> list1 = new ArrayList<>(l1);
 		List<Object> list2 = new ArrayList<>(l2);
 
 		while (list1.size() > 0 && list2.size() > 0) {
-			Matched matched = getBestMatch(source, list1, list2, updatedObjects);
+			Matched matched = getBestMatch(source, list1, list2, mappedObjects);
 			if (matched == null) {
 				break;
 			}
@@ -294,7 +426,7 @@ public class CompareAndMergeUtils {
 	 * @param l2
 	 * @return
 	 */
-	private static Matched getBestMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2, Map updatedObjects) {
+	private static Matched getBestMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2, Map<Object, Object> mappedObject) {
 		Matched returned = null;
 		double bestDistance = 0.7; // Double.POSITIVE_INFINITY;
 		int m1 = 0, m2 = 0;
@@ -307,7 +439,7 @@ public class CompareAndMergeUtils {
 					ProxyMethodHandler<?> h2 = source.getModelFactory().getHandler(o1);
 					if (h1.getModelEntity() == h2.getModelEntity()) {
 						// Matching is possible only for exact same type
-						double d = getDistanceBetweenValues(source, o1, o2, updatedObjects);
+						double d = getDistanceBetweenValues(source, o1, o2, mappedObject);
 						if (d < bestDistance) {
 							returned = new Matched(i, j);
 							bestDistance = d;
@@ -328,7 +460,8 @@ public class CompareAndMergeUtils {
 	 * @param l2
 	 * @return
 	 */
-	private static ListMatching stupidMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2, Map updatedObjects) {
+	private static ListMatching stupidMatch(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2,
+			Map<Object, Object> mappedObjects) {
 		// System.out.println("On matche les deux listes " + l1 + " et " + l2);
 		ListMatching returned = new ListMatching();
 		if (l1.size() <= l2.size()) {
@@ -351,7 +484,7 @@ public class CompareAndMergeUtils {
 		return returned;
 	}
 
-	private static double getDistanceBetweenValues(ProxyMethodHandler<?> source, Object v1, Object v2, Map visitedObjects) {
+	private static double getDistanceBetweenValues(ProxyMethodHandler<?> source, Object v1, Object v2, Map<Object, Object> visitedObjects) {
 		if (v1 == null) {
 			return (v2 == null ? 0.0 : 1.0);
 		}
@@ -531,7 +664,8 @@ public class CompareAndMergeUtils {
 		return propertyPonderation;
 	}
 
-	private static double getDistanceBetweenListValues(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2, Map visitedObjects) {
+	private static double getDistanceBetweenListValues(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2,
+			Map<Object, Object> visitedObjects) {
 		if (l1 == null) {
 			return (l2 == null ? 0.0 : 1.0);
 		}
