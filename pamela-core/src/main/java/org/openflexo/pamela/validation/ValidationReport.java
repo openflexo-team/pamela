@@ -383,7 +383,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			return allInfoIssues;
 		}
 
-		protected void addToValidationIssues(ValidationIssue<?, ? super V> issue) {
+		public void addToValidationIssues(ValidationIssue<?, ? super V> issue) {
 			if (issue instanceof CompoundIssue) {
 				for (ValidationIssue<?, ? super V> anIssue : ((CompoundIssue<?, ? super V>) issue).getContainedIssues()) {
 					addToValidationIssues(anIssue);
@@ -394,7 +394,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			}
 		}
 
-		protected void removeFromValidationIssues(ValidationIssue<?, ?> issue) {
+		public void removeFromValidationIssues(ValidationIssue<?, ?> issue) {
 			if (issue instanceof CompoundIssue) {
 				for (ValidationIssue<?, ?> anIssue : ((CompoundIssue<?, ?>) issue).getContainedIssues()) {
 					removeFromValidationIssues(anIssue);
@@ -475,6 +475,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		return DELETED_PROPERTY;
 	}
 
+	public ValidationNode<?> getRootNode() {
+		return rootNode;
+	}
+
 	public ReportMode getReportMode() {
 		return mode;
 	}
@@ -515,6 +519,11 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		// Notify validation is finished
 		getValidationModel().getPropertyChangeSupport().firePropertyChange(VALIDATION_END, null, getRootObject());
 
+		notifyChange();
+
+	}
+
+	protected void notifyChange() {
 		getPropertyChangeSupport().firePropertyChange("filteredIssues", null, getFilteredIssues());
 		getPropertyChangeSupport().firePropertyChange("allErrors", null, getAllErrors());
 		getPropertyChangeSupport().firePropertyChange("allWarnings", null, getAllWarnings());
@@ -560,6 +569,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	public int getErrorsCount() {
 		return getAllErrors().size();
+	}
+
+	public int getWarningsCount() {
+		return getAllWarnings().size();
 	}
 
 	public Collection<ValidationIssue<?, ?>> getAllIssues() {
