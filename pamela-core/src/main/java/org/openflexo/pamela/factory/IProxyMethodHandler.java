@@ -162,9 +162,9 @@ public class IProxyMethodHandler {
 		if (oldValue == newValue) {
 			return true;
 		}
-		/*if (oldValue instanceof AccessibleProxyObject && newValue instanceof AccessibleProxyObject) {
+		if (oldValue instanceof AccessibleProxyObject && newValue instanceof AccessibleProxyObject) {
 			return ((AccessibleProxyObject) oldValue).equalsObject(newValue);
-		}*/
+		}
 		if (oldValue instanceof List && newValue instanceof List) {
 			List<Object> l1 = (List<Object>) oldValue;
 			List<Object> l2 = (List<Object>) newValue;
