@@ -193,7 +193,15 @@ public class CompareAndMergeUtils {
 
 		// System.out.println("Distance: " + getDistance(obj));
 
-		mappedObjects.put(source.getObject(), obj);
+		if (mappedObjects.get(source.getObject()) != null) {
+			if (mappedObjects.get(source.getObject()) != obj) {
+				System.err.println("Mapped new value for " + source.getObject() + " was: " + mappedObjects.get(source.getObject()));
+				mappedObjects.forcePut(source.getObject(), obj);
+			}
+		}
+		else {
+			mappedObjects.put(source.getObject(), obj);
+		}
 
 		Iterator<ModelProperty<? super I>> properties;
 		try {
