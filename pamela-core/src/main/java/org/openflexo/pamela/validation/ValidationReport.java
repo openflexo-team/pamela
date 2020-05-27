@@ -551,6 +551,9 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		if (validationNode != null) {
 			validationNode.revalidate();
 		}
+		getPropertyChangeSupport().firePropertyChange("allIssues", null, getAllIssues());
+		getPropertyChangeSupport().firePropertyChange("allErrors", null, getAllErrors());
+		getPropertyChangeSupport().firePropertyChange("allWarnings", null, getAllWarnings());
 
 	}
 
