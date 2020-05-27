@@ -262,13 +262,13 @@ public class CompareAndMergeUtils {
 						List<Object> oppositeValues = new ArrayList<>((List<Object>) oppositeObjectHandler.invokeGetter(p)); // invokeGetterForListCardinality(p);
 						ListMatching matching = match(source, values, oppositeValues);
 						for (Matched m : matching.matchedList) {
-							System.out.println("match " + m.idx1 + " with " + m.idx2);
+							// System.out.println("match " + m.idx1 + " with " + m.idx2);
 							Object o1 = values.get(m.idx1);
 							Object o2 = oppositeValues.get(m.idx2);
 							if (o1 instanceof AccessibleProxyObject) {
 								if (mappedObjects.get(o1) == o2) {
 									// Cycle detected
-									System.out.println("Cycle detected, abort");
+									// System.out.println("Cycle detected, abort");
 								}
 								else {
 									updateWith(source.getModelFactory().getHandler(o1), o2, mappedObjects, outsideReferences);
