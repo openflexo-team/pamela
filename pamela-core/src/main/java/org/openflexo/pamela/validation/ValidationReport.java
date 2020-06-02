@@ -174,6 +174,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		private boolean _updateChildren() {
 
+			if (object == null) {
+				return false;
+			}
+
 			boolean childrenWereAdded = false;
 			Collection<? extends Validable> embeddedValidableObjects = object.getEmbeddedValidableObjects();
 
@@ -195,6 +199,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		}
 
 		private void _performValidate() {
+
+			if (object == null) {
+				return;
+			}
 
 			ValidationRuleSet<? super V> ruleSet = getValidationModel().getRuleSet(object);
 
@@ -547,9 +555,11 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	 */
 	public <V extends Validable> void revalidate(V validable) throws InterruptedException {
 
-		ValidationNode<V> validationNode = getValidationNode(validable);
-		if (validationNode != null) {
-			validationNode.revalidate();
+		if (validable != null) {
+			ValidationNode<V> validationNode = getValidationNode(validable);
+			if (validationNode != null) {
+				validationNode.revalidate();
+			}
 		}
 		getPropertyChangeSupport().firePropertyChange("allIssues", null, getAllIssues());
 		getPropertyChangeSupport().firePropertyChange("allErrors", null, getAllErrors());
@@ -579,19 +589,31 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	}
 
 	public Collection<ValidationIssue<?, ?>> getAllIssues() {
-		return (Collection) rootNode.getAllIssues();
+		if (rootNode != null) {
+			return (Collection) rootNode.getAllIssues();
+		}
+		return Collections.emptyList();
 	}
 
 	public Collection<ValidationError<?, ?>> getAllErrors() {
-		return (Collection) rootNode.getAllErrors();
+		if (rootNode != null) {
+			return (Collection) rootNode.getAllErrors();
+		}
+		return Collections.emptyList();
 	}
 
 	public Collection<ValidationWarning<?, ?>> getAllWarnings() {
-		return (Collection) rootNode.getAllWarnings();
+		if (rootNode != null) {
+			return (Collection) rootNode.getAllWarnings();
+		}
+		return Collections.emptyList();
 	}
 
 	public Collection<InformationIssue<?, ?>> getAllInfoIssues() {
-		return (Collection) rootNode.getAllInfoIssues();
+		if (rootNode != null) {
+			return (Collection) rootNode.getAllInfoIssues();
+		}
+		return Collections.emptyList();
 	}
 
 	public ValidationModel getValidationModel() {
@@ -599,7 +621,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	}
 
 	public Validable getRootObject() {
-		return rootNode.getObject();
+		if (rootNode != null) {
+			return rootNode.getObject();
+		}
+		return null;
 	}
 
 	@NotificationUnsafe
