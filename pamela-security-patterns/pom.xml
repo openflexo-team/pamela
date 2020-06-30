@@ -9,11 +9,11 @@
 		<version>1.5</version>
 	</parent>
 	<artifactId>pamela-core</artifactId>
-	<name>Pamela-core</name>
+	<name>Pamela-Security-Patterns</name>
 	<properties>
 		<changes.componentfilter>AND component=pamela-core</changes.componentfilter>
 	</properties>
-	<description>Modelling framework core component.</description>
+	<description>Modelling framework SecurityPattern component.</description>
 	<build>
 		<plugins>
 			<plugin>
@@ -42,6 +42,10 @@
 		<dependency>
 			<groupId>org.openflexo</groupId>
 			<artifactId>connie-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.openflexo</groupId>
+			<artifactId>pamela-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.javassist</groupId>
