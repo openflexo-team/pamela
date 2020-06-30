@@ -25,6 +25,7 @@
     </issueManagement>
     <modules>
         <module>pamela-core</module>
+        <module>pamela-security-patterns</module>
         <!--  <module>pamela-editor</module> -->
     </modules>
     <!-- ************
