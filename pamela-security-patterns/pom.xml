@@ -11,7 +11,7 @@
 	<artifactId>pamela-security-patterns</artifactId>
 	<name>Pamela-Security-Patterns</name>
 	<properties>
-		<changes.componentfilter>AND component=pamela-core</changes.componentfilter>
+		<changes.componentfilter>AND component=pamela-security-patterns</changes.componentfilter>
 	</properties>
 	<description>Modelling framework SecurityPattern component.</description>
 	<build>
