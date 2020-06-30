@@ -6,9 +6,11 @@ blah blah blah
   
 ### Implemented patterns
 
- - [Authenticator](../Authenticator.html)
+ - [Authenticator](Authenticator.html)
  - [Authorization](Authorization.html)
- - SingleAccessPoint
- - Owner
+ - [SingleAccessPoint](SingleAccessPoint.html)
+ - [Owner](Owner.html)
+ 
+ 
 
 

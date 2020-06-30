@@ -6,6 +6,12 @@ This security pattern is used to implement an authentication mechanism. A class 
 
 ![](../../../img/authenticator.png)
 
+![](/images/components/pamela/PamelaScreenshot)
+
+![](/images/components/pamela/doc/authorization.png)
+
+![](/images/components/pamela/doc/authorization)
+
 This pattern allows _Subject_ to be authenticated using a set of objects known as _Authentication Information_. These objects are used by an _Authenticator_ to generate a security token known as _Proof of Identity_. The authentication mechanism is the generation of _Proof of Identity_ by an _Authenticator_ from a _Subject_ _Authentication Information_ and its assignment in a specific field of the subject class.
 
 ## How to use the pattern?
