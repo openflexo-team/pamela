@@ -21,7 +21,7 @@ public class mySubject {
 }
 ~~~
 
-- Identify the _Subject Identifier_ getter(s). They will be used to determine whether a _Subject_ instance is authorized to access a _Resource_ instance. Each of these getters should be annotated with `@SubjectID(patternID = <patternID>, paramID = <paramID>`). The <paramID> is a String identifying getter. You could, for instance, have the following code:
+- Identify the _Subject Identifier_ getter(s). They will be used to determine whether a _Subject_ instance is authorized to access a _Resource_ instance. Each of these getters should be annotated with `@SubjectID(patternID = <patternID>, paramID = <paramID>`). The `<paramID>` is a String identifying getter. You could, for instance, have the following code:
 ~~~java
 @ModelEntity
 @AuthorizationSubject(patternID = "Authorization pattern 1")
