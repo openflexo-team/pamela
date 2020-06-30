@@ -8,7 +8,7 @@
 		<artifactId>pamela</artifactId>
 		<version>1.5</version>
 	</parent>
-	<artifactId>pamela-core</artifactId>
+	<artifactId>pamela-security-patterns</artifactId>
 	<name>Pamela-Security-Patterns</name>
 	<properties>
 		<changes.componentfilter>AND component=pamela-core</changes.componentfilter>
