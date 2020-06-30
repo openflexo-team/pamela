@@ -38,8 +38,8 @@
 
 		<menu name="Pamela">
 			<item name="Home" href="index.html" />
-			<item name="Pamela-core" href="pamela-core/index.html" />
-			<item name="Pamela-editor" href="pamela-editor/index.html" />
+			<item name="Pamela-Core" href="pamela-core/index.html" />
+			<item name="Pamela-SecurityPatterns" href="pamela-security-patterns/index.html" />
 		</menu>
 
 		<menu ref="modules" />

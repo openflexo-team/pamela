@@ -44,10 +44,6 @@
 			<artifactId>connie-core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.openflexo</groupId>
-			<artifactId>pamela-core</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
 		</dependency>
