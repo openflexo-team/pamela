@@ -8,7 +8,7 @@
     <!-- ************
    	Component identity and specific information
       -->
-    <version>1.5-SNAPSHOT</version>
+    <version>1.5</version>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>pamela</artifactId>
     <name>Pamela</name>
@@ -25,13 +25,14 @@
     </issueManagement>
     <modules>
         <module>pamela-core</module>
+        <module>pamela-security-patterns</module>
         <!--  <module>pamela-editor</module> -->
     </modules>
     <!-- ************
 	Properties
       -->
     <properties>
-        <connie.version>1.5-SNAPSHOT</connie.version>
+        <connie.version>1.5</connie.version>
         <javassist.version>3.18.0-GA</javassist.version>
 	    <changes.componentfilter>AND component=*</changes.componentfilter>
         <pamela.logo>https://media.openflexo.org/images/pamela_logo64x64.png</pamela.logo>

@@ -1,26 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- voir http://books.sonatype.com/mvnref-book/reference/site-generation-sect-site-appearance.html -->
 
 <project name="Maven" xmlns="http://maven.apache.org/DECORATION/1.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
-
-	<bannerLeft>
-		<name>Pamela</name>
-		<src>${pamela.logo}</src>
-		<href>https://openflexo.org/tiki/Pamela</href>
-	</bannerLeft>
-	<bannerRight>
-		<name>Openflexo</name>
-		<src>${organization.logo}</src>
-		<href>http://openflexo.org/</href>
-	</bannerRight>
+	<!-- <bannerLeft> <name>Openflexo</name> <src>images/openflexo2.png</src> 
+		<href>http://openflexo.org/</href> </bannerLeft> <bannerRight> <src>http://maven.apache.org/images/maven-small.gif</src> 
+		</bannerRight> -->
 	<skin>
 		<groupId>org.openflexo</groupId>
 		<artifactId>openflexo-skin</artifactId>
 		<version>1.3-SNAPSHOT</version>
 	</skin>
-
-
 	<custom>
 		<openflexo-skin>
 			<sideMenus>true</sideMenus>
@@ -36,13 +27,22 @@
 			img="https://support.openflexo.org/images/components/pamela/pamela_logo.png">
 		</menu>
 
-		<menu name="Pamela">
+		<menu name="Pamela Security Patterns">
 			<item name="Home" href="index.html" />
-			<item name="Pamela-Core" href="pamela-core/index.html" />
-			<item name="Pamela-SecurityPatterns" href="pamela-security-patterns/index.html" />
+			<item name="Javadoc" href="./apidocs/index.html" />
 		</menu>
 
-		<menu ref="modules" />
+		<menu name="Security Patterns Library">
+			<item name="Authenticator" href="Authenticator.html" />
+			<item name="Authorization" href="Authorization.html" />
+			<item name="SingleAccessPoint" href="SingleAccessPoint.html" />
+			<item name="Owner" href="Owner.html" />
+		</menu>
+
+		<menu ref="parent" />
+
 		<menu ref="reports" />
+
 	</body>
+
 </project>
