@@ -4,7 +4,7 @@
  
 blah blah blah
   
-### Implemented patterns
+## Implemented patterns
 
  - [Authenticator](Authenticator.html)
  - [Authorization](Authorization.html)

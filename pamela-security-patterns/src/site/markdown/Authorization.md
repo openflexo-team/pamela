@@ -171,9 +171,13 @@ public class Permission {
 ## How does it work?
 
 Once all three classes are correctly annotated, the pattern will ensure that every call to a _Subject access method_ is handled as followed:
+
 - The _Resource_ whose id is given as a parameter is retrieved by the pattern. That way, the _Subjects_ do not need to have any references to _Resource_.
+
 - The _Permission Checker_ of the said _Resource_ is retrieved. Its _Check_ method is called with the right parameters.
+
 - If the _Check_ call returns `true`, then the correct _Resource access method_ is called and the result of the call is returned.
+
 - If the _Check_ call returns `false`, an exception is thrown and no _Resource_ method is called.
 
 In addition, the pattern will ensure that the _Subject_ and _Resource Identifier_ do not change throughout runtime. It will also ensure that the references to a _Permission Checker_ of a _Resource_ does not change either.
