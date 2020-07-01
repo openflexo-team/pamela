@@ -1,12 +1,10 @@
-# Authenticator pattern tutorial
+# Authenticator pattern
 
 ## What is the _Authenticator_ pattern?
 
 This security pattern is used to implement an authentication mechanism. A class diagram of the pattern is given below.
 
-![prout](https://support.openflexo.org/images/components/pamela/doc/authenticator.png)
-
-![prout2](https://support.openflexo.org/images/components/pamela/doc/authenticator)
+![Authenticator](https://support.openflexo.org/images/components/pamela/doc/authenticator.png)
 
 This pattern allows _Subject_ to be authenticated using a set of objects known as _Authentication Information_. 
 

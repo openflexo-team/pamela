@@ -1,4 +1,4 @@
-# SingleAccessPoint pattern tutorial
+# SingleAccessPoint pattern
 
 ## What is the _SingleAccessPoint_ pattern?
 

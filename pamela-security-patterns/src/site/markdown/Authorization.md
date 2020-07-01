@@ -1,10 +1,10 @@
-# Authorization pattern tutorial
+# Authorization pattern
 
 ## What is the _Authorization_ pattern?
 
 This security pattern is used to implement an authentication mechanism. A class diagram of the pattern is given below.
 
-![](../../img/authorization.png)
+![Authorization](https://support.openflexo.org/images/components/pamela/doc/authorization.png)
 
 PAMELA implementation of the pattern is build around three entities: _Subjects_, _Resources_ and _Permission Checkers_. _Subjects_ are the entities which want to access the _Resource_. _Resources_ need to be secured. Each of these have a _Permission Checker_ which can say whether an access to the _Resource_ is authorized based on the _Resource Identifier_ and the _Subject Identifier_ trying to access the resource. The authorization mechanism is thus the dynamic check to the of the _Permission Checker_ of a _Resource_ every time a _Subject_ tries to access it. 
 
@@ -13,16 +13,18 @@ PAMELA implementation of the pattern is build around three entities: _Subjects_,
 ### Subject and Resource entities
 
 - Identify the _Subject_ class. This is the class whose instance will need to be authorized to access resources. This class should be annotated with `@ModelEntity` (to let the PAMELA framework know that it is part of your model) and `@AuthorizationSubject(patternID = <patternID>)` (to declare it as a _Subject_ for the Authorization pattern). The `<patternID` is a String identifying the pattern in you model. Note that the same `<patternID>` should be used for all annotations of the pattern. You could, for instance, have the following code:
-~~~java
+
+```java
 @ModelEntity
 @AuthorizationSubject(patternID = "Authorization pattern 1")
 public class mySubject {
     ...
 }
-~~~
+```
 
 - Identify the _Subject Identifier_ getter(s). They will be used to determine whether a _Subject_ instance is authorized to access a _Resource_ instance. Each of these getters should be annotated with `@SubjectID(patternID = <patternID>, paramID = <paramID>`). The `<paramID>` is a String identifying getter. You could, for instance, have the following code:
-~~~java
+
+```java
 @ModelEntity
 @AuthorizationSubject(patternID = "Authorization pattern 1")
 public class mySubject {
@@ -37,9 +39,11 @@ public class mySubject {
         ...
     }
 }
-~~~
+```
+
 - Similarly, identify the _Resource_ class and annotate it with `@ModelEntity` and `@ProtectedResource(patternID = <patternID>)`. The annotate its identifier getters with `@ResourceID(patternID = <patternID>, paramID = <paramID>)`. You could, for instance, have the following code:
-~~~java
+
+```java
 @ModelEntity
 @ProtectedResource(patternID = "Authorization pattern 1")
 public class ProtectedFile {
@@ -50,9 +54,11 @@ public class ProtectedFile {
     }
 
 }
-~~~
+```
+
 - In the _Resource_ class, you should identify the _Permission Checker_ getter. This entity is the one which will check every access to the _Resource_. You could, for instance have the following code:
-~~~java
+
+```java
 @ModelEntity
 @ProtectedResource(patternID = "Authorization pattern 1")
 public class ProtectedFile {
@@ -68,9 +74,11 @@ public class ProtectedFile {
     }
 
 }
-~~~
+```
+
 - Identify the _Resource Access methods_. These methods are the one you want to protect. Each of this method should be annotated with `@AccessMethod(patternID = <patternID>, methodID = <methodID>)`. The `<methodID>` is a String identifying the _Access method_. You could for instance have the following code:
-~~~java
+
+```java
 @ModelEntity
 @ProtectedResource(patternID = "Authorization pattern 1")
 public class ProtectedFile {
@@ -96,9 +104,11 @@ public class ProtectedFile {
     }
 
 }
-~~~
+```
+
 - For all _Access method_ identified in the _Resource_ class, you should define an abstract method (or with empty body) in the _Subject_ class with the same annotation. These method should have the same prototype with one difference: They will all have one extra annotated parameter for each _Identifier_ of the _Resource_ class. These parameters should be annotated with the same annotation used for the associated _Subject Identifier_ getter(s) You could, for instance, have the following code:
-~~~java
+
+```java
 @ModelEntity
 @AuthorizationSubject(patternID = "Authorization pattern 1")
 public class mySubject {
@@ -123,20 +133,24 @@ public class mySubject {
         ...
     }
 }
-~~~
+```
+
 - Identify the _Permission Checker_ class and annotate it with `@ModelEntity` and `@AuthorizationChecker(patternID = <patternID>)`. You could, for instance, have the following code:
-~~~java
+
+```java
 @ModelEntity
 @AuthorizationChecker(patternID = "Authorization pattern 1")
 public class Permission {
     ...
 }
-~~~
+```
+
 - Finally you need to annotate the _Check_ method with `@CheckAccess(patternID = <patternID>)`. This method have several parameters which all need to be annotated:
     + _Subject identifier(s)_ and _Resource Identifier(s)_. Every time a _Subject access method_ will be called, the _Subject and Resource identifiers_ will be given to this method. They are annotated with the same annotation used to declare the associated getters.
     + _MethodID_. This argument is a String and identify the access method that is currently processed by the pattern. This parameter is annotated with `@MethodID(patternID = <patternID>)`
 You could, for instance, have the following code:
-~~~java
+
+```java
 @ModelEntity
 @AuthorizationChecker(patternID = "Authorization pattern 1")
 public class Permission {
@@ -152,7 +166,7 @@ public class Permission {
         ...
     }
 }
-~~~
+```
 
 ## How does it work?
 

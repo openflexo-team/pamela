@@ -1,4 +1,4 @@
-# Owner pattern tutorial
+# Owner pattern
 
 ## What is the _Owner_ pattern?
 
