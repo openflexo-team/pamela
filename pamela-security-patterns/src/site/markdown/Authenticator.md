@@ -4,7 +4,9 @@
 
 This security pattern is used to implement an authentication mechanism. A class diagram of the pattern is given below.
 
-![](https://support.openflexo.org/images/components/pamela/doc/authenticator.png)
+![prout](https://support.openflexo.org/images/components/pamela/doc/authenticator.png)
+
+![prout2](https://support.openflexo.org/images/components/pamela/doc/authenticator)
 
 This pattern allows _Subject_ to be authenticated using a set of objects known as _Authentication Information_. 
 
