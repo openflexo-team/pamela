@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.openflexo</groupId>
 		<artifactId>pamela</artifactId>
-		<version>1.5</version>
+		<version>1.5.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>pamela-core</artifactId>
 	<name>Pamela-core</name>
