@@ -32,6 +32,13 @@
 			<item name="Javadoc" href="./apidocs/index.html" />
 		</menu>
 
+		<menu name="Security Patterns Library">
+			<item name="Authenticator" href="Authenticator.html" />
+			<item name="Authorization" href="Authorization.html" />
+			<item name="SingleAccessPoint" href="SingleAccessPoint.html" />
+			<item name="Owner" href="Owner.html" />
+		</menu>
+
 		<menu ref="parent" />
 
 		<menu ref="reports" />
