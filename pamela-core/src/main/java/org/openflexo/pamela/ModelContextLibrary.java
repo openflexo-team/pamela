@@ -48,15 +48,53 @@ import java.util.Set;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 
+/**
+ * The {@link ModelContextLibrary} represent the API used to instantiate a PAMELA model (a {@link ModelContext}). Computed
+ * {@link ModelContext} are stored in an internal cache.
+ * 
+ * The idea behind this is to instantiate required model using a list of class acting as base entries. The inheritance links as well as the
+ * properties links (getter/setter) are explored - both are dependancy links -, as well as <tt>@Imports</tt> and <tt>@Import</tt>
+ * annotations, until a closure is computed. That scheme allows to avoid the explicit declaration of a PAMELA model boundary, since this is
+ * dynamically performed. This offers a basic solution to model fragmentation.
+ * 
+ * Note following details regarding model exploration:
+ * <ul>
+ * <li>If a property link should not be followed (accessed type should not be part of returned {@link ModelContext}), use
+ * <tt>@Getter(...,ignoreType=true)<tt>)</li>
+ * <li>If a property type is specialized in PAMELA model to retrieve, declare in that type required entity specializations using <tt>@Imports</tt>
+ * annotations in generic type</li>
+ * </ul>
+ * 
+ * @author sylvain
+ *
+ */
 public class ModelContextLibrary {
 
 	private static final Map<Class<?>, ModelContext> contexts = new Hashtable<>();
 	private static final Map<Set<Class<?>>, ModelContext> setContexts = new Hashtable<>();
 
+	/**
+	 * Return (compute when not existant) a {@link ModelContext} (a PAMELA model) from supplied base class a unique entry point
+	 * 
+	 * @param baseClass
+	 *            unique entry point
+	 * @return
+	 * @throws ModelDefinitionException
+	 */
 	public static synchronized ModelContext getModelContext(Class<?> baseClass) throws ModelDefinitionException {
 		return getModelContext(baseClass, true);
 	}
 
+	/**
+	 * Return (compute when not existant) a {@link ModelContext} (a PAMELA model) from supplied base class a unique entry point
+	 * 
+	 * @param baseClass
+	 *            unique entry point
+	 * @param isFinalModelContext
+	 *            true when final
+	 * @return
+	 * @throws ModelDefinitionException
+	 */
 	static synchronized ModelContext getModelContext(Class<?> baseClass, boolean isFinalModelContext) throws ModelDefinitionException {
 		ModelContext context = contexts.get(baseClass);
 		if (context == null) {
@@ -65,10 +103,24 @@ public class ModelContextLibrary {
 		return context;
 	}
 
+	/**
+	 * Indicates if {@link ModelContext} identified by <tt>baseClass</tt> was already computed
+	 * 
+	 * @param baseClass
+	 * @return
+	 */
 	public static boolean hasContext(Class<?> baseClass) {
 		return contexts.get(baseClass) != null;
 	}
 
+	/**
+	 * Return (compute when not existant) a {@link ModelContext} (a PAMELA model) from supplied base classes as multiple entry points
+	 * 
+	 * @param classes
+	 *            classes to consider to compute graph closure
+	 * @return
+	 * @throws ModelDefinitionException
+	 */
 	public static ModelContext getCompoundModelContext(List<Class<?>> classes) throws ModelDefinitionException {
 		if (classes.size() == 1) {
 			return getModelContext(classes.get(0), true);
@@ -82,10 +134,28 @@ public class ModelContextLibrary {
 		return context;
 	}
 
+	/**
+	 * Return (compute when not existant) a {@link ModelContext} (a PAMELA model) from supplied base classes as multiple entry points
+	 * 
+	 * @param classes
+	 *            classes to consider to compute graph closure
+	 * @return
+	 * @throws ModelDefinitionException
+	 */
 	public static ModelContext getCompoundModelContext(Class<?>... classes) throws ModelDefinitionException {
 		return getCompoundModelContext(Arrays.asList(classes));
 	}
 
+	/**
+	 * Return (compute when not existant) a {@link ModelContext} (a PAMELA model) from supplied base classes as multiple entry points
+	 * 
+	 * @param baseClass
+	 *            main entry point
+	 * @param classes
+	 *            other classes to consider to compute graph closure
+	 * @return
+	 * @throws ModelDefinitionException
+	 */
 	public static ModelContext getCompoundModelContext(Class<?> baseClass, Class<?>[] classes) throws ModelDefinitionException {
 		Class<?>[] newArray = new Class[classes.length + 1];
 		for (int i = 0; i < classes.length; i++) {
@@ -96,6 +166,9 @@ public class ModelContextLibrary {
 		return getCompoundModelContext(newArray);
 	}
 
+	/**
+	 * Clear cache
+	 */
 	public static void clearCache() {
 		contexts.clear();
 		setContexts.clear();
