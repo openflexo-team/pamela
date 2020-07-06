@@ -49,7 +49,7 @@ import org.openflexo.pamela.model.ModelProperty;
 /**
  * Annotation for an finder (related to a {@link ModelProperty} with 'multiple' cardinality<br>
  * 
- * This annotation should be placed in a method and indicates that this method is the unique finder for implicit \emph{ModelProperty} whose
+ * This annotation should be placed in a method and indicates that this method is the unique finder for implicit {@link ModelProperty} whose
  * identifier is the declared String value, and where attribute() encodes the property used as search key<br>
  * 
  * @author Guillaume

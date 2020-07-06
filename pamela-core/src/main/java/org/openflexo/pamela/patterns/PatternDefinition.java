@@ -47,8 +47,9 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 
 /**
- * Abstract base class for an occurence of an <code>Pattern</code>. An instance is uniquely identified by the <code>patternID</code> field
- * of associated annotations.<br>
+ * Abstract base class for an occurence of an <code>Pattern</code>.<br>
+ * 
+ * An instance is uniquely identified by the <code>patternID</code> field of associated annotations.<br>
  * 
  * It has the responsibility of:
  * <ul>

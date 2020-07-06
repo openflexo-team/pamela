@@ -46,7 +46,7 @@ import java.net.Authenticator;
 import org.openflexo.pamela.ModelContext;
 
 /**
- * Abstract base class for an instance of a {@link PatternDefinition}
+ * Abstract base class for an instance of a {@link PatternDefinition}<br>
  * 
  * It has the responsibility of:
  * <ul>

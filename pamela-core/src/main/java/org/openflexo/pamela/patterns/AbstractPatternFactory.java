@@ -48,7 +48,7 @@ import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.model.ModelEntity;
 
 /**
- * Abstract Base class for a {@link PatternDefinition} factory
+ * Abstract base class for a {@link PatternDefinition} factory
  * 
  * 
  * @author sylvain

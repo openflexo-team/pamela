@@ -52,7 +52,7 @@ import org.openflexo.pamela.model.ModelProperty;
  * 
  * A reindexer allows to reindex an item inside a property with 'multiple' cardinality
  * 
- * This annotation should be placed in a method and indicates that this method is the unique reindexer for implicit \emph{ModelProperty}
+ * This annotation should be placed in a method and indicates that this method is the unique reindexer for implicit {@link ModelProperty}
  * whose identifier is the declared String value.<br>
  * 
  * Properties of implicit {@link ModelProperty} should be declared in related {@link Getter} annotation<br>
