@@ -45,6 +45,22 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.model.ModelProperty;
+
+/**
+ * Annotation for an reindexer (related to a {@link ModelProperty} with 'multiple' cardinality<br>
+ * 
+ * A reindexer allows to reindex an item inside a property with 'multiple' cardinality
+ * 
+ * This annotation should be placed in a method and indicates that this method is the unique reindexer for implicit \emph{ModelProperty}
+ * whose identifier is the declared String value.<br>
+ * 
+ * Properties of implicit {@link ModelProperty} should be declared in related {@link Getter} annotation<br>
+ * 
+ * 
+ * @author sylvain
+ * 
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)
 public @interface Reindexer {

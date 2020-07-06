@@ -44,6 +44,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.model.ModelEntity;
+
+/**
+ * This annotation should be used in a inner static class of related {@link ModelEntity}, and indicates that annotated class should take
+ * part of implementation of related {@link ModelEntity}
+ * 
+ * This tag generally annotates a partial implementation (abstract inner \texttt{class} defined in implemented \texttt{interface}), and is
+ * used in the context of multiple inheritance.
+ * 
+ * @author sylvain
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Target(value = ElementType.TYPE)

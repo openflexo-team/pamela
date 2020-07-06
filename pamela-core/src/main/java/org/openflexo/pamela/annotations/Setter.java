@@ -45,6 +45,20 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.model.ModelProperty;
+
+/**
+ * Annotation for a setter<br>
+ * 
+ * This annotation should be placed in a method and indicates that this method is the unique setter for implicit \emph{ModelProperty} whose
+ * identifier is the declared String value.<br>
+ * 
+ * Properties of implicit {@link ModelProperty} should be declared in related {@link Getter} annotation<br>
+ * 
+ * 
+ * @author Guillaume
+ * 
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)
 public @interface Setter {

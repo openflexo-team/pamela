@@ -47,6 +47,15 @@ import java.lang.annotation.Target;
 
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 
+/**
+ * Used on a class or interface to indicate that this class/interface represents a {@link org.openflexo.pamela.model.ModelEntity}
+ * 
+ * A {@link org.openflexo.pamela.model.ModelEntity} may be abstract (semantics is here the same as in plain java: an abstract entity cannot
+ * be instantiated)
+ * 
+ * @author sylvain
+ *
+ */
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.TYPE)
@@ -64,10 +73,10 @@ public @interface ModelEntity {
 	 * @author Guillaume
 	 * 
 	 */
-    enum InitPolicy {
+	enum InitPolicy {
 
 		NONE, WARN_IF_NOT_INVOKED, REQUIRED
-    }
+	}
 
 	boolean isAbstract() default false;
 

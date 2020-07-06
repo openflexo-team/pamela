@@ -45,6 +45,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation used to indicates that annotated method should be called after the whole graph of objects has been deserialized<br>
+ * 
  * Order of calls of these methods just respect the order where objects were created
  * 
  * @author sylvain

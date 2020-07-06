@@ -45,6 +45,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.model.ModelProperty;
+
+/**
+ * Indicates that related {@link ModelProperty} should be serialized as a XML attribute in the context of XML serialization<br>
+ * 
+ * This annotation should be placed on the method where getter is declared
+ * 
+ * @author sylvain
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)
 public @interface XMLAttribute {

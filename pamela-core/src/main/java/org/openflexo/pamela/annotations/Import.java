@@ -45,6 +45,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.ModelContext;
+
+/**
+ * Annotation used to indicate classes to embed in the computation of PAMELA meta-model ({@link ModelContext}) from compiled code
+ * 
+ * @author sylvain
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Target(value = ElementType.TYPE)

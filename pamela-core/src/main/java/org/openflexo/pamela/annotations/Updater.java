@@ -45,6 +45,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.model.ModelProperty;
+
+/**
+ * Indicates updater for a given {@link ModelProperty}
+ * 
+ * @author sylvain
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)
 public @interface Updater {

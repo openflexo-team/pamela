@@ -50,19 +50,19 @@ import org.openflexo.pamela.exceptions.ModelDefinitionException;
 
 /**
  * The {@link ModelContextLibrary} represent the API used to instantiate a PAMELA model (a {@link ModelContext}). Computed
- * {@link ModelContext} are stored in an internal cache.
+ * {@link ModelContext} are stored in an internal cache.<br>
  * 
  * The idea behind this is to instantiate required model using a list of class acting as base entries. The inheritance links as well as the
  * properties links (getter/setter) are explored - both are dependancy links -, as well as <tt>@Imports</tt> and <tt>@Import</tt>
  * annotations, until a closure is computed. That scheme allows to avoid the explicit declaration of a PAMELA model boundary, since this is
- * dynamically performed. This offers a basic solution to model fragmentation.
+ * dynamically performed. This offers a basic solution to model fragmentation.<br>
  * 
  * Note following details regarding model exploration:
  * <ul>
  * <li>If a property link should not be followed (accessed type should not be part of returned {@link ModelContext}), use
- * <tt>@Getter(...,ignoreType=true)<tt>)</li>
- * <li>If a property type is specialized in PAMELA model to retrieve, declare in that type required entity specializations using <tt>@Imports</tt>
- * annotations in generic type</li>
+ * <tt>@Getter(...,ignoreType=true)</tt>)</li>
+ * <li>If a property type is specialized in PAMELA model to retrieve, declare in that type required entity specializations using
+ * <tt>@Imports</tt> annotations in generic type</li>
  * </ul>
  * 
  * @author sylvain

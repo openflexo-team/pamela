@@ -62,6 +62,7 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelEntityLibrary;
 import org.openflexo.pamela.model.ModelProperty;
+import org.openflexo.pamela.model.ModelPropertyXMLTag;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.patterns.DeclarePatterns;
 import org.openflexo.pamela.patterns.ExecutionMonitor;
@@ -71,7 +72,7 @@ import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.toolbox.StringUtils;
 
 /**
- * A {@link ModelContext} represents a PAMELA meta-model dynamically infered from the exploration of compiled code
+ * A {@link ModelContext} represents a PAMELA meta-model dynamically infered from the exploration of compiled code<br>
  * 
  * Build and access to a {@link ModelContext} should be performed using API provided by {@link ModelContextLibrary}
  * 
@@ -304,61 +305,6 @@ public class ModelContext {
 			}
 		}
 		return returned.toString();
-	}
-
-	public static class ModelPropertyXMLTag<I> {
-		private final String tag;
-		private final ModelProperty<? super I> property;
-		private final ModelEntity<?> accessedEntity;
-
-		public ModelPropertyXMLTag(ModelProperty<? super I> property) {
-			super();
-			this.property = property;
-			this.accessedEntity = null;
-			this.tag = property.getXMLContext() + property.getXMLElement().xmlTag();
-		}
-
-		public ModelPropertyXMLTag(ModelProperty<? super I> property, ModelEntity<?> accessedEntity) {
-			super();
-			this.property = property;
-			this.accessedEntity = accessedEntity;
-			this.tag = property.getXMLContext() + accessedEntity.getXMLTag();
-		}
-
-		public String getTag() {
-			return tag;
-		}
-
-		public List<String> getDeprecatedTags() {
-			List<String> returned = new ArrayList<>();
-			if (accessedEntity.getXMLElement() != null && StringUtils.isNotEmpty(accessedEntity.getXMLElement().deprecatedXMLTags())) {
-				StringTokenizer st = new StringTokenizer(accessedEntity.getXMLElement().deprecatedXMLTags(), ",");
-				while (st.hasMoreTokens()) {
-					String nextTag = st.nextToken();
-					returned.add(property.getXMLContext() + nextTag);
-				}
-			}
-			if (getProperty().getXMLElement() != null && StringUtils.isNotEmpty(getProperty().getXMLElement().deprecatedContext())) {
-				returned.add(getProperty().getXMLElement().deprecatedContext() + accessedEntity.getXMLTag());
-			}
-			if (returned.size() == 0) {
-				return null;
-			}
-			return returned;
-		}
-
-		public ModelProperty<? super I> getProperty() {
-			return property;
-		}
-
-		public ModelEntity<?> getAccessedEntity() {
-			return accessedEntity;
-		}
-
-		@Override
-		public String toString() {
-			return "ModelPropertyXMLTag" + getAccessedEntity() + getProperty() + "/tag=" + getTag();
-		}
 	}
 
 	// Patterns

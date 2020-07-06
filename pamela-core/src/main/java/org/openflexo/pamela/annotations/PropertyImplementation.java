@@ -45,6 +45,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * This annotation should be placed in getter method<br>
+ * 
+ * It indicates which property implementation has to be used for that property
+ * 
+ * @author sylvain
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Target(value = ElementType.METHOD)

@@ -44,6 +44,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.model.ModelProperty;
+
+/**
+ * Annotation for an finder (related to a {@link ModelProperty} with 'multiple' cardinality<br>
+ * 
+ * This annotation should be placed in a method and indicates that this method is the unique finder for implicit \emph{ModelProperty} whose
+ * identifier is the declared String value, and where attribute() encodes the property used as search key<br>
+ * 
+ * @author Guillaume
+ * 
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)
 public @interface Finder {
@@ -59,21 +70,21 @@ public @interface Finder {
 	 * 
 	 * @return
 	 */
-    String collection();
+	String collection();
 
 	/**
 	 * The attribute which should match the finder argument
 	 * 
 	 * @return
 	 */
-    String attribute() default DEFAULT_VALUE;
+	String attribute() default DEFAULT_VALUE;
 
 	/**
 	 * Wheter this finder returns a single object or several
 	 * 
 	 * @return
 	 */
-    boolean isMultiValued() default false;
+	boolean isMultiValued() default false;
 
 	/**
 	 * Whether this finder should try to perform recursive search. If yes, value should be a dot ('.') separated path to get from one object
@@ -81,12 +92,12 @@ public @interface Finder {
 	 * 
 	 * @return
 	 */
-    String recursion() default NO_RECURSION;
+	String recursion() default NO_RECURSION;
 
 	/**
 	 * In case of recursion, this flag indicates to search first in the immediate collection and then to go in depth by "recursing".
 	 * 
 	 * @return
 	 */
-    boolean iterateFirstRecurseThen() default true;
+	boolean iterateFirstRecurseThen() default true;
 }

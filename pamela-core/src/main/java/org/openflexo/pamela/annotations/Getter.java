@@ -46,11 +46,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.model.StringEncoder;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
+import org.openflexo.pamela.model.StringEncoder;
 
 /**
- * Annotation for a getter
+ * Annotation for a getter<br>
+ * 
+ * This annotation should be placed in a method and indicates that this method is the unique getter for implicit \emph{ModelProperty} whose
+ * identifier is the declared String value.<br>
+ * 
+ * May also declares cardinality, enventual inverse property, default value and some other features.<br>
+ * 
  * 
  * @author Guillaume
  * 

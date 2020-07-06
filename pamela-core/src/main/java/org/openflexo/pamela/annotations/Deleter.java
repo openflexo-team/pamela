@@ -45,6 +45,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation for a 'deleter'<br>
+ * 
+ * This annotation should be placed in a method and indicates that this method may be used as a destructor for related {@link ModelEntity}.
+ * This method should not have parameters
+ * 
+ * @author Guillaume
+ * 
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Target(value = ElementType.METHOD)
@@ -52,8 +61,8 @@ public @interface Deleter {
 
 	String UNDEFINED = "";
 
-    String[] embedded() default {};
+	String[] embedded() default {};
 
-    String deletedProperty() default UNDEFINED;
+	String deletedProperty() default UNDEFINED;
 
 }

@@ -44,6 +44,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * This annotation can be used in a field to declare a {@link StringConverter} to be used
+ * 
+ * @author sylvain
+ *
+ */
 @Target(value = ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StringConverter {

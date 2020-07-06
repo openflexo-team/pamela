@@ -46,6 +46,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.model.ModelProperty;
+
+/**
+ * Indicates that related {@link ModelEntity} or {@link ModelProperty} should be serialized as a XML element in the context of XML
+ * serialization<br>
+ * 
+ * This annotation should be placed either on a {@link ModelEntity} or on the method where getter is declared
+ * 
+ * @author sylvain
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Target(value = { ElementType.METHOD, ElementType.TYPE })

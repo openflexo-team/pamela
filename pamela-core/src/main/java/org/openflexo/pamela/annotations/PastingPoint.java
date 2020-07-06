@@ -44,6 +44,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.model.ModelProperty;
+
+/**
+ * Annotation for a pasting point placeholder<br>
+ * 
+ * This annotation should be placed on the setter or the adder of a {@link ModelProperty}. It indicates that related property can be
+ * considered as a placeholder for an object (with a matching type) in clipboard.
+ * 
+ * @author Guillaume
+ * 
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface PastingPoint {

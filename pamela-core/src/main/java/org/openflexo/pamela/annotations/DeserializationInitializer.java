@@ -48,6 +48,7 @@ import org.openflexo.pamela.factory.ModelFactory;
 /**
  * Annotation used to indicates that annotated method should be called immediately after the object has been created in a deserialization
  * phase<br>
+ * 
  * Method might take no argument, or also may take the {@link ModelFactory} as argument
  * 
  * @author sylvain

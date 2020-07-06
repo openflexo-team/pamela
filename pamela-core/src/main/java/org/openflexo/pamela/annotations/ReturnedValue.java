@@ -44,9 +44,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * This annotation should be placed in getter method<br>
+ * 
+ * It indicates that related property is a derived property, whose value is given by the expression defined by the {@link ReturnedValue}
+ * annotation
+ * 
+ * @author sylvain
+ *
+ */
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.METHOD)
 public @interface ReturnedValue {
 
-    String value();
+	String value();
 }

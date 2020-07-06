@@ -44,6 +44,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation for a 'constructor'<br>
+ * 
+ * This annotation should be placed in a method and indicates that this method may be used as a constructor (with ou without parameters) for
+ * related {@link ModelEntity}
+ * 
+ * @author Guillaume
+ * 
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Initializer {

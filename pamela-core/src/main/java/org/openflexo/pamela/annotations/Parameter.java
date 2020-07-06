@@ -44,6 +44,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.model.ModelProperty;
+
+/**
+ * Annotation used in the context of {@link Initializer} annotation (constructor definition).<br>
+ * 
+ * This annotation should be placed on a constructor parameter to indicate that this value has to be assigned to related
+ * {@link ModelProperty}
+ * 
+ * @author sylvain
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = ElementType.PARAMETER)
 public @interface Parameter {

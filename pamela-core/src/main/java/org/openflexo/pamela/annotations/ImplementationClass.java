@@ -45,6 +45,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.openflexo.pamela.model.ModelEntity;
+
+/**
+ * Used in a {@link ModelEntity} definition to indicate the class to use as base implementation
+ * 
+ * @author sylvain
+ *
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Target(value = ElementType.TYPE)
