@@ -42,11 +42,11 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 
 import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelEntity;
-import org.openflexo.pamela.ModelProperty;
-import org.openflexo.pamela.PamelaUtils;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.model.ModelProperty;
+import org.openflexo.pamela.model.PamelaUtils;
 import org.openflexo.pamela.patterns.PatternDefinition;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequiresAuthentication;
 

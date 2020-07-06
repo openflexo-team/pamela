@@ -37,7 +37,7 @@
  * 
  */
 
-package org.openflexo.pamela;
+package org.openflexo.pamela.model;
 
 import java.awt.Color;
 import java.awt.Font;

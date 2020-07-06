@@ -41,9 +41,9 @@ package org.openflexo.pamela.undo;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-import org.openflexo.pamela.ModelEntity;
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.model.ModelProperty;
 
 /**
  * This command corresponds to the REMOVING of an object.<br>

@@ -71,10 +71,6 @@ import org.openflexo.connie.exception.TypeMismatchException;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.kvc.InvalidKeyValuePropertyException;
 import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelEntity;
-import org.openflexo.pamela.ModelProperty;
-import org.openflexo.pamela.PamelaUtils;
-import org.openflexo.pamela.StringEncoder;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
 import org.openflexo.pamela.annotations.ComplexEmbedded;
@@ -98,6 +94,10 @@ import org.openflexo.pamela.jml.JMLEnsures;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.jml.JMLRequires;
 import org.openflexo.pamela.jml.SpecificationsViolationException;
+import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.model.ModelProperty;
+import org.openflexo.pamela.model.PamelaUtils;
+import org.openflexo.pamela.model.StringEncoder;
 import org.openflexo.pamela.patterns.ExecutionMonitor;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
@@ -675,7 +675,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return propertyChangeSupport;
 	}
 
-	private void internallyInvokeInitializer(org.openflexo.pamela.ModelInitializer in, Object[] args) throws ModelDefinitionException {
+	private void internallyInvokeInitializer(org.openflexo.pamela.model.ModelInitializer in, Object[] args) throws ModelDefinitionException {
 		initializing = true;
 		try {
 			List<String> parameters = in.getParameters();

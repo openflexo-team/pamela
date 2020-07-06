@@ -50,9 +50,9 @@ import org.openflexo.connie.type.CustomTypeFactory;
 import org.openflexo.connie.type.ParameterizedTypeImpl;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.connie.type.WilcardTypeImpl;
-import org.openflexo.pamela.StringConverterLibrary.Converter;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
 public class TypeConverter extends Converter<Type> {
 

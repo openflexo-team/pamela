@@ -2,9 +2,9 @@ package org.openflexo.pamela.jml;
 
 import java.lang.reflect.Method;
 
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.annotations.jml.Requires;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.model.ModelEntity;
 
 public class JMLRequires<I> extends JMLExpressionBasedOnMethod<Boolean, I> {
 

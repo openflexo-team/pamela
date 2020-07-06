@@ -1,6 +1,5 @@
 package org.flexo.model;
 
-import org.openflexo.pamela.StringConverterLibrary.Converter;
 import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.annotations.Setter;
@@ -10,6 +9,7 @@ import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.converter.DurationConverter;
 import org.openflexo.pamela.converter.FileFormatConverter;
 import org.openflexo.pamela.converter.LevelConverter;
+import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.Duration;
 import org.openflexo.toolbox.FileFormat;
 

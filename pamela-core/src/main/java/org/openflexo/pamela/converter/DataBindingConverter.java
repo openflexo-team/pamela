@@ -39,9 +39,9 @@
 package org.openflexo.pamela.converter;
 
 import org.openflexo.connie.DataBinding;
-import org.openflexo.pamela.StringConverterLibrary.Converter;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
 public class DataBindingConverter extends Converter<DataBinding<?>> {
 

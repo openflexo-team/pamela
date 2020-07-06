@@ -44,7 +44,7 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 
 import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelEntity;
+import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticateMethod;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticationInformation;

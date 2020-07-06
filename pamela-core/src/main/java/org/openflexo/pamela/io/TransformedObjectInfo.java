@@ -37,13 +37,13 @@ package org.openflexo.pamela.io;
 
 import java.lang.reflect.Method;
 
-import org.openflexo.pamela.DeserializationFinalizer;
-import org.openflexo.pamela.DeserializationInitializer;
-import org.openflexo.pamela.ModelEntity;
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.DeserializationFinalizer;
+import org.openflexo.pamela.model.DeserializationInitializer;
+import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.model.ModelProperty;
 import org.xml.sax.SAXException;
 
 /**

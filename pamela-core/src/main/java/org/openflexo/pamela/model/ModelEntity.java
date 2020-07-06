@@ -37,7 +37,7 @@
  * 
  */
 
-package org.openflexo.pamela;
+package org.openflexo.pamela.model;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -57,7 +57,7 @@ import javax.annotation.Nonnull;
 
 import org.openflexo.connie.binding.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
-import org.openflexo.pamela.StringConverterLibrary.Converter;
+import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy;
 import org.openflexo.pamela.annotations.Finder;
@@ -87,6 +87,7 @@ import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.factory.SpecifiableProxyObject;
 import org.openflexo.pamela.jml.JMLInvariant;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
+import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**

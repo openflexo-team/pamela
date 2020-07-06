@@ -3,10 +3,10 @@ package org.openflexo.pamela.factory;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 import javassist.util.proxy.ProxyObject;

@@ -7,9 +7,9 @@ import java.util.HashMap;
 import java.util.Set;
 
 import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelEntity;
-import org.openflexo.pamela.PamelaUtils;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.model.PamelaUtils;
 import org.openflexo.pamela.patterns.PatternDefinition;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.*;
 

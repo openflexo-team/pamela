@@ -45,7 +45,7 @@ import java.util.Map;
 
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelEntity;
+import org.openflexo.pamela.model.ModelEntity;
 
 /**
  * Abstract Base class for a {@link PatternDefinition} factory

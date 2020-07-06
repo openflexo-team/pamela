@@ -2,8 +2,8 @@ package org.openflexo.pamela.factory;
 
 import java.util.List;
 
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.model.ModelProperty;
 
 /**
  * Represent a particular property implementation

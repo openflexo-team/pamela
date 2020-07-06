@@ -2,8 +2,8 @@ package org.openflexo.pamela.jml;
 
 import java.lang.reflect.Method;
 
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.annotations.jml.Assignable;
+import org.openflexo.pamela.model.ModelEntity;
 
 public class JMLAssignable<I> extends JMLExpressionBasedOnMethod<Object, I> {
 

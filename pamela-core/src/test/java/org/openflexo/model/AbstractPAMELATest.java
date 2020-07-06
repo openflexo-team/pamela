@@ -48,10 +48,10 @@ import org.flexo.model.StartNode;
 import org.flexo.model.TokenEdge;
 import org.flexo.model.WKFObject;
 import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelEntity;
-import org.openflexo.pamela.ModelEntityLibrary;
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.model.ModelEntityLibrary;
+import org.openflexo.pamela.model.ModelProperty;
 
 public abstract class AbstractPAMELATest extends TestCase {
 

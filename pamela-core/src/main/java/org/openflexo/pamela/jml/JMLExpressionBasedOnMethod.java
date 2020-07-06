@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.openflexo.connie.BindingVariable;
-import org.openflexo.pamela.ModelEntity;
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.annotations.jml.MethodParameter;
+import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.model.ModelProperty;
 
 public abstract class JMLExpressionBasedOnMethod<T, I> extends JMLExpressionBased<T, I> {
 

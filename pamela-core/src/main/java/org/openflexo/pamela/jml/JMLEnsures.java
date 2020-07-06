@@ -7,9 +7,9 @@ import java.util.Map;
 
 import org.openflexo.connie.exception.NullReferenceException;
 import org.openflexo.connie.exception.TypeMismatchException;
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.annotations.jml.Ensures;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.model.ModelEntity;
 
 public class JMLEnsures<I> extends JMLExpressionBasedOnMethod<Boolean, I> {
 

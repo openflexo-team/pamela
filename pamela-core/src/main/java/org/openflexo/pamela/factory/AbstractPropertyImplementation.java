@@ -2,9 +2,9 @@ package org.openflexo.pamela.factory;
 
 import java.beans.PropertyChangeSupport;
 
-import org.openflexo.pamela.ModelEntity;
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.factory.ModelFactory.PAMELAProxyFactory;
+import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**

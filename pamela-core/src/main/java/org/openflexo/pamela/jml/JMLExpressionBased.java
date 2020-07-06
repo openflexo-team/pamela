@@ -25,7 +25,7 @@ import org.openflexo.connie.expr.parser.ExpressionParser;
 import org.openflexo.connie.expr.parser.ParseException;
 import org.openflexo.connie.java.JavaBindingFactory;
 import org.openflexo.kvc.InvalidKeyValuePropertyException;
-import org.openflexo.pamela.ModelEntity;
+import org.openflexo.pamela.model.ModelEntity;
 
 public abstract class JMLExpressionBased<T, I> extends DefaultBindable {
 

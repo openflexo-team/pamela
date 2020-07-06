@@ -49,8 +49,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openflexo.connie.type.TypeUtils;
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.toolbox.StringUtils;
 
 import com.google.common.collect.BiMap;

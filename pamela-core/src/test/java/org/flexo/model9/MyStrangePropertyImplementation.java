@@ -35,11 +35,11 @@
 
 package org.flexo.model9;
 
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.DefaultSinglePropertyImplementation;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.model.ModelProperty;
 
 public class MyStrangePropertyImplementation extends DefaultSinglePropertyImplementation<Concept, String> {
 

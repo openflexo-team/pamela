@@ -1,6 +1,7 @@
 /**
  * 
- * Copyright (c) 2014, Openflexo
+ * Copyright (c) 2013-2014, Openflexo
+ * Copyright (c) 2012-2012, AgileBirds
  * 
  * This file is part of Pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
@@ -36,28 +37,54 @@
  * 
  */
 
-package org.openflexo.pamela;
+package org.openflexo.pamela.model;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
-/**
- * Initializer used for a method that should be called immediately after the object has been created in a deserialization phase
- * 
- * @author sylvain
- * 
- */
-public class DeserializationInitializer {
+public class ModelMethod {
 
-	private final org.openflexo.pamela.annotations.DeserializationInitializer initializer;
-	private final Method deserializationInitializerMethod;
+	private String methodName;
 
-	public DeserializationInitializer(org.openflexo.pamela.annotations.DeserializationInitializer initializer,
-			Method deserializationInitializerMethod) {
-		this.initializer = initializer;
-		this.deserializationInitializerMethod = deserializationInitializerMethod;
+	private Class<?>[] parameterTypes;
+
+	public ModelMethod(Method method) {
+		methodName = method.getName();
+		parameterTypes = method.getParameterTypes();
 	}
 
-	public Method getDeserializationInitializerMethod() {
-		return deserializationInitializerMethod;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (methodName == null ? 0 : methodName.hashCode());
+		result = prime * result + Arrays.hashCode(parameterTypes);
+		return result;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		ModelMethod other = (ModelMethod) obj;
+		if (methodName == null) {
+			if (other.methodName != null) {
+				return false;
+			}
+		} else if (!methodName.equals(other.methodName)) {
+			return false;
+		}
+		if (!Arrays.equals(parameterTypes, other.parameterTypes)) {
+			return false;
+		}
+		return true;
+	}
+
 }

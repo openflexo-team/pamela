@@ -40,8 +40,8 @@ package org.openflexo.pamela.exceptions;
 
 import java.lang.reflect.Method;
 
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.ModelEntity;
 
 /**
  * Thrown when a method of interface has been detected with no possible implementations with supplied factory

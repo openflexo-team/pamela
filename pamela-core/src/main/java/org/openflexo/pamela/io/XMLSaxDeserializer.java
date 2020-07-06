@@ -56,8 +56,6 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelContext.ModelPropertyXMLTag;
-import org.openflexo.pamela.ModelEntity;
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.RestrictiveDeserializationException;
@@ -65,6 +63,8 @@ import org.openflexo.pamela.factory.DeserializationPolicy;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.factory.PAMELAConstants;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.model.ModelProperty;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;

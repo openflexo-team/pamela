@@ -1,6 +1,5 @@
 package org.flexo.model;
 
-import org.openflexo.pamela.StringConverterLibrary.Converter;
 import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.annotations.ModelEntity;
@@ -9,6 +8,7 @@ import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.StringConverter;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
 @ModelEntity
 public interface WKFAnnotation extends TestModelObject {

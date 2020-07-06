@@ -52,9 +52,9 @@ import java.util.logging.Logger;
 
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.annotations.DefineValidationRule;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**

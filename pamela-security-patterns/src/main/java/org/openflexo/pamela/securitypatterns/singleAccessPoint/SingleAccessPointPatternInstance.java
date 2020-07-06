@@ -1,7 +1,7 @@
 package org.openflexo.pamela.securitypatterns.singleAccessPoint;
 
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.securitypatterns.executionMonitors.CustomStack;

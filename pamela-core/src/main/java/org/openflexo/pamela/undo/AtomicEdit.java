@@ -40,8 +40,8 @@ package org.openflexo.pamela.undo;
 
 import javax.swing.undo.UndoableEdit;
 
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.ModelEntity;
 
 /**
  * This is an atomic edit managed by PAMELA.<br>

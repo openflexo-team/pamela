@@ -1,8 +1,8 @@
 package org.openflexo.pamela.jml;
 
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.annotations.jml.Invariant;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.model.ModelEntity;
 
 public class JMLInvariant<I> extends JMLExpressionBased<Boolean, I> {
 

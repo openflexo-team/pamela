@@ -59,6 +59,9 @@ import javax.annotation.Nonnull;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.model.ModelEntityLibrary;
+import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.patterns.DeclarePatterns;
 import org.openflexo.pamela.patterns.ExecutionMonitor;
@@ -67,68 +70,24 @@ import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.toolbox.StringUtils;
 
+/**
+ * A {@link ModelContext} represents a PAMELA meta-model dynamically infered from the exploration of compiled code
+ * 
+ * Build and access to a {@link ModelContext} should be performed using API provided by {@link ModelContextLibrary}
+ * 
+ * @author sylvain
+ *
+ */
 public class ModelContext {
-
-	public static class ModelPropertyXMLTag<I> {
-		private final String tag;
-		private final ModelProperty<? super I> property;
-		private final ModelEntity<?> accessedEntity;
-
-		public ModelPropertyXMLTag(ModelProperty<? super I> property) {
-			super();
-			this.property = property;
-			this.accessedEntity = null;
-			this.tag = property.getXMLContext() + property.getXMLElement().xmlTag();
-		}
-
-		public ModelPropertyXMLTag(ModelProperty<? super I> property, ModelEntity<?> accessedEntity) {
-			super();
-			this.property = property;
-			this.accessedEntity = accessedEntity;
-			this.tag = property.getXMLContext() + accessedEntity.getXMLTag();
-		}
-
-		public String getTag() {
-			return tag;
-		}
-
-		public List<String> getDeprecatedTags() {
-			List<String> returned = new ArrayList<>();
-			if (accessedEntity.getXMLElement() != null && StringUtils.isNotEmpty(accessedEntity.getXMLElement().deprecatedXMLTags())) {
-				StringTokenizer st = new StringTokenizer(accessedEntity.getXMLElement().deprecatedXMLTags(), ",");
-				while (st.hasMoreTokens()) {
-					String nextTag = st.nextToken();
-					returned.add(property.getXMLContext() + nextTag);
-				}
-			}
-			if (getProperty().getXMLElement() != null && StringUtils.isNotEmpty(getProperty().getXMLElement().deprecatedContext())) {
-				returned.add(getProperty().getXMLElement().deprecatedContext() + accessedEntity.getXMLTag());
-			}
-			if (returned.size() == 0) {
-				return null;
-			}
-			return returned;
-		}
-
-		public ModelProperty<? super I> getProperty() {
-			return property;
-		}
-
-		public ModelEntity<?> getAccessedEntity() {
-			return accessedEntity;
-		}
-
-		@Override
-		public String toString() {
-			return "ModelPropertyXMLTag" + getAccessedEntity() + getProperty() + "/tag=" + getTag();
-		}
-	}
 
 	private Map<Class, ModelEntity> modelEntities;
 	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
 	private final Map<ModelEntity<?>, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
 	private final Class<?> baseClass;
 	private final Set<ExecutionMonitor> executionMonitors;
+	private List<AbstractPatternFactory<?>> patternFactories = new ArrayList<>();
+	private Map<Object, Set<PatternInstance<?>>> patternInstances = new HashMap<>();
+	private Map<PatternDefinition, Set<PatternInstance<?>>> registeredPatternInstances = new HashMap<>();
 
 	ModelContext(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
 		this.baseClass = baseClass;
@@ -143,130 +102,6 @@ public class ModelContext {
 		if (isFinalModel) {
 			discoverPatterns();
 		}
-	}
-
-	public void addExecutionMonitor(ExecutionMonitor m) {
-		this.executionMonitors.add(m);
-	}
-
-	public Set<ExecutionMonitor> getExecutionMonitors() {
-		return this.executionMonitors;
-	}
-
-	public boolean removeExecutionMonitor(ExecutionMonitor m) {
-		return this.executionMonitors.remove(m);
-	}
-
-	/**
-	 * Browse the {@link ModelEntity} code to identify {@link PatternDefinition}
-	 * 
-	 * @throws ModelDefinitionException
-	 */
-	private void discoverPatterns() throws ModelDefinitionException {
-		ServiceLoader<PatternLibrary> loader = ServiceLoader.load(PatternLibrary.class);
-
-		for (PatternLibrary patternLibrary : loader) {
-			// System.out.println("Found PatternLibrary: " + patternLibrary);
-			DeclarePatterns declarePatterns = patternLibrary.getClass().getAnnotation(DeclarePatterns.class);
-			for (Class<? extends AbstractPatternFactory<?>> factoryClass : declarePatterns.value()) {
-				// System.out.println("Analysing pattern: " + factoryClass);
-				try {
-					Constructor<? extends AbstractPatternFactory<?>> constructor = factoryClass.getConstructor(ModelContext.class);
-					AbstractPatternFactory<?> patternFactory = constructor.newInstance(this);
-					patternFactories.add(patternFactory);
-					for (ModelEntity<?> modelEntity : modelEntities.values()) {
-						patternFactory.discoverEntity(modelEntity);
-					}
-					// System.out.println("patternDefinitions= " + patternFactory.getPatternDefinitions());
-					for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
-						patternDefinition.finalizeDefinition();
-					}
-				} catch (InstantiationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InvocationTargetException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchMethodException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (SecurityException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
-	public <P extends PatternDefinition> List<P> getPatternDefinitions(Class<P> patternDefinitionClass) {
-		List<P> returned = new ArrayList<>();
-		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
-			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
-				if (patternDefinitionClass.isAssignableFrom(patternDefinition.getClass())) {
-					returned.add((P) patternDefinition);
-				}
-			}
-		}
-		return returned;
-	}
-
-	private List<AbstractPatternFactory<?>> patternFactories = new ArrayList<>();
-	private Map<Object, Set<PatternInstance<?>>> patternInstances = new HashMap<>();
-	private Map<PatternDefinition, Set<PatternInstance<?>>> registeredPatternInstances = new HashMap<>();
-
-	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
-		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
-			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
-				patternDefinition.notifiedNewInstance(newInstance, modelEntity);
-			}
-		}
-	}
-
-	public boolean isMethodInvolvedInPattern(Method method) {
-		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
-			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
-				if (patternDefinition.isMethodInvolvedInPattern(method)) {
-					return true;
-				}
-			}
-		}
-		return false;
-
-	}
-
-	public <P extends PatternDefinition> void registerPatternInstance(PatternInstance<P> patternInstance) {
-		P definition = patternInstance.getPatternDefinition();
-		Set<PatternInstance<?>> s = registeredPatternInstances.get(definition);
-		if (s == null) {
-			s = new HashSet<>();
-			registeredPatternInstances.put(definition, s);
-		}
-		System.out.println("Registering " + patternInstance);
-		s.add(patternInstance);
-	}
-
-	public void registerStakeHolderForPatternInstance(Object stakeHolder, String role, PatternInstance<?> patternInstance) {
-		Set<PatternInstance<?>> s = patternInstances.get(stakeHolder);
-		if (s == null) {
-			s = new HashSet<>();
-			patternInstances.put(stakeHolder, s);
-		}
-		System.out.println("Registering " + stakeHolder + " as " + role + " for pattern instance " + patternInstance);
-		s.add(patternInstance);
-	}
-
-	public Set<PatternInstance<?>> getPatternInstances(Object stakeholder) {
-		return patternInstances.get(stakeholder);
-	}
-
-	public <P extends PatternDefinition> Set<PatternInstance<P>> getPatternInstances(P patternDefinition) {
-		return (Set) registeredPatternInstances.get(patternDefinition);
 	}
 
 	public ModelContext(Class<?> baseClass, List<ModelContext> contexts) throws ModelDefinitionException {
@@ -469,6 +304,183 @@ public class ModelContext {
 			}
 		}
 		return returned.toString();
+	}
+
+	public static class ModelPropertyXMLTag<I> {
+		private final String tag;
+		private final ModelProperty<? super I> property;
+		private final ModelEntity<?> accessedEntity;
+
+		public ModelPropertyXMLTag(ModelProperty<? super I> property) {
+			super();
+			this.property = property;
+			this.accessedEntity = null;
+			this.tag = property.getXMLContext() + property.getXMLElement().xmlTag();
+		}
+
+		public ModelPropertyXMLTag(ModelProperty<? super I> property, ModelEntity<?> accessedEntity) {
+			super();
+			this.property = property;
+			this.accessedEntity = accessedEntity;
+			this.tag = property.getXMLContext() + accessedEntity.getXMLTag();
+		}
+
+		public String getTag() {
+			return tag;
+		}
+
+		public List<String> getDeprecatedTags() {
+			List<String> returned = new ArrayList<>();
+			if (accessedEntity.getXMLElement() != null && StringUtils.isNotEmpty(accessedEntity.getXMLElement().deprecatedXMLTags())) {
+				StringTokenizer st = new StringTokenizer(accessedEntity.getXMLElement().deprecatedXMLTags(), ",");
+				while (st.hasMoreTokens()) {
+					String nextTag = st.nextToken();
+					returned.add(property.getXMLContext() + nextTag);
+				}
+			}
+			if (getProperty().getXMLElement() != null && StringUtils.isNotEmpty(getProperty().getXMLElement().deprecatedContext())) {
+				returned.add(getProperty().getXMLElement().deprecatedContext() + accessedEntity.getXMLTag());
+			}
+			if (returned.size() == 0) {
+				return null;
+			}
+			return returned;
+		}
+
+		public ModelProperty<? super I> getProperty() {
+			return property;
+		}
+
+		public ModelEntity<?> getAccessedEntity() {
+			return accessedEntity;
+		}
+
+		@Override
+		public String toString() {
+			return "ModelPropertyXMLTag" + getAccessedEntity() + getProperty() + "/tag=" + getTag();
+		}
+	}
+
+	// Patterns
+
+	public void addExecutionMonitor(ExecutionMonitor m) {
+		this.executionMonitors.add(m);
+	}
+
+	public Set<ExecutionMonitor> getExecutionMonitors() {
+		return this.executionMonitors;
+	}
+
+	public boolean removeExecutionMonitor(ExecutionMonitor m) {
+		return this.executionMonitors.remove(m);
+	}
+
+	/**
+	 * Browse the {@link ModelEntity} code to identify {@link PatternDefinition}
+	 * 
+	 * @throws ModelDefinitionException
+	 */
+	private void discoverPatterns() throws ModelDefinitionException {
+		ServiceLoader<PatternLibrary> loader = ServiceLoader.load(PatternLibrary.class);
+
+		for (PatternLibrary patternLibrary : loader) {
+			// System.out.println("Found PatternLibrary: " + patternLibrary);
+			DeclarePatterns declarePatterns = patternLibrary.getClass().getAnnotation(DeclarePatterns.class);
+			for (Class<? extends AbstractPatternFactory<?>> factoryClass : declarePatterns.value()) {
+				// System.out.println("Analysing pattern: " + factoryClass);
+				try {
+					Constructor<? extends AbstractPatternFactory<?>> constructor = factoryClass.getConstructor(ModelContext.class);
+					AbstractPatternFactory<?> patternFactory = constructor.newInstance(this);
+					patternFactories.add(patternFactory);
+					for (ModelEntity<?> modelEntity : modelEntities.values()) {
+						patternFactory.discoverEntity(modelEntity);
+					}
+					// System.out.println("patternDefinitions= " + patternFactory.getPatternDefinitions());
+					for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
+						patternDefinition.finalizeDefinition();
+					}
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NoSuchMethodException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	public <P extends PatternDefinition> List<P> getPatternDefinitions(Class<P> patternDefinitionClass) {
+		List<P> returned = new ArrayList<>();
+		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
+			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
+				if (patternDefinitionClass.isAssignableFrom(patternDefinition.getClass())) {
+					returned.add((P) patternDefinition);
+				}
+			}
+		}
+		return returned;
+	}
+
+	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
+		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
+			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
+				patternDefinition.notifiedNewInstance(newInstance, modelEntity);
+			}
+		}
+	}
+
+	public boolean isMethodInvolvedInPattern(Method method) {
+		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
+			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
+				if (patternDefinition.isMethodInvolvedInPattern(method)) {
+					return true;
+				}
+			}
+		}
+		return false;
+
+	}
+
+	public <P extends PatternDefinition> void registerPatternInstance(PatternInstance<P> patternInstance) {
+		P definition = patternInstance.getPatternDefinition();
+		Set<PatternInstance<?>> s = registeredPatternInstances.get(definition);
+		if (s == null) {
+			s = new HashSet<>();
+			registeredPatternInstances.put(definition, s);
+		}
+		System.out.println("Registering " + patternInstance);
+		s.add(patternInstance);
+	}
+
+	public void registerStakeHolderForPatternInstance(Object stakeHolder, String role, PatternInstance<?> patternInstance) {
+		Set<PatternInstance<?>> s = patternInstances.get(stakeHolder);
+		if (s == null) {
+			s = new HashSet<>();
+			patternInstances.put(stakeHolder, s);
+		}
+		System.out.println("Registering " + stakeHolder + " as " + role + " for pattern instance " + patternInstance);
+		s.add(patternInstance);
+	}
+
+	public Set<PatternInstance<?>> getPatternInstances(Object stakeholder) {
+		return patternInstances.get(stakeholder);
+	}
+
+	public <P extends PatternDefinition> Set<PatternInstance<P>> getPatternInstances(P patternDefinition) {
+		return (Set) registeredPatternInstances.get(patternDefinition);
 	}
 
 }

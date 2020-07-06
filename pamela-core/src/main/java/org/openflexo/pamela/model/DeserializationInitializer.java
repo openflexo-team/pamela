@@ -36,43 +36,28 @@
  * 
  */
 
-package org.openflexo.pamela;
+package org.openflexo.pamela.model;
 
 import java.lang.reflect.Method;
 
-import org.openflexo.pamela.exceptions.ModelDefinitionException;
-
 /**
- * Finalizer used for a method that should be called after the whole graph of objects has been deserialized<br>
- * Order of calls of these methods just respect the order where objects were created
+ * Initializer used for a method that should be called immediately after the object has been created in a deserialization phase
  * 
  * @author sylvain
  * 
  */
-public class DeserializationFinalizer {
+public class DeserializationInitializer {
 
-	private final org.openflexo.pamela.annotations.DeserializationFinalizer finalizer;
-	private final Method deserializationFinalizerMethod;
+	private final org.openflexo.pamela.annotations.DeserializationInitializer initializer;
+	private final Method deserializationInitializerMethod;
 
-	/**
-	 * Constructor
-	 * 
-	 * @param finalizer
-	 * @param deserializationFinalizerMethod
-	 * @throws ModelDefinitionException
-	 */
-	public DeserializationFinalizer(org.openflexo.pamela.annotations.DeserializationFinalizer finalizer,
-			Method deserializationFinalizerMethod) throws ModelDefinitionException {
-		this.finalizer = finalizer;
-		this.deserializationFinalizerMethod = deserializationFinalizerMethod;
+	public DeserializationInitializer(org.openflexo.pamela.annotations.DeserializationInitializer initializer,
+			Method deserializationInitializerMethod) {
+		this.initializer = initializer;
+		this.deserializationInitializerMethod = deserializationInitializerMethod;
 	}
 
-	/**
-	 * Return deserialization method
-	 * 
-	 * @return
-	 */
-	public Method getDeserializationFinalizerMethod() {
-		return deserializationFinalizerMethod;
+	public Method getDeserializationInitializerMethod() {
+		return deserializationInitializerMethod;
 	}
 }

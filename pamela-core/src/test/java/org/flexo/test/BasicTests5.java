@@ -9,9 +9,9 @@ import org.openflexo.model6.MyContainer;
 import org.openflexo.model6.MyContainerImpl;
 import org.openflexo.model6.MyContents;
 import org.openflexo.pamela.ModelContextLibrary;
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.ModelEntity;
 
 /**
  * Test PAMELA in overriden getter/setter context

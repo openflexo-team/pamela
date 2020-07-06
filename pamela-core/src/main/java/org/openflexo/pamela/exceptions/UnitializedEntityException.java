@@ -39,7 +39,7 @@
 
 package org.openflexo.pamela.exceptions;
 
-import org.openflexo.pamela.ModelEntity;
+import org.openflexo.pamela.model.ModelEntity;
 
 public class UnitializedEntityException extends ModelExecutionException {
 

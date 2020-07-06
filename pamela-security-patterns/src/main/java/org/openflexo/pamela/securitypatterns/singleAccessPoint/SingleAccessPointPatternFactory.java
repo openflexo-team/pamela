@@ -1,7 +1,7 @@
 package org.openflexo.pamela.securitypatterns.singleAccessPoint;
 
 import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelEntity;
+import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.securitypatterns.singleAccessPoint.annotations.SingleAccessPointClient;
 import org.openflexo.pamela.securitypatterns.singleAccessPoint.annotations.SingleAccessPointSystem;

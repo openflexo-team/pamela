@@ -1,8 +1,8 @@
 package org.openflexo.pamela.securitypatterns.executionMonitors;
 
 import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.PamelaUtils;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.model.PamelaUtils;
 import org.openflexo.pamela.patterns.ExecutionMonitor;
 
 import java.lang.reflect.Method;

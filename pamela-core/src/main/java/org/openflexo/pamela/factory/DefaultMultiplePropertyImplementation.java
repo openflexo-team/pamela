@@ -3,10 +3,10 @@ package org.openflexo.pamela.factory;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.model.ModelProperty;
 
 public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropertyImplementation<I, List<T>> implements
 		MultiplePropertyImplementation<I, T>, SettablePropertyImplementation<I, List<T>>, ReindexableListPropertyImplementation<I, T> {

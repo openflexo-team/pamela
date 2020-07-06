@@ -38,12 +38,12 @@ package org.flexo.model9;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.openflexo.pamela.ModelProperty;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.AbstractPropertyImplementation;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.factory.ReindexableListPropertyImplementation;
+import org.openflexo.pamela.model.ModelProperty;
 
 public class MyListCardinalityPropertyImplementation<I, T> extends AbstractPropertyImplementation<I, List<T>>
 		implements ReindexableListPropertyImplementation<I, T> {

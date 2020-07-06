@@ -37,7 +37,7 @@
  * 
  */
 
-package org.openflexo.pamela;
+package org.openflexo.pamela.model;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -52,7 +52,7 @@ public class ModelEntityLibrary {
 
 	private static List<ModelEntity<?>> newEntities = new ArrayList<>();
 
-	static synchronized <I> ModelEntity<I> importEntity(Class<I> implementedInterface) throws ModelDefinitionException {
+	public static synchronized <I> ModelEntity<I> importEntity(Class<I> implementedInterface) throws ModelDefinitionException {
 		ModelEntity<I> modelEntity = (ModelEntity<I>) entities.get(implementedInterface);
 		if (modelEntity == null) {
 			modelEntity = get(implementedInterface, true);

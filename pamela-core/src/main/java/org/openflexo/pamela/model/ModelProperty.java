@@ -37,7 +37,7 @@
  * 
  */
 
-package org.openflexo.pamela;
+package org.openflexo.pamela.model;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -48,7 +48,6 @@ import java.util.List;
 
 import org.openflexo.connie.binding.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
-import org.openflexo.pamela.StringConverterLibrary.Converter;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy;
 import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
@@ -72,6 +71,7 @@ import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.factory.PAMELAConstants;
+import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.StringUtils;
 
 public class ModelProperty<I> {

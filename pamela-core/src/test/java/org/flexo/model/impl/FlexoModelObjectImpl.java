@@ -3,8 +3,8 @@ package org.flexo.model.impl;
 import javassist.util.proxy.ProxyObject;
 
 import org.flexo.model.TestModelObject;
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.model.ModelEntity;
 
 public abstract class FlexoModelObjectImpl implements TestModelObject {
 

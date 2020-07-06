@@ -42,8 +42,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 
-import org.openflexo.pamela.StringConverterLibrary.Converter;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.FileUtils;
 
 public class RelativePathFileConverter extends Converter<File> {

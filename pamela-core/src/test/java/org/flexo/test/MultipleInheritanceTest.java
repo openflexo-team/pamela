@@ -11,9 +11,9 @@ import org.openflexo.model3.C;
 import org.openflexo.model3.D1;
 import org.openflexo.model3.D2;
 import org.openflexo.pamela.ModelContextLibrary;
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.ModelEntity;
 
 /**
  * Test PAMELA in multiple inheritance context

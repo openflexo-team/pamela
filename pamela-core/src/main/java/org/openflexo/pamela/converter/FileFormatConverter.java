@@ -38,8 +38,8 @@
 
 package org.openflexo.pamela.converter;
 
-import org.openflexo.pamela.StringConverterLibrary.Converter;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.FileFormat;
 
 public class FileFormatConverter extends Converter<FileFormat> {

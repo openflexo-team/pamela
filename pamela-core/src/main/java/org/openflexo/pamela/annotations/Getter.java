@@ -45,9 +45,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.openflexo.pamela.StringConverterLibrary.Converter;
-import org.openflexo.pamela.StringEncoder;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.StringEncoder;
+import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
 /**
  * Annotation for a getter

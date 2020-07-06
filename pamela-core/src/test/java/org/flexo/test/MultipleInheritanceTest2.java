@@ -7,9 +7,9 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.openflexo.model3.Calculator;
 import org.openflexo.pamela.ModelContextLibrary;
-import org.openflexo.pamela.ModelEntity;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.model.ModelEntity;
 
 /**
  * Test PAMELA in multiple inheritance context<br>
