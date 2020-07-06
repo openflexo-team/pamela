@@ -46,6 +46,12 @@ import java.util.Map;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 
+/**
+ * Internally used to store {@link ModelEntity} instances
+ * 
+ * @author sylvain
+ *
+ */
 public class ModelEntityLibrary {
 
 	private static Map<Class<?>, ModelEntity<?>> entities = new Hashtable<>();

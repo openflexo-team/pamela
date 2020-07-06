@@ -47,8 +47,15 @@ import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.KeyValueCoding;
 import org.openflexo.pamela.SpecifiableProxyObject;
+import org.openflexo.pamela.model.PAMELAVisitor;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
+/**
+ * Utility interface used to capitalize constants in the context of PAMELA interpreter (see {@link ProxyMethodHandler}
+ * 
+ * @author sylvain
+ *
+ */
 public class IProxyMethodHandler {
 
 	public static Method PERFORM_SUPER_GETTER;

@@ -45,7 +45,6 @@ import java.util.Set;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.model.PamelaUtils;
 import org.openflexo.pamela.undo.AddCommand;
 import org.openflexo.pamela.undo.RemoveCommand;
 import org.openflexo.pamela.undo.SetCommand;

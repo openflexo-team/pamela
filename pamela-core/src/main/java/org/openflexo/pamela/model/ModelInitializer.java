@@ -46,6 +46,12 @@ import java.util.List;
 
 import org.openflexo.pamela.annotations.Parameter;
 
+/**
+ * Represents a constructor at model conceptual level
+ * 
+ * @author sylvain
+ *
+ */
 public class ModelInitializer {
 
 	private org.openflexo.pamela.annotations.Initializer initializer;

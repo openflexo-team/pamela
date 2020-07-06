@@ -4,6 +4,16 @@ import java.util.List;
 
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 
+/**
+ * Represents a {@link PropertyImplementation} which is settable and of MULTIPLE cardinality
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ *            type of entity defining such property
+ * @param <T>
+ *            accessed type for the property
+ */
 public interface MultiplePropertyImplementation<I, T> extends PropertyImplementation<I, List<T>> {
 
 	@Override

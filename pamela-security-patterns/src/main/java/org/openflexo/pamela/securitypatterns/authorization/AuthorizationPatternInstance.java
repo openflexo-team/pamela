@@ -1,7 +1,7 @@
 package org.openflexo.pamela.securitypatterns.authorization;
 
 import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.model.PamelaUtils;
+import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.toolbox.HasPropertyChangeSupport;

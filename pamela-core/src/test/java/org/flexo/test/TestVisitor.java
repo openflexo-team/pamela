@@ -17,7 +17,7 @@ import org.openflexo.model9.Node;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelContextLibrary;
 import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.factory.PAMELAVisitor;
+import org.openflexo.pamela.model.PAMELAVisitor;
 
 /**
  * Test PAMELA visitor feature

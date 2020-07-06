@@ -41,9 +41,9 @@ package org.openflexo.pamela;
 
 import java.util.List;
 
-import org.openflexo.pamela.factory.PAMELAVisitor;
-import org.openflexo.pamela.factory.PAMELAVisitor.VisitingStrategy;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.model.PAMELAVisitor;
+import org.openflexo.pamela.model.PAMELAVisitor.VisitingStrategy;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**

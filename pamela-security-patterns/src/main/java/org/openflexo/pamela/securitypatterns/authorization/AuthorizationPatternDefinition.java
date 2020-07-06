@@ -8,8 +8,8 @@ import java.util.Set;
 
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.model.ModelEntity;
-import org.openflexo.pamela.model.PamelaUtils;
 import org.openflexo.pamela.patterns.PatternDefinition;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.*;
 

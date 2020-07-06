@@ -6,6 +6,13 @@ import java.util.StringTokenizer;
 
 import org.openflexo.toolbox.StringUtils;
 
+/**
+ * Used in the context of XML serialization/deserialization
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ */
 public class ModelPropertyXMLTag<I> {
 	private final String tag;
 	private final ModelProperty<? super I> property;

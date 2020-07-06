@@ -74,6 +74,19 @@ import org.openflexo.pamela.factory.PAMELAConstants;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.StringUtils;
 
+/**
+ * A {@link ModelProperty} represents a property attached to a ModelEntity in PAMELA meta-model<br>
+ * 
+ * A {@link ModelProperty} has a name, a type and a cardinality<br>
+ * 
+ * A {@link ModelProperty} is reified in Java using a set of methods (at least a {@link Getter}) and (possibly) a {@link Setter} or a
+ * {@link Adder} and a {@link Remover} (depending on the cardinality of the property)
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ *            java type of related entity
+ */
 public class ModelProperty<I> {
 
 	/* Model property identification */

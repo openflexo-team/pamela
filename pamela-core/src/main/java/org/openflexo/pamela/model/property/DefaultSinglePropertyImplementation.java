@@ -13,6 +13,16 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 import javassist.util.proxy.ProxyObject;
 
+/**
+ * Default implementation of a property with SINGLE cardinality
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ *            type of entity defining such property
+ * @param <T>
+ *            accessed type for the property
+ */
 public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyImplementation<I, T>
 		implements SinglePropertyImplementation<I, T> {
 

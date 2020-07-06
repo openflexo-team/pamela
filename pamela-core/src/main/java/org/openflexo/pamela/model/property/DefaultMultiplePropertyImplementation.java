@@ -10,6 +10,16 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
 
+/**
+ * Default implementation of a property with MULTIPLE cardinality
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ *            type of entity defining such property
+ * @param <T>
+ *            accessed type for the property
+ */
 public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropertyImplementation<I, List<T>> implements
 		MultiplePropertyImplementation<I, T>, SettablePropertyImplementation<I, List<T>>, ReindexableListPropertyImplementation<I, T> {
 

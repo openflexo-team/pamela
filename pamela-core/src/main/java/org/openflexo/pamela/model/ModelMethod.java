@@ -42,6 +42,12 @@ package org.openflexo.pamela.model;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+/**
+ * Represent a method at model conceptual level
+ * 
+ * @author sylvain
+ *
+ */
 public class ModelMethod {
 
 	private String methodName;
@@ -78,7 +84,8 @@ public class ModelMethod {
 			if (other.methodName != null) {
 				return false;
 			}
-		} else if (!methodName.equals(other.methodName)) {
+		}
+		else if (!methodName.equals(other.methodName)) {
 			return false;
 		}
 		if (!Arrays.equals(parameterTypes, other.parameterTypes)) {

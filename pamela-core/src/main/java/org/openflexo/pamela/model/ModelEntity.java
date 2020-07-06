@@ -84,6 +84,7 @@ import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.PropertyClashException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.jml.JMLInvariant;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
@@ -91,11 +92,15 @@ import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
- * This class represents an instance of the {@link org.openflexo.pamela.annotations.ModelEntity} annotation declared on an interface.
+ * A {@link ModelEntity} represents a concept in a PAMELA meta-model<br>
+ * 
+ * A {@link ModelEntity} is reified in Java using an interface or class, annotated with a
+ * {@link org.openflexo.pamela.annotations.ModelEntity} annotation
  * 
  * @author guillaume, sylvain
  * 
  * @param <I>
+ *            java type addressed by this entity
  */
 public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 

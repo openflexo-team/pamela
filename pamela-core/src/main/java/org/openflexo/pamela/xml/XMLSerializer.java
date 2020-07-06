@@ -66,9 +66,9 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.factory.PAMELAConstants;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.factory.SerializationPolicy;
+import org.openflexo.pamela.factory.StringEncoder;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.model.StringEncoder;
 import org.openflexo.toolbox.StringUtils;
 
 import javassist.util.proxy.ProxyObject;

@@ -92,15 +92,14 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.NoSuchEntityException;
 import org.openflexo.pamela.exceptions.UnitializedEntityException;
 import org.openflexo.pamela.factory.ModelFactory.PAMELAProxyFactory;
-import org.openflexo.pamela.factory.PAMELAVisitor.VisitingStrategy;
 import org.openflexo.pamela.jml.JMLEnsures;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.jml.JMLRequires;
 import org.openflexo.pamela.jml.SpecificationsViolationException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.model.PamelaUtils;
-import org.openflexo.pamela.model.StringEncoder;
+import org.openflexo.pamela.model.PAMELAVisitor;
+import org.openflexo.pamela.model.PAMELAVisitor.VisitingStrategy;
 import org.openflexo.pamela.model.property.DefaultMultiplePropertyImplementation;
 import org.openflexo.pamela.model.property.DefaultSinglePropertyImplementation;
 import org.openflexo.pamela.model.property.MultiplePropertyImplementation;
@@ -126,7 +125,7 @@ import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyObject;
 
 /**
- * Invocation Handler in the core of PAMELA
+ * Invocation handler in the core of PAMELA: main class for PAMELA interpreter<br>
  * 
  * This is the class where method call dispatching is performed.
  * 

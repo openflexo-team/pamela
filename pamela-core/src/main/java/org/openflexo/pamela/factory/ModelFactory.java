@@ -66,7 +66,6 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelInitializer;
 import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.model.StringEncoder;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.pamela.undo.CreateCommand;
 import org.openflexo.pamela.xml.XMLSaxDeserializer;

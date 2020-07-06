@@ -5,8 +5,8 @@ import java.lang.reflect.Method;
 import org.openflexo.pamela.annotations.jml.Assignable;
 import org.openflexo.pamela.annotations.jml.Ensures;
 import org.openflexo.pamela.annotations.jml.Requires;
+import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.model.ModelEntity;
-import org.openflexo.pamela.model.PamelaUtils;
 
 /**
  * Wraps JML instructions for a given {@link Method} relative to a {@link ModelEntity}

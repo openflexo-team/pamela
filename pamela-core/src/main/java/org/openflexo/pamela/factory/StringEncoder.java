@@ -40,15 +40,14 @@
  * 
  */
 
-package org.openflexo.pamela.model;
+package org.openflexo.pamela.factory;
 
 import java.util.Hashtable;
 import java.util.Map;
 
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.exceptions.InvalidDataException;
-import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.model.StringConverterLibrary;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
 import com.google.common.primitives.Primitives;

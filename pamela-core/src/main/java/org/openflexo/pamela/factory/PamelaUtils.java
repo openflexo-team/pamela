@@ -36,7 +36,7 @@
  * 
  */
 
-package org.openflexo.pamela.model;
+package org.openflexo.pamela.factory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -47,6 +47,12 @@ import javax.annotation.Nullable;
 
 import org.openflexo.connie.type.TypeUtils;
 
+/**
+ * Some utils for PAMELA
+ * 
+ * @author sylvain
+ *
+ */
 public class PamelaUtils {
 
 	/**
