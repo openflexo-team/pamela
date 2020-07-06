@@ -45,6 +45,12 @@ import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.Duration;
 import org.openflexo.toolbox.Duration.DurationUnit;
 
+/**
+ * An implementation for {@link Duration} <-> String {@link Converter}
+ * 
+ * @author gpolet
+ * 
+ */
 public class DurationConverter extends Converter<Duration> {
 
 	public DurationConverter() {

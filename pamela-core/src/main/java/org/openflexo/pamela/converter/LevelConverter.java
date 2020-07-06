@@ -44,6 +44,12 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.StringUtils;
 
+/**
+ * An implementation for {@link Level} <-> String {@link Converter}
+ * 
+ * @author gpolet
+ * 
+ */
 public class LevelConverter extends Converter<Level> {
 
 	public LevelConverter() {
@@ -57,17 +63,23 @@ public class LevelConverter extends Converter<Level> {
 		}
 		if (value.equals("SEVERE")) {
 			return Level.SEVERE;
-		} else if (value.equals("WARNING")) {
+		}
+		else if (value.equals("WARNING")) {
 			return Level.WARNING;
-		} else if (value.equals("INFO")) {
+		}
+		else if (value.equals("INFO")) {
 			return Level.INFO;
-		} else if (value.equals("CONFIG")) {
+		}
+		else if (value.equals("CONFIG")) {
 			return Level.CONFIG;
-		} else if (value.equals("FINE")) {
+		}
+		else if (value.equals("FINE")) {
 			return Level.FINE;
-		} else if (value.equals("FINER")) {
+		}
+		else if (value.equals("FINER")) {
 			return Level.FINER;
-		} else if (value.equals("FINEST")) {
+		}
+		else if (value.equals("FINEST")) {
 			return Level.FINEST;
 		}
 		return null;

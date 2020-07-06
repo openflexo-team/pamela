@@ -42,6 +42,12 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.FileFormat;
 
+/**
+ * An implementation for {@link FileFormat} <-> String {@link Converter}
+ * 
+ * @author gpolet
+ * 
+ */
 public class FileFormatConverter extends Converter<FileFormat> {
 
 	public FileFormatConverter() {

@@ -42,6 +42,12 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.FlexoVersion;
 
+/**
+ * An implementation for {@link FlexoVersion} <-> String {@link Converter}
+ * 
+ * @author gpolet
+ * 
+ */
 public class FlexoVersionConverter extends Converter<FlexoVersion> {
 
 	public FlexoVersionConverter() {

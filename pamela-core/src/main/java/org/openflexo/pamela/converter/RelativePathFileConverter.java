@@ -46,10 +46,17 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.FileUtils;
 
+/**
+ * A converter that allows to address a {@link File} relatively to another {@link File} (the container directory)<br>
+ * This is an implementation for transportable {@link File} <-> String {@link Converter}
+ * 
+ * @author sylvain
+ * 
+ */
 public class RelativePathFileConverter extends Converter<File> {
 
-	private static final java.util.logging.Logger logger = org.openflexo.logging.FlexoLogger.getLogger(RelativePathFileConverter.class
-			.getPackage().getName());
+	private static final java.util.logging.Logger logger = org.openflexo.logging.FlexoLogger
+			.getLogger(RelativePathFileConverter.class.getPackage().getName());
 
 	private final File relativePath;
 

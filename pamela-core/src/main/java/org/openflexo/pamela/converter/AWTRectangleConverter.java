@@ -44,6 +44,8 @@ import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
 /**
+ * An implementation for {@link Rectangle} <-> String {@link Converter}
+ * 
  * @author gpolet
  * 
  */

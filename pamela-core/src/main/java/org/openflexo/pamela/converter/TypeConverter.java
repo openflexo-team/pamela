@@ -54,6 +54,12 @@ import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
+/**
+ * An implementation for {@link Type} <-> String {@link Converter}
+ * 
+ * @author gpolet
+ * 
+ */
 public class TypeConverter extends Converter<Type> {
 
 	private final Map<Class<? extends CustomType>, CustomTypeFactory<?>> factories;

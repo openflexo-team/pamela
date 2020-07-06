@@ -43,6 +43,12 @@ import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
+/**
+ * An implementation for {@link DataBinding} <-> String {@link Converter}
+ * 
+ * @author gpolet
+ * 
+ */
 public class DataBindingConverter extends Converter<DataBinding<?>> {
 
 	public DataBindingConverter() {
