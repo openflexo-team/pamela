@@ -40,6 +40,7 @@ package org.openflexo.model4;
 
 import java.util.List;
 
+import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.DeserializationFinalizer;
 import org.openflexo.pamela.annotations.DeserializationInitializer;
@@ -52,7 +53,6 @@ import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.XMLAttribute;
 import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.annotations.Getter.Cardinality;
-import org.openflexo.pamela.factory.AccessibleProxyObject;
 
 @ModelEntity
 @ImplementationClass(Node.NodeImpl.class)

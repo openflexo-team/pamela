@@ -36,7 +36,7 @@
  * 
  */
 
-package org.openflexo.pamela.io;
+package org.openflexo.pamela.xml;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -73,6 +73,12 @@ import org.openflexo.toolbox.StringUtils;
 
 import javassist.util.proxy.ProxyObject;
 
+/**
+ * XML serializer implementation
+ * 
+ * @author christophe
+ *
+ */
 public class XMLSerializer {
 
 	public static final String ID = "id";

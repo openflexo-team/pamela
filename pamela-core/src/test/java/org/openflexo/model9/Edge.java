@@ -1,12 +1,12 @@
 package org.openflexo.model9;
 
+import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.annotations.Parameter;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.XMLElement;
-import org.openflexo.pamela.factory.AccessibleProxyObject;
 
 @ModelEntity
 @XMLElement

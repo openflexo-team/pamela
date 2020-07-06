@@ -37,7 +37,9 @@
  * 
  */
 
-package org.openflexo.pamela.factory;
+package org.openflexo.pamela;
+
+import org.openflexo.pamela.factory.ProxyMethodHandler;
 
 /**
  * Interface that PAMELA objects should extend in order to benefit from their default implementation handled by the

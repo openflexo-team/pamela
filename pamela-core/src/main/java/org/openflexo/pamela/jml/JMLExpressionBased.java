@@ -27,6 +27,14 @@ import org.openflexo.connie.java.JavaBindingFactory;
 import org.openflexo.kvc.InvalidKeyValuePropertyException;
 import org.openflexo.pamela.model.ModelEntity;
 
+/**
+ * A JML clause or assertion based on an expression
+ * 
+ * @author sylvain
+ *
+ * @param <T>
+ * @param <I>
+ */
 public abstract class JMLExpressionBased<T, I> extends DefaultBindable {
 
 	private static final BindingFactory BINDING_FACTORY = new JavaBindingFactory();

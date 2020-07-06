@@ -1,6 +1,9 @@
 package org.flexo.model;
 
 import org.flexo.model.impl.FlexoModelObjectImpl;
+import org.openflexo.pamela.AccessibleProxyObject;
+import org.openflexo.pamela.CloneableProxyObject;
+import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.annotations.CloningStrategy;
 import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.ImplementationClass;
@@ -10,9 +13,6 @@ import org.openflexo.pamela.annotations.Parameter;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.XMLAttribute;
 import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
-import org.openflexo.pamela.factory.AccessibleProxyObject;
-import org.openflexo.pamela.factory.CloneableProxyObject;
-import org.openflexo.pamela.factory.DeletableProxyObject;
 
 @ModelEntity(isAbstract = true)
 @ImplementationClass(FlexoModelObjectImpl.class)

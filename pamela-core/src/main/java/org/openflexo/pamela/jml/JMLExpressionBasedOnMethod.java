@@ -13,6 +13,14 @@ import org.openflexo.pamela.annotations.jml.MethodParameter;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
 
+/**
+ * A JML clause or assertion attached to a {@link Method}
+ * 
+ * @author sylvain
+ *
+ * @param <T>
+ * @param <I>
+ */
 public abstract class JMLExpressionBasedOnMethod<T, I> extends JMLExpressionBased<T, I> {
 
 	private final Method method;

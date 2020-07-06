@@ -70,6 +70,9 @@ import org.openflexo.connie.exception.NullReferenceException;
 import org.openflexo.connie.exception.TypeMismatchException;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.kvc.InvalidKeyValuePropertyException;
+import org.openflexo.pamela.AccessibleProxyObject;
+import org.openflexo.pamela.CloneableProxyObject;
+import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
@@ -98,6 +101,12 @@ import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.model.PamelaUtils;
 import org.openflexo.pamela.model.StringEncoder;
+import org.openflexo.pamela.model.property.DefaultMultiplePropertyImplementation;
+import org.openflexo.pamela.model.property.DefaultSinglePropertyImplementation;
+import org.openflexo.pamela.model.property.MultiplePropertyImplementation;
+import org.openflexo.pamela.model.property.PropertyImplementation;
+import org.openflexo.pamela.model.property.ReindexableListPropertyImplementation;
+import org.openflexo.pamela.model.property.SettablePropertyImplementation;
 import org.openflexo.pamela.patterns.ExecutionMonitor;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
@@ -241,6 +250,22 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 
 	private ModelContext getModelContext() {
 		return getModelFactory().getModelContext();
+	}
+
+	public boolean isDeleting() {
+		return deleting;
+	}
+
+	public boolean isUndeleting() {
+		return undeleting;
+	}
+
+	public boolean isInitializing() {
+		return initializing;
+	}
+
+	public boolean isCreatedByCloning() {
+		return createdByCloning;
 	}
 
 	@Override
@@ -675,7 +700,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return propertyChangeSupport;
 	}
 
-	private void internallyInvokeInitializer(org.openflexo.pamela.model.ModelInitializer in, Object[] args) throws ModelDefinitionException {
+	private void internallyInvokeInitializer(org.openflexo.pamela.model.ModelInitializer in, Object[] args)
+			throws ModelDefinitionException {
 		initializing = true;
 		try {
 			List<String> parameters = in.getParameters();
@@ -761,7 +787,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		internallyInvokeSetter(property, value, trackAtomicEdit);
 	}
 
-	protected void internallyInvokeSetter(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
+	public void internallyInvokeSetter(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
 			throws ModelDefinitionException {
 		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
 		if (propertyImplementation instanceof SettablePropertyImplementation) {
@@ -1189,7 +1215,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 	}
 
-	protected Map<ModelProperty<? super I>, Object> getScheduledSets() {
+	public Map<ModelProperty<? super I>, Object> getScheduledSets() {
 		return scheduledSets;
 	}
 
@@ -1220,7 +1246,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	}
 
 	@Deprecated
-	protected void invokeSetModified(boolean modified) throws ModelDefinitionException {
+	public void invokeSetModified(boolean modified) throws ModelDefinitionException {
 		if (getObject() instanceof AccessibleProxyObject) {
 			((AccessibleProxyObject) getObject()).setModified(modified);
 		}

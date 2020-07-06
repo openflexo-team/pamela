@@ -37,7 +37,7 @@
  * 
  */
 
-package org.openflexo.pamela.factory;
+package org.openflexo.pamela;
 
 import java.lang.reflect.Type;
 

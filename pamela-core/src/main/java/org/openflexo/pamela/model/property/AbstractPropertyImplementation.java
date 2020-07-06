@@ -1,8 +1,11 @@
-package org.openflexo.pamela.factory;
+package org.openflexo.pamela.model.property;
 
 import java.beans.PropertyChangeSupport;
 
+import org.openflexo.pamela.factory.IProxyMethodHandler;
+import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.factory.ModelFactory.PAMELAProxyFactory;
+import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
@@ -57,7 +60,7 @@ public abstract class AbstractPropertyImplementation<I, T> implements PropertyIm
 	}
 
 	protected void firePropertyChange(String propertyIdentifier, Object oldValue, Object value) {
-		if (getObject() instanceof HasPropertyChangeSupport && !getHandler().deleting) {
+		if (getObject() instanceof HasPropertyChangeSupport && !getHandler().isDeleting()) {
 			PropertyChangeSupport propertyChangeSupport = ((HasPropertyChangeSupport) getObject()).getPropertyChangeSupport();
 			if (propertyChangeSupport != null) {
 				propertyChangeSupport.firePropertyChange(propertyIdentifier, oldValue, value);

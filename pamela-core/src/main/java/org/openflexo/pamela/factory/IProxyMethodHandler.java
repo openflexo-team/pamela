@@ -42,6 +42,11 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import org.openflexo.pamela.AccessibleProxyObject;
+import org.openflexo.pamela.CloneableProxyObject;
+import org.openflexo.pamela.DeletableProxyObject;
+import org.openflexo.pamela.KeyValueCoding;
+import org.openflexo.pamela.SpecifiableProxyObject;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 public class IProxyMethodHandler {
@@ -155,7 +160,7 @@ public class IProxyMethodHandler {
 		}
 	}
 
-	protected static boolean isEqual(Object oldValue, Object newValue) {
+	public static boolean isEqual(Object oldValue, Object newValue) {
 		if (oldValue == null) {
 			return newValue == null;
 		}

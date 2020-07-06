@@ -36,7 +36,7 @@
  * 
  */
 
-package org.openflexo.pamela.io;
+package org.openflexo.pamela.xml;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -71,6 +71,9 @@ import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * XML deserializer using a SAX Parser
+ * 
+ * @author christophe
+ *
  */
 public class XMLSaxDeserializer extends DefaultHandler {
 

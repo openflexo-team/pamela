@@ -11,6 +11,13 @@ import org.openflexo.pamela.annotations.jml.Ensures;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 
+/**
+ * A post-condition definition in the context of JML
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ */
 public class JMLEnsures<I> extends JMLExpressionBasedOnMethod<Boolean, I> {
 
 	public JMLEnsures(Ensures annotation, ModelEntity<I> entity, Method method) {

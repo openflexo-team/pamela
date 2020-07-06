@@ -35,10 +35,10 @@
 
 package org.openflexo.model8;
 
+import org.openflexo.pamela.AccessibleProxyObject;
+import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.annotations.XMLElement;
-import org.openflexo.pamela.factory.AccessibleProxyObject;
-import org.openflexo.pamela.factory.CloneableProxyObject;
 
 @ModelEntity
 @XMLElement

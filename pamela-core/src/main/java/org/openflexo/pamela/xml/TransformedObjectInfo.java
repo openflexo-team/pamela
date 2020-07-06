@@ -33,7 +33,7 @@
  *
  */
 
-package org.openflexo.pamela.io;
+package org.openflexo.pamela.xml;
 
 import java.lang.reflect.Method;
 
@@ -48,6 +48,8 @@ import org.xml.sax.SAXException;
 
 /**
  * Represents an object transformed from an XML source with it's meta-informations
+ * 
+ * @author christophe
  */
 public class TransformedObjectInfo {
 
@@ -63,9 +65,8 @@ public class TransformedObjectInfo {
 	private boolean resolved = false;
 	private Object object;
 
-	public TransformedObjectInfo(
-			ModelFactory factory, Object parent, ModelProperty<Object> leadingProperty, ModelEntity<Object> modelEntity
-	) {
+	public TransformedObjectInfo(ModelFactory factory, Object parent, ModelProperty<Object> leadingProperty,
+			ModelEntity<Object> modelEntity) {
 		this.factory = factory;
 		this.parent = parent;
 		this.leadingProperty = leadingProperty;

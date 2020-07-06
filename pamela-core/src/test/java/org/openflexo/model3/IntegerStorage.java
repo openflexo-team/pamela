@@ -38,11 +38,11 @@
 
 package org.openflexo.model3;
 
+import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.Implementation;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.annotations.Setter;
-import org.openflexo.pamela.factory.AccessibleProxyObject;
 
 @ModelEntity
 public interface IntegerStorage extends AccessibleProxyObject {

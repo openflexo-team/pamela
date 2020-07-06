@@ -4,6 +4,13 @@ import org.openflexo.pamela.annotations.jml.Invariant;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 
+/**
+ * An invariant definition in the context of JML
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ */
 public class JMLInvariant<I> extends JMLExpressionBased<Boolean, I> {
 
 	public JMLInvariant(Invariant annotation, ModelEntity<I> entity) {

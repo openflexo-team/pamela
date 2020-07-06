@@ -56,20 +56,21 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.openflexo.IObjectGraphFactory;
+import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.ModelContextLibrary;
 import org.openflexo.pamela.annotations.PastingPoint;
 import org.openflexo.pamela.exceptions.MissingImplementationException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.io.XMLSaxDeserializer;
-import org.openflexo.pamela.io.XMLSerializer;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelInitializer;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.model.StringEncoder;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.pamela.undo.CreateCommand;
+import org.openflexo.pamela.xml.XMLSaxDeserializer;
+import org.openflexo.pamela.xml.XMLSerializer;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.ProxyFactory;

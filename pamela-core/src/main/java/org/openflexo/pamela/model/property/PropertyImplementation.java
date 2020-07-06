@@ -1,4 +1,4 @@
-package org.openflexo.pamela.factory;
+package org.openflexo.pamela.model.property;
 
 import java.util.List;
 

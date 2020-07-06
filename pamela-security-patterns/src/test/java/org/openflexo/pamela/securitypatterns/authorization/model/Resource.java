@@ -1,7 +1,7 @@
 package org.openflexo.pamela.securitypatterns.authorization.model;
 
+import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.annotations.*;
-import org.openflexo.pamela.factory.AccessibleProxyObject;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.AccessResource;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.PermissionCheckerGetter;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.ProtectedResource;

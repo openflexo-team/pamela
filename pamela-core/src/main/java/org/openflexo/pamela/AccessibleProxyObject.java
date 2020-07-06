@@ -37,18 +37,21 @@
  * 
  */
 
-package org.openflexo.pamela.factory;
+package org.openflexo.pamela;
 
 import java.util.List;
 
+import org.openflexo.pamela.factory.PAMELAVisitor;
 import org.openflexo.pamela.factory.PAMELAVisitor.VisitingStrategy;
+import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
  * Interface that PAMELA objects should extend in order to benefit from their default implementation handled by the
- * {@link ProxyMethodHandler}. All methods starting with 'performSuper' are method-accessors allowing implementing classes to call the
- * default behaviour. These methods should be considered as <code>protected</code> instead of <code>public</code> (but Java interfaces does
- * not allow that). Therefore, these method should never be invoked externally, ie, by a class which is not implementing this interface.
+ * {@link ProxyMethodHandler}.<br>
+ * All methods starting with 'performSuper' are method-accessors allowing implementing classes to call the default behaviour. These methods
+ * should be considered as <code>protected</code> instead of <code>public</code> (but Java interfaces does not allow that). Therefore, these
+ * method should never be invoked externally, ie, by a class which is not implementing this interface.
  * 
  * @author Guillaume
  * 

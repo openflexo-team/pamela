@@ -37,10 +37,10 @@
  * 
  */
 
-package org.openflexo.pamela.factory;
+package org.openflexo.pamela;
 
 /**
- * Interface that PAMELA objects should implements to be able to define contrat-programming
+ * Interface that PAMELA objects should implements to be able to define contrat-programming (aka JML)
  * 
  * @author sylvain
  * 

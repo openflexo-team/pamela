@@ -1,11 +1,13 @@
-package org.openflexo.pamela.factory;
+package org.openflexo.pamela.model.property;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
 
 public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropertyImplementation<I, List<T>> implements
@@ -34,8 +36,8 @@ public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropert
 
 	@Override
 	public void set(List<T> values) throws ModelDefinitionException {
-		if (getProperty().getSetter() == null && !getHandler().isDeserializing() && !getHandler().initializing
-				&& !getHandler().createdByCloning && !getHandler().deleting) {
+		if (getProperty().getSetter() == null && !getHandler().isDeserializing() && !getHandler().isInitializing()
+				&& !getHandler().isCreatedByCloning() && !getHandler().isDeleting()) {
 			throw new ModelExecutionException("Setter is not defined for property " + getProperty());
 		}
 		// List<?> oldValues = (List<?>) getHandler().invokeGetter(getProperty());
@@ -67,8 +69,8 @@ public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropert
 
 	@Override
 	public void addTo(T value, int index) throws ModelDefinitionException {
-		if (getProperty().getAdder() == null && !getHandler().isDeserializing() && !getHandler().initializing
-				&& !getHandler().createdByCloning && !getHandler().deleting && !getHandler().undeleting) {
+		if (getProperty().getAdder() == null && !getHandler().isDeserializing() && !getHandler().isInitializing()
+				&& !getHandler().isCreatedByCloning() && !getHandler().isDeleting() && !getHandler().isUndeleting()) {
 			throw new ModelExecutionException("Adder is not defined for property " + getProperty());
 		}
 		// List<T> list = (List<T>) getHandler().invokeGetter(getProperty());

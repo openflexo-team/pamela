@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.openflexo.connie.type.TypeUtils;
+import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.toolbox.StringUtils;
@@ -56,6 +57,12 @@ import org.openflexo.toolbox.StringUtils;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
+/**
+ * Contains utils in the context of compare and merge features
+ * 
+ * @author sylvain
+ *
+ */
 public class CompareAndMergeUtils {
 
 	/**

@@ -6,6 +6,13 @@ import org.openflexo.pamela.annotations.jml.Requires;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 
+/**
+ * A pre-condition definition in the context of JML
+ * 
+ * @author sylvain
+ *
+ * @param <I>
+ */
 public class JMLRequires<I> extends JMLExpressionBasedOnMethod<Boolean, I> {
 
 	public JMLRequires(Requires annotation, ModelEntity<I> entity, Method method) {

@@ -1,11 +1,13 @@
-package org.openflexo.pamela.factory;
+package org.openflexo.pamela.model.property;
 
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
@@ -95,8 +97,8 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 		// System.out.println("Object " + getModelEntity().getImplementedInterface().getSimpleName() + " set "
 		// + property.getPropertyIdentifier() + " with " + value);
 
-		if (getProperty().getSetter() == null && !getHandler().isDeserializing() && !getHandler().initializing
-				&& !getHandler().createdByCloning && !getHandler().deleting && !getHandler().undeleting) {
+		if (getProperty().getSetter() == null && !getHandler().isDeserializing() && !getHandler().isInitializing()
+				&& !getHandler().isCreatedByCloning() && !getHandler().isDeleting() && !getHandler().isUndeleting()) {
 			throw new ModelExecutionException("Setter is not defined for property " + getProperty());
 		}
 		// Object oldValue = invokeGetter(property);
