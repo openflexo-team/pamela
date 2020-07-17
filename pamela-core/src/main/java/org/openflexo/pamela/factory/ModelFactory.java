@@ -438,7 +438,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	public <I> Class<? extends I> getImplementingClassForInterface(Class<I> implementedInterface) throws ModelDefinitionException {
 		PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
 		if (proxyFactory != null) {
-			return (Class) proxyFactory.getSuperclass();
+			return proxyFactory.getSuperclass();
 		}
 		return null;
 	}
