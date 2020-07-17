@@ -71,6 +71,10 @@ import org.openflexo.pamela.undo.CreateCommand;
 import org.openflexo.pamela.xml.XMLSaxDeserializer;
 import org.openflexo.pamela.xml.XMLSerializer;
 
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
@@ -98,6 +102,10 @@ public class ModelFactory implements IObjectGraphFactory {
 	private ModelContext extendedContext;
 
 	private EditingContext editingContext;
+
+	// Stores on-the-fly generated classes to proxy the targeted implementation
+	// class, but in the right package
+	private static Map<Class, Map<Class, Class>> implementationProxyClasses = new HashMap<>();
 
 	public Map<Class, PAMELAProxyFactory> getProxyFactories() {
 		return proxyFactories;
@@ -129,13 +137,13 @@ public class ModelFactory implements IObjectGraphFactory {
 						return true;
 					}
 
-					/*if (context.getPatternContext().getRelatedPatternsFromClass(aModelEntity.getImplementedInterface()).size() > 0) {
-						try {
-							aModelEntity.getImplementedInterface().getMethod(method.getName(), method.getParameterTypes());
-							return true;
-						} catch (NoSuchMethodException e) {
-						}
-					}*/
+					/*
+					 * if (context.getPatternContext().getRelatedPatternsFromClass(aModelEntity.
+					 * getImplementedInterface()).size() > 0) { try {
+					 * aModelEntity.getImplementedInterface().getMethod(method.getName(),
+					 * method.getParameterTypes()); return true; } catch (NoSuchMethodException e) {
+					 * } }
+					 */
 
 					// TODO perf issue ??? Check this !
 					if (modelEntity.getPropertyForMethod(method) != null) {
@@ -143,8 +151,11 @@ public class ModelFactory implements IObjectGraphFactory {
 					}
 					return false;
 					// Old code
-					/*return Modifier.isAbstract(method.getModifiers()) || method.getName().equals("toString")
-							&& method.getParameterTypes().length == 0 && method.getDeclaringClass() == Object.class;*/
+					/*
+					 * return Modifier.isAbstract(method.getModifiers()) ||
+					 * method.getName().equals("toString") && method.getParameterTypes().length == 0
+					 * && method.getDeclaringClass() == Object.class;
+					 */
 				}
 			});
 			Class<?> implementingClass = modelEntity.getImplementingClass();
@@ -187,6 +198,15 @@ public class ModelFactory implements IObjectGraphFactory {
 			locked = true;
 		}
 
+		/**
+		 * Internally used to set a proxy base implementation class in the right package
+		 * 
+		 * @param clazz
+		 */
+		private void setProxySuperClass(Class clazz) {
+			super.setSuperclass(clazz);
+		}
+
 		public ModelFactory getModelFactory() {
 			return ModelFactory.this;
 		}
@@ -217,6 +237,17 @@ public class ModelFactory implements IObjectGraphFactory {
 				handler.setObject(returned);
 			}
 			else {
+
+				// Java 11 security issue
+				// If the base implementation class is not in the same package than the
+				// implemented interface, it fails
+				// The workaround is to generate (or reuse) on the fly a proxy super classes (in
+				// the right package !)
+				if (!modelEntity.getImplementedInterface().getPackage().equals(getSuperclass().getPackage())) {
+					Class<?> implementationClass = retrieveProxyImplementationClass(modelEntity.getImplementedInterface(), getSuperclass());
+					setProxySuperClass(implementationClass);
+				}
+
 				returned = (I) create(new Class<?>[0], new Object[0], handler);
 				handler.setObject(returned);
 				if (args.length > 0 || modelEntity.hasInitializers()) {
@@ -265,6 +296,54 @@ public class ModelFactory implements IObjectGraphFactory {
 			}
 
 			objectHasBeenCreated(returned, modelEntity.getImplementedInterface());
+			return returned;
+		}
+
+		/**
+		 * Generate (return when already existant) a base implementation class proxying the declared base implementation class, but in the
+		 * right package (the same as the implemented interface)
+		 * 
+		 * @param implementedInterface
+		 * @param superClass
+		 * @return
+		 */
+		private Class retrieveProxyImplementationClass(Class<?> implementedInterface, Class<?> superClass) {
+
+			String packageName = implementedInterface.getPackageName();
+
+			Map<Class, Class> map = implementationProxyClasses.get(superClass);
+			if (map == null) {
+				map = new HashMap<>();
+				implementationProxyClasses.put(superClass, map);
+			}
+
+			Class returned = map.get(implementedInterface);
+			if (returned == null) {
+				ClassPool pool = ClassPool.getDefault();
+				CtClass ctClass = pool.makeClass(
+						packageName + "." + superClass.getSimpleName() + "_" + implementedInterface.getSimpleName() + "_" + "Proxy");
+				try {
+					ctClass.setSuperclass(pool.get(superClass.getName()));
+				} catch (CannotCompileException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					returned = ctClass.toClass();
+				} catch (CannotCompileException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				map.put(implementedInterface, returned);
+				// System.out.println(">>>>>> New class "+returned.getSimpleName());
+			}
+			else {
+				// System.out.println(">>>>>> Already existing class:
+				// "+returned.getSimpleName());
+			}
 			return returned;
 		}
 	}
@@ -371,10 +450,10 @@ public class ModelFactory implements IObjectGraphFactory {
 		}
 	}
 
-	/* Unused
-		private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I> implementedInterface) throws ModelDefinitionException {
-			return getProxyFactory(implementedInterface, true);
-		}
+	/*
+	 * Unused private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I>
+	 * implementedInterface) throws ModelDefinitionException { return
+	 * getProxyFactory(implementedInterface, true); }
 	 */
 	private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I> implementedInterface, boolean create) throws ModelDefinitionException {
 		return getProxyFactory(implementedInterface, create, false);
@@ -438,7 +517,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	public <I> Class<? extends I> getImplementingClassForInterface(Class<I> implementedInterface) throws ModelDefinitionException {
 		PAMELAProxyFactory<I> proxyFactory = getProxyFactory(implementedInterface, true);
 		if (proxyFactory != null) {
-			return proxyFactory.getSuperclass();
+			return (Class) proxyFactory.getSuperclass();
 		}
 		return null;
 	}
@@ -487,9 +566,11 @@ public class ModelFactory implements IObjectGraphFactory {
 			// Vincent: Check this, handler can be of DelegateImplementation
 			// Type( in the case of Edition actions containers)
 			// ???
-			/*if(((ProxyObject) object).getHandler() instanceof DelegateImplementation){
-				return ((DelegateImplementation<I>) ((ProxyObject) object).getHandler()).getMasterMethodHandler();
-			}*/
+			/*
+			 * if(((ProxyObject) object).getHandler() instanceof DelegateImplementation){
+			 * return ((DelegateImplementation<I>) ((ProxyObject)
+			 * object).getHandler()).getMasterMethodHandler(); }
+			 */
 			if (((ProxyObject) object).getHandler() instanceof ProxyMethodHandler) {
 				return (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
 			}
@@ -671,7 +752,8 @@ public class ModelFactory implements IObjectGraphFactory {
 					}
 				}
 			}
-			// System.out.println("Embedded in "+father+" : "+child+" conditioned to required presence of "+requiredPresence);
+			// System.out.println("Embedded in "+father+" : "+child+" conditioned to
+			// required presence of "+requiredPresence);
 		}
 	}
 
