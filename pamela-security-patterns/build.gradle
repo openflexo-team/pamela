@@ -1,5 +1,5 @@
 dependencies {
-  implementation project(':pamela-core')
+  compile project(':pamela-core')
 
-  testImplementation testUtils()
+  testCompile testUtils()
 }

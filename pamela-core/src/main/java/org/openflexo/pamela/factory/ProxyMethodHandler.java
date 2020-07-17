@@ -61,7 +61,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
@@ -577,9 +576,6 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, EQUALS_OBJECT)) {
 			return equalsObject(args[0]);
-		}
-		else if (PamelaUtils.methodIsEquivalentTo(method, EQUALS_OBJECT_USING_FILTER)) {
-			return equalsObject(args[0], (Function) args[1]);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, UPDATE_WITH_OBJECT)) {
 			return updateWith((I) args[0]);
@@ -1554,14 +1550,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	}
 
 	public boolean equalsObject(Object obj) {
-		return equalsObject(obj, new HashSet<>(), (property) -> true);
+		return equalsObject(obj, new HashSet<>());
 	}
 
-	public boolean equalsObject(Object obj, Function<ModelProperty, Boolean> considerProperty) {
-		return equalsObject(obj, new HashSet<>(), considerProperty);
-	}
-
-	private boolean equalsObject(Object obj, Set<Compared> seen, Function<ModelProperty, Boolean> considerProperty) {
+	private boolean equalsObject(Object obj, Set<Compared> seen) {
 
 		seen.add(new Compared(getObject(), obj));
 
@@ -1589,7 +1581,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
 			// System.out.println("property " + p + " relevant: " + p.isRelevantForEqualityComputation());
-			if (considerProperty.apply(p) && p.isRelevantForEqualityComputation()) {
+			if (p.isRelevantForEqualityComputation()) {
 				switch (p.getCardinality()) {
 					case SINGLE:
 						Object singleValue = invokeGetter(p);
@@ -1602,10 +1594,11 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								String oppositeValueAsString = se.toString(oppositeValue);
 								if ((singleValueAsString == null && oppositeValueAsString != null)
 										|| (singleValueAsString != null && !singleValueAsString.equals(oppositeValueAsString))) {
-									System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" + singleValue
-											+ " opposite=" + oppositeValue);
-									System.out.println("object1=" + getObject() + " of " + getObject().getClass());
-									System.out.println("object2=" + obj + " of " + obj.getClass());
+									// System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" +
+									// singleValue
+									// + " opposite=" + oppositeValue);
+									// System.out.println("object1=" + getObject() + " of " + getObject().getClass());
+									// System.out.println("object2=" + obj + " of " + obj.getClass());
 									return false;
 								}
 							} catch (InvalidDataException e) {
@@ -1616,9 +1609,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 							if (seen.contains(new Compared(singleValue, oppositeValue))) {
 								// Ignore
 							}
-							else if (!_isEqual(singleValue, oppositeValue, seen, considerProperty)) {
-								System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + "opposite="
-										+ oppositeValue);
+							else if (!_isEqual(singleValue, oppositeValue, seen)) {
+								// System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + "
+								// opposite="
+								// + oppositeValue);
 								return false;
 							}
 						}
@@ -1626,10 +1620,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 					case LIST:
 						List<Object> values = (List) invokeGetter(p);
 						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
-						if (!_isEqual(values, oppositeValues, seen, considerProperty)) {
-							System.out.println("values=" + values);
-							System.out.println("oppositeValues=" + oppositeValues);
-							System.out.println("Equals fails because of LIST property difference" + p);
+						if (!_isEqual(values, oppositeValues, seen)) {
+							// System.out.println("values=" + values);
+							// System.out.println("oppositeValues=" + oppositeValues);
+							// System.out.println("Equals fails because of LIST property difference" + p);
 							return false;
 						}
 						break;
@@ -1642,7 +1636,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return true;
 	}
 
-	private boolean _isEqual(Object oldValue, Object newValue, Set<Compared> seen, Function<ModelProperty, Boolean> considerProperty) {
+	private boolean _isEqual(Object oldValue, Object newValue, Set<Compared> seen) {
 		seen.add(new Compared(oldValue, newValue));
 
 		if (oldValue == null) {
@@ -1653,7 +1647,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 		if (oldValue instanceof AccessibleProxyObject && newValue instanceof AccessibleProxyObject) {
 			ProxyMethodHandler<Object> handler = getModelFactory().getHandler(oldValue);
-			return handler.equalsObject(newValue, seen, considerProperty);
+			return handler.equalsObject(newValue, seen);
 		}
 		if (oldValue instanceof List && newValue instanceof List) {
 			List<Object> l1 = (List<Object>) oldValue;
@@ -1667,7 +1661,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				if (seen.contains(new Compared(v1, v2)))
 					continue;
 
-				if (!_isEqual(v1, v2, seen, considerProperty)) {
+				if (!_isEqual(v1, v2, seen)) {
 					return false;
 				}
 			}

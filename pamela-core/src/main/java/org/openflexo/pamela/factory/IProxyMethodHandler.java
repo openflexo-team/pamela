@@ -41,7 +41,6 @@ package org.openflexo.pamela.factory;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.function.Function;
 
 import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.CloneableProxyObject;
@@ -89,7 +88,6 @@ public class IProxyMethodHandler {
 	public static Method UNDELETE_OBJECT;
 	public static Method IS_DELETED;
 	public static Method EQUALS_OBJECT;
-	public static Method EQUALS_OBJECT_USING_FILTER;
 	public static Method UPDATE_WITH_OBJECT;
 	public static Method ACCEPT_VISITOR;
 	public static Method ACCEPT_WITH_STRATEGY_VISITOR;
@@ -148,7 +146,6 @@ public class IProxyMethodHandler {
 			IS_CREATED_BY_CLONING = CloneableProxyObject.class.getMethod("isCreatedByCloning");
 			IS_BEING_CLONED = CloneableProxyObject.class.getMethod("isBeingCloned");
 			EQUALS_OBJECT = AccessibleProxyObject.class.getMethod("equalsObject", Object.class);
-			EQUALS_OBJECT_USING_FILTER = AccessibleProxyObject.class.getMethod("equalsObject", Object.class, Function.class);
 			UPDATE_WITH_OBJECT = AccessibleProxyObject.class.getMethod("updateWith", Object.class);
 			GET_EMBEDDED = AccessibleProxyObject.class.getMethod("getEmbeddedObjects");
 			GET_REFERENCED = AccessibleProxyObject.class.getMethod("getReferencedObjects");

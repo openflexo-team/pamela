@@ -40,10 +40,8 @@
 package org.openflexo.pamela;
 
 import java.util.List;
-import java.util.function.Function;
 
 import org.openflexo.pamela.factory.ProxyMethodHandler;
-import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.model.PAMELAVisitor;
 import org.openflexo.pamela.model.PAMELAVisitor.VisitingStrategy;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
@@ -239,17 +237,6 @@ public interface AccessibleProxyObject extends HasPropertyChangeSupport, KeyValu
 	 * @return
 	 */
 	public boolean equalsObject(Object obj);
-
-	/**
-	 * Return whether supplied object is equals to this, regarding persistent properties defined as PAMELA model
-	 * 
-	 * @param obj
-	 *            object to compare with, which should be of same type (otherwise return false)
-	 * @param considerProperty
-	 *            a function returning boolean indicating if supplied property has to be considered
-	 * @return
-	 */
-	public boolean equalsObject(Object obj, Function<ModelProperty, Boolean> considerProperty);
 
 	/**
 	 * Called to update current object while comparing it to opposite object, (which must be of right type!), examining each property
