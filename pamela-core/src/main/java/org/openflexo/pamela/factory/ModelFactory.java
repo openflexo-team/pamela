@@ -332,17 +332,12 @@ public class ModelFactory implements IObjectGraphFactory {
 					e.printStackTrace();
 				}
 				try {
-					returned = ctClass.toClass();
+					returned = ctClass.toClass(implementedInterface);
 				} catch (CannotCompileException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				map.put(implementedInterface, returned);
-				// System.out.println(">>>>>> New class "+returned.getSimpleName());
-			}
-			else {
-				// System.out.println(">>>>>> Already existing class:
-				// "+returned.getSimpleName());
 			}
 			return returned;
 		}
