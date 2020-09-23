@@ -19,8 +19,8 @@ import org.openflexo.pamela.securitypatterns.authorization.annotations.*;
  *
  * It has the responsibility of:
  * <ul>
- * <li>Managing life-cycle of {@link org.openflexo.pamela.securitypatterns.authorization.AuthorizationPatternInstance}, while being notified of the creation of new instances by the
- * {@link org.openflexo.pamela.factory.ModelFactory} and {@link org.openflexo.pamela.ModelContext}</li>
+ * <li>Managing life-cycle of {@link org.openflexo.pamela.test.securitypatterns.authorization.AuthorizationPatternInstance}, while being notified of the creation of new instances by the
+ * {@link org.openflexo.pamela.test.factory.ModelFactory} and {@link org.openflexo.pamela.test.ModelContext}</li>
  * <li>Tagging and storing methods which are relevant to the pattern</li>
  * </ul>
  *
