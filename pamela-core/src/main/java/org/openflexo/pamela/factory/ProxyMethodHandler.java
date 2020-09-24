@@ -587,6 +587,9 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		else if (PamelaUtils.methodIsEquivalentTo(method, GET_EMBEDDED)) {
 			return getDirectEmbeddedObjects();
 		}
+		else if (PamelaUtils.methodIsEquivalentTo(method, GET_EMBEDDED_VALIDABLE)) {
+			return getDirectEmbeddedObjects();
+		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, GET_REFERENCED)) {
 			return getReferencedObjects();
 		}

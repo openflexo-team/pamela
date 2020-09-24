@@ -1,5 +1,3 @@
 dependencies {
   implementation project(':pamela-core')
-
-  testImplementation testUtils()
 }

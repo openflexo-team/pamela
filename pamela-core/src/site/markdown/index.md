@@ -1,13 +1,13 @@
 # Openflexo Pamela
- 
+
 ## Introduction
- 
+
 ### Introduction to Pamela
 
-Pamela is an annotation-based Java modelling framework. 
+Pamela is an annotation-based Java modelling framework.
 The strong idea behind this technology is a smooth integration between model and code, without code generation nor externalized model serialization.
-We aim to avoid separation between model and code to simplify consistency management and avoid round-tripping issues. 
-  
+We aim to avoid separation between model and code to simplify consistency management and avoid round-tripping issues.
+
 #### Key features of Pamela
 
  - Model/code strong coupling
@@ -24,7 +24,7 @@ We aim to avoid separation between model and code to simplify consistency manage
  - Clipboard operations (copy, cut, paste) management
  - Multi-level undo/redo support
  - A graphical editor is also provided in this project, allowing to graphically view and edit Pamela models (see [Pamela-editor component](../pamela-editor/index.html)).
-  
+
 ### Getting Pamela
 
 There are several way to get Pamela.
@@ -33,9 +33,9 @@ There are several way to get Pamela.
 
 [OpenFlexo](http://www.openflexo.org) make instensive use of Pamela. If you're using OpenFlexo you have access to Pamela.
 
-#### Maven 
+#### Maven
 
-Pamela is built using maven (soon it will use Gradle) and publish it's artifacts to the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release).
+Pamela is built using gradle and publish it's artifacts to the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release).
 In order to use Pamela in your maven project, add the repository adding the following in the `pom.xml`:
 
 ```xml
@@ -59,7 +59,7 @@ Add also the dependency to the `pamela-core` artifact:
 
 #### Gradle
 
-Even if Pamela is build using maven, it's easy to use it from Gradle. The Pamela artifact are publish in the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release).
+It's easy to use it from Gradle. The Pamela artifact are publish in the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release).
 In order to use Pamela in your gradle project, add the repository adding the following in the `build.gradle`:
 
 ```groovy
@@ -67,23 +67,23 @@ maven {
     url "https://maven.openflexo.org/artifactory/openflexo-release/"
 }
 ```
-  
+
 Add also the dependency to the `pamela-core` artifact:
 
 ```groovy
-compile group: 'org.openflexo', name: 'pamela-core', version: '1.3-RC1'
+implementation group: 'org.openflexo', name: 'pamela-core', version: '1.5.1'
 ```
-  
+
 #### Direct download
 
 Pamela can be directly downloaded from the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release) along with it dependencies:
-- `org.openflexo:pamela-core:1.3-RC1`, 
-- `org.openflexo:connie-core:1.3-RC1`, 
-- `org.openflexo:flexoutils:1.3-RC1`,
-- `org.openflexo:tools-configuration:0.4-RC1`. 
-- `com.google.guava:guava:18.0`, 
-- `org.apache.commons:commons-lang3:3.1`, 
-- `org.javassist:javassist:3.18.0-GA`, 
+- `org.openflexo:pamela-core:1.5.1`,
+- `org.openflexo:connie-core:1.5.1`,
+- `org.openflexo:flexoutils:1.5.1`,
+- `org.openflexo:tools-configuration:0.5`.
+- `com.google.guava:guava:27.0-jre`,
+- `org.apache.commons:commons-lang3:3.8.1`,
+- `org.javassist:javassist:3.22.0-GA`,
 
 **TODO**
 
@@ -94,8 +94,8 @@ In order to get the most up to date code you can build Pamela yourself.
 **Prerequisite**
 
 - [git](https://git-scm.com).
-- [Java](http://www.oracle.com/technetwork/java/index.html) JDK 7
-- [Maven](https://maven.apache.org)
+- [Java](http://www.oracle.com/technetwork/java/index.html) JDK 8
+
 
 Building Pamela is easy, follow these steps:
 
@@ -104,8 +104,8 @@ Building Pamela is easy, follow these steps:
 
 ## Your first model
 
-To build your first model, you only have to defined the interface, Pamela does the implementation for you. 
-Just write: 
+To build your first model, you only have to defined the interface, Pamela does the implementation for you.
+Just write:
 
 ```java
 @ModelEntity
@@ -138,18 +138,18 @@ Since Pamela constructs it's own implementation of the interface, you can also b
 ```java
 public class PersonImpl {
 	private String name;
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setName(String name) {
 		this.name = name;
 	}
 }
 ```
 
-But this implementation is really basic and doesn't provide advanced capabilities as Pamela does. 
+But this implementation is really basic and doesn't provide advanced capabilities as Pamela does.
 
 ## Reference documentation
 
@@ -157,7 +157,7 @@ The javadoc for Pamela can be found [here](./apidocs/index.html).
 
 ## Frequently Asked Questions
 
-### Class cannot access its superinterface 
+### Class cannot access its superinterface
 
 If you encounter an Exception like the following:
 ```
@@ -175,4 +175,3 @@ You can easily check if your model is sound with a simple test:
 ModelFactory factory = new ModelFactory(MyRootModelClass.class);
 factory.checkMethodImplementations();
 ```
-
