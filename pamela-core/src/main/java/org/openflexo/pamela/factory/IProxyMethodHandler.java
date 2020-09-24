@@ -49,6 +49,7 @@ import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.KeyValueCoding;
 import org.openflexo.pamela.SpecifiableProxyObject;
 import org.openflexo.pamela.model.PAMELAVisitor;
+import org.openflexo.pamela.validation.Validable;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
@@ -94,6 +95,7 @@ public class IProxyMethodHandler {
 	public static Method ACCEPT_VISITOR;
 	public static Method ACCEPT_WITH_STRATEGY_VISITOR;
 	public static Method GET_EMBEDDED;
+	public static Method GET_EMBEDDED_VALIDABLE;
 	public static Method GET_REFERENCED;
 	public static Method DESTROY;
 	public static Method HAS_KEY;
@@ -151,6 +153,7 @@ public class IProxyMethodHandler {
 			EQUALS_OBJECT_USING_FILTER = AccessibleProxyObject.class.getMethod("equalsObject", Object.class, Function.class);
 			UPDATE_WITH_OBJECT = AccessibleProxyObject.class.getMethod("updateWith", Object.class);
 			GET_EMBEDDED = AccessibleProxyObject.class.getMethod("getEmbeddedObjects");
+			GET_EMBEDDED_VALIDABLE = Validable.class.getMethod("getEmbeddedValidableObjects");
 			GET_REFERENCED = AccessibleProxyObject.class.getMethod("getReferencedObjects");
 			ACCEPT_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class);
 			ACCEPT_WITH_STRATEGY_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class,
