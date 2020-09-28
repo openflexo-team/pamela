@@ -1,24 +1,38 @@
  -----
- Openflexo PAMELA
+ PAMELA
  -----
  The Openflexo team
  -----
 
-[/images/components/pamela/PamelaScreenshot] Pamela
+Pamela : an annotation-based Java modelling framework
 
-[/images/components/pamela/AtomicEditMetaModel] AtomicEditMetaModel
+  PAMELA is an annotation-based Java Modelling framework. PAMELA provides a smooth integration between model and code, and enable Java developers to handle software development both at conceptual level and at source-code level, without code transformation and/or generation, and avoiding round-tripping issues. 
 
+  Exposed metamodel provides meta-programming support, multiple inheritance and traits programming, contract programming, aspect programming and run-time weaving. This framework also offers operational features derived from  model-level edition such as notification management, validation, persistence, comparison and object graph computation. 
 
-Introduction to PAMELA
+  PAMELA approach has been tested and validated on some java-based industrial projects, making it a credible alternative in the context of Model-Driven Engineering.
 
-  PAMELA is an annotation-based Java modelling framework.
+Highlights
 
-  The strong idea behind this technology is a smooth integration between model and code, without code generation nor externalized model serialization.
+  * Continuous modeling process 
+  * Strong coupling between model and code with smooth integration
+  * Modeling without code generation: no need to generate POJO (plain old java objects), as their execution follow the standard semantics (less code, less bugs)
+  * Interpretation of models at runtime
+  * Code instrumentation
+  * Meta-programming
+  * Contract programming with assertions checking at runtime
+  * Dynamic code weaving at runtime (aspect programming without compilation)
   
-  We want here to avoid separation between modelling and code to facilitate consistency management and avoid round-tripping issues. 
-  
-Key features of PAMELA
+Overview
 
+  * Motivations
+  * Approach overview
+  * A basic example
+  * Common annotations
+  * Behind the scene
+  
+Features
+ 
   * Model/code strong coupling
   
   * No code generation: the 'model' is serialized in the Java code with annotations
@@ -46,8 +60,7 @@ Key features of PAMELA
   * Multi-delevel undo/redo support
   
   * A graphical editor is also provided in this project, allowing to graphically view and edit PAMELA models (see {{{./pamela-editor/index.html}Pamela-editor component}})
-  
-  
+ 
 Contents of this package
 
   PAMELA project contains two separate components (defined here as modules):
