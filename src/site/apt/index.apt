@@ -6,6 +6,9 @@
 
 [/images/components/pamela/PamelaScreenshot] Pamela
 
+[/images/components/pamela/AtomicEditMetaModel] AtomicEditMetaModel
+
+
 Introduction to PAMELA
 
   PAMELA is an annotation-based Java modelling framework.
