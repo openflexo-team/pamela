@@ -20,15 +20,22 @@ Approach overview
     program elements. Java programming language from version 1.5 is a good candidate with the support of 
     annotations.
 
-    Following figure \ref{fig:PamelaVision} shows PAMELA approach for storing model in source code. The model 
+    Following figure shows PAMELA approach for storing model in source code. The model 
     is inlined in many source code files, with a set of annotations covering PAMELA metamodel as presented in 
     the next subsection.
     
-[/images/components/pamela/PamelaVision2.png] PamelaVision2
+[/images/components/pamela/PamelaVisionV2.png] PamelaVisionV2
 
   PAMELA use process
     
-    Coupling model and code into the same artefact open new ways of programming. The classical way relies on \emph{programmers} that produce code reusing pre-existing modeling concepts. These concepts are implemented by \emph{modelers} that provides the right annotations the programmers use. This is, for instance, the process followed by JEE developers reusing JEE specific annotations. The evolution rhythm between models and code is low. This programming way is still possible with PAMELA, but we allow the ability to reach a high evolution rhythm when the programmer becomes also the modeler. In fact, when a pattern, an abstraction, a generalization is identified by the programmer, s/he can use PAMELA to develop and capitalize on this abstraction by increasing PAMELA metamodel. 
+    Coupling model and code into the same artefact open new ways of programming. The classical way relies on 
+    \emph{programmers} that produce code reusing pre-existing modeling concepts. These concepts are implemented 
+    by \emph{modelers} that provides the right annotations the programmers use. This is, for instance, the 
+    process followed by JEE developers reusing JEE specific annotations. The evolution rhythm between models 
+    and code is low. This programming way is still possible with PAMELA, but we allow the ability to reach a 
+    high evolution rhythm when the programmer becomes also the modeler. In fact, when a pattern, an abstraction, 
+    a generalization is identified by the programmer, s/he can use PAMELA to develop and capitalize on this 
+    abstraction by increasing PAMELA metamodel. 
 
     The developed metamodels are implemented by annotations that relies on Java/JVM entities and mechanisms. They include consistency checking that constrains their use and help the programmer. We have experimented their use with setter/getter to define POJO entities, with traits to implement multiple inheritance or roles and rules to set security rules on classes.
 
