@@ -13,7 +13,7 @@ Motivations
   inlined or implicitly defined by code generation process, or may be sometimes explicit to the code generation. 
   Following figure shows the classical vision for for Model-Driven Engineering.
 
-[/images/components/pamela/ClassicalVision] Classical vision for Model-Driven Software Development
+[/images/components/pamela/ClassicalVision] ClassicalVision
 
   A first major drawback of this approach is the gap created between the conceptual level (the model) and the 
   source code, where semantics may be totally hidden or implicit. Another classical issue resides in the 
