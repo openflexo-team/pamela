@@ -9,7 +9,7 @@ Here is a non-exhaustive list of the most common java annotations used in the co
 - `@Setter(String)`: tag annotating method as unique setter for implicit *ModelProperty* whose identifier is the declared String value.
 - `@Adder(String)`: tag annotating method as unique adder for implicit multiple cardinality *ModelProperty* whose identifier is the declared String value.
 - `@Remover(String)`: tag annotating method as unique remover for implicit multiple cardinality *ModelProperty* whose identifier is the declared String value.
-- `@Reindexer(String)*`: tag annotating method as unique reindexer for implicit multiple cardinality *ModelProperty* whose identifier is the declared String value.
+- `@Reindexer(String)`: tag annotating method as unique reindexer for implicit multiple cardinality *ModelProperty* whose identifier is the declared String value.
 - `@Initializer`: tag annotating a method used as a constructor for related *ModelEntity*
 - `@Deleter`: tag annotating a method used as explicit destructor for related *ModelEntity*
 - `@Finder(String,String)`: tag annotating method as a fetching request for a given *ModelProperty* with a given attribute

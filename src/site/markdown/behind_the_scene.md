@@ -36,7 +36,7 @@ The package `org.openflexo.pamela.annotations` package exposes the set of annota
 
 The package `org.openflexo.pamela` contains following feature-related java interfaces:
 
--`AccessibleProxyObject` is the interface that PAMELA objects should extend in order to benefit from base features such as generic default implementation, containment management, notification, object graph comparison and diff/merge, visiting patterns, etc.
+- `AccessibleProxyObject` is the interface that PAMELA objects should extend in order to benefit from base features such as generic default implementation, containment management, notification, object graph comparison and diff/merge, visiting patterns, etc.
 - `CloneableProxyObject` exposes features related to cloning.
 - `DeletableProxyObject` exposes features related to deletion management.
 - `SpecifiableProxyObject` exposes dynamic assertion checking features in the context of JML (contract management) use. 
@@ -47,7 +47,7 @@ Generic design patterns API, used in the context of aspect programming is expose
 
 The package `org.openflexo.pamela.factory` contains PAMELA interpreter implementation. Core of interpreter is implemented in class `ProxyMethodHandler`.
 
-From a technical point of view, PAMELA implementation uses *javassist* reflection library (see \cite{shigueru2000*), providing `MethodHandler` mechanism, which is a way to override the java dynamic binding. Invoking a method on an object which is part of a PAMELA model, caused the real implementation to be called when existing (more precisely dispatch code execution between all provided implementations), or the required interpretation according to underlying model to be executed. This provides also an extension point allowing to instrument the code, which is used for other features such as undo/redo stack management, and assertion checking at run-time (support for Design by Contract, aka JML).
+From a technical point of view, PAMELA implementation uses *javassist* reflection library, providing `MethodHandler` mechanism, which is a way to override the java dynamic binding. Invoking a method on an object which is part of a PAMELA model, caused the real implementation to be called when existing (more precisely dispatch code execution between all provided implementations), or the required interpretation according to underlying model to be executed. This provides also an extension point allowing to instrument the code, which is used for other features such as undo/redo stack management, and assertion checking at run-time (support for Design by Contract, aka JML).
 
 PAMELA framework is a 100% pure java (> 1.5), compilable by a classical java compiler and executable in a classical Java Virtual Machine.
 
