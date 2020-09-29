@@ -39,6 +39,9 @@
 		<menu name="Pamela">
 			<item name="Home" href="index.html" />
 			<item name="Motivations" href="motivations.html" />
+			<item name="Approach overview" href="overview.html" />
+			<item name="A basic example" href="example.html" />
+			<item name="Behind the scene" href="behind_the_scene.html" />
 			<item name="Pamela-Core" href="pamela-core/index.html" />
 			<item name="Pamela-SecurityPatterns" href="pamela-security-patterns/index.html" />
 		</menu>
