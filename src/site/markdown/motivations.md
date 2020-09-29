@@ -9,8 +9,6 @@ Following figure shows the classical vision for for Model-Driven Engineering.
 
 ![ClassicalVision](https://support.openflexo.org/images/components/pamela/ClassicalVision.png)
 
-## Prout
-
 A first major drawback of this approach is the gap created between the conceptual level (the model) and the 
 source code, where semantics may be totally hidden or implicit. Another classical issue resides in the 
 development or maintenance process, where model and source code must evolve independently (and sometimes by 
