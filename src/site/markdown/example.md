@@ -2,7 +2,11 @@
 
 ## A very basic model with two entities
 
-The following code listing represents a very basic model with two entities *Book* and *Library*. Entity *Book* defines two read-write single properties *title* and *ISBN* with single cardinality and with `String` type. Entity *Book* also define a constructor with initial *title* value. Entity *Library* defines a read-write multiple properties *books* referencing *Book* instances. Note that this code is sufficient to execute the model, while no line of code is required (only java interface and API methods are declared here). 
+The following code listing represents a very basic model with two entities *Book* and *Library*. 
+
+Entity *Book* defines two read-write single properties *title* and *ISBN* with single cardinality and with `String` type. Entity *Book* also define a constructor with initial *title* value. Entity *Library* defines a read-write multiple properties *books* referencing *Book* instances. 
+
+Note that this code is sufficient to execute the model, while no line of code is required (only java interface and API methods are declared here). 
 
 ```java
 @ModelEntity
