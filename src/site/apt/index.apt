@@ -6,60 +6,83 @@
 
 Pamela : an annotation-based Java modelling framework
 
-  PAMELA is an annotation-based Java Modelling framework. PAMELA provides a smooth integration between model and code, and enable Java developers to handle software development both at conceptual level and at source-code level, without code transformation and/or generation, and avoiding round-tripping issues. 
+  PAMELA is an annotation-based Java Modelling framework. PAMELA provides a smooth integration between 
+  model and code, and enable Java developers to handle software development both at conceptual level 
+  and at source-code level, without code transformation and/or generation, and avoiding round-tripping 
+  issues. 
 
-  Exposed metamodel provides meta-programming support, multiple inheritance and traits programming, contract programming, aspect programming and run-time weaving. This framework also offers operational features derived from  model-level edition such as notification management, validation, persistence, comparison and object graph computation. 
+  Exposed metamodel provides meta-programming support, multiple inheritance and traits programming, 
+  contract programming, aspect programming and run-time weaving. This framework also offers operational 
+  features derived from  model-level edition such as notification management, validation, persistence, 
+  comparison and object graph computation. 
 
-  PAMELA approach has been tested and validated on some java-based industrial projects, making it a credible alternative in the context of Model-Driven Engineering.
+  PAMELA approach has been tested and validated on some java-based industrial projects, making it a credible 
+  and reliable alternative in the context of Model-Driven Engineering.
 
 Highlights
 
   * Continuous modeling process 
+  
   * Strong coupling between model and code with smooth integration
+  
   * Modeling without code generation: no need to generate POJO (plain old java objects), as their execution follow the standard semantics (less code, less bugs)
+  
   * Interpretation of models at runtime
+  
   * Code instrumentation
+  
   * Meta-programming
+  
   * Contract programming with assertions checking at runtime
+  
   * Dynamic code weaving at runtime (aspect programming without compilation)
   
 Overview
 
-  * Motivations
+  * {{{./motivations.html}Motivations}}
+  
   * Approach overview
+  
   * A basic example
+  
   * Common annotations
+  
   * Behind the scene
   
 Features
  
-  * Model/code strong coupling
+  * Metamodel at runtime, model fragmentation management
   
-  * No code generation: the 'model' is serialized in the Java code with annotations
+  * Life-cycle management
   
-  * Custom implementations might be redefined by the developper
+  * Meta-programming support
   
-  * All is executed at run-time: Java dynamic binding is overriden
+  * Multiple inheritance and traits programming
   
-  * Support for multiple inheritance in Java
+  * Containment management
   
-  * XML serialization/deserialization
+  * Cloning support
   
-  * On the fly metamodel closure computation (powerfull management of metamodel fragmentation)
+  * Clipboard operations
   
-  * Integrated notification management
+  * Notification support
   
-  * Embedding management
+  * Persistance support, XML serialization/deserialization
   
-  * Object graph closure computation
+  * Equality computing support
   
-  * Deletion management
+  * Visiting features
   
-  * Clipboard operations (copy, cut, paste) management
+  * Differential updating
   
-  * Multi-delevel undo/redo support
+  * Validation API
   
-  * A graphical editor is also provided in this project, allowing to graphically view and edit PAMELA models (see {{{./pamela-editor/index.html}Pamela-editor component}})
+  * Contract programming, JML
+  
+  * Design patterns, aspect programming
+  
+
+Getting started
  
 Contents of this package
 
