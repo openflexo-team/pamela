@@ -41,7 +41,7 @@ The package `org.openflexo.pamela` contains following feature-related java inter
 - `DeletableProxyObject` exposes features related to deletion management.
 - `SpecifiableProxyObject` exposes dynamic assertion checking features in the context of JML (contract management) use. 
 
-Generic design patterns API, used in the context of aspect programming is exposed in `org.openflexo.pamela.patterns` package. A plug-in architecture allows to enrich model with some specific design pattern. Some basic design patterns are released with PAMELA 1.6.x in the context of security (Authenticator, Authorization, SingleAccessPoint, Owner).
+Generic design patterns API, used in the context of aspect programming is exposed in `org.openflexo.pamela.patterns` package. A plug-in architecture allows to enrich model with some specific design pattern. Some basic design patterns are released with PAMELA 1.6.x in the context of security (`Authenticator`, `Authorization`, `SingleAccessPoint`, `Owner`).
 
 ## The PAMELA interpreter
 
