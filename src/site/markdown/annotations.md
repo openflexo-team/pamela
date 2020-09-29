@@ -1,6 +1,7 @@
 # Common annotations
 
 Here is a non-exhaustive list of the most common java annotations used in the context of a PAMELA model definition.
+
 - `@ModelEntity`: tag annotating `interface` as *ModelEntity*. May declares an abstract entity.
 - `@ImplementationClass`: tag annotating *ModelEntity* `interface` and precising abstract java `class` to be used as base implementation.
 - `@Implementation`: tag annotating a partial implementation (abstract inner `class` defined in implemented `interface`), and used in the context of multiple inheritance.
