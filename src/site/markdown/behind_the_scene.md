@@ -2,14 +2,17 @@
 
 ## Runtime considerations
 
-The aforementioned models are executed at runtime as a combination of two components: 1) plain java byte-code, as the result of the basic compilation of source code; and 2) an embedded PAMELA interpreter, executing semantics reflected by *ModelEntity* and *ModelProperty*  declarations (together with custom annotations where available).
+The aforementioned models are executed at runtime as a combination of two components: 
+
+1. plain java byte-code, as the result of the basic compilation of source code; and 
+2.	 an embedded PAMELA interpreter, executing semantics reflected by *ModelEntity* and *ModelProperty*  declarations (together with custom annotations where available).
 
 The main idea for the approach is to override java dynamic binding. Invoking a method on an object which is part of a PAMELA model, caused the real implementation to be called when existing (more precisely dispatch code execution between all provided implementations), or the required interpretation according to underlying model to be executed. 
  
 PAMELA interpreter will intercept any method call for all instances of *ModelEntity* and conditionaly branches code execution.
 
 - If the accessed method is part of a *ModelProperty* (a getter, or a setter, etc..), and no custom implementation is defined neither in the class declared as implementation, nor in a class declared as partial implementation in the context of traits, then execution is delegated to the related property implementation (generic code provided by the PAMELA interpreter).
-- If the accessed method is defined in a class declared as implementation, or in a class declared as partial implementation, then this method is executed. PAMELA API through the AccessibleProxyObject* interface also provides access to generic behaviour (super implementation), allowing the developer to define an overriding composition.
+- If the accessed method is defined in a class declared as implementation, or in a class declared as partial implementation, then this method is executed. PAMELA API through the AccessibleProxyObject interface also provides access to generic behaviour (super implementation), allowing the developer to define an overriding composition.
  
 This general scheme provides also an extension point allowing to instrument the code, which is used for other features such as notification management, undo/redo stack management, assertion checking at run-time (support for *Design by Contract*, aka JML, and dynamic code weaving in the context of *Aspect Programming*.
 
@@ -29,6 +32,7 @@ This composition of an interpreter (interpreting both standard and specific sema
 The model-code integration we advocate requires facilities to encode metadata in source code. This requires an annotation-enabled language. Such a language supports the attribute-oriented programming if its grammar allows adding custom declarative tags to annotate standard program elements. Java programming language from version 1.5 is a good candidate with the support of annotations.
 
 API exposed to the developer mainly consists of :
+
 1. a set of annotations;
 2. a set of unimplemented Java interfaces exposing required features.
 

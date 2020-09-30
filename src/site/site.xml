@@ -47,6 +47,10 @@
 			<item name="Pamela-SecurityPatterns" href="pamela-security-patterns/index.html" />
 		</menu>
 
+		<menu name="Main features">
+			<item name="Model computation" href="pamela-core/1-model_at_runtime.html" />
+		</menu>
+
 		<menu ref="modules" />
 		<menu ref="reports" />
 	</body>
