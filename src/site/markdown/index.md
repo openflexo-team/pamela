@@ -44,7 +44,9 @@ PAMELA approach has been tested and validated on some java-based industrial proj
 - Design patterns, aspect programming
   
 # Getting started
- 
+
+Want to start with Pamela ? Read our ["Getting started" guide](./getting_started.html)
+
 # Contents of this package
 
 PAMELA project contains two separate components (defined here as modules):

@@ -53,6 +53,11 @@
 			<item name="Metaprogramming support" href="pamela-core/3-metaprogramming_support.html" />
 		</menu>
 
+		<menu name="Javadoc">
+			<item name="Pamela core" href="pamela-core/apidocs/index.html" />
+			<item name="Security patterns library" href="pamela-security-patterns/apidocs/index.html" />
+		</menu>
+
 		<menu ref="modules" />
 		<menu ref="reports" />
 	</body>
