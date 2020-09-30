@@ -35,6 +35,8 @@ public interface IntegerStorage extends AccessibleProxyObject {
 }
 ```
 
+`PlusProcessor` extends `IntegerStorage` and provides `processPlus(int)` :
+
 ```java
 @ModelEntity
 public interface PlusProcessor extends IntegerStorage {
@@ -51,6 +53,8 @@ public interface PlusProcessor extends IntegerStorage {
     }
 }
 ```
+
+`MinusProcessor` extends `IntegerStorage` and provides `processMinus(int)` :
 
 ```java
 @ModelEntity
