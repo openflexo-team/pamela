@@ -43,12 +43,14 @@
 			<item name="A basic example" href="example.html" />
 			<item name="Basic annotations" href="annotations.html" />
 			<item name="Behind the scene" href="behind_the_scene.html" />
-			<item name="Pamela-Core" href="pamela-core/index.html" />
-			<item name="Pamela-SecurityPatterns" href="pamela-security-patterns/index.html" />
+			<!--  <item name="Pamela-Core" href="pamela-core/index.html" /> -->
+			<!-- <item name="Pamela-SecurityPatterns" href="pamela-security-patterns/index.html" /> -->
 		</menu>
 
 		<menu name="Main features">
 			<item name="Model computation" href="pamela-core/1-model_at_runtime.html" />
+			<item name="Lifecycle management" href="pamela-core/2-life_cycle_management.html" />
+			<item name="Metaprogramming support" href="pamela-core/3-metaprogramming_support.html" />
 		</menu>
 
 		<menu ref="modules" />
