@@ -45,8 +45,7 @@
 			<item name="Behind the scene" href="behind_the_scene.html" />
 			<item name="Getting started" href="getting_started.html" />
 			<item name="F.A.Q" href="faq.html" />
-			<!--  <item name="Pamela-Core" href="pamela-core/index.html" /> -->
-			<!-- <item name="Pamela-SecurityPatterns" href="pamela-security-patterns/index.html" /> -->
+			<item name="Security Patterns Library" href="pamela-security-patterns/index.html" />
 		</menu>
 
 		<menu name="Main features">
