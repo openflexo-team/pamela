@@ -19,8 +19,8 @@ The JML language allows referencing the namespace of the Java program and the lo
 
 - **forall**, **exist**, $=>$ and $<=>$, which correspond to the universal quantification, existential quantification, and logical implication and equivalence, respectively;
 - **invariant**, **requires** and **ensures** are used to represent, respectively, the invariants, preconditions and postconditions of contracts;
-- assignable **<name>** to specify that a variable can be assigned in the method it specifies;;
-- **old<name>** to reference the value of a variable before the call of the method it specifies;
+- assignable **\<name\>** to specify that a variable can be assigned in the method it specifies;;
+- **old\<name\>** to reference the value of a variable before the call of the method it specifies;
 - **result** to reference the return value of the method it specifies;
 - **signals** describes the exceptions thrown by the method it specifies;
 - **pure** specifies that the specified method does not have side effects;
