@@ -35,7 +35,7 @@ PAMELA approach has been tested and validated on some java-based industrial proj
 - [Cloning support](./pamela-core/6-cloning_support.html)
 - [Clipboard operations](./pamela-core/7-clipboard_operations.html)
 - [Notification support](./pamela-core/8-notification_support.html)
-- [Persistance support, XML serialization/deserialization](./pamela-core/9-persistance_support.html)
+- [Persistance support, XML serialization/deserialization](./pamela-core/9-persistence_support.html)
 - [Equality computing support](./pamela-core/10-equality_computing.html)
 - [Visiting features](./pamela-core/11-visiting_features.html)
 - [Differential updating](./pamela-core/12-differential_updating.html)

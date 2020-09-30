@@ -4,7 +4,7 @@ The Design by Contract (DbC) concept was coined by B. Meyer as an approach to de
 
 The whole DbC approach relies on the idea of contract. Meyer indeed realized that most of the software systems, and in particular object-oriented systems, depend on the division of work. This means that tasks are classically divided in several sub-tasks, each being conducted by a program unit. 
 %This kind of organization can also be observed in most professional situations. 
-Most of the time, the completion of a given task is made possible by the division of labor between several actors. When this happens, the actual interaction of the actors is entirely defined in a *contract*. This contract contains the liabilities and benefits of the interaction for all parties involved. This analogy led Meyer to the idea of software contracting \cite{meyer1992applying}: to define contracts between clients (i.e., routine’s callers) and suppliers (i.e., routines, functions or methods).
+Most of the time, the completion of a given task is made possible by the division of labor between several actors. When this happens, the actual interaction of the actors is entirely defined in a *contract*. This contract contains the liabilities and benefits of the interaction for all parties involved. This analogy led Meyer to the idea of software contracting to define contracts between clients (i.e., routine’s callers) and suppliers (i.e., routines, functions or methods).
 A contract is defined as the aggregation of two assertions to a routine or method:
 
 - A precondition:  Boolean condition that needs to be verified before calling the routine. It summarizes the client's obligations towards the supplier.
@@ -30,7 +30,7 @@ JML is supported by various tools such as OpenJML, which enables static or run-t
 
 Instead of declaring JML assertions in comments, PAMELA framework offers a set of annotations which have to be declared 
 
-1. at *ModelEntity* level for *class invariant*
+1. at class (*ModelEntity*) level for *class invariant*
 2. at method level for preconditions and postconditions.
 
 Following listing shows a basic example of a DbC-based `BankAccount` implementation. *Class invariant* are declared using `@Invariant` annotation, while pre and post condition are respectively declared with `@Requires` and `@Ensures` annotations.

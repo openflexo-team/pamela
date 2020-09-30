@@ -33,7 +33,9 @@ public interface IntegerStorage extends AccessibleProxyObject {
 	    }
     }
 }
+```
 
+```java
 @ModelEntity
 public interface PlusProcessor extends IntegerStorage {
 
@@ -48,7 +50,9 @@ public interface PlusProcessor extends IntegerStorage {
         }
     }
 }
+```
 
+```java
 @ModelEntity
 public interface MinusProcessor extends IntegerStorage {
 
@@ -63,7 +67,11 @@ public interface MinusProcessor extends IntegerStorage {
         }
     }
 }
+```
 
+`Calculator` concept is combining two traits: (no required additional code)
+
+```java
 @ModelEntity
 public interface Calculator extends PlusProcessor, MinusProcessor {
 

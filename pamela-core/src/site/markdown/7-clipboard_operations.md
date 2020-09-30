@@ -11,7 +11,7 @@ Available API to perform clipboard operations is exposed by following methods de
 - `paste(Clipboard,ModelProperty,Object)` : non-ambigous version of previous method
 
 
-Example of code with a "node" property declared as receiver for copying a list of `Node`
+Example of code with a "node" property declared as receiver for copy/pasting a list of `Node`
  
 ```java
 @ModelEntity
