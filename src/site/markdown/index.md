@@ -28,20 +28,20 @@ PAMELA approach has been tested and validated on some java-based industrial proj
 # Features
  
 - [Model at runtime computation, model fragmentation management](./pamela-core/1-model_at_runtime.html)
-- Life-cycle management
-- Meta-programming support
-- Multiple inheritance and traits programming
-- Containment management
-- Cloning support
-- Clipboard operations
-- Notification support
-- Persistance support, XML serialization/deserialization
-- Equality computing support
-- Visiting features
-- Differential updating
-- Validation API
-- Contract programming, JML
-- Design patterns, aspect programming
+- [Life-cycle management](./pamela-core/2-life_cycle_management.html)
+- [Meta-programming support](./pamela-core/3-metaprogramming_support.html)
+- [Multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.html)
+- [Containment management](./pamela-core/5-containment_management.html)
+- [Cloning support](./pamela-core/6-cloning_support.html)
+- [Clipboard operations](./pamela-core/7-clipboard_operations.html)
+- [Notification support](./pamela-core/8-notification_support.html)
+- [Persistance support, XML serialization/deserialization](./pamela-core/9-persistance_support.html)
+- [Equality computing support](./pamela-core/10-equality_computing.html)
+- [Visiting features](./pamela-core/11-visiting_features.html)
+- [Differential updating](./pamela-core/12-differential_updating.html)
+- [Validation API](./pamela-core/13-validation_api.html)
+- [Contract programming, JML](./pamela-core/14-jml.html)
+- [Design patterns, aspect programming](./pamela-core/15-design_patterns.html)
   
 # Getting started
 
