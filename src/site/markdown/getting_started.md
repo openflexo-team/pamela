@@ -104,7 +104,12 @@ Clone PAMELA in your environment:
 git clone git@github.com:openflexo-team/pamela.git
 ```
 
-### 4. Make your first model
+### 4. Run tests
+
+Unit tests located in src/test/java in pamela-core are a good starting point to discover the framework.
+
+
+### 5. Make your first model
 
 To build your first model, you only have to defined the interface, Pamela does the implementation for you.
 Just write:
