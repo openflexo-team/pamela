@@ -1,12 +1,46 @@
 # Getting started with PAMELA
 
-### Getting Pamela
-
 There are several way to get and/or use Pamela.
 
-#### Maven
+- The Pamela artifacts (official releases) are published in the following maven repository [https://maven.openflexo.org/artifactory/openflexo-release](https://maven.openflexo.org/artifactory/openflexo-release)
+- The Pamela artifacts (snapshot releases) are published in the following maven repository [https://maven.openflexo.org/artifactory/openflexo-deps](https://maven.openflexo.org/artifactory/openflexo-deps)
 
-Pamela is built using gradle and publish it's artifacts to the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release).
+
+#### 1. Use PAMELA with gradle
+
+It's easy to use it from Gradle. 
+
+In order to use Pamela in your gradle project, add the repository adding the following in the `build.gradle`:
+
+```groovy
+maven {
+    url "https://maven.openflexo.org/artifactory/openflexo-release/"
+}
+```
+
+or to use a SNAPSHOT version
+
+```groovy
+maven {
+    url "https://maven.openflexo.org/artifactory/openflexo-deps/"
+}
+```
+
+Add also the dependency to the `pamela-core` artifact:
+
+```groovy
+implementation group: 'org.openflexo', name: 'pamela-core', version: '1.5'
+```
+
+or to use a SNAPSHOT version:
+
+```groovy
+implementation group: 'org.openflexo', name: 'pamela-core', version: '1.5.1-SNAPSHOT'
+```
+
+
+#### 2. Use PAMELA with Maven
+
 In order to use Pamela in your maven project, add the repository adding the following in the `pom.xml`:
 
 ```xml
@@ -18,62 +52,59 @@ In order to use Pamela in your maven project, add the repository adding the foll
     </repository>
 </repositories>
 ```
+
+or to use a SNAPSHOT version
+
+```xml
+<repositories>
+    <repository>
+        <id>openflexo-release</id>
+        <name>openflexo-release</name>
+        <url>https://maven.openflexo.org/artifactory/openflexo-deps/</url>
+    </repository>
+</repositories>
+```
+
 Add also the dependency to the `pamela-core` artifact:
 
 ```xml
 <dependency>
   <groupId>org.openflexo</groupId>
   <artifactId>pamela-core</artifactId>
-  <version>RELEASE</version>
+  <version>1.5</version>
 </dependency>
 ```
 
-#### Gradle
+or to use a SNAPSHOT version
 
-It's easy to use it from Gradle. The Pamela artifact are publish in the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release).
-In order to use Pamela in your gradle project, add the repository adding the following in the `build.gradle`:
-
-```groovy
-maven {
-    url "https://maven.openflexo.org/artifactory/openflexo-release/"
-}
+```xml
+<dependency>
+  <groupId>org.openflexo</groupId>
+  <artifactId>pamela-core</artifactId>
+  <version>1.5.1-SNAPSHOT</version>
+</dependency>
 ```
 
-Add also the dependency to the `pamela-core` artifact:
+#### 3. Download and build PAMELA framework in your environment
 
-```groovy
-implementation group: 'org.openflexo', name: 'pamela-core', version: '1.5.1'
-```
-
-#### Direct download
-
-Pamela can be directly downloaded from the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release) along with it dependencies:
-- `org.openflexo:pamela-core:1.5.1`,
-- `org.openflexo:connie-core:1.5.1`,
-- `org.openflexo:flexoutils:1.5.1`,
-- `org.openflexo:tools-configuration:0.5`.
-- `com.google.guava:guava:27.0-jre`,
-- `org.apache.commons:commons-lang3:3.8.1`,
-- `org.javassist:javassist:3.22.0-GA`,
-
-**TODO**
-
-#### Build it your self
-
-In order to get the most up to date code you can build Pamela yourself.
+In order to get the most up to date code you can clone and build Pamela yourself.
 
 **Prerequisite**
 
 - [git](https://git-scm.com).
 - [Java](http://www.oracle.com/technetwork/java/index.html) JDK 8
 
+**Download sources**
 
-Building Pamela is easy, follow these steps:
+PAMELA framework is hosted on github: [https://github.com/openflexo-team/pamela](https://github.com/openflexo-team/pamela).
 
-**TODO**
+Clone PAMELA in your environment:
 
+```
+git clone git@github.com:openflexo-team/pamela.git
+```
 
-## Your first model
+### 4. Make your first model
 
 To build your first model, you only have to defined the interface, Pamela does the implementation for you.
 Just write:
