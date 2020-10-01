@@ -1,177 +1,56 @@
-# Openflexo Pamela
+# Pamela : an annotation-based Java modelling framework
 
-## Introduction
+PAMELA is an annotation-based Java Modelling framework. PAMELA provides a smooth integration between model and code, and enable Java developers to handle software development both at conceptual level and at source-code level, without code transformation and/or generation, and avoiding round-tripping issues. 
 
-### Introduction to Pamela
+Exposed metamodel provides meta-programming support, multiple inheritance and traits programming, contract programming, aspect programming and run-time weaving. This framework also offers operational features derived from  model-level edition such as notification management, validation, persistence, comparison and object graph computation. 
 
-Pamela is an annotation-based Java modelling framework.
-The strong idea behind this technology is a smooth integration between model and code, without code generation nor externalized model serialization.
-We aim to avoid separation between model and code to simplify consistency management and avoid round-tripping issues.
+PAMELA approach has been tested and validated on some java-based industrial projects, making it a credible and reliable alternative in the context of Model-Driven Engineering.
 
-#### Key features of Pamela
+# Highlights
 
- - Model/code strong coupling
- - No code generation: the 'model' is serialized in the Java code with annotations
- - Custom implementations might be redefined by the developer
- - All is executed at run-time: Java dynamic binding is overridden
- - Support for multiple inheritance in Java
- - XML serialization/deserialization
- - On the fly meta-model closure computation (powerful management of metamodel fragmentation)
- - Integrated notification management
- - Embedding management
- - Object graph closure computation
- - Deletion management
- - Clipboard operations (copy, cut, paste) management
- - Multi-level undo/redo support
- - A graphical editor is also provided in this project, allowing to graphically view and edit Pamela models (see [Pamela-editor component](../pamela-editor/index.html)).
+- Continuous modeling process 
+- Strong coupling between model and code with smooth integration  
+- Modeling without code generation: no need to generate POJO (plain old java objects), as their execution follow the standard semantics (less code, less bugs)
+- Interpretation of models at runtime
+- Code instrumentation
+- Meta-programming
+- Contract programming with assertions checking at runtime
+- Dynamic code weaving at runtime (aspect programming without compilation)
+  
+# Overview
 
-### Getting Pamela
+- [Motivations](../motivations.html)
+- [Approach overview](../overview.html)
+- [A basic example](../example.html)
+- [Common annotations](../annotations.html)
+- [Behind the scene](../behind_the_scene.html)
+  
+# Features
+ 
+- [Model at runtime computation, model fragmentation management](1-model_at_runtime.html)
+- [Life-cycle management](2-life_cycle_management.html)
+- [Meta-programming support](3-metaprogramming_support.html)
+- [Multiple inheritance and traits programming](4-multiple_inheritance.html)
+- [Containment management](5-containment_management.html)
+- [Cloning support](6-cloning_support.html)
+- [Clipboard operations](7-clipboard_operations.html)
+- [Notification support](8-notification_support.html)
+- [Persistance support, XML serialization/deserialization](9-persistence_support.html)
+- [Equality computing support](10-equality_computing.html)
+- [Visiting features](11-visiting_features.html)
+- [Differential updating](12-differential_updating.html)
+- [Validation API](13-validation_api.html)
+- [Contract programming, JML](14-jml.html)
+- [Design patterns, aspect programming](15-design_patterns.html)
+  
+# Getting started
 
-There are several way to get Pamela.
+Want to start with Pamela ? Read our ["Getting started" guide](./getting_started.html)
 
-#### OpenFlexo
+# Contents of this package
 
-[OpenFlexo](http://www.openflexo.org) make instensive use of Pamela. If you're using OpenFlexo you have access to Pamela.
-
-#### Maven
-
-Pamela is built using gradle and publish it's artifacts to the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release).
-In order to use Pamela in your maven project, add the repository adding the following in the `pom.xml`:
-
-```xml
-<repositories>
-    <repository>
-        <id>openflexo-release</id>
-        <name>openflexo-release</name>
-        <url>https://maven.openflexo.org/artifactory/openflexo-release/</url>
-    </repository>
-</repositories>
-```
-Add also the dependency to the `pamela-core` artifact:
-
-```xml
-<dependency>
-  <groupId>org.openflexo</groupId>
-  <artifactId>pamela-core</artifactId>
-  <version>RELEASE</version>
-</dependency>
-```
-
-#### Gradle
-
-It's easy to use it from Gradle. The Pamela artifact are publish in the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release).
-In order to use Pamela in your gradle project, add the repository adding the following in the `build.gradle`:
-
-```groovy
-maven {
-    url "https://maven.openflexo.org/artifactory/openflexo-release/"
-}
-```
-
-Add also the dependency to the `pamela-core` artifact:
-
-```groovy
-implementation group: 'org.openflexo', name: 'pamela-core', version: '1.5.1'
-```
-
-#### Direct download
-
-Pamela can be directly downloaded from the [OpenFlexo maven repository](https://maven.openflexo.org/artifactory/openflexo-release) along with it dependencies:
-- `org.openflexo:pamela-core:1.5.1`,
-- `org.openflexo:connie-core:1.5.1`,
-- `org.openflexo:flexoutils:1.5.1`,
-- `org.openflexo:tools-configuration:0.5`.
-- `com.google.guava:guava:27.0-jre`,
-- `org.apache.commons:commons-lang3:3.8.1`,
-- `org.javassist:javassist:3.22.0-GA`,
-
-**TODO**
-
-#### Build it your self
-
-In order to get the most up to date code you can build Pamela yourself.
-
-**Prerequisite**
-
-- [git](https://git-scm.com).
-- [Java](http://www.oracle.com/technetwork/java/index.html) JDK 8
-
-
-Building Pamela is easy, follow these steps:
-
-**TODO**
-
-
-## Your first model
-
-To build your first model, you only have to defined the interface, Pamela does the implementation for you.
-Just write:
-
-```java
-@ModelEntity
-interface Person {
-	String NAME = "name";
-
-	@Getter(NAME)
-	String getName();
-
-	@Setter(NAME)
-	void setName(String name);
-}
-```
-
-Pamela will build a class that implements the `getName` getter and the `setName` setter.
-The getter is really simple, it returns the stored property `name`.
-The setter is much more evolved sine it:
-
-- sets the value,
-- notify the value change (if the new value is actually different) and
-- saves the change to an undo manager.
-
-The setter will also handle the opposite property when needed as we see later on.
-
-
-**Gotcha**
-
-Since Pamela constructs it's own implementation of the interface, you can also build your own.
-
-```java
-public class PersonImpl {
-	private String name;
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-}
-```
-
-But this implementation is really basic and doesn't provide advanced capabilities as Pamela does.
-
-## Reference documentation
-
-The javadoc for Pamela can be found [here](./apidocs/index.html).
-
-## Frequently Asked Questions
-
-### Class cannot access its superinterface
-
-If you encounter an Exception like the following:
-```
-Exception in thread "main" java.lang.RuntimeException: by java.lang.IllegalAccessError: class org.javassist.tmp.java.lang.Object_$$_jvst41b_0 cannot access its superinterface MyClass
-```
-
-This means that the interface `MyClass` isn't accessible, it must be `public`.
-
-### How to check if my model is sound
-
-Pamela offer high level model definitions but it does so by tricking the Java compiler using `abstract` constructions.
-You can easily check if your model is sound with a simple test:
-
-```java
-ModelFactory factory = new ModelFactory(MyRootModelClass.class);
-factory.checkMethodImplementations();
-```
+PAMELA project contains two separate components (defined here as modules):
+  
+- [Pamela-core component](../pamela-core/index.html), which contains the Pamela core library
+- [Pamela-SecurityPatterns component](../pamela-security-patterns/index.html), which is a library of security-oriented patterns    
+  

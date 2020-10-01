@@ -27,10 +27,41 @@
 			img="https://support.openflexo.org/images/components/pamela/pamela_logo.png">
 		</menu>
 
-		<menu name="Pamela core">
-			<item name="Home" href="index.html" />
-			<item name="Javadoc" href="./apidocs/index.html" />
+		<menu name="Pamela">
+			<item name="Home" href="../index.html" />
+			<item name="Motivations" href="../motivations.html" />
+			<item name="Approach overview" href="../overview.html" />
+			<item name="A basic example" href="../example.html" />
+			<item name="Basic annotations" href="../annotations.html" />
+			<item name="Behind the scene" href="../behind_the_scene.html" />
+			<item name="Getting started" href="../getting_started.html" />
+			<item name="F.A.Q" href="../faq.html" />
+			<item name="Security Patterns Library" href="../pamela-security-patterns/index.html" />
 		</menu>
+
+		<menu name="Main features">
+			<item name="Model computation" href="1-model_at_runtime.html"/>
+			<item name="Lifecycle management" href="2-life_cycle_management.html"/>
+			<item name="Metaprogramming support" href="3-metaprogramming_support.html"/>
+			<item name="Multiple inheritance and traits programming" href="4-multiple_inheritance.html"/>
+			<item name="Containment management" href="5-containment_management.html"/>
+			<item name="Cloning support" href="6-cloning_support.html"/>
+			<item name="Clipboard operations" href="7-clipboard_operations.html"/>
+			<item name="Notification support" href="8-notification_support.html"/>
+			<item name="Persistance suppor" href="9-persistence_support.html"/>
+			<item name="Equality computing support" href="10-equality_computing.html"/>
+			<item name="Visiting features" href="11-visiting_features.html"/>
+			<item name="Differential updating" href="12-differential_updating.html"/>
+			<item name="Validation API" href="13-validation_api.html"/>
+			<item name="Contract programming, JML" href="14-jml.html"/>
+			<item name="Design patterns, aspect programming" href="15-design_patterns.html"/>
+		</menu>
+
+		<menu name="Javadoc">
+			<item name="Pamela core" href="./apidocs/index.html" />
+			<item name="Security patterns library" href="../pamela-security-patterns/apidocs/index.html" />
+		</menu>
+
 
 		<menu ref="parent" />
 
