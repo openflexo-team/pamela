@@ -7,18 +7,14 @@ The aforementioned models are executed at runtime as a combination of two compon
 1. plain Java byte-code, as the result of the basic compilation of source code; and
 2.	 an embedded PAMELA interpreter, executing semantics reflected by *ModelEntity* and *ModelProperty*  declarations (together with custom annotations where available).
 
-The main idea of the approach is to override the Java dynamic binding. Invoking a method on an object which is part of a PAMELA model, causes the real implementation to be called when existing (more precisely dispatch code execution between all provided implementations), or the required interpretation according to underlying model to be executed.
-[//]: # (@Sylvain, pas sur de comprendre)
-
+The main idea of the approach is to override the Java dynamic binding (the scheme used to bind method call to method body, which is not done by the compiler but at runtime). Invoking a method on an object which is part of a PAMELA model, causes the real implementation to be called when existing (more precisely dispatch code execution between all provided implementations), or the required interpretation according to underlying model to be executed.
 
 The PAMELA interpreter intercepts any method call to an instance of a *ModelEntity* and conditionally branches code execution.
 
 - If the accessed method is part of a *ModelProperty* (a getter, or a setter, etc..), and no custom implementation is defined neither in the class declared as implementation, nor in a class declared as partial implementation in the context of traits, then execution is delegated to the related property implementation (a generic code provided by the PAMELA interpreter).
-- If the accessed method is defined in a class declared as implementation, or in a class declared as partial implementation, then this method is executed. The PAMELA API through the `AccessibleProxyObject` interface also provides access to the generic behaviour (super implementation), allowing the developer to define an overriding composition.
+- If the accessed method is defined in a class declared as implementation, or in a class declared as partial implementation, then this method is executed (with a scheme preventing method declaration clashes). The PAMELA API through the `AccessibleProxyObject` interface also provides access to the generic behaviour (super implementation), allowing the developer to define an overriding composition.
 
-[//]: # (@Sylvain, si il y a plusieurs implem, comment on choisi ?)
-
-This general scheme provides also an extension point allowing to instrument the code, which is used for other features such as notification management, undo/redo stack management, assertion checking at run-time (support for *Design by Contract*, as in JML, and dynamic code weaving in the context of *Aspect Programming*).
+This general scheme provides also an extension point allowing to instrument the code, which is used for other features such as notification management, undo/redo stack management, assertion checking at runtime (support for *Design by Contract*, as in JML, and dynamic code weaving in the context of *Aspect Programming*).
 
 This composition of an interpreter (interpreting both standard and specific semantics) and compiled code offers many benefits:
 
