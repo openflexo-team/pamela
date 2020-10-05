@@ -120,6 +120,8 @@ As said previously, PAMELA framework supports multiple inheritance. In this cont
 3. gradle init
    answer 2 (application) 3 (Java) 1 (Groovy) 1 (Junit4) book org.openflexo.testPamela
 
+Here are the different versions:
+
 1. [v1.zip](https://support.openflexo.org/images/components/pamela/examples/v1.zip) : minimal example
 2. [v2.zip](https://support.openflexo.org/images/components/pamela/examples/v2.zip) : adding behaviour
 3. [v3.zip](https://support.openflexo.org/images/components/pamela/examples/v3.zip) : behaviour modifications (AccessibleProxyObject)
