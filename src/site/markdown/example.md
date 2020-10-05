@@ -113,4 +113,16 @@ Notice that the name of a property being a string is fragile, any typo or change
 
 As said previously, PAMELA framework supports multiple inheritance. In this context, it is possible to provide multiple implementation classes for a given *ModelEntity*. To do so, we use abstract inner classes tagged with `@Implementation`, and the composition is made at run-time (see [multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.html)).
 
+## Download examples
+
+1. install gradle
+2. mkdir SOMEDIR; cd SOMEDIR
+3. gradle init
+   answer 2 (application) 3 (Java) 1 (Groovy) 1 (Junit4) book org.openflexo.testPamela
+
+1. [v1.zip](https://support.openflexo.org/images/components/pamela/examples/v1.zip) : minimal example
+2. [v2.zip](https://support.openflexo.org/images/components/pamela/examples/v2.zip) : adding behaviour
+3. [v3.zip](https://support.openflexo.org/images/components/pamela/examples/v3.zip) : behaviour modifications (AccessibleProxyObject)
+4. [v4.zip](https://support.openflexo.org/images/components/pamela/examples/v4.zip) : a more complex example
+
 [<< Approach overview](./overview.html) \| [Common annotations >>](./annotations.html)
