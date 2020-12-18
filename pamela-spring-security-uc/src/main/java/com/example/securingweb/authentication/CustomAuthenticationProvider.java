@@ -1,7 +1,5 @@
 package com.example.securingweb.authentication;
 
-import java.util.ArrayList;
-
 import org.openflexo.pamela.annotations.ImplementationClass;
 import org.openflexo.pamela.annotations.Import;
 import org.openflexo.pamela.annotations.Imports;
@@ -12,8 +10,11 @@ import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authentic
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequestAuthentication;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.stereotype.Component;
 
@@ -25,13 +26,17 @@ import org.springframework.stereotype.Component;
 public interface CustomAuthenticationProvider extends AuthenticationProvider {
 	String USER_NAME = "userName";
 
+	public void setPasswordEncoder(PasswordEncoder passwordEncoder);
+
+	public void setUserDetailsService(UserDetailsService userDetailsService);
+
 	@Override
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException;
 
 	@RequestAuthentication(patternID = SessionInfo.PATTERN_ID)
 	int request(@AuthenticationInformation(patternID = SessionInfo.PATTERN_ID, paramID = USER_NAME) String userName);
 
-	abstract class CustomAuthenticationProviderImpl implements CustomAuthenticationProvider {
+	abstract class CustomAuthenticationProviderImpl extends DaoAuthenticationProvider implements CustomAuthenticationProvider {
 
 		@Override
 		public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -39,19 +44,39 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 			try {
 				System.out.println("On utilise bien le CustomAuthenticationProvider pour " + authentication);
 				Thread.dumpStack();
-
+				UsernamePasswordAuthenticationToken returned = (UsernamePasswordAuthenticationToken) super.authenticate(authentication);
 				String name = authentication.getName();
 				String password = authentication.getCredentials().toString();
 
 				SessionInfo.getCurrentSessionInfo().setUserName(name);
 				System.out.println("Current session info: " + SessionInfo.getCurrentSessionInfo());
+				return returned;
+			} catch (AuthenticationException e) {
+				throw e;
+			} catch (ModelExecutionException e) {
+				e.printStackTrace();
+				System.out.println("Oulala ca craint");
+				// return null;
+				throw new SessionAuthenticationException("Cannot open more than one session for a given user");
+			}
 
+			/*try {
+				System.out.println("On utilise bien le CustomAuthenticationProvider pour " + authentication);
+				Thread.dumpStack();
+			
+				String name = authentication.getName();
+				String password = authentication.getCredentials().toString();
+			
+				SessionInfo.getCurrentSessionInfo().setUserName(name);
+				System.out.println("Current session info: " + SessionInfo.getCurrentSessionInfo());
+			
 				if (shouldAuthenticateAgainstThirdPartySystem()) {
-
+			
 					// use the credentials
 					// and authenticate against the third-party system
 					return new UsernamePasswordAuthenticationToken(name, password, new ArrayList<>());
-				} else {
+				}
+				else {
 					return null;
 				}
 			} catch (ModelExecutionException e) {
@@ -59,17 +84,17 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 				System.out.println("Oulala ca craint");
 				// return null;
 				throw new SessionAuthenticationException("Cannot open more than one session for a given user");
-			}
+			}*/
 		}
 
-		private boolean shouldAuthenticateAgainstThirdPartySystem() {
+		/*private boolean shouldAuthenticateAgainstThirdPartySystem() {
 			return true;
-		}
+		}*/
 
-		@Override
+		/*@Override
 		public boolean supports(Class<?> authentication) {
 			return authentication.equals(UsernamePasswordAuthenticationToken.class);
-		}
+		}*/
 
 		/*
 		 * @Override public int request(String id) { if (this.check(id)) { return

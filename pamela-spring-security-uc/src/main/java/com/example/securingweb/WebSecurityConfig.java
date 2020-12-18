@@ -5,8 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 //import org.springframework.context.annotation.ImportResource;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 // import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,7 +29,7 @@ import com.example.securingweb.authentication.MyUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
-//@ImportResource({ "classpath:webSecurityConfig.xml" })
+// @ImportResource({ "classpath:webSecurityConfig.xml" })
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
@@ -44,20 +42,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 		// @formatter:off
 		http.authorizeRequests()
-				.antMatchers("/", "/home", "/register", "/js/**", "/css/**", "/images/**", "/fonts/**", "/login/**",
-						"/successRegister", "/doRegister", "/h2/**")
-				.permitAll().anyRequest().authenticated()
-				.and().formLogin().loginPage("/login").permitAll()
-				.loginProcessingUrl("/dologin").defaultSuccessUrl("/brest", true)
+				.antMatchers("/", "/home", "/register", "/js/**", "/css/**", "/images/**", "/fonts/**", "/login/**", "/successRegister",
+						"/doRegister", "/h2/**")
+				.permitAll().anyRequest().authenticated().and().formLogin().loginPage("/login").permitAll().loginProcessingUrl("/dologin")
+				.defaultSuccessUrl("/brest", true)
 				// .failureUrl("/login.html?error=true")
-				.failureHandler(authenticationFailureHandler())
-				.and().logout().permitAll()
-				.and().sessionManagement()
-		        //.sessionFixation().migrateSession()
-		        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-		        .invalidSessionUrl("/invalidSession.html")
-		        .maximumSessions(2)
-		        .expiredUrl("/sessionExpired.html");
+				.failureHandler(authenticationFailureHandler()).and().logout().permitAll().and().sessionManagement()
+				// .sessionFixation().migrateSession()
+				.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).invalidSessionUrl("/invalidSession.html").maximumSessions(2)
+				.expiredUrl("/sessionExpired.html");
 		// @formatter:on
 
 		// SessionAuthenticationStrategy sessionAuthenticationStrategy = http
@@ -68,7 +61,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Bean
 	public AuthenticationProvider daoAuthenticationProvider() {
-		DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+		// DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+
+		CustomAuthenticationProvider provider = authManagerService.getAuthenticationProvider();
 		provider.setPasswordEncoder(passwordEncoder());
 		provider.setUserDetailsService(this.userDetailsService);
 		return provider;
@@ -112,28 +107,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	 * .roles("USER") .build(); System.out.println(user.getPassword()); return new
 	 * InMemoryUserDetailsManager(user); }
 	 */
-	@Override
+
+	/*@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(userDetailsService);
-
-		/*
-		 * ModelContext context = new ModelContext(Subject.class); ModelFactory factory
-		 * = new ModelFactory(context); IAuthenticator manager =
-		 * factory.newInstance(IAuthenticator.class); Subject subject =
-		 * factory.newInstance(Subject.class, "id1"); subject.setManager(manager);
-		 * manager.addUser(subject.getAuthInfo()); subject.authenticate();
-		 * assertEquals(subject.getIDProof(),
-		 * manager.generateFromAuthInfo(subject.getAuthInfo()));
-		 * System.out.println("IDProof=" + subject.getIDProof());
-		 */
-
-		CustomAuthenticationProvider authProvider = authManagerService.getAuthenticationProvider();
-		// ModelContext context = new ModelContext(CustomAuthenticationProvider.class);
-		// ModelFactory factory = new ModelFactory(context);
-		// authProvider = factory.newInstance(CustomAuthenticationProvider.class);
-		auth.authenticationProvider(authProvider);
-
-	}
+	
+		// CustomAuthenticationProvider authProvider = authManagerService.getAuthenticationProvider();
+		// auth.authenticationProvider(authProvider);
+	
+	}*/
 
 	/*
 	 * private AuthenticationSuccessHandler successHandler() { return new
