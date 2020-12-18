@@ -1,0 +1,103 @@
+/*plugins {
+	id 'org.springframework.boot' version '2.3.2.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+	id 'java'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+*/
+repositories {
+	mavenCentral()
+    //maven { url uri('https://maven.openflexo.org/artifactory/openflexo-deps/') }
+}
+
+dependencies {
+
+	// pamela
+	//compile project(':pamela-core')
+	//compile project(':pamela-security-patterns')
+
+    implementation project(':pamela-core')
+    implementation project(':pamela-security-patterns')
+
+	//compile project('org.openflexo:pamela-core')
+	//compile project('org.openflexo:pamela-security-patterns')
+	
+	//compile group: 'org.openflexo', name: 'pamela-core', version: '1.6'
+	//compile group: 'org.openflexo', name: 'pamela-security-patterns', version: '1.6'
+	
+	//compile 'org.openflexo:pamela-core'
+	//compile 'org.openflexo:pamela-security-patterns'
+	
+	
+	//implementation 'org.openflexo:pamela-core:1.6'
+	//implementation 'org.openflexo:pamela-security-patterns:1.6'
+	//implementation 'org.openflexo:pamela-core:1.6-SNAPSHOT'
+	//implementation 'org.openflexo:pamela-security-patterns:1.6-SNAPSHOT'
+	//implementation 'org.openflexo:pamela-core:1.6-SNAPSHOT'
+	//implementation 'org.openflexo:pamela-security-patterns:1.6-SNAPSHOT'
+	//compile("org.openflexo:pamela-core:1.6-SNAPSHOT")
+	//compile("org.openflexo:pamela-security-patterns:1.6-SNAPSHOT")
+	
+	
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.3.2.RELEASE'
+	implementation 'org.springframework.boot:spring-boot-starter-web:2.3.2.RELEASE'
+	implementation 'org.springframework.boot:spring-boot-starter-security:2.3.2.RELEASE'
+	implementation 'org.springframework.security:spring-security-core:2.3.2.RELEASE'
+	implementation 'org.springframework.security:spring-security-test:2.3.2.RELEASE'
+	testImplementation('org.springframework.boot:spring-boot-starter-test:2.3.2.RELEASE') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine:2.3.2.RELEASE'
+	}
+
+	implementation 'jakarta.validation:jakarta.validation-api:2.0.2'
+	implementation 'jakarta.xml.bind:jakarta.xml.bind-api:2.3.3'
+
+	// utiles ?
+	// implementation 'org.springframework.boot:spring-boot-starter-mail'
+	// implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
+	// 2fa
+	implementation 'org.jboss.aerogear:aerogear-otp-java:1.0.0'
+	
+	// Spring Security
+	implementation 'org.springframework.boot:spring-boot-starter-security:2.3.2.RELEASE'
+	// implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
+	
+	// Servlet
+	implementation 'javax.servlet:jstl:1.2'
+	// implementation 'javax.el:el-api:2.2'
+		
+	// Password Validation
+	// implementation 'org.passay:passay:1.0'
+	
+	// JPA dependencies		
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.3.2.RELEASE'
+
+	// DB dependencies		
+	implementation 'mysql:mysql-connector-java:8.0.1'
+	implementation 'com.h2database:h2:1.4.200'
+	implementation 'com.google.guava:guava:20.0'
+	
+
+	// User Agent parser	
+	// implementation 'com.github.ua-parser:uap-java:1.4.0'
+
+ 	// maxmind dependency	
+	// implementation 'com.maxmind.geoip2:geoip2:2.12.0'
+
+	// test
+	// testImplementation 'io.rest-assured:rest-assured'
+	// testImplementation 'net.logstash.logback:logstash-logback-encoder:4.8'
+	// testImplementation 'org.springframework.boot:spring-boot-configuration-processor'
+	// testImplementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
+	 compile("org.springframework.boot:spring-boot-starter-web:2.3.2.RELEASE") {
+        exclude module: "spring-boot-starter-tomcat"
+    }
+			
+}
+
+test {
+	useJUnitPlatform()
+}

@@ -1,0 +1,92 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <title>Register</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
+    <link rel="stylesheet" type="text/css" href="css/util_login.css">
+    <link rel="stylesheet" type="text/css" href="css/main_login.css">
+</head>
+<body>
+
+<div class="limiter">
+    <div class="container-login100" style="background-image: url('images/brest.jpg');">
+        <div class="wrap-login100 p-t-190 p-b-30">
+
+            <form class="login100-form validate-form" th:action="@{/doRegister}" th:object="${user}" method="post" enctype="utf8">
+                <div class="login100-form-avatar">
+                    <img src="images/avatar-01.jpg" alt="AVATAR">
+                </div>
+
+                <span class="login100-form-title p-t-20 p-b-45">
+						Brest Market
+					</span>
+
+                <div class="wrap-input100 validate-input m-b-10" data-validate = "First name is required">
+                	<label th:text="#{label.user.firstName}" id="foo_label">first</label>
+                    <input th:field="*{firstName}" class="input100" type="text" name="firstname" placeholder="First name">
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+							<i class="fa fa-user"></i>
+						</span>
+                </div>
+
+                <div class="wrap-input100 validate-input m-b-10" data-validate = "Last name is required">
+               	    <label th:text="#{label.user.lastName}" id="foo_label">last</label>
+                    <input th:field="*{lastName}" class="input100" type="text" name="lastname" placeholder="Last name">
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+							<i class="fa fa-user"></i>
+						</span>
+                </div>
+
+                <div class="wrap-input100 validate-input m-b-10" data-validate = "Email is required">
+                    <label th:text="#{label.user.email}" id="foo_label">email</label>
+                    <input th:field="*{email}" class="input100" type="text" name="email" placeholder="Email">
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+							<i class="fa fa-envelope"></i>
+						</span>
+                </div>
+
+                <div class="wrap-input100 validate-input m-b-10" data-validate = "Password is required">
+                	<label th:text="#{label.user.password}" id="foo_label">password</label>
+                    <input th:field="*{password}" class="input100" type="password" name="password" placeholder="Password">
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+							<i class="fa fa-lock"></i>
+						</span>
+                </div>
+
+                <div class="wrap-input100 validate-input m-b-10" data-validate = "Please confirm password">
+               		 <label th:text="#{label.user.confirmPass}" id="foo_label">confirm</label>
+                    <input th:field="*{matchingPassword}" class="input100" type="password" name="password" placeholder="Confirm password">
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+							<i class="fa fa-lock"></i>
+						</span>
+                </div>
+
+                <div class="container-login100-form-btn p-t-10">
+                    <button class="login100-form-btn" type="submit" th:text="#{label.form.submit}">
+                        Register
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<a th:href="@{/login.html}" th:text="#{label.form.loginLink}">login</a>
+
+
+
+<script src="js/main_login.js"></script>
+
+</body>
+</html>
