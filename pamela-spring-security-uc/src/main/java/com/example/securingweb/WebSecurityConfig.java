@@ -126,4 +126,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	public HttpSessionEventPublisher httpSessionEventPublisher() {
 		return new MyHttpSessionEventPublisher();
 	}
+
 }
