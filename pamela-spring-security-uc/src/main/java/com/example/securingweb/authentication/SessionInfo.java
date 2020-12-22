@@ -33,6 +33,7 @@ public interface SessionInfo {
 	String SESSION_INFO = "SESSION_INFO";
 	String PATTERN_ID = "AuthenticatorPattern";
 	String USER_NAME = "username";
+	String IP_ADRESS = "ipAdress";
 	String AUTHENTICATION_PROVIDER = "authenticationProvider";
 	String ID_PROOF = "idProof";
 
@@ -42,6 +43,9 @@ public interface SessionInfo {
 
 	@Setter(USER_NAME)
 	void setUserName(String val);
+	
+	@Setter(IP_ADRESS)
+	void setIpAdress(String val);
 
 	@Getter(value = ID_PROOF, ignoreType = true)
 	UsernamePasswordAuthenticationToken getIDProof();

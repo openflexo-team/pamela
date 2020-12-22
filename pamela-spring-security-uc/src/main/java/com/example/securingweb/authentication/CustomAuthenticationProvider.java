@@ -1,8 +1,5 @@
 package com.example.securingweb.authentication;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.openflexo.pamela.annotations.ImplementationClass;
 import org.openflexo.pamela.annotations.Import;
 import org.openflexo.pamela.annotations.Imports;
@@ -18,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.stereotype.Component;
 
@@ -37,12 +35,9 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException;
 
 	@RequestAuthentication(patternID = SessionInfo.PATTERN_ID)
-	UsernamePasswordAuthenticationToken request(
-			@AuthenticationInformation(patternID = SessionInfo.PATTERN_ID, paramID = USER_NAME) String userName);
+	int request(@AuthenticationInformation(patternID = SessionInfo.PATTERN_ID, paramID = USER_NAME) String userName);
 
 	abstract class CustomAuthenticationProviderImpl extends DaoAuthenticationProvider implements CustomAuthenticationProvider {
-
-		private Map<String, UsernamePasswordAuthenticationToken> tokens = new HashMap<>();
 
 		@Override
 		public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -50,19 +45,15 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 			try {
 				System.out.println("On utilise bien le CustomAuthenticationProvider pour " + authentication);
 				Thread.dumpStack();
-
 				UsernamePasswordAuthenticationToken returned = (UsernamePasswordAuthenticationToken) super.authenticate(authentication);
-
-				SessionInfo sessionInfo = SessionInfo.getCurrentSessionInfo();
-				System.out.println("Current session info: " + sessionInfo);
-
 				String name = authentication.getName();
 				String password = authentication.getCredentials().toString();
-				tokens.put(name, returned);
-
-				sessionInfo.setUserName(name);
-				sessionInfo.authenticate();
-
+				WebAuthenticationDetails details = (WebAuthenticationDetails) authentication.getDetails();
+				String userIp = details.getRemoteAddress();
+				Authentication authenticationIP = authentication;
+				SessionInfo.getCurrentSessionInfo().setUserName(name);
+				SessionInfo.getCurrentSessionInfo().setIpAdress(userIp);
+				System.out.println("Current session info: " + SessionInfo.getCurrentSessionInfo());
 				return returned;
 			} catch (AuthenticationException e) {
 				throw e;
@@ -120,11 +111,6 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 		 * }
 		 */
 
-		@Override
-		public UsernamePasswordAuthenticationToken request(String userName) {
-			System.out.println(">>>>>>>>> On fait un request pour " + userName);
-			return tokens.get(userName);
-		}
 	}
 
 }
