@@ -38,8 +38,37 @@
 
 		<menu name="Pamela">
 			<item name="Home" href="index.html" />
-			<item name="Pamela-Core" href="pamela-core/index.html" />
-			<item name="Pamela-SecurityPatterns" href="pamela-security-patterns/index.html" />
+			<item name="Motivations" href="motivations.html" />
+			<item name="Approach overview" href="overview.html" />
+			<item name="A basic example" href="example.html" />
+			<item name="Basic annotations" href="annotations.html" />
+			<item name="Behind the scene" href="behind_the_scene.html" />
+			<item name="Getting started" href="getting_started.html" />
+			<item name="F.A.Q" href="faq.html" />
+			<item name="Security Patterns Library" href="pamela-security-patterns/index.html" />
+		</menu>
+
+		<menu name="Main features">
+			<item name="Model computation" href="pamela-core/1-model_at_runtime.html"/>
+			<item name="Lifecycle management" href="pamela-core/2-life_cycle_management.html"/>
+			<item name="Metaprogramming support" href="pamela-core/3-metaprogramming_support.html"/>
+			<item name="Multiple inheritance and traits programming" href="pamela-core/4-multiple_inheritance.html"/>
+			<item name="Containment management" href="pamela-core/5-containment_management.html"/>
+			<item name="Cloning support" href="pamela-core/6-cloning_support.html"/>
+			<item name="Clipboard operations" href="pamela-core/7-clipboard_operations.html"/>
+			<item name="Notification support" href="pamela-core/8-notification_support.html"/>
+			<item name="Persistance suppor" href="pamela-core/9-persistence_support.html"/>
+			<item name="Equality computing support" href="pamela-core/10-equality_computing.html"/>
+			<item name="Visiting features" href="pamela-core/11-visiting_features.html"/>
+			<item name="Differential updating" href="pamela-core/12-differential_updating.html"/>
+			<item name="Validation API" href="pamela-core/13-validation_api.html"/>
+			<item name="Contract programming, JML" href="pamela-core/14-jml.html"/>
+			<item name="Design patterns, aspect programming" href="pamela-core/15-design_patterns.html"/>
+		</menu>
+
+		<menu name="Javadoc">
+			<item name="Pamela core" href="pamela-core/apidocs/index.html" />
+			<item name="Security patterns library" href="pamela-security-patterns/apidocs/index.html" />
 		</menu>
 
 		<menu ref="modules" />
