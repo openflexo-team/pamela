@@ -1,2 +1,3 @@
 include 'pamela-core'
 include 'pamela-security-patterns'
+include 'pamela-perf-tests'

@@ -1,0 +1,1 @@
+	private List<{$typeAsString}> {$internalVariableName};
