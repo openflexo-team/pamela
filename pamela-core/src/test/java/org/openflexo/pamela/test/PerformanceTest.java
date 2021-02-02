@@ -8,10 +8,10 @@ import java.util.Vector;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
-import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
 
@@ -286,7 +286,8 @@ public class PerformanceTest {
 			System.gc();
 			try {
 				Thread.sleep(200);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 
 			result = runRunnable(factory, runnable);
 			if (i > 0) {
@@ -297,7 +298,8 @@ public class PerformanceTest {
 			System.gc();
 			try {
 				Thread.sleep(200);
-			} catch (InterruptedException e) {}
+			} catch (InterruptedException e) {
+			}
 
 		}
 		System.err.println("Test " + runnable.getClass().getSimpleName());
