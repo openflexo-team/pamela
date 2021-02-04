@@ -12,7 +12,7 @@ import org.openflexo.toolbox.FileUtils;
 
 public class Templating {
 
-	public static final File MAIN_JAVA_CLASS_TEMPLATE_FILE;
+	public static final File PLAIN_MAIN_JAVA_CLASS_TEMPLATE_FILE;
 	public static final File PLAIN_JAVA_CLASS_TEMPLATE_FILE;
 	public static final File PLAIN_JAVA_SIMPLE_PROPERTY_INTERNAL_CODE_TEMPLATE_FILE;
 	public static final File PLAIN_JAVA_MULTIPLE_PROPERTY_INTERNAL_CODE_TEMPLATE_FILE;
@@ -22,10 +22,21 @@ public class Templating {
 	public static final File PLAIN_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE_FILE;
 	public static final File PLAIN_JAVA_PROPERTY_ADDER_CODE_TEMPLATE_FILE;
 	public static final File PLAIN_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE_FILE;
-	public static final File ENTITY_CALLER_CODE_TEMPLATE_FILE;
-	public static final File ENTITY_CALLER_CODE_INTERNAL_TEMPLATE_FILE;
+	public static final File PLAIN_ENTITY_CALLER_CODE_TEMPLATE_FILE;
+	public static final File PLAIN_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE_FILE;
 
-	public static String MAIN_JAVA_CLASS_TEMPLATE = null;
+	public static final File PAMELA_MAIN_JAVA_CLASS_TEMPLATE_FILE;
+	public static final File PAMELA_JAVA_CLASS_TEMPLATE_FILE;
+	public static final File PAMELA_JAVA_SIMPLE_PROPERTY_GETTER_CODE_TEMPLATE_FILE;
+	public static final File PAMELA_JAVA_MULTIPLE_PROPERTY_GETTER_CODE_TEMPLATE_FILE;
+	public static final File PAMELA_JAVA_PROPERTY_SETTER_CODE_TEMPLATE_FILE;
+	public static final File PAMELA_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE_FILE;
+	public static final File PAMELA_JAVA_PROPERTY_ADDER_CODE_TEMPLATE_FILE;
+	public static final File PAMELA_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE_FILE;
+	public static final File PAMELA_ENTITY_CALLER_CODE_TEMPLATE_FILE;
+	public static final File PAMELA_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE_FILE;
+
+	public static String PLAIN_MAIN_JAVA_CLASS_TEMPLATE = null;
 	public static String PLAIN_JAVA_CLASS_TEMPLATE = null;
 	public static String PLAIN_JAVA_SIMPLE_PROPERTY_INTERNAL_CODE_TEMPLATE = null;
 	public static String PLAIN_JAVA_MULTIPLE_PROPERTY_INTERNAL_CODE_TEMPLATE = null;
@@ -35,27 +46,42 @@ public class Templating {
 	public static String PLAIN_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE = null;
 	public static String PLAIN_JAVA_PROPERTY_ADDER_CODE_TEMPLATE = null;
 	public static String PLAIN_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE = null;
-	public static String ENTITY_CALLER_CODE_TEMPLATE = null;
-	public static String ENTITY_CALLER_CODE_INTERNAL_TEMPLATE = null;
+	public static String PLAIN_ENTITY_CALLER_CODE_TEMPLATE = null;
+	public static String PLAIN_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE = null;
+
+	public static String PAMELA_MAIN_JAVA_CLASS_TEMPLATE = null;
+	public static String PAMELA_JAVA_CLASS_TEMPLATE = null;
+	public static String PAMELA_JAVA_SIMPLE_PROPERTY_INTERNAL_CODE_TEMPLATE = null;
+	public static String PAMELA_JAVA_MULTIPLE_PROPERTY_INTERNAL_CODE_TEMPLATE = null;
+	public static String PAMELA_JAVA_SIMPLE_PROPERTY_GETTER_CODE_TEMPLATE = null;
+	public static String PAMELA_JAVA_MULTIPLE_PROPERTY_GETTER_CODE_TEMPLATE = null;
+	public static String PAMELA_JAVA_PROPERTY_SETTER_CODE_TEMPLATE = null;
+	public static String PAMELA_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE = null;
+	public static String PAMELA_JAVA_PROPERTY_ADDER_CODE_TEMPLATE = null;
+	public static String PAMELA_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE = null;
+	public static String PAMELA_ENTITY_CALLER_CODE_TEMPLATE = null;
+	public static String PAMELA_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE = null;
 
 	static {
 		String currentDir = System.getProperty("user.dir");
 		System.out.println("currentDir=" + currentDir);
-		File templateDirectory = new File(currentDir + "/src/main/resources/Templates");
-		MAIN_JAVA_CLASS_TEMPLATE_FILE = new File(templateDirectory, "MainJavaClass.java.tpl");
-		PLAIN_JAVA_CLASS_TEMPLATE_FILE = new File(templateDirectory, "PlainJavaClass.java.tpl");
-		PLAIN_JAVA_SIMPLE_PROPERTY_INTERNAL_CODE_TEMPLATE_FILE = new File(templateDirectory, "PlainSimplePropertyInternalCode.tpl");
-		PLAIN_JAVA_MULTIPLE_PROPERTY_INTERNAL_CODE_TEMPLATE_FILE = new File(templateDirectory, "PlainMultiplePropertyInternalCode.tpl");
-		PLAIN_JAVA_SIMPLE_PROPERTY_GETTER_CODE_TEMPLATE_FILE = new File(templateDirectory, "PlainSimplePropertyGetterCode.tpl");
-		PLAIN_JAVA_MULTIPLE_PROPERTY_GETTER_CODE_TEMPLATE_FILE = new File(templateDirectory, "PlainMultiplePropertyGetterCode.tpl");
-		PLAIN_JAVA_PROPERTY_SETTER_CODE_TEMPLATE_FILE = new File(templateDirectory, "PlainPropertySetterCode.tpl");
-		PLAIN_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE_FILE = new File(templateDirectory, "PlainPrimitivePropertySetterCode.tpl");
-		PLAIN_JAVA_PROPERTY_ADDER_CODE_TEMPLATE_FILE = new File(templateDirectory, "PlainPropertyAdderCode.tpl");
-		PLAIN_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE_FILE = new File(templateDirectory, "PlainPropertyRemoverCode.tpl");
-		ENTITY_CALLER_CODE_TEMPLATE_FILE = new File(templateDirectory, "EntityCallerCode.tpl");
-		ENTITY_CALLER_CODE_INTERNAL_TEMPLATE_FILE = new File(templateDirectory, "EntityCallerCodeInternal.tpl");
+
+		File plainTemplateDirectory = new File(currentDir + "/src/main/resources/Templates/Plain");
+		PLAIN_MAIN_JAVA_CLASS_TEMPLATE_FILE = new File(plainTemplateDirectory, "MainJavaClass.java.tpl");
+		PLAIN_JAVA_CLASS_TEMPLATE_FILE = new File(plainTemplateDirectory, "PlainJavaClass.java.tpl");
+		PLAIN_JAVA_SIMPLE_PROPERTY_INTERNAL_CODE_TEMPLATE_FILE = new File(plainTemplateDirectory, "PlainSimplePropertyInternalCode.tpl");
+		PLAIN_JAVA_MULTIPLE_PROPERTY_INTERNAL_CODE_TEMPLATE_FILE = new File(plainTemplateDirectory,
+				"PlainMultiplePropertyInternalCode.tpl");
+		PLAIN_JAVA_SIMPLE_PROPERTY_GETTER_CODE_TEMPLATE_FILE = new File(plainTemplateDirectory, "PlainSimplePropertyGetterCode.tpl");
+		PLAIN_JAVA_MULTIPLE_PROPERTY_GETTER_CODE_TEMPLATE_FILE = new File(plainTemplateDirectory, "PlainMultiplePropertyGetterCode.tpl");
+		PLAIN_JAVA_PROPERTY_SETTER_CODE_TEMPLATE_FILE = new File(plainTemplateDirectory, "PlainPropertySetterCode.tpl");
+		PLAIN_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE_FILE = new File(plainTemplateDirectory, "PlainPrimitivePropertySetterCode.tpl");
+		PLAIN_JAVA_PROPERTY_ADDER_CODE_TEMPLATE_FILE = new File(plainTemplateDirectory, "PlainPropertyAdderCode.tpl");
+		PLAIN_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE_FILE = new File(plainTemplateDirectory, "PlainPropertyRemoverCode.tpl");
+		PLAIN_ENTITY_CALLER_CODE_TEMPLATE_FILE = new File(plainTemplateDirectory, "EntityCallerCode.tpl");
+		PLAIN_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE_FILE = new File(plainTemplateDirectory, "EntityCallerCodeInternal.tpl");
 		try {
-			MAIN_JAVA_CLASS_TEMPLATE = FileUtils.fileContents(MAIN_JAVA_CLASS_TEMPLATE_FILE);
+			PLAIN_MAIN_JAVA_CLASS_TEMPLATE = FileUtils.fileContents(PLAIN_MAIN_JAVA_CLASS_TEMPLATE_FILE);
 			PLAIN_JAVA_CLASS_TEMPLATE = FileUtils.fileContents(PLAIN_JAVA_CLASS_TEMPLATE_FILE);
 			PLAIN_JAVA_SIMPLE_PROPERTY_INTERNAL_CODE_TEMPLATE = FileUtils
 					.fileContents(PLAIN_JAVA_SIMPLE_PROPERTY_INTERNAL_CODE_TEMPLATE_FILE);
@@ -69,8 +95,38 @@ public class Templating {
 					.fileContents(PLAIN_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE_FILE);
 			PLAIN_JAVA_PROPERTY_ADDER_CODE_TEMPLATE = FileUtils.fileContents(PLAIN_JAVA_PROPERTY_ADDER_CODE_TEMPLATE_FILE);
 			PLAIN_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE = FileUtils.fileContents(PLAIN_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE_FILE);
-			ENTITY_CALLER_CODE_TEMPLATE = FileUtils.fileContents(ENTITY_CALLER_CODE_TEMPLATE_FILE);
-			ENTITY_CALLER_CODE_INTERNAL_TEMPLATE = FileUtils.fileContents(ENTITY_CALLER_CODE_INTERNAL_TEMPLATE_FILE);
+			PLAIN_ENTITY_CALLER_CODE_TEMPLATE = FileUtils.fileContents(PLAIN_ENTITY_CALLER_CODE_TEMPLATE_FILE);
+			PLAIN_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE = FileUtils.fileContents(PLAIN_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE_FILE);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		File pamelaTemplateDirectory = new File(currentDir + "/src/main/resources/Templates/Pamela");
+		PAMELA_MAIN_JAVA_CLASS_TEMPLATE_FILE = new File(pamelaTemplateDirectory, "MainJavaClass.java.tpl");
+		PAMELA_JAVA_CLASS_TEMPLATE_FILE = new File(pamelaTemplateDirectory, "PamelaJavaClass.java.tpl");
+		PAMELA_JAVA_SIMPLE_PROPERTY_GETTER_CODE_TEMPLATE_FILE = new File(pamelaTemplateDirectory, "PamelaSimplePropertyGetterCode.tpl");
+		PAMELA_JAVA_MULTIPLE_PROPERTY_GETTER_CODE_TEMPLATE_FILE = new File(pamelaTemplateDirectory, "PamelaMultiplePropertyGetterCode.tpl");
+		PAMELA_JAVA_PROPERTY_SETTER_CODE_TEMPLATE_FILE = new File(pamelaTemplateDirectory, "PamelaPropertySetterCode.tpl");
+		PAMELA_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE_FILE = new File(pamelaTemplateDirectory,
+				"PamelaPrimitivePropertySetterCode.tpl");
+		PAMELA_JAVA_PROPERTY_ADDER_CODE_TEMPLATE_FILE = new File(pamelaTemplateDirectory, "PamelaPropertyAdderCode.tpl");
+		PAMELA_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE_FILE = new File(pamelaTemplateDirectory, "PamelaPropertyRemoverCode.tpl");
+		PAMELA_ENTITY_CALLER_CODE_TEMPLATE_FILE = new File(pamelaTemplateDirectory, "EntityCallerCode.tpl");
+		PAMELA_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE_FILE = new File(pamelaTemplateDirectory, "EntityCallerCodeInternal.tpl");
+		try {
+			PAMELA_MAIN_JAVA_CLASS_TEMPLATE = FileUtils.fileContents(PAMELA_MAIN_JAVA_CLASS_TEMPLATE_FILE);
+			PAMELA_JAVA_CLASS_TEMPLATE = FileUtils.fileContents(PAMELA_JAVA_CLASS_TEMPLATE_FILE);
+			PAMELA_JAVA_SIMPLE_PROPERTY_GETTER_CODE_TEMPLATE = FileUtils
+					.fileContents(PAMELA_JAVA_SIMPLE_PROPERTY_GETTER_CODE_TEMPLATE_FILE);
+			PAMELA_JAVA_MULTIPLE_PROPERTY_GETTER_CODE_TEMPLATE = FileUtils
+					.fileContents(PAMELA_JAVA_MULTIPLE_PROPERTY_GETTER_CODE_TEMPLATE_FILE);
+			PAMELA_JAVA_PROPERTY_SETTER_CODE_TEMPLATE = FileUtils.fileContents(PAMELA_JAVA_PROPERTY_SETTER_CODE_TEMPLATE_FILE);
+			PAMELA_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE = FileUtils
+					.fileContents(PAMELA_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE_FILE);
+			PAMELA_JAVA_PROPERTY_ADDER_CODE_TEMPLATE = FileUtils.fileContents(PAMELA_JAVA_PROPERTY_ADDER_CODE_TEMPLATE_FILE);
+			PAMELA_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE = FileUtils.fileContents(PAMELA_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE_FILE);
+			PAMELA_ENTITY_CALLER_CODE_TEMPLATE = FileUtils.fileContents(PAMELA_ENTITY_CALLER_CODE_TEMPLATE_FILE);
+			PAMELA_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE = FileUtils.fileContents(PAMELA_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE_FILE);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

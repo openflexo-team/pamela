@@ -22,7 +22,7 @@ public class {$name} {
 		return pcSupport;
 	}
 
-{$propertiesCode}
+{$plainPropertiesCode}
 
 }
 

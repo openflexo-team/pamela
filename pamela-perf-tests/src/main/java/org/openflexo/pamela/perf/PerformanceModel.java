@@ -59,10 +59,11 @@ public class PerformanceModel {
 		for (Entity entity : entities) {
 			entity.generateSourceCode(plainCodeGeneratedDirectory, pamelaCodeGeneratedDirectory);
 		}
-		generateMainClass(plainCodeGeneratedDirectory);
+		generatePlainMainClass(plainCodeGeneratedDirectory);
+		generatePamelaMainClass(pamelaCodeGeneratedDirectory);
 	}
 
-	private void generateMainClass(File plainCodeGeneratedDirectory) {
+	private void generatePlainMainClass(File plainCodeGeneratedDirectory) {
 		File output = new File(plainCodeGeneratedDirectory, "Main.java");
 		System.out.println("File: " + output);
 
@@ -71,7 +72,35 @@ public class PerformanceModel {
 
 		// String contents = "Coucou+{$name.substring(0,2)}+ prout={$plainPackageName}";
 		try {
-			FileUtils.saveToFile(output, fromTemplate(Templating.MAIN_JAVA_CLASS_TEMPLATE));
+			FileUtils.saveToFile(output, fromTemplate(Templating.PLAIN_MAIN_JAVA_CLASS_TEMPLATE));
+		} catch (InvalidKeyValuePropertyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TypeMismatchException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullReferenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void generatePamelaMainClass(File pamelaCodeGeneratedDirectory) {
+		File output = new File(pamelaCodeGeneratedDirectory, "Main.java");
+		System.out.println("File: " + output);
+
+		// Object contents = MultipleParametersBindingEvaluator.evaluateBinding("Coucou+{$name}", this, name);
+		// System.out.println("contents = " + contents + " of " + contents.getClass());
+
+		// String contents = "Coucou+{$name.substring(0,2)}+ prout={$plainPackageName}";
+		try {
+			FileUtils.saveToFile(output, fromTemplate(Templating.PAMELA_MAIN_JAVA_CLASS_TEMPLATE));
 		} catch (InvalidKeyValuePropertyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -95,10 +124,18 @@ public class PerformanceModel {
 		return Templating.fromTemplate(contents, this);
 	}
 
-	public String getInternalCode() {
+	public String getPlainInternalCode() {
 		StringBuffer sb = new StringBuffer();
 		for (Entity entity : entities) {
-			sb.append(entity.getCallerCode());
+			sb.append(entity.getPlainCallerCode());
+		}
+		return sb.toString();
+	}
+
+	public String getPamelaInternalCode() {
+		StringBuffer sb = new StringBuffer();
+		for (Entity entity : entities) {
+			sb.append(entity.getPamelaCallerCode());
 		}
 		return sb.toString();
 	}

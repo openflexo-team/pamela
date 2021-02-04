@@ -43,6 +43,11 @@ public class MultipleProperty extends AbstractProperty {
 	}
 
 	@Override
+	public String getPamelaDefaultValue() {
+		return "";
+	}
+
+	@Override
 	public String getPlainInternalCode() {
 		try {
 			return fromTemplate(Templating.PLAIN_JAVA_MULTIPLE_PROPERTY_INTERNAL_CODE_TEMPLATE);
@@ -104,6 +109,64 @@ public class MultipleProperty extends AbstractProperty {
 	public String getPlainRemoverCode() {
 		try {
 			return fromTemplate(Templating.PLAIN_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE);
+		} catch (InvalidKeyValuePropertyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TypeMismatchException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullReferenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public String getPamelaGetterCode() {
+		try {
+			return fromTemplate(Templating.PAMELA_JAVA_MULTIPLE_PROPERTY_GETTER_CODE_TEMPLATE);
+		} catch (InvalidKeyValuePropertyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TypeMismatchException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullReferenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public String getPamelaAdderCode() {
+		try {
+			return fromTemplate(Templating.PAMELA_JAVA_PROPERTY_ADDER_CODE_TEMPLATE);
+		} catch (InvalidKeyValuePropertyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TypeMismatchException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullReferenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public String getPamelaRemoverCode() {
+		try {
+			return fromTemplate(Templating.PAMELA_JAVA_PROPERTY_REMOVER_CODE_TEMPLATE);
 		} catch (InvalidKeyValuePropertyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

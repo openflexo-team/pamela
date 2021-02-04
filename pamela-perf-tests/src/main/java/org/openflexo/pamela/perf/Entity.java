@@ -42,6 +42,10 @@ public class Entity implements CustomType {
 		return model.getPlainPackageName();
 	}
 
+	public String getPamelaPackageName() {
+		return model.getPamelaPackageName();
+	}
+
 	public void addToProperties(AbstractProperty property) {
 		properties.add(property);
 	}
@@ -71,7 +75,7 @@ public class Entity implements CustomType {
 		return sb.toString();
 	}
 
-	public String getPropertiesCode() {
+	public String getPlainPropertiesCode() {
 		StringBuffer sb = new StringBuffer();
 		for (AbstractProperty property : properties) {
 			sb.append(property.getPlainGetterCode());
@@ -86,9 +90,24 @@ public class Entity implements CustomType {
 		return sb.toString();
 	}
 
-	public String getCallerCode() {
+	public String getPamelaPropertiesCode() {
+		StringBuffer sb = new StringBuffer();
+		for (AbstractProperty property : properties) {
+			sb.append(property.getPamelaGetterCode());
+			if (property instanceof SimpleProperty) {
+				sb.append(((SimpleProperty) property).getPamelaSetterCode());
+			}
+			else if (property instanceof MultipleProperty) {
+				sb.append(((MultipleProperty) property).getPamelaAdderCode());
+				sb.append(((MultipleProperty) property).getPamelaRemoverCode());
+			}
+		}
+		return sb.toString();
+	}
+
+	public String getPlainCallerCode() {
 		try {
-			return fromTemplate(Templating.ENTITY_CALLER_CODE_TEMPLATE);
+			return fromTemplate(Templating.PLAIN_ENTITY_CALLER_CODE_TEMPLATE);
 		} catch (InvalidKeyValuePropertyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -106,10 +125,55 @@ public class Entity implements CustomType {
 
 	}
 
-	public String getInternalCallerCode() {
+	public String getPlainInternalCallerCode() {
 		if (getChildEntity() != null) {
 			try {
-				return fromTemplate(Templating.ENTITY_CALLER_CODE_INTERNAL_TEMPLATE);
+				return fromTemplate(Templating.PLAIN_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE);
+			} catch (InvalidKeyValuePropertyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (TypeMismatchException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NullReferenceException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return null;
+		}
+		else {
+			return "";
+		}
+
+	}
+
+	public String getPamelaCallerCode() {
+		try {
+			return fromTemplate(Templating.PAMELA_ENTITY_CALLER_CODE_TEMPLATE);
+		} catch (InvalidKeyValuePropertyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TypeMismatchException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullReferenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
+	}
+
+	public String getPamelaInternalCallerCode() {
+		if (getChildEntity() != null) {
+			try {
+				return fromTemplate(Templating.PAMELA_ENTITY_CALLER_CODE_INTERNAL_TEMPLATE);
 			} catch (InvalidKeyValuePropertyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -134,6 +198,7 @@ public class Entity implements CustomType {
 	public void generateSourceCode(File plainCodeGeneratedDirectory, File pamelaCodeGeneratedDirectory) {
 		System.out.println("Generate " + name + ".java in " + plainCodeGeneratedDirectory);
 		generatePlainCode(plainCodeGeneratedDirectory);
+		generatePamelaCode(pamelaCodeGeneratedDirectory);
 	}
 
 	private void generatePlainCode(File plainCodeGeneratedDirectory) {
@@ -146,6 +211,34 @@ public class Entity implements CustomType {
 		// String contents = "Coucou+{$name.substring(0,2)}+ prout={$plainPackageName}";
 		try {
 			FileUtils.saveToFile(output, fromTemplate(Templating.PLAIN_JAVA_CLASS_TEMPLATE));
+		} catch (InvalidKeyValuePropertyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TypeMismatchException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullReferenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void generatePamelaCode(File pamelaCodeGeneratedDirectory) {
+		File output = new File(pamelaCodeGeneratedDirectory, name + ".java");
+		System.out.println("File: " + output);
+
+		// Object contents = MultipleParametersBindingEvaluator.evaluateBinding("Coucou+{$name}", this, name);
+		// System.out.println("contents = " + contents + " of " + contents.getClass());
+
+		// String contents = "Coucou+{$name.substring(0,2)}+ prout={$plainPackageName}";
+		try {
+			FileUtils.saveToFile(output, fromTemplate(Templating.PAMELA_JAVA_CLASS_TEMPLATE));
 		} catch (InvalidKeyValuePropertyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

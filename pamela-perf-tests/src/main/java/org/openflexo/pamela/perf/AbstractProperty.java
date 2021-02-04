@@ -46,9 +46,13 @@ public abstract class AbstractProperty {
 		return getterName;
 	}
 
+	public abstract String getPamelaDefaultValue();
+
 	public abstract String getPlainInternalCode();
 
 	public abstract String getPlainGetterCode();
+
+	public abstract String getPamelaGetterCode();
 
 	protected String fromTemplate(String contents)
 			throws InvalidKeyValuePropertyException, TypeMismatchException, NullReferenceException, InvocationTargetException {

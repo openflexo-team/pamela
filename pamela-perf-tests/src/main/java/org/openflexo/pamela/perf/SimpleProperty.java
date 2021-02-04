@@ -23,6 +23,14 @@ public class SimpleProperty extends AbstractProperty {
 	}
 
 	@Override
+	public String getPamelaDefaultValue() {
+		if (TypeUtils.isPrimitive(getType())) {
+			return ", defaultValue=\"0\"";
+		}
+		return "";
+	}
+
+	@Override
 	public String getPlainInternalCode() {
 		try {
 			return fromTemplate(Templating.PLAIN_JAVA_SIMPLE_PROPERTY_INTERNAL_CODE_TEMPLATE);
@@ -69,6 +77,50 @@ public class SimpleProperty extends AbstractProperty {
 			}
 			else {
 				return fromTemplate(Templating.PLAIN_JAVA_PROPERTY_SETTER_CODE_TEMPLATE);
+			}
+		} catch (InvalidKeyValuePropertyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TypeMismatchException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullReferenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public String getPamelaGetterCode() {
+		try {
+			return fromTemplate(Templating.PAMELA_JAVA_SIMPLE_PROPERTY_GETTER_CODE_TEMPLATE);
+		} catch (InvalidKeyValuePropertyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TypeMismatchException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullReferenceException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public String getPamelaSetterCode() {
+		try {
+			if (TypeUtils.isPrimitive(getType())) {
+				return fromTemplate(Templating.PAMELA_JAVA_PRIMITIVE_PROPERTY_SETTER_CODE_TEMPLATE);
+			}
+			else {
+				return fromTemplate(Templating.PAMELA_JAVA_PROPERTY_SETTER_CODE_TEMPLATE);
 			}
 		} catch (InvalidKeyValuePropertyException e) {
 			// TODO Auto-generated catch block
