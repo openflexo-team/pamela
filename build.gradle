@@ -4,9 +4,16 @@ buildscript {
     }
     dependencies {
         classpath group: 'org.openflexo', name: 'buildplugin', version: '0.3'
-        classpath group: 'org.openflexo', name: 'buildconfig', version: '2.1.0'
+        classpath group: 'org.openflexo', name: 'buildconfig', version: '2.1.1'
     }
 }
 
-version = "1.6"
+subprojects {
+	repositories {
+        maven { url "https://maven.openflexo.org/artifactory/openflexo-deps/" }
+  		maven { url "https://maven.openflexo.org/artifactory/openflexo-java10/" }
+    }
+}
+
+version = "1.6.1"
 apply plugin: 'org.openflexo.buildconfig'

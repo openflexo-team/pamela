@@ -10,6 +10,8 @@ import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.patterns.PropertyParadigmType;
+import org.openflexo.pamela.patterns.annotations.Requires;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticationInformation;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authenticator;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequestAuthentication;
@@ -37,6 +39,9 @@ public interface IAuthenticator {
 
 	@Remover(USERS)
 	void removeUser(String val);
+
+	@Requires(patternID = Subject.PATTERN_ID, type = PropertyParadigmType.Java, property = "prout")
+	public void aMethodGuardedWithAPrecondition();
 
 	@RequestAuthentication(patternID = Subject.PATTERN_ID)
 	int request(@AuthenticationInformation(patternID = Subject.PATTERN_ID, paramID = ID) String id);
@@ -68,6 +73,12 @@ public interface IAuthenticator {
 		public int generateFromAuthInfo(String id) {
 			return id.hashCode();
 		}
+
+		@Override
+		public void aMethodGuardedWithAPrecondition() {
+			System.out.println("aMethodGuardedWithAPrecondition");
+		}
+
 	}
 
 }

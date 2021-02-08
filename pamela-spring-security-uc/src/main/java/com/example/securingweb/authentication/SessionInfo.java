@@ -64,6 +64,8 @@ public interface SessionInfo {
 	@AuthenticateMethod(patternID = PATTERN_ID)
 	void authenticate();
 
+	void checkAuthentication();
+
 	@Override
 	public String toString();
 
@@ -80,6 +82,11 @@ public interface SessionInfo {
 		@Override
 		public String toString() {
 			return "SessionInfo userName=" + getUserName() + " (created on " + created + ")";
+		}
+
+		@Override
+		public void checkAuthentication() {
+			System.out.println("checkAuthentication() !");
 		}
 
 	}

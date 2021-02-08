@@ -110,6 +110,8 @@ import org.openflexo.pamela.model.property.SettablePropertyImplementation;
 import org.openflexo.pamela.patterns.ExecutionMonitor;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
+import org.openflexo.pamela.patterns.annotations.Ensures;
+import org.openflexo.pamela.patterns.annotations.Requires;
 import org.openflexo.pamela.undo.AddCommand;
 import org.openflexo.pamela.undo.CreateCommand;
 import org.openflexo.pamela.undo.DeleteCommand;
@@ -285,6 +287,14 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		Set<PatternInstance<?>> patternInstances = getModelFactory().getModelContext().getPatternInstances(self);
 		if (patternInstances != null) {
 			for (PatternInstance<?> patternInstance : patternInstances) {
+				// TODO: Perf issue : implement a cache here
+				List<Requires> preconditions = patternInstance.getPatternDefinition().getPreconditions(method);
+				if (preconditions != null) {
+					System.out.println("Invoking preconditions for " + method + " in pattern instance : " + patternInstance);
+					for (Requires precondition : preconditions) {
+						patternInstance.invokePrecondition(precondition);
+					}
+				}
 				try {
 					ReturnWrapper returnWrapper = patternInstance.processMethodBeforeInvoke(self, method, args);
 					if (returnWrapper != null && !returnWrapper.mustContinue()) {
@@ -328,6 +338,14 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 						monitor.throwingException(self, method, args, e);
 					}
 					throw e.getTargetException();
+				}
+				// TODO: Perf issue : implement a cache here
+				List<Ensures> postconditions = patternInstance.getPatternDefinition().getPostconditions(method);
+				if (postconditions != null) {
+					System.out.println("Invoking postconditions for " + method + " in pattern instance : " + patternInstance);
+					for (Ensures postcondition : postconditions) {
+						patternInstance.invokePostcondition(postcondition);
+					}
 				}
 			}
 		}
