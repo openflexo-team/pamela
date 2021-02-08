@@ -30,7 +30,10 @@ public class MyUserDetails implements UserDetails {
 		return null;
 	}
 	
-	public String getIpAdress
+	/*public String getIpAdress() {
+		// TODO Auto-generated method stub
+		return null;
+	}*/
 
 	@Override
 	public boolean isAccountNonExpired() {

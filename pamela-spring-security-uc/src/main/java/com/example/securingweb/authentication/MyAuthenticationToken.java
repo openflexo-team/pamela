@@ -54,7 +54,7 @@ final class MyAuthenticationToken extends AbstractAuthenticationToken {
 	 * @param credentials
 	 * @param authorities
 	 */
-	public UsernamePasswordAuthenticationToken(Object principal, Object credentials,
+	public MyAuthenticationToken(Object principal, Object credentials,
 			Collection<? extends GrantedAuthority> authorities) {
 		super(authorities);
 		this.principal = principal;

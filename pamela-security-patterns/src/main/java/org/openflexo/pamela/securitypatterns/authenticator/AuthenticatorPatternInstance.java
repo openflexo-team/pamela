@@ -199,7 +199,8 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	@Override
 	public ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Object[] args)
 			throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-
+			
+		System.out.println("On utilise bien le processMethodBeforInvoke");
 		if (instance != getSubject()) {
 			// We are only interested to the method calls on the subject
 			return new ReturnWrapper(true, null);
@@ -214,6 +215,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 		if (PamelaUtils.methodIsEquivalentTo(method, getPatternDefinition().authenticateMethod)) {
 			if (isValid()) {
+				System.out.println("On passe PerformAuthentication normalement");
 				performAuthentication();
 				return new ReturnWrapper(false, null);
 			}
