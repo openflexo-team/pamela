@@ -134,7 +134,7 @@ public class AuthenticatorPatternDefinition extends PatternDefinition {
 			// Not found
 		}
 
-		return false;
+		return super.isMethodInvolvedInPattern(method);
 	}
 
 	@Override
