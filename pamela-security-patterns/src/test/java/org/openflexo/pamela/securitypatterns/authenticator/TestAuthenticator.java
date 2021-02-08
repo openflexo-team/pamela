@@ -165,4 +165,16 @@ public class TestAuthenticator extends TestCase {
 		subject.getAuthInfo();
 		subject.authenticate();
 	}
+
+	@Test
+	public void testCoucou() throws Exception {
+		ModelContext context = new ModelContext(Subject.class);
+		ModelFactory factory = new ModelFactory(context);
+		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
+		Subject subject = factory.newInstance(Subject.class, "id");
+		subject.setManager(manager);
+		// TODO: write a test
+		manager.aMethodGuardedWithAPrecondition();
+	}
+
 }

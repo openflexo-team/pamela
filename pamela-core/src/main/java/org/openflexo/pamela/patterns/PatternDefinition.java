@@ -40,11 +40,18 @@
 package org.openflexo.pamela.patterns;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.patterns.annotations.Ensures;
+import org.openflexo.pamela.patterns.annotations.Requires;
 
 /**
  * Abstract base class for an occurence of an <code>Pattern</code>.<br>
@@ -68,9 +75,14 @@ public abstract class PatternDefinition {
 	private final String identifier; // identifier as found in annotations
 	private final ModelContext modelContext;
 
+	private final Map<Method, List<Requires>> preconditions;
+	private final Map<Method, List<Ensures>> postconditions;
+
 	public PatternDefinition(String identifier, ModelContext modelContext) {
 		this.identifier = identifier;
 		this.modelContext = modelContext;
+		preconditions = new HashMap<>();
+		postconditions = new HashMap<>();
 	}
 
 	public String getIdentifier() {
@@ -83,8 +95,62 @@ public abstract class PatternDefinition {
 
 	public abstract void finalizeDefinition() throws ModelDefinitionException;
 
-	public abstract boolean isMethodInvolvedInPattern(Method m);
+	public boolean isMethodInvolvedInPattern(Method method) {
+		for (Method m : preconditions.keySet()) {
+			if (PamelaUtils.methodIsEquivalentTo(method, m)) {
+				return true;
+			}
+		}
+		for (Method m : postconditions.keySet()) {
+			if (PamelaUtils.methodIsEquivalentTo(method, m)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public List<Requires> getPreconditions(Method method) {
+		List<Requires> returned = preconditions.get(method);
+		if (returned == null) {
+			for (Method m : preconditions.keySet()) {
+				if (PamelaUtils.methodIsEquivalentTo(method, m)) {
+					return preconditions.get(m);
+				}
+			}
+		}
+		return returned;
+	}
+
+	public List<Ensures> getPostconditions(Method method) {
+		List<Ensures> returned = postconditions.get(method);
+		if (returned == null) {
+			for (Method m : postconditions.keySet()) {
+				if (PamelaUtils.methodIsEquivalentTo(method, m)) {
+					return postconditions.get(m);
+				}
+			}
+		}
+		return returned;
+	}
 
 	public abstract <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity);
+
+	public void addToPreconditionsForMethod(Requires precondition, Method method) {
+		List<Requires> l = preconditions.get(method);
+		if (l == null) {
+			l = new ArrayList<>();
+			preconditions.put(method, l);
+		}
+		l.add(precondition);
+	}
+
+	public void addToPostconditionsForMethod(Ensures postcondition, Method method) {
+		List<Ensures> l = postconditions.get(method);
+		if (l == null) {
+			l = new ArrayList<>();
+			postconditions.put(method, l);
+		}
+		l.add(postcondition);
+	}
 
 }

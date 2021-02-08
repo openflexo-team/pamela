@@ -83,43 +83,49 @@ public class AuthenticatorPatternFactory extends AbstractPatternFactory<Authenti
 			}
 		}
 
-		for (Method m : entity.getImplementedInterface().getMethods()) {
-			RequestAuthentication requestAuthenticationMethodAnnotation = m.getAnnotation(RequestAuthentication.class);
-			if (requestAuthenticationMethodAnnotation != null) {
-				AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(requestAuthenticationMethodAnnotation.patternID(),
-						true);
-				patternDefinition.requestAuthentificationMethod = m;
-				int i = 0;
-				for (AnnotatedType annotatedType : m.getAnnotatedParameterTypes()) {
-					System.out.println("i=" + i + " annotatedType = " + annotatedType);
-				}
+		super.discoverEntity(entity);
+	}
 
+	@Override
+	protected void discoverMethod(Method m) {
+
+		super.discoverMethod(m);
+
+		RequestAuthentication requestAuthenticationMethodAnnotation = m.getAnnotation(RequestAuthentication.class);
+		if (requestAuthenticationMethodAnnotation != null) {
+			AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(requestAuthenticationMethodAnnotation.patternID(),
+					true);
+			patternDefinition.requestAuthentificationMethod = m;
+			int i = 0;
+			for (AnnotatedType annotatedType : m.getAnnotatedParameterTypes()) {
+				System.out.println("i=" + i + " annotatedType = " + annotatedType);
 			}
-			AuthenticationInformation authInfoAnnotation = m.getAnnotation(AuthenticationInformation.class);
-			if (authInfoAnnotation != null) {
-				AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(authInfoAnnotation.patternID(), true);
-				patternDefinition.authentificationInfoMethod = m;
-			}
-			ProofOfIdentitySetter proofOfIdentitySetterAnnotation = m.getAnnotation(ProofOfIdentitySetter.class);
-			if (proofOfIdentitySetterAnnotation != null) {
-				AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(proofOfIdentitySetterAnnotation.patternID(), true);
-				patternDefinition.proofOfIdentitySetterMethod = m;
-			}
-			ProofOfIdentityGetter proofOfIdentityGetterAnnotation = m.getAnnotation(ProofOfIdentityGetter.class);
-			if (proofOfIdentityGetterAnnotation != null) {
-				AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(proofOfIdentityGetterAnnotation.patternID(), true);
-				patternDefinition.proofOfIdentityGetterMethod = m;
-			}
-			AuthenticatorGetter authenticatorGetterAnnotation = m.getAnnotation(AuthenticatorGetter.class);
-			if (authenticatorGetterAnnotation != null) {
-				AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(authenticatorGetterAnnotation.patternID(), true);
-				patternDefinition.authenticatorGetterMethod = m;
-			}
-			AuthenticateMethod authenticateMethodAnnotation = m.getAnnotation(AuthenticateMethod.class);
-			if (authenticateMethodAnnotation != null) {
-				AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(authenticateMethodAnnotation.patternID(), true);
-				patternDefinition.authenticateMethod = m;
-			}
+
+		}
+		AuthenticationInformation authInfoAnnotation = m.getAnnotation(AuthenticationInformation.class);
+		if (authInfoAnnotation != null) {
+			AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(authInfoAnnotation.patternID(), true);
+			patternDefinition.authentificationInfoMethod = m;
+		}
+		ProofOfIdentitySetter proofOfIdentitySetterAnnotation = m.getAnnotation(ProofOfIdentitySetter.class);
+		if (proofOfIdentitySetterAnnotation != null) {
+			AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(proofOfIdentitySetterAnnotation.patternID(), true);
+			patternDefinition.proofOfIdentitySetterMethod = m;
+		}
+		ProofOfIdentityGetter proofOfIdentityGetterAnnotation = m.getAnnotation(ProofOfIdentityGetter.class);
+		if (proofOfIdentityGetterAnnotation != null) {
+			AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(proofOfIdentityGetterAnnotation.patternID(), true);
+			patternDefinition.proofOfIdentityGetterMethod = m;
+		}
+		AuthenticatorGetter authenticatorGetterAnnotation = m.getAnnotation(AuthenticatorGetter.class);
+		if (authenticatorGetterAnnotation != null) {
+			AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(authenticatorGetterAnnotation.patternID(), true);
+			patternDefinition.authenticatorGetterMethod = m;
+		}
+		AuthenticateMethod authenticateMethodAnnotation = m.getAnnotation(AuthenticateMethod.class);
+		if (authenticateMethodAnnotation != null) {
+			AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(authenticateMethodAnnotation.patternID(), true);
+			patternDefinition.authenticateMethod = m;
 		}
 	}
 

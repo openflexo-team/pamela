@@ -5,6 +5,8 @@ import org.openflexo.pamela.annotations.Import;
 import org.openflexo.pamela.annotations.Imports;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.patterns.PropertyParadigmType;
+import org.openflexo.pamela.patterns.annotations.Requires;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticationInformation;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authenticator;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequestAuthentication;
@@ -32,6 +34,16 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 	public void setUserDetailsService(UserDetailsService userDetailsService);
 
 	@Override
+	@Requires(patternID = SessionInfo.PATTERN_ID, type = PropertyParadigmType.TemporalLogic, property = "occurences(3).time < 1h")
+	// Another idea :
+	// event e1,e2,e3
+	// {
+	// event e = generateEvent();
+	// if (e1 != null) then assert (e.time - e1.time < 1h);
+	// if (e1 == null) e1 <- e; else e1 <- e2;
+	// if (e2 == null) e2 <- e; else e2 <- e3;
+	// if (e3 == null) e3 <- e;
+	// }
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException;
 
 	@RequestAuthentication(patternID = SessionInfo.PATTERN_ID)

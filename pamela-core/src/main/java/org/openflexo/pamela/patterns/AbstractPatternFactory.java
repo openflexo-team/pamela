@@ -40,12 +40,15 @@
 package org.openflexo.pamela.patterns;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.model.ModelEntity;
+import org.openflexo.pamela.patterns.annotations.Ensures;
+import org.openflexo.pamela.patterns.annotations.Requires;
 
 /**
  * Abstract base class for a {@link PatternDefinition} factory
@@ -87,6 +90,26 @@ public abstract class AbstractPatternFactory<P extends PatternDefinition> {
 		return patternDefinitions;
 	}
 
-	public abstract void discoverEntity(ModelEntity<?> entity);
+	public void discoverEntity(ModelEntity<?> entity) {
+		for (Method m : entity.getImplementedInterface().getMethods()) {
+			discoverMethod(m);
+		}
+	}
 
+	protected void discoverMethod(Method m) {
+		Requires requiresAnnotation = m.getAnnotation(Requires.class);
+		if (requiresAnnotation != null) {
+			PatternDefinition patternDefinition = getPatternDefinition(requiresAnnotation.patternID(), false);
+			if (patternDefinition != null) {
+				patternDefinition.addToPreconditionsForMethod(requiresAnnotation, m);
+			}
+		}
+		Ensures ensuresAnnotation = m.getAnnotation(Ensures.class);
+		if (ensuresAnnotation != null) {
+			PatternDefinition patternDefinition = getPatternDefinition(ensuresAnnotation.patternID(), false);
+			if (patternDefinition != null) {
+				patternDefinition.addToPostconditionsForMethod(ensuresAnnotation, m);
+			}
+		}
+	}
 }
