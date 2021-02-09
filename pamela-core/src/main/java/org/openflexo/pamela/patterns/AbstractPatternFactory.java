@@ -68,7 +68,7 @@ public abstract class AbstractPatternFactory<P extends PatternDefinition> {
 		this.modelContext = modelContext;
 	}
 
-	private Class<P> getPatternDefinitionClass() {
+	protected Class<? extends P> getPatternDefinitionClass() {
 		return (Class<P>) TypeUtils.getTypeArgument(getClass(), AbstractPatternFactory.class, 0);
 	}
 
@@ -76,7 +76,7 @@ public abstract class AbstractPatternFactory<P extends PatternDefinition> {
 		P returned = patternDefinitions.get(patternId);
 		if (returned == null && createWhenNonExistant) {
 			try {
-				Constructor<P> constructor = getPatternDefinitionClass().getConstructor(String.class, ModelContext.class);
+				Constructor<? extends P> constructor = getPatternDefinitionClass().getConstructor(String.class, ModelContext.class);
 				returned = constructor.newInstance(patternId, modelContext);
 				patternDefinitions.put(patternId, returned);
 			} catch (Exception e) {

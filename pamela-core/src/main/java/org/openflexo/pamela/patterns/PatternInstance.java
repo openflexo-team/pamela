@@ -90,15 +90,23 @@ public abstract class PatternInstance<P extends PatternDefinition> {
 	public abstract void processMethodAfterInvoke(Object instance, Method method, Object returnValue, Object[] args)
 			throws InvocationTargetException, IllegalAccessException, NoSuchMethodException;
 
-	public void invokePrecondition(Requires precondition) {
+	/**
+	 * Called to process related precondition before invoking supplied method<br>
+	 * 
+	 * @param precondition
+	 * @param method
+	 */
+	public void invokePrecondition(Requires precondition, Method method) {
 		System.out.println("Invoking precondition " + precondition.property());
-		if (precondition.property().equals("occurences(3).time < 1h")) {
-			System.out.println("C'est la que je dois implanter ma propriete");
-			System.exit(-1);
-		}
 	}
 
-	public void invokePostcondition(Ensures postcondition) {
+	/**
+	 * Called to process related postcondition after invoking supplied method<br>
+	 * 
+	 * @param postcondition
+	 * @param method
+	 */
+	public void invokePostcondition(Ensures postcondition, Method method) {
 		System.out.println("Invoking postcondition " + postcondition.property());
 	}
 }
