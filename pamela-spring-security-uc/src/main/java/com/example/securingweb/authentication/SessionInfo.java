@@ -46,6 +46,9 @@ public interface SessionInfo {
 	
 	@Setter(IP_ADRESS)
 	void setIpAdress(String val);
+	
+	@Getter(value = IP_ADRESS, ignoreType = true)
+	String getIpAdress();
 
 	@Getter(value = ID_PROOF, ignoreType = true)
 	UsernamePasswordAuthenticationToken getIDProof();
@@ -62,7 +65,9 @@ public interface SessionInfo {
 	void setAuthenticationProvider(CustomAuthenticationProvider val);
 
 	@AuthenticateMethod(patternID = PATTERN_ID)
-	void authenticate();
+	void authenticate() 
+		// expected : performAuthentication();
+	;
 
 	void checkAuthentication();
 
