@@ -29,8 +29,6 @@ public class MyUserDetails implements UserDetails {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	public String getIpAdress
 
 	@Override
 	public boolean isAccountNonExpired() {

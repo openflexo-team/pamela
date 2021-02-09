@@ -1,21 +1,10 @@
 package com.example.securingweb.authentication;
 
+import java.util.Collection;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.SpringSecurityCoreVersion;
-import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticationInformation;
-
-import java.util.Collection;
-
-import org.openflexo.pamela.annotations.ImplementationClass;
-import org.openflexo.pamela.annotations.Import;
-import org.openflexo.pamela.annotations.Imports;
-import org.openflexo.pamela.annotations.ModelEntity;
-import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authenticator;
-import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequestAuthentication;
-
 
 //@AuthenticationInformation(patternID = SessionInfo.PATTERN_ID, paramID = USER_NAME)
 final class MyAuthenticationToken extends AbstractAuthenticationToken {
@@ -32,9 +21,8 @@ final class MyAuthenticationToken extends AbstractAuthenticationToken {
 	// ===================================================================================================
 
 	/**
-	 * This constructor can be safely used by any code that wishes to create a
-	 * <code>UsernamePasswordAuthenticationToken</code>, as the {@link #isAuthenticated()}
-	 * will return <code>false</code>.
+	 * This constructor can be safely used by any code that wishes to create a <code>UsernamePasswordAuthenticationToken</code>, as the
+	 * {@link #isAuthenticated()} will return <code>false</code>.
 	 *
 	 */
 	public MyAuthenticationToken(Object principal, Object credentials) {
@@ -45,17 +33,14 @@ final class MyAuthenticationToken extends AbstractAuthenticationToken {
 	}
 
 	/**
-	 * This constructor should only be used by <code>AuthenticationManager</code> or
-	 * <code>AuthenticationProvider</code> implementations that are satisfied with
-	 * producing a trusted (i.e. {@link #isAuthenticated()} = <code>true</code>)
-	 * authentication token.
+	 * This constructor should only be used by <code>AuthenticationManager</code> or <code>AuthenticationProvider</code> implementations
+	 * that are satisfied with producing a trusted (i.e. {@link #isAuthenticated()} = <code>true</code>) authentication token.
 	 *
 	 * @param principal
 	 * @param credentials
 	 * @param authorities
 	 */
-	public UsernamePasswordAuthenticationToken(Object principal, Object credentials,
-			Collection<? extends GrantedAuthority> authorities) {
+	public MyAuthenticationToken(Object principal, Object credentials, Collection<? extends GrantedAuthority> authorities) {
 		super(authorities);
 		this.principal = principal;
 		this.credentials = credentials;
@@ -65,14 +50,17 @@ final class MyAuthenticationToken extends AbstractAuthenticationToken {
 	// ~ Methods
 	// ========================================================================================================
 
+	@Override
 	public Object getCredentials() {
 		return this.credentials;
 	}
 
+	@Override
 	public Object getPrincipal() {
 		return this.principal;
 	}
 
+	@Override
 	public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
 		if (isAuthenticated) {
 			throw new IllegalArgumentException(
@@ -88,4 +76,3 @@ final class MyAuthenticationToken extends AbstractAuthenticationToken {
 		credentials = null;
 	}
 }
-
