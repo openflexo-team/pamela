@@ -57,6 +57,7 @@ import java.util.StringTokenizer;
 
 import javax.annotation.Nonnull;
 
+import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
@@ -329,41 +330,69 @@ public class ModelContext {
 	private void discoverPatterns() throws ModelDefinitionException {
 		ServiceLoader<PatternLibrary> loader = ServiceLoader.load(PatternLibrary.class);
 
+		List<Class<? extends AbstractPatternFactory<?>>> factories = new ArrayList<>();
+
+		// We iterate on all PatternLibrary to list all PatternFactory
+		// Overriden PatternLibrary found in that context are ignored
 		for (PatternLibrary patternLibrary : loader) {
-			// System.out.println("Found PatternLibrary: " + patternLibrary);
 			DeclarePatterns declarePatterns = patternLibrary.getClass().getAnnotation(DeclarePatterns.class);
 			for (Class<? extends AbstractPatternFactory<?>> factoryClass : declarePatterns.value()) {
-				// System.out.println("Analysing pattern: " + factoryClass);
-				try {
-					Constructor<? extends AbstractPatternFactory<?>> constructor = factoryClass.getConstructor(ModelContext.class);
-					AbstractPatternFactory<?> patternFactory = constructor.newInstance(this);
-					patternFactories.add(patternFactory);
-					for (ModelEntity<?> modelEntity : modelEntities.values()) {
-						patternFactory.discoverEntity(modelEntity);
+				Class<? extends AbstractPatternFactory<?>> overridenFactory = null;
+				boolean isOverriden = false;
+				for (Class<? extends AbstractPatternFactory<?>> f : factories) {
+					if (TypeUtils.isTypeAssignableFrom(f, factoryClass)) {
+						// factoryClass overrides f
+						overridenFactory = f;
 					}
-					// System.out.println("patternDefinitions= " + patternFactory.getPatternDefinitions());
-					for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
-						patternDefinition.finalizeDefinition();
+					if (TypeUtils.isTypeAssignableFrom(factoryClass, f)) {
+						// f overrides factoryClass
+						isOverriden = true;
 					}
-				} catch (InstantiationException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IllegalArgumentException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InvocationTargetException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NoSuchMethodException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (SecurityException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
 				}
+				if (overridenFactory != null) {
+					factories.remove(overridenFactory);
+				}
+				if (!isOverriden) {
+					factories.add(factoryClass);
+				}
+			}
+		}
+
+		for (Class<? extends AbstractPatternFactory<?>> f : factories) {
+			System.out.println("Registered pattern : " + f);
+		}
+
+		for (Class<? extends AbstractPatternFactory<?>> factoryClass : factories) {
+			// System.out.println("Analysing pattern: " + factoryClass);
+			try {
+				Constructor<? extends AbstractPatternFactory<?>> constructor = factoryClass.getConstructor(ModelContext.class);
+				AbstractPatternFactory<?> patternFactory = constructor.newInstance(this);
+				patternFactories.add(patternFactory);
+				for (ModelEntity<?> modelEntity : modelEntities.values()) {
+					patternFactory.discoverEntity(modelEntity);
+				}
+				// System.out.println("patternDefinitions= " + patternFactory.getPatternDefinitions());
+				for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
+					patternDefinition.finalizeDefinition();
+				}
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}

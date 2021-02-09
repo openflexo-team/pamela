@@ -292,7 +292,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				if (preconditions != null) {
 					System.out.println("Invoking preconditions for " + method + " in pattern instance : " + patternInstance);
 					for (Requires precondition : preconditions) {
-						patternInstance.invokePrecondition(precondition);
+						patternInstance.invokePrecondition(precondition, method);
 					}
 				}
 				try {
@@ -344,7 +344,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				if (postconditions != null) {
 					System.out.println("Invoking postconditions for " + method + " in pattern instance : " + patternInstance);
 					for (Ensures postcondition : postconditions) {
-						patternInstance.invokePostcondition(postcondition);
+						patternInstance.invokePostcondition(postcondition, method);
 					}
 				}
 			}
