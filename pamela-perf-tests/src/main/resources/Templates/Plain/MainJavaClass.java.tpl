@@ -6,7 +6,7 @@ import org.openflexo.pamela.perf.TestRunnable;
 /**
   * Automatically generated
   */
-public class Main {
+public class PlainCode {
 
 	public static int entitiesCreated = 0;
 

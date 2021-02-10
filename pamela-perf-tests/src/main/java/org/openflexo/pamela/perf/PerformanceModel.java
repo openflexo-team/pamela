@@ -64,7 +64,7 @@ public class PerformanceModel {
 	}
 
 	private void generatePlainMainClass(File plainCodeGeneratedDirectory) {
-		File output = new File(plainCodeGeneratedDirectory, "Main.java");
+		File output = new File(plainCodeGeneratedDirectory, "PlainCode.java");
 		System.out.println("File: " + output);
 
 		// Object contents = MultipleParametersBindingEvaluator.evaluateBinding("Coucou+{$name}", this, name);
@@ -92,7 +92,7 @@ public class PerformanceModel {
 	}
 
 	private void generatePamelaMainClass(File pamelaCodeGeneratedDirectory) {
-		File output = new File(pamelaCodeGeneratedDirectory, "Main.java");
+		File output = new File(pamelaCodeGeneratedDirectory, "PamelaCode.java");
 		System.out.println("File: " + output);
 
 		// Object contents = MultipleParametersBindingEvaluator.evaluateBinding("Coucou+{$name}", this, name);

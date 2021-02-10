@@ -14,7 +14,7 @@ public class {$name} {
 {$propertiesInternalCode}
 
 	public {$name}() {
-		Main.entitiesCreated++;
+		PlainCode.entitiesCreated++;
 {$constructorInternalCode}
 	}
 
