@@ -2,8 +2,8 @@
 
 There are several way to get and/or use Pamela.
 
-- 1. You just want to use (test) PAMELA (you are a developer and you want to define your first PAMELA model)
-- 2. You want to download PAMELA sources, review the code, run the tests, define your own annotations, implementations, and contribute to the project
+1. You just want to use (test) PAMELA (you are a developer and you want to define your first PAMELA model)
+2. You want to download PAMELA sources, review the code, run the tests, define your own annotations, implementations, and contribute to the project
 
 ### 1. You want to use PAMELA
 
@@ -13,6 +13,11 @@ You just need to bring Pamela artifacts in your environment.
 - The Pamela artifacts (snapshot releases) are published in the following maven repository [https://maven.openflexo.org/artifactory/openflexo-deps](https://maven.openflexo.org/artifactory/openflexo-deps)
 - 1.5 is the last stable version
 - 1.6.1(-SNAPSHOT) is the current development version (default)
+
+**Prerequisite**
+
+- [Maven](https://maven.apache.org/) or [Gradle](https://gradle.org)
+- Using an IDE (such as Eclise or IntelliJ) is recommended and might help
 
 #### 1.1. Use PAMELA with gradle
 
