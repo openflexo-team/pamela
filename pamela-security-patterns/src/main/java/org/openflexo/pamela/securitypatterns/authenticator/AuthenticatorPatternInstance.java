@@ -146,7 +146,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	 * @throws IllegalAccessException
 	 * 
 	 */
-	void performAuthentication() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	 void performAuthentication() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
 		System.out.println("performAuthentication() !!!");
 
@@ -158,10 +158,14 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 			setProofOfIdentity(proofOfIdentity);
 			if (proofOfIdentity != null) {
 				isAuthenticated = true;
+				authenticationSuceeded();
 			}
 		} finally {
 			isAuthenticating = false;
 		}
+	}
+	 
+	public void authenticationSuceeded() {
 	}
 
 	public boolean isAuthenticated() {

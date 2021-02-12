@@ -44,24 +44,118 @@ import java.lang.reflect.Method;
 import org.openflexo.pamela.patterns.annotations.Requires;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternDefinition;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternInstance;
+import com.example.securingweb.authentication.SessionInfo;
+
+
+import java.util.concurrent.TimeUnit;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+
 
 /**
  * A specialization for {@link AuthenticatorPatternDefinition}
  */
 public class CustomAuthenticatorPatternInstance<A, S, AI, PI> extends AuthenticatorPatternInstance<A, S, AI, PI> {
 
+	String key;
+    private final int MAX_ATTEMPT = 3;
+    LoadingCache<String, Integer> attemptsCache;
+    boolean isBlocked;
+
 	public CustomAuthenticatorPatternInstance(CustomAuthenticatorPatternDefinition patternDefinition, S subject) {
 		super(patternDefinition, subject);
+		key = ((SessionInfo)subject).getIpAdress();
+	    attemptsCache = CacheBuilder.newBuilder().
+	    expireAfterWrite(3, TimeUnit.MINUTES).build(new CacheLoader<String, Integer>() {
+	            public Integer load(String key) {
+	                return 0;
+	            }
+	    
+	    });
 	}
-
+	
 	@Override
 	public void invokePrecondition(Requires precondition, Method method) {
 		super.invokePrecondition(precondition, method);
-		if (precondition.property().equals("occurences(3).time < 1h")) {
+		if (precondition.property().equals("assert always auth_fail[*3] & time_limit<3min @ (auth_fail)")) {
 			System.out.println("J'appelle la methode " + method + " pour " + method.getDeclaringClass());
-			System.out.println("C'est la que je dois implanter ma propriete");
-			System.exit(-1);
-		}
-	}
 
+		    
+		    System.out.printf("LA CLE VAUT " + key + "\n");
+		    
+		    if (attemptsCache.getUnchecked(key) >= MAX_ATTEMPT) {
+		    	isBlocked = true;
+		    }
+
+		    else {
+		    	int attempts = 0;
+		        attempts = attemptsCache.getUnchecked(key);
+		        attempts++;
+		        System.out.printf("La tentative numéro " + attempts + " a échoué\n");
+		        attemptsCache.put(key, attempts);
+		        System.out.println("L'authentification a échoué, la valeur dans le cache augmente de 1 \n");
+		    }
+		    
+		    
+		  
+		
+		}
+		
+/*		else if (precondition.property().equals("assert always not(a)[*0:10];a")) {
+			
+		    private final int MAX_ATTEMPT = 10;
+		    private LoadingCache<String, Integer> attemptsCache;
+
+		    attemptsCache = CacheBuilder.newBuilder().
+		    expireAfterWrite(1, TimeUnit.DAYS).build(new CacheLoader<String, Integer>() {
+		            public Integer load(String key) {
+		                return 0;
+		            }
+		    
+		    });
+		        
+
+		    public void loginSucceeded(String key) {
+		        attemptsCache.invalidate(key);
+		    }
+
+		    public void loginFailed(String key) {
+		        int attempts = 0;
+		        try {
+		            attempts = attemptsCache.get(key);
+		        } catch (ExecutionException e) {
+		            attempts = 0;
+		        }
+		        attempts++;
+		        attemptsCache.put(key, attempts);
+		    }
+
+		    public boolean isBlocked(String key) {
+		        try {
+		            return attemptsCache.get(key) >= MAX_ATTEMPT;
+		        } catch (ExecutionException e) {
+		            return false;
+		     }
+		  }
+			
+		}*/
+		
+		
+	}
+	
+	@Override
+	public void authenticationSuceeded() {
+		// TODO Auto-generated method stub
+		super.authenticationSuceeded();
+        attemptsCache.invalidate(key);
+        System.out.println("L'authentification a réussi, le cache est réinitialisé \n");
+
+	}
 }
+		
+		
+	
+
+

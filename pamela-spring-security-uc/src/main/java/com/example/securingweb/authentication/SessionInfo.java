@@ -86,7 +86,7 @@ public interface SessionInfo {
 
 		@Override
 		public String toString() {
-			return "SessionInfo userName=" + getUserName() + " (created on " + created + ")";
+			return "SessionInfo userName=" + getUserName() + "  SessionInfo IpAdress=" + getIpAdress() + "(created on " + created + ")";
 		}
 
 		@Override
@@ -94,6 +94,11 @@ public interface SessionInfo {
 			System.out.println("checkAuthentication() !");
 		}
 
+		@Override
+		public String getIpAdress() {
+			return ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes())
+			           .getRequest().getRemoteAddr();
+		}
 	}
 
 	public static SessionInfo getCurrentSessionInfo() {
