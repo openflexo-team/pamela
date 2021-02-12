@@ -61,7 +61,6 @@ ModelFactory factory  = new ModelFactory(modelContext);
 
 // Instantiate a Library
 Library myLibrary = factory.newInstance(Library.class);
-myLibrary.setName("My library");
 
 // Instantiate some Books
 Book myFirstBook = factory.newInstance(Book.class, "Lord of the ring");
