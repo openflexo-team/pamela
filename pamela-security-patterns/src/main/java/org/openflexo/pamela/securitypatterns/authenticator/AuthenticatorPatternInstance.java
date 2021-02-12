@@ -96,7 +96,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 	public boolean isValid() {
 		// Perform here required checks
-		return subject != null && getAuthenticator() /*authenticator*/ != null;
+		return subject != null && getAuthenticator() != null;
 	}
 
 	public S getSubject() {
@@ -132,7 +132,8 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == subject) {
-			// System.out.println("propertyChange from subject " + evt.getPropertyName() + " evt=" + evt);
+			// System.out.println("propertyChange from subject " + evt.getPropertyName() + "
+			// evt=" + evt);
 			checkAuthenticator();
 		}
 	}
@@ -145,7 +146,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	 * @throws IllegalAccessException
 	 * 
 	 */
-	void performAuthentication() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	 void performAuthentication() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
 		System.out.println("performAuthentication() !!!");
 
@@ -157,10 +158,14 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 			setProofOfIdentity(proofOfIdentity);
 			if (proofOfIdentity != null) {
 				isAuthenticated = true;
+				authenticationSuceeded();
 			}
 		} finally {
 			isAuthenticating = false;
 		}
+	}
+	 
+	public void authenticationSuceeded() {
 	}
 
 	public boolean isAuthenticated() {
@@ -198,7 +203,8 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	@Override
 	public ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Object[] args)
 			throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-
+			
+		System.out.println("On utilise bien le processMethodBeforInvoke");
 		if (instance != getSubject()) {
 			// We are only interested to the method calls on the subject
 			return new ReturnWrapper(true, null);
@@ -213,6 +219,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 		if (PamelaUtils.methodIsEquivalentTo(method, getPatternDefinition().authenticateMethod)) {
 			if (isValid()) {
+				System.out.println("On passe PerformAuthentication normalement");
 				performAuthentication();
 				return new ReturnWrapper(false, null);
 			}
@@ -259,7 +266,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	 */
 	void checkBeforeInvoke(Object instance, Method method, Object[] args)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		System.out.println(" ------- checkBeforeInvoke " + method);
+		// System.out.println(" ------- checkBeforeInvoke " + method);
 		if (isValid()) {
 			isChecking = true;
 			try {
@@ -304,7 +311,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	 * @throws IllegalAccessException
 	 */
 	private void checkInvariant() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		System.out.println("checkInvariant() for " + this);
+		// System.out.println("checkInvariant() for " + this);
 		this.checkAuthInfoUniqueness();
 		this.checkAuthenticatorIsFinal();
 		this.checkAuthInfoIsFinal();
@@ -391,11 +398,17 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	private void checkAuthInfoUniqueness() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
 		AI currentAuthInfo = retrieveAuthentificationInformation();
-		for (PatternInstance<AuthenticatorPatternDefinition> pi : getModelContext().getPatternInstances(getPatternDefinition())) {
-			AuthenticatorPatternInstance otherInstance = (AuthenticatorPatternInstance) pi;
-			if (otherInstance != this) {
-				if (currentAuthInfo.equals(otherInstance.retrieveAuthentificationInformation())) {
-					throw new ModelExecutionException("Subject Invariant Violation: Authentication information are not unique");
+		if (currentAuthInfo != null) {
+			for (PatternInstance<AuthenticatorPatternDefinition> pi : getModelContext().getPatternInstances(getPatternDefinition())) {
+				AuthenticatorPatternInstance otherInstance = (AuthenticatorPatternInstance) pi;
+				AI oppositeAuthInfo = (AI) otherInstance.retrieveAuthentificationInformation();
+				if (otherInstance != this) {
+					if (currentAuthInfo.equals(oppositeAuthInfo)) {
+						System.out.println("Tiens j'ai trouve des AuthInfo identiques");
+						System.out.println("currentAuthInfo=" + currentAuthInfo);
+						System.out.println("oppositeAuthInfo=" + oppositeAuthInfo);
+						throw new ModelExecutionException("Subject Invariant Violation: Authentication information are not unique");
+					}
 				}
 			}
 		}

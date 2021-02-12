@@ -44,6 +44,8 @@ import java.lang.reflect.Method;
 import java.net.Authenticator;
 
 import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.patterns.annotations.Ensures;
+import org.openflexo.pamela.patterns.annotations.Requires;
 
 /**
  * Abstract base class for an instance of a {@link PatternDefinition}<br>
@@ -88,4 +90,23 @@ public abstract class PatternInstance<P extends PatternDefinition> {
 	public abstract void processMethodAfterInvoke(Object instance, Method method, Object returnValue, Object[] args)
 			throws InvocationTargetException, IllegalAccessException, NoSuchMethodException;
 
+	/**
+	 * Called to process related precondition before invoking supplied method<br>
+	 * 
+	 * @param precondition
+	 * @param method
+	 */
+	public void invokePrecondition(Requires precondition, Method method) throws PropertyViolationException {
+		System.out.println("Invoking precondition " + precondition.property());
+	}
+
+	/**
+	 * Called to process related postcondition after invoking supplied method<br>
+	 * 
+	 * @param postcondition
+	 * @param method
+	 */
+	public void invokePostcondition(Ensures postcondition, Method method) throws PropertyViolationException {
+		System.out.println("Invoking postcondition " + postcondition.property());
+	}
 }

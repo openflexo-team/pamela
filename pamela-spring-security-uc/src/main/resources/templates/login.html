@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <title>Brest Market Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
+    <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="fonts/Linearicons-Free-v1.0.0/icon-font.min.css">
+    <link rel="stylesheet" type="text/css" href="css/util_login.css">
+    <link rel="stylesheet" type="text/css" href="css/main_login.css">
+</head>
+<body>
+<div th:if="${param.error}">
+    Invalid username and password.
+</div>
+<div th:if="${param.logout}">
+    You have been logged out.
+</div>
+
+<div class="limiter">
+    <div class="container-login100" style="background-image: url('images/brest.jpg');">
+        <div class="wrap-login100 p-t-190 p-b-30">
+            <form class="login100-form validate-form" th:action="@{/dologin}" method="post">
+                <div class="login100-form-avatar">
+                    <img src="images/avatar-01.jpg" alt="AVATAR">
+                </div>
+
+                <span class="login100-form-title p-t-20 p-b-45">
+						Brest Market
+					</span>
+
+                <div class="wrap-input100 validate-input m-b-10" data-validate = "Email is required">
+                    <input class="input100" type="text" name="username" placeholder="Email">
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+							<i class="fa fa-envelope"></i>
+						</span>
+                </div>
+
+                <div class="wrap-input100 validate-input m-b-10" data-validate = "Password is required">
+                    <input class="input100" type="password" name="password" placeholder="Password">
+                    <span class="focus-input100"></span>
+                    <span class="symbol-input100">
+							<i class="fa fa-lock"></i>
+						</span>
+                </div>
+
+                <div class="container-login100-form-btn p-t-10">
+                    <input type="submit" class="login100-form-btn" value="Sign In">
+                </div>
+		 </form>
+                <div class="text-center w-full p-t-25 p-b-230">
+                    <a href="forgot" class="txt1">
+                        Forgot your password?
+                    </a>
+                </div>
+
+                <div class="text-center w-full">
+                    <a class="txt1" th:href="@{/register}">
+                        Create new account
+                        <i class="fa fa-long-arrow-right"></i>
+                    </a>
+                </div>
+            
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<script src="js/main_login.js"></script>
+
+</body>
+</html>
