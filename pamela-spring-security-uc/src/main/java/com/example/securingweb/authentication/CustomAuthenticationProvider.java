@@ -34,8 +34,12 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 	public void setUserDetailsService(UserDetailsService userDetailsService);
 
 	@Override
-	@Requires(patternID = SessionInfo.PATTERN_ID, type = PropertyParadigmType.TemporalLogic, property = "assert always auth_fail[*3] & time_limit<3min @ (auth_fail)")
-	//@Requires(patternID = SessionInfo.PATTERN_ID, type = PropertyParadigmType.TemporalLogic, property = "assert always not(a)[*0:10];a")
+	@Requires(
+			patternID = SessionInfo.PATTERN_ID,
+			type = PropertyParadigmType.TemporalLogic,
+			property = "assert always auth_fail[*3] & time_limit<3min @ (auth_fail)"/*,
+																					exceptionWhenViolated = TooManyLoginAttemptsException.class*/)
+	// @Requires(patternID = SessionInfo.PATTERN_ID, type = PropertyParadigmType.TemporalLogic, property = "assert always not(a)[*0:10];a")
 	// Another idea :
 	// event e1,e2,e3
 	// {

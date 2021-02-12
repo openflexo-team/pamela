@@ -45,6 +45,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.openflexo.pamela.patterns.PatternDefinition;
+import org.openflexo.pamela.patterns.PostconditionViolationException;
 import org.openflexo.pamela.patterns.PropertyParadigmType;
 
 /**
@@ -72,5 +73,12 @@ public @interface Ensures {
 	 * @return The property, serialized as text
 	 */
 	String property();
+
+	/**
+	 * Return exception class to throw if this property has been violated
+	 * 
+	 * @return
+	 */
+	Class<? extends Exception> exceptionWhenViolated() default PostconditionViolationException.class;
 
 }

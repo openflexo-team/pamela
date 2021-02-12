@@ -37,48 +37,43 @@
  * 
  */
 
-package org.openflexo.pamela.patterns.annotations;
+package org.openflexo.pamela.patterns;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.openflexo.pamela.patterns.PatternDefinition;
-import org.openflexo.pamela.patterns.PreconditionViolationException;
-import org.openflexo.pamela.patterns.PropertyParadigmType;
+import org.openflexo.pamela.patterns.annotations.Requires;
 
 /**
- * Defines a property evaluated as a precondition for a given method, in the context of a given {@link PatternDefinition}, and expressed in
- * related paradigm
+ * Thrown when a property defined as precondition has been violated
  * 
  * @author sylvain
- *
+ * 
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.METHOD)
-public @interface Requires {
+@SuppressWarnings("serial")
+public class PreconditionViolationException extends PropertyViolationException {
 
-	/**
-	 * @return The unique identifier of the associated Authenticator Pattern instance.
-	 */
-	String patternID();
+	private Requires precondition;
 
-	/**
-	 * @return The property paradigm in which this expression is expressed
-	 */
-	PropertyParadigmType type();
+	public PreconditionViolationException(Requires precondition) {
+		super();
+		this.precondition = precondition;
+	}
 
-	/**
-	 * @return The property, serialized as text
-	 */
-	String property();
+	public Requires getPrecondition() {
+		return precondition;
+	}
 
-	/**
-	 * Return exception class to throw if this property has been violated
-	 * 
-	 * @return
-	 */
-	Class<? extends Exception> exceptionWhenViolated() default PreconditionViolationException.class;
+	@Override
+	public String getPatternID() {
+		return precondition.patternID();
+	}
+
+	@Override
+	public PropertyParadigmType getPropertyType() {
+		return precondition.type();
+	}
+
+	@Override
+	public String getProperty() {
+		return precondition.property();
+	}
 
 }

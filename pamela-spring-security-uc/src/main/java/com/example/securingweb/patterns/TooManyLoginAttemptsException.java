@@ -37,48 +37,26 @@
  * 
  */
 
-package org.openflexo.pamela.patterns.annotations;
+package com.example.securingweb.patterns;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.openflexo.pamela.patterns.PatternDefinition;
-import org.openflexo.pamela.patterns.PreconditionViolationException;
-import org.openflexo.pamela.patterns.PropertyParadigmType;
+import org.springframework.security.core.AuthenticationException;
 
 /**
- * Defines a property evaluated as a precondition for a given method, in the context of a given {@link PatternDefinition}, and expressed in
- * related paradigm
+ * Thrown when too many unsuccessfull attempts were performed
  * 
  * @author sylvain
- *
+ * 
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.METHOD)
-public @interface Requires {
+@SuppressWarnings("serial")
+public class TooManyLoginAttemptsException extends AuthenticationException {
 
-	/**
-	 * @return The unique identifier of the associated Authenticator Pattern instance.
-	 */
-	String patternID();
+	public TooManyLoginAttemptsException(String msg, Throwable t) {
+		super(msg, t);
+		System.out.println("Too many login attempts !!!!!!! " + msg);
+	}
 
-	/**
-	 * @return The property paradigm in which this expression is expressed
-	 */
-	PropertyParadigmType type();
-
-	/**
-	 * @return The property, serialized as text
-	 */
-	String property();
-
-	/**
-	 * Return exception class to throw if this property has been violated
-	 * 
-	 * @return
-	 */
-	Class<? extends Exception> exceptionWhenViolated() default PreconditionViolationException.class;
+	public TooManyLoginAttemptsException(String msg) {
+		super(msg);
+	}
 
 }

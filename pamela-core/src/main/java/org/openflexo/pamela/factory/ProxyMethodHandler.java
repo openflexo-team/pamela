@@ -109,6 +109,9 @@ import org.openflexo.pamela.model.property.ReindexableListPropertyImplementation
 import org.openflexo.pamela.model.property.SettablePropertyImplementation;
 import org.openflexo.pamela.patterns.ExecutionMonitor;
 import org.openflexo.pamela.patterns.PatternInstance;
+import org.openflexo.pamela.patterns.PostconditionViolationException;
+import org.openflexo.pamela.patterns.PreconditionViolationException;
+import org.openflexo.pamela.patterns.PropertyViolationException;
 import org.openflexo.pamela.patterns.ReturnWrapper;
 import org.openflexo.pamela.patterns.annotations.Ensures;
 import org.openflexo.pamela.patterns.annotations.Requires;
@@ -292,7 +295,20 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				if (preconditions != null) {
 					System.out.println("Invoking preconditions for " + method + " in pattern instance : " + patternInstance);
 					for (Requires precondition : preconditions) {
-						patternInstance.invokePrecondition(precondition, method);
+						try {
+							patternInstance.invokePrecondition(precondition, method);
+						} catch (PropertyViolationException e) {
+							if (!precondition.exceptionWhenViolated().equals(PreconditionViolationException.class)) {
+								// A specific exception should be thrown
+								Constructor<? extends Exception> c = precondition.exceptionWhenViolated().getConstructor(String.class,
+										Throwable.class);
+								Exception thrownException = c.newInstance("Violated property " + precondition.property(), e);
+								throw thrownException;
+							}
+							else {
+								throw e;
+							}
+						}
 					}
 				}
 				try {
@@ -344,7 +360,20 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				if (postconditions != null) {
 					System.out.println("Invoking postconditions for " + method + " in pattern instance : " + patternInstance);
 					for (Ensures postcondition : postconditions) {
-						patternInstance.invokePostcondition(postcondition, method);
+						try {
+							patternInstance.invokePostcondition(postcondition, method);
+						} catch (PropertyViolationException e) {
+							if (!postcondition.exceptionWhenViolated().equals(PostconditionViolationException.class)) {
+								// A specific exception should be thrown
+								Constructor<? extends Exception> c = postcondition.exceptionWhenViolated().getConstructor(String.class,
+										Throwable.class);
+								Exception thrownException = c.newInstance("Violated property " + postcondition.property(), e);
+								throw thrownException;
+							}
+							else {
+								throw e;
+							}
+						}
 					}
 				}
 			}

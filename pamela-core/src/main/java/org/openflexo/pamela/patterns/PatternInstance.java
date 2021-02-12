@@ -96,7 +96,7 @@ public abstract class PatternInstance<P extends PatternDefinition> {
 	 * @param precondition
 	 * @param method
 	 */
-	public void invokePrecondition(Requires precondition, Method method) {
+	public void invokePrecondition(Requires precondition, Method method) throws PropertyViolationException {
 		System.out.println("Invoking precondition " + precondition.property());
 	}
 
@@ -106,7 +106,7 @@ public abstract class PatternInstance<P extends PatternDefinition> {
 	 * @param postcondition
 	 * @param method
 	 */
-	public void invokePostcondition(Ensures postcondition, Method method) {
+	public void invokePostcondition(Ensures postcondition, Method method) throws PropertyViolationException {
 		System.out.println("Invoking postcondition " + postcondition.property());
 	}
 }
