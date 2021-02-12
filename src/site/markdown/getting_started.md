@@ -2,11 +2,19 @@
 
 There are several way to get and/or use Pamela.
 
+- 1. You just want to use (test) PAMELA (you are a developer and you want to define your first PAMELA model)
+- 2. You want to download PAMELA sources, review the code, run the tests, define your own annotations, implementations, and contribute to the project
+
+### 1. You want to use PAMELA
+
+You just need to bring Pamela artifacts in your environment.
+
 - The Pamela artifacts (official releases) are published in the following maven repository [https://maven.openflexo.org/artifactory/openflexo-release](https://maven.openflexo.org/artifactory/openflexo-release)
 - The Pamela artifacts (snapshot releases) are published in the following maven repository [https://maven.openflexo.org/artifactory/openflexo-deps](https://maven.openflexo.org/artifactory/openflexo-deps)
+- 1.5 is the last stable version
+- 1.6.1(-SNAPSHOT) is the current development version (default)
 
-
-#### 1. Use PAMELA with gradle
+#### 1.1. Use PAMELA with gradle
 
 It's easy to use it from Gradle. 
 
@@ -35,11 +43,11 @@ implementation group: 'org.openflexo', name: 'pamela-core', version: '1.5'
 or to use a SNAPSHOT version:
 
 ```groovy
-implementation group: 'org.openflexo', name: 'pamela-core', version: '1.5.1-SNAPSHOT'
+implementation group: 'org.openflexo', name: 'pamela-core', version: '1.6.1-SNAPSHOT'
 ```
 
 
-#### 2. Use PAMELA with Maven
+#### 1.2. Use PAMELA with Maven
 
 In order to use Pamela in your maven project, add the repository adding the following in the `pom.xml`:
 
@@ -81,11 +89,27 @@ or to use a SNAPSHOT version
 <dependency>
   <groupId>org.openflexo</groupId>
   <artifactId>pamela-core</artifactId>
-  <version>1.5.1-SNAPSHOT</version>
+  <version>1.6.1-SNAPSHOT</version>
 </dependency>
 ```
 
-#### 3. Download and build PAMELA framework in your environment
+#### 1.3. Test PAMELA by building your first model
+
+The best way to understand PAMELA is to build your first model.
+
+[Build your first model](./example.html)
+
+
+### 2. Download and build PAMELA framework in your environment
+
+Advanced users : do that only if you want to download PAMELA sources, review the code, run the tests, define your own annotations, implementations, and/or contribute to the project.
+
+**Prerequisite**
+
+- [Maven](https://maven.apache.org/) or [Gradle](https://gradle.org)
+- Using an IDE (such as Eclise or IntelliJ) is recommended and might help
+
+#### 2.1. Download sources
 
 In order to get the most up to date code you can clone and build Pamela yourself.
 
@@ -94,7 +118,7 @@ In order to get the most up to date code you can clone and build Pamela yourself
 - [git](https://git-scm.com).
 - [Java](http://www.oracle.com/technetwork/java/index.html) JDK 8
 
-**Download sources**
+**Checkout sources**
 
 PAMELA framework is hosted on github: [https://github.com/openflexo-team/pamela](https://github.com/openflexo-team/pamela).
 
@@ -104,62 +128,37 @@ Clone PAMELA in your environment:
 git clone git@github.com:openflexo-team/pamela.git
 ```
 
-#### 4. Run tests
+#### 2.2 Run tests
 
-Unit tests located in src/test/java in pamela-core are a good starting point to discover the framework.
+Unit tests located in src/test/java in pamela-core are a good starting point to discover the framework (run the tests and analyse the test source code).
 
+All tests are sorted and labelled with an explicit name which help to know which feature is beeing tested.
 
-#### 5. Make your first model
+For example the package ``org.openflexo.pamela.test.jml`` contains unit tests for JML features. ``BankAccount.java`` is the class containing business code to be tested while ``JMLTests.java`` contains the tests themselves. It is really interesting to read and understand both classes to have a good overview and understanding for JML feature.
 
-To build your first model, you only have to defined the interface, Pamela does the implementation for you.
-Just write:
+The package ``org.openflexo.pamela.test.test1`` contains basic unit tests for core features.
 
-```java
-@ModelEntity
-interface Person {
-	String NAME = "name";
+#### 2.3 Discover PAMELA main features
 
-	@Getter(NAME)
-	String getName();
+- [Model at runtime computation, model fragmentation management](./pamela-core/1-model_at_runtime.html)
+- [Life-cycle management](./pamela-core/2-life_cycle_management.html)
+- [Meta-programming support](./pamela-core/3-metaprogramming_support.html)
+- [Multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.html)
+- [Containment management](./pamela-core/5-containment_management.html)
+- [Cloning support](./pamela-core/6-cloning_support.html)
+- [Clipboard operations](./pamela-core/7-clipboard_operations.html)
+- [Notification support](./pamela-core/8-notification_support.html)
+- [Persistance support, XML serialization/deserialization](./pamela-core/9-persistence_support.html)
+- [Equality computing support](./pamela-core/10-equality_computing.html)
+- [Visiting features](./pamela-core/11-visiting_features.html)
+- [Differential updating](./pamela-core/12-differential_updating.html)
+- [Validation API](./pamela-core/13-validation_api.html)
+- [Contract programming, JML](./pamela-core/14-jml.html)
+- [Design patterns, aspect programming](./pamela-core/15-design_patterns.html)
 
-	@Setter(NAME)
-	void setName(String name);
-}
-```
-
-Pamela will build a class that implements the `getName` getter and the `setName` setter.
-The getter is really simple, it returns the stored property `name`.
-The setter is much more evolved sine it:
-
-- sets the value,
-- notify the value change (if the new value is actually different) and
-- saves the change to an undo manager.
-
-The setter will also handle the opposite property when needed as we see later on.
-
-
-**Gotcha**
-
-Since Pamela constructs it's own implementation of the interface, you can also build your own.
-
-```java
-public class PersonImpl {
-	private String name;
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-}
-```
-
-But this implementation is really basic and doesn't provide advanced capabilities as Pamela does.
-
-#### Reference documentation
+#### 2.4 Reference documentation
 
 The javadoc for Pamela can be found [here](./pamela-core/apidocs/index.html).
+
    
   
