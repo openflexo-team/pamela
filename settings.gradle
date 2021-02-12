@@ -1,4 +1,4 @@
 include 'pamela-core'
 include 'pamela-security-patterns'
-include 'pamela-perf-tests'
-include 'pamela-spring-security-uc'
+//include 'pamela-perf-tests'
+//include 'pamela-spring-security-uc'
