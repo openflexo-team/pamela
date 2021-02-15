@@ -65,9 +65,7 @@ public interface SessionInfo {
 	void setAuthenticationProvider(CustomAuthenticationProvider val);
 
 	@AuthenticateMethod(patternID = PATTERN_ID)
-	void authenticate() 
-		// expected : performAuthentication();
-	;
+	void authenticate();
 
 	void checkAuthentication();
 

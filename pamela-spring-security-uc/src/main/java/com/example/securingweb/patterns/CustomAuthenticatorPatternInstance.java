@@ -95,60 +95,22 @@ public class CustomAuthenticatorPatternInstance<A, S, AI, PI> extends Authentica
 				int attempts = 0;
 				attempts = attemptsCache.getUnchecked(key);
 				attempts++;
-				System.out.printf("La tentative num�ro " + attempts + " a �chou�\n");
+				System.out.printf("La tentative numero " + attempts + " a echoue \n");
 				attemptsCache.put(key, attempts);
-				System.out.println("L'authentification a �chou�, la valeur dans le cache augmente de 1 \n");
+				System.out.println("L'authentification a echoue, la valeur dans le cache augmente de 1 \n");
 			}
 
 		}
 
-		/*		else if (precondition.property().equals("assert always not(a)[*0:10];a")) {
-					
-				    private final int MAX_ATTEMPT = 10;
-				    private LoadingCache<String, Integer> attemptsCache;
-		
-				    attemptsCache = CacheBuilder.newBuilder().
-				    expireAfterWrite(1, TimeUnit.DAYS).build(new CacheLoader<String, Integer>() {
-				            public Integer load(String key) {
-				                return 0;
-				            }
-				    
-				    });
-				        
-		
-				    public void loginSucceeded(String key) {
-				        attemptsCache.invalidate(key);
-				    }
-		
-				    public void loginFailed(String key) {
-				        int attempts = 0;
-				        try {
-				            attempts = attemptsCache.get(key);
-				        } catch (ExecutionException e) {
-				            attempts = 0;
-				        }
-				        attempts++;
-				        attemptsCache.put(key, attempts);
-				    }
-		
-				    public boolean isBlocked(String key) {
-				        try {
-				            return attemptsCache.get(key) >= MAX_ATTEMPT;
-				        } catch (ExecutionException e) {
-				            return false;
-				     }
-				  }
-					
-				}*/
+
 
 	}
 
 	@Override
 	public void authenticationSuceeded() {
-		// TODO Auto-generated method stub
 		super.authenticationSuceeded();
 		attemptsCache.invalidate(key);
-		System.out.println("L'authentification a r�ussi, le cache est r�initialis� \n");
+		System.out.println("L'authentification a reussi, le cache est reinitialise \n");
 
 	}
 }

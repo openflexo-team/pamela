@@ -10,6 +10,7 @@ import org.openflexo.pamela.patterns.annotations.Requires;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticationInformation;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authenticator;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequestAuthentication;
+import com.example.securingweb.patterns.TooManyLoginAttemptsException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -37,18 +38,8 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 	@Requires(
 			patternID = SessionInfo.PATTERN_ID,
 			type = PropertyParadigmType.TemporalLogic,
-			property = "assert always auth_fail[*3] & time_limit<3min @ (auth_fail)"/*,
-																					exceptionWhenViolated = TooManyLoginAttemptsException.class*/)
-	// @Requires(patternID = SessionInfo.PATTERN_ID, type = PropertyParadigmType.TemporalLogic, property = "assert always not(a)[*0:10];a")
-	// Another idea :
-	// event e1,e2,e3
-	// {
-	// event e = generateEvent();
-	// if (e1 != null) then assert (e.time - e1.time < 1h);
-	// if (e1 == null) e1 <- e; else e1 <- e2;
-	// if (e2 == null) e2 <- e; else e2 <- e3;
-	// if (e3 == null) e3 <- e;
-	// }
+			property = "assert always auth_fail[*3] & time_limit<3min @ (auth_fail)", exceptionWhenViolated = TooManyLoginAttemptsException.class)
+
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException;
 
 	@RequestAuthentication(patternID = SessionInfo.PATTERN_ID)
@@ -81,31 +72,6 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 				throw new SessionAuthenticationException("Cannot open more than one session for a given user");
 			}
 
-			/*try {
-				System.out.println("On utilise bien le CustomAuthenticationProvider pour " + authentication);
-				Thread.dumpStack();
-			
-				String name = authentication.getName();
-				String password = authentication.getCredentials().toString();
-			
-				SessionInfo.getCurrentSessionInfo().setUserName(name);
-				System.out.println("Current session info: " + SessionInfo.getCurrentSessionInfo());
-			
-				if (shouldAuthenticateAgainstThirdPartySystem()) {
-			
-					// use the credentials
-					// and authenticate against the third-party system
-					return new UsernamePasswordAuthenticationToken(name, password, new ArrayList<>());
-				}
-				else {
-					return null;
-				}
-			} catch (ModelExecutionException e) {
-				e.printStackTrace();
-				System.out.println("Oulala ca craint");
-				// return null;
-				throw new SessionAuthenticationException("Cannot open more than one session for a given user");
-			}*/
 		}
 
 		/*private boolean shouldAuthenticateAgainstThirdPartySystem() {

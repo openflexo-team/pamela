@@ -24,12 +24,11 @@ import com.example.securingweb.authentication.CustomAuthenticationProvider;
 import com.example.securingweb.authentication.MyHttpSessionEventPublisher;
 import com.example.securingweb.authentication.MyUserDetailsService;
 
-// import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-//import org.springframework.security.core.userdetails.User;
+
 
 @Configuration
 @EnableWebSecurity
-// @ImportResource({ "classpath:webSecurityConfig.xml" })
+
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
@@ -40,23 +39,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		// @formatter:off
 		http.authorizeRequests()
 				.antMatchers("/", "/home", "/register", "/js/**", "/css/**", "/images/**", "/fonts/**", "/login/**", "/successRegister",
 						"/doRegister", "/h2/**")
 				.permitAll().anyRequest().authenticated().and().formLogin().loginPage("/login").permitAll().loginProcessingUrl("/dologin")
 				.defaultSuccessUrl("/brest", true)
-				// .failureUrl("/login.html?error=true")
 				.failureHandler(authenticationFailureHandler()).and().logout().permitAll().and().sessionManagement()
-				// .sessionFixation().migrateSession()
 				.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).invalidSessionUrl("/invalidSession.html").maximumSessions(2)
 				.expiredUrl("/sessionExpired.html");
-		// @formatter:on
-
-		// SessionAuthenticationStrategy sessionAuthenticationStrategy = http
-		// .getSharedObject(SessionAuthenticationStrategy.class);
-
-		// http.sessionManagement().sessionAuthenticationStrategy(sessionAuthenticationStrategy)
 	}
 
 	@Bean
@@ -69,27 +59,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return provider;
 	}
 
-	/*
-	 * @Autowired public void configureGlobal(AuthenticationManagerBuilder auth)
-	 * throws Exception {
-	 * auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder()
-	 * ); }
-	 */
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
-	// @Autowired
-	// private LogoutSuccessHandler logoutSuccessHandler() {
-	// TODO Auto-generated method stub
-	// return new CustomLogoutSuccessHandler();
-	// return null;
-	// }
+
 
 	@Autowired
 	public AuthenticationFailureHandler authenticationFailureHandler() {
 
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -117,10 +96,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	
 	}*/
 
-	/*
-	 * private AuthenticationSuccessHandler successHandler() { return new
-	 * MySimpleUrlAuthenticationSuccessHandler(); }
-	 */
 
 	@Bean
 	public HttpSessionEventPublisher httpSessionEventPublisher() {

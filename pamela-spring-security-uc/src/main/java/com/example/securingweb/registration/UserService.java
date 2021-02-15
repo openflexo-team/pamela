@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,15 +63,6 @@ public class UserService implements IUserService {
             (@ModelAttribute("user") @Valid UserDto userDto,
              HttpServletRequest request, Errors errors) {
 
-        /*try {
-            User registered = userService.registerNewUserAccount(userDto);
-        } catch (UserAlreadyExistException uaeEx) {
-            mav.addObject("message", "An account for that username/email already exists.");
-            return mav;
-        }*/
-
-        // rest of the implementation
-    	
     	return null;
     }
 }

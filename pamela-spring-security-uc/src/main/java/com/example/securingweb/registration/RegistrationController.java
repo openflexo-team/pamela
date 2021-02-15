@@ -29,12 +29,6 @@ public class RegistrationController {
 	@Autowired
 	private IUserService userService;
 
-	@Autowired
-	private AuthManagerService authManagerService;
-
-	// @Autowired
-	// private Prout prout;
-
 	private String userName;
 
 	public RegistrationController() {
@@ -49,54 +43,20 @@ public class RegistrationController {
 		return "register";
 	}
 
-	/*
-	 * public ModelAndView registerUserAccount(
-	 * 
-	 * @ModelAttribute("user") @Valid UserDto userDto, HttpServletRequest request,
-	 * Errors errors) {
-	 * 
-	 * }
-	 */
-
 	@ModelAttribute(value = "myEntity")
 	public UserDto newEntity() {
 		return new UserDto();
 	}
-
-	/*
-	 * @RequestMapping(value = "/doRegister", method = RequestMethod.POST) public
-	 * View action(Model model, @ModelAttribute("myEntity") User myEntity) { // save
-	 * the entity or do whatever you need
-	 * 
-	 * return new RedirectView("/user/ranks"); }
-	 */
-	/*
-	 * @RequestMapping(value = "/successRegister", method = RequestMethod.GET)
-	 * public ModelAndView getRanks(Model model, HttpServletRequest request) {
-	 * String view = "the-view-name"; return new ModelAndView(view, "command",
-	 * model); }
-	 */
 
 	@PostMapping("/doRegister")
 	public ModelAndView registerUserAccount(@ModelAttribute("user") @Valid UserDto userDto, HttpServletRequest request,
 			Errors errors) {
 
 		userName = userDto.getFirstName();
-		// System.out.println(userService.repository);
 		User registered = userService.registerNewUserAccount(userDto);
 		System.out.println(registered.getFirstName() + " is now registered");
-
-		// Prout prout = new Prout();
-		// Prout prout = authManagerService.getProut();
-		// System.out.println("Prout = " + prout + " " + prout.getCreated());
-
-		// request.getSession().setAttribute("PROUT", prout);
-
 		System.out.println("SESSION_INFO=" + request.getSession().getAttribute(SessionInfo.SESSION_INFO).toString());
-
 		System.out.println("Et aussi: " + SessionInfo.getCurrentSessionInfo());
-
-		// prout.message = registered.getFirstName() + " is now registered";
 
 		return new ModelAndView("successRegister", "user", userDto);
 	}

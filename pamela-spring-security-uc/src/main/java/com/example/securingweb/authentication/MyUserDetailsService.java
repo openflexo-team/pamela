@@ -1,7 +1,6 @@
 package com.example.securingweb.authentication;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -44,14 +43,6 @@ public class MyUserDetailsService implements UserDetailsService {
                         credentialsNonExpired, accountNonLocked,
                         getAuthorities(user.getRoles()));
     }
-
-    /*private static List<GrantedAuthority> getAuthorities (Collection<String> roles) {
-        List<GrantedAuthority> authorities = new ArrayList<>();
-        for (String role : roles) {
-            authorities.add(new SimpleGrantedAuthority(role));
-        }
-        return authorities;
-    }*/
     
     private static List<GrantedAuthority> getAuthorities (Collection<Role> roles) {
         List<GrantedAuthority> authorities = new ArrayList<>();
