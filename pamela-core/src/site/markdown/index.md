@@ -1,5 +1,7 @@
 # Pamela : an annotation-based Java modelling framework
 
+## `openflexo-core` component
+
 PAMELA is an annotation-based Java Modelling framework. PAMELA provides a smooth integration between model and code, and enable Java developers to handle software development both at conceptual level and at source-code level, without code transformation and/or generation, and avoiding round-tripping issues. 
 
 Exposed metamodel provides meta-programming support, multiple inheritance and traits programming, contract programming, aspect programming and run-time weaving. This framework also offers operational features derived from  model-level edition such as notification management, validation, persistence, comparison and object graph computation. 
@@ -45,12 +47,6 @@ PAMELA approach has been tested and validated on some java-based industrial proj
   
 # Getting started
 
-Want to start with Pamela ? Read our ["Getting started" guide](./getting_started.html)
+Want to start with Pamela ? Read our ["Getting started" guide](../getting_started.html)
 
-# Contents of this package
-
-PAMELA project contains two separate components (defined here as modules):
-  
-- [Pamela-core component](../pamela-core/index.html), which contains the Pamela core library
-- [Pamela-SecurityPatterns component](../pamela-security-patterns/index.html), which is a library of security-oriented patterns    
   
