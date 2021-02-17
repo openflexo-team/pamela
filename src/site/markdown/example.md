@@ -1,5 +1,7 @@
 # A basic example
 
+*Note that examples (with links to the code) are available by the end of this web page.*
+
 ## A very basic model with two entities
 
 The following code listing represents a very basic model with two entities *Book* and *Library*.
@@ -114,10 +116,17 @@ As said previously, PAMELA framework supports multiple inheritance. In this cont
 
 ## Download examples
 
-1. install gradle
-2. mkdir SOMEDIR; cd SOMEDIR
-3. gradle init
-   answer 2 (application) 3 (Java) 1 (Groovy) 1 (Junit4) book org.openflexo.testPamela
+For each example, we can do :
+
+```
+gradle test
+```
+
+and
+
+```
+gradle run
+```
 
 Here are the different versions:
 

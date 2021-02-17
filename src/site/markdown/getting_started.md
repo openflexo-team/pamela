@@ -18,6 +18,7 @@ You just need to bring Pamela artifacts in your environment.
 
 - [Maven](https://maven.apache.org/) or [Gradle](https://gradle.org)
 - Using an IDE (such as Eclise or IntelliJ) is recommended and might help
+- As a developper tool, this "Getting started" supposes that you are familiar with development tools such as gradle or maven, and IDE manipulations.
 
 #### 1.1. Use PAMELA with gradle
 
@@ -39,18 +40,20 @@ maven {
 }
 ```
 
-Add also the dependency to the `pamela-core` artifact:
+Add also the dependency to the `pamela-core` artifact (Java 8 required):
 
 ```groovy
 implementation group: 'org.openflexo', name: 'pamela-core', version: '1.5'
 ```
 
-or to use a SNAPSHOT version:
+or to use a SNAPSHOT version (Java 11 or later required):
 
 ```groovy
 implementation group: 'org.openflexo', name: 'pamela-core', version: '1.6.1-SNAPSHOT'
 ```
 
+**Important notice : **
+Note that Java 8 (1.8) is required for 1.5 last stable version but Java 11 is required from 1.6.1 version.
 
 #### 1.2. Use PAMELA with Maven
 
@@ -78,7 +81,7 @@ or to use a SNAPSHOT version
 </repositories>
 ```
 
-Add also the dependency to the `pamela-core` artifact:
+Add also the dependency to the `pamela-core` artifact (Java 8 required):
 
 ```xml
 <dependency>
@@ -88,7 +91,7 @@ Add also the dependency to the `pamela-core` artifact:
 </dependency>
 ```
 
-or to use a SNAPSHOT version
+or to use a SNAPSHOT version (Java 11 or later required)
 
 ```xml
 <dependency>
@@ -98,12 +101,35 @@ or to use a SNAPSHOT version
 </dependency>
 ```
 
+**Important notice : **
+Note that Java 8 (1.8) is required for 1.5 last stable version but Java 11 is required from 1.6.1 version.
+
 #### 1.3. Test PAMELA by building your first model
 
 The best way to understand PAMELA is to build your first model.
 
 [Build your first model](./example.html)
 
+Look at the examples (download links) at the end of this webpage, and run examples.
+
+For each example, we can do :
+
+```
+gradle test
+```
+
+and
+
+```
+gradle run
+```
+
+Here are the different versions:
+
+1. [v1.zip](https://support.openflexo.org/images/components/pamela/examples/v1.zip) : minimal example
+2. [v2.zip](https://support.openflexo.org/images/components/pamela/examples/v2.zip) : adding behaviour
+3. [v3.zip](https://support.openflexo.org/images/components/pamela/examples/v3.zip) : behaviour modifications (AccessibleProxyObject)
+4. [v4.zip](https://support.openflexo.org/images/components/pamela/examples/v4.zip) : a more complex example
 
 ### 2. Download and build PAMELA framework in your environment
 
