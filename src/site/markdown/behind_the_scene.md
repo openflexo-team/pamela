@@ -18,7 +18,7 @@ This general scheme provides also an extension point allowing to instrument the 
 
 This composition of an interpreter (interpreting both standard and specific semantics) and compiled code offers many benefits:
 
-- Strong coupling between model and code [//]: # (@Sylvain, ?)
+- Strong coupling between model and code 
 - Strong typing is kept, and required checks are performed by the Java compiler
 - The PAMELA framework provides interpretation of model@runtime
 - No need to generate POJO (plain old Java objects), as their execution follow the standard semantics (less code, less bugs)
