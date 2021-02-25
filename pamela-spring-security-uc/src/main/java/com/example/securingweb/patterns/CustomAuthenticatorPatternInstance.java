@@ -74,11 +74,11 @@ public class CustomAuthenticatorPatternInstance<A, S, AI, PI> extends Authentica
 
 		});
 	}
-
-	@Override
+	// la methode qui suit permet de verifier que les preconditions soient respectees
+	@Override 
 	public void invokePrecondition(Requires precondition, Method method) throws PropertyViolationException {
 		super.invokePrecondition(precondition, method);
-
+		// liste des preconditions
 		if (precondition.property().equals("assert always auth_fail[*3] & time_limit<3min @ (auth_fail)")) {
 			System.out.println("J'appelle la methode " + method + " pour " + method.getDeclaringClass());
 

@@ -22,6 +22,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.stereotype.Component;
 
+
+// on crée ici un AuthenticationProvider personnalisé, on rajoute celui-ci au modèle en tant qu'Authenticator
 @Component
 @ModelEntity
 @ImplementationClass(CustomAuthenticationProvider.CustomAuthenticationProviderImpl.class)
@@ -38,18 +40,22 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 	@Requires(
 			patternID = SessionInfo.PATTERN_ID,
 			type = PropertyParadigmType.TemporalLogic,
-			property = "assert always auth_fail[*3] & time_limit<3min @ (auth_fail)", exceptionWhenViolated = TooManyLoginAttemptsException.class)
+			property = "assert always auth_fail[*3] & time_limit<3min @ (auth_fail)", 
+			exceptionWhenViolated = TooManyLoginAttemptsException.class)
 
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException;
 
 	@RequestAuthentication(patternID = SessionInfo.PATTERN_ID)
 	int request(@AuthenticationInformation(patternID = SessionInfo.PATTERN_ID, paramID = USER_NAME) String userName);
 
+	
+	// Les instances d'AuthenticationProvider seront des DaoAthenticationProvider
 	abstract class CustomAuthenticationProviderImpl extends DaoAuthenticationProvider implements CustomAuthenticationProvider {
 
 		@Override
 		public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-
+			
+			// on  effectue ici des tests simples (par renvoi dans la console) pour voir si cela fonctionne
 			try {
 				System.out.println("On utilise bien le CustomAuthenticationProvider pour " + authentication);
 				Thread.dumpStack();

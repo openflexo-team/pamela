@@ -23,11 +23,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+//on alloue ici les sessions comme sujet des instances de pattern d'authentification
 @Component
 @Scope(value = SCOPE_SESSION, proxyMode = TARGET_CLASS)
 @ModelEntity
 @ImplementationClass(SessionInfo.SessionInfoImpl.class)
-@AuthenticatorSubject(patternID = SessionInfo.PATTERN_ID)
+@AuthenticatorSubject(patternID = SessionInfo.PATTERN_ID)          //chaque session va être liée à une unique instance de pattern
 public interface SessionInfo {
 
 	String SESSION_INFO = "SESSION_INFO";

@@ -5,7 +5,7 @@ import javax.servlet.http.HttpSessionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.stereotype.Component;
-
+// cette classe permet de visualiser la création/destruction de sessions dans la console
 @Component
 public class MyHttpSessionEventPublisher extends HttpSessionEventPublisher {
 

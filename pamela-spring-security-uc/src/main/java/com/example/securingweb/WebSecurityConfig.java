@@ -32,12 +32,11 @@ import com.example.securingweb.authentication.MyUserDetailsService;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
-	private MyUserDetailsService userDetailsService;
-
+	private MyUserDetailsService userDetailsService; /*va permettre de faire le lien avec la base de données*/
 	@Autowired
-	private AuthManagerService authManagerService;
+	private AuthManagerService authManagerService; /*contient les factorys du patron de Pamela*/
 
-	@Override
+	@Override   /*La méthode configure permet de définir la logique d'application*/
 	protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
 				.antMatchers("/", "/home", "/register", "/js/**", "/css/**", "/images/**", "/fonts/**", "/login/**", "/successRegister",
@@ -48,8 +47,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).invalidSessionUrl("/invalidSession.html").maximumSessions(2)
 				.expiredUrl("/sessionExpired.html");
 	}
-
-	@Bean
+	
+	
+	@Bean  
 	public AuthenticationProvider daoAuthenticationProvider() {
 		// DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
 
@@ -59,7 +59,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return provider;
 	}
 
-
+	//on choisit ici comment les mots de passe seront cryptés
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
