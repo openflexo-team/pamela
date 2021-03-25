@@ -279,7 +279,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		return localizedInContext(validationRule.getRuleDescription(), validationRule);
 	}
 
-	public final String localizedIssueMessage(ValidationIssue<?, ?> issue) {
+	public String localizedIssueMessage(ValidationIssue<?, ?> issue) {
 		if (issue == null) {
 			return null;
 		}
