@@ -4,9 +4,9 @@ buildscript {
     }
     dependencies {
         classpath group: 'org.openflexo', name: 'buildplugin', version: '0.2'
-        classpath group: 'org.openflexo', name: 'buildconfig', version: '2.0.0'
+        classpath group: 'org.openflexo', name: 'buildconfig', version: '2.0.1'
     }
 }
 
-version = "1.5"
+version = "1.5.0.1"
 apply plugin: 'org.openflexo.buildconfig'
