@@ -303,6 +303,9 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 	public static String asBindingExpression(String localized) {
 		boolean someReplacementsWerePerformed = false;
+		if (localized == null) {
+			return "null";
+		}
 		while (localized.contains("($")) {
 			someReplacementsWerePerformed = true;
 			int startIndex = localized.indexOf("($");
