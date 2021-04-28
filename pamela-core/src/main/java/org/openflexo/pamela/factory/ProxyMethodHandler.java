@@ -65,12 +65,12 @@ import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
-import org.openflexo.connie.BindingEvaluator;
 import org.openflexo.connie.DataBinding;
+import org.openflexo.connie.binding.javareflect.InvalidKeyValuePropertyException;
 import org.openflexo.connie.exception.NullReferenceException;
 import org.openflexo.connie.exception.TypeMismatchException;
+import org.openflexo.connie.java.util.JavaBindingEvaluator;
 import org.openflexo.connie.type.TypeUtils;
-import org.openflexo.kvc.InvalidKeyValuePropertyException;
 import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
@@ -1821,7 +1821,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								case CUSTOM_CLONE:
 									// We have here to invoke custom code (encoded in getStrategyTypeFactory())
 									try {
-										Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(), getObject());
+										Object computedValue = JavaBindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(),
+												getObject());
 										clonedObjectHandler.invokeSetter(p, computedValue);
 									} catch (InvalidKeyValuePropertyException e1) {
 										e1.printStackTrace();
@@ -1829,7 +1830,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 										e1.printStackTrace();
 									} catch (NullReferenceException e1) {
 										e1.printStackTrace();
-									} catch (InvocationTargetException e1) {
+									} catch (ReflectiveOperationException e1) {
 										e1.printStackTrace();
 									}
 									break;
@@ -1959,7 +1960,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								case FACTORY:
 									// We have here to invoke custom code (encoded in getStrategyTypeFactory())
 									try {
-										Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(),
+										Object computedValue = JavaBindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(),
 												clonedObject /*getObject()*/);
 										clonedObjectHandler.invokeSetter(p, computedValue);
 									} catch (InvalidKeyValuePropertyException e1) {
@@ -1968,7 +1969,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 										e1.printStackTrace();
 									} catch (NullReferenceException e1) {
 										e1.printStackTrace();
-									} catch (InvocationTargetException e1) {
+									} catch (ReflectiveOperationException e1) {
 										e1.printStackTrace();
 									}
 									break;

@@ -71,8 +71,8 @@ public class PamelaCoreTests4 {
 
 		assertTrue(container2.getContents().equals("Je suis méchant"));
 
-		System.out.println("Et au finale je dis:" + container1.getContents());
-		System.out.println("Et au finale je dis:" + container2.getContents());
+		System.out.println("Et au final je dis:" + container1.getContents());
+		System.out.println("Et au final je dis:" + container2.getContents());
 
 	}
 

@@ -55,7 +55,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import org.openflexo.connie.binding.ReflectionUtils;
+import org.openflexo.connie.binding.javareflect.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.CloneableProxyObject;
@@ -102,7 +102,7 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * @param <I>
  *            java type addressed by this entity
  */
-public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
+public class ModelEntity<I> {
 
 	/**
 	 * The implemented interface corresponding to this model entity
@@ -192,7 +192,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	ModelEntity(@Nonnull Class<I> implementedInterface) throws ModelDefinitionException {
 
-		super(implementedInterface.getName());
+		super(/*implementedInterface.getName()*/);
 
 		this.implementedInterface = implementedInterface;
 		declaredModelProperties = new HashMap<>();

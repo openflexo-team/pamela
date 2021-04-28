@@ -1,6 +1,5 @@
 package org.openflexo.pamela.jml;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +40,7 @@ public class JMLEnsures<I> extends JMLExpressionBasedOnMethod<Boolean, I> {
 				e.printStackTrace();
 			} catch (NullReferenceException e) {
 				e.printStackTrace();
-			} catch (InvocationTargetException e) {
+			} catch (ReflectiveOperationException e) {
 				e.printStackTrace();
 			}
 		}

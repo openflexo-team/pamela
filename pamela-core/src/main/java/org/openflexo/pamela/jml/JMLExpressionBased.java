@@ -1,6 +1,5 @@
 package org.openflexo.pamela.jml;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +11,8 @@ import org.openflexo.connie.BindingModel;
 import org.openflexo.connie.BindingVariable;
 import org.openflexo.connie.DataBinding;
 import org.openflexo.connie.DefaultBindable;
+import org.openflexo.connie.ParseException;
+import org.openflexo.connie.binding.javareflect.InvalidKeyValuePropertyException;
 import org.openflexo.connie.exception.NullReferenceException;
 import org.openflexo.connie.exception.TransformException;
 import org.openflexo.connie.exception.TypeMismatchException;
@@ -20,11 +21,12 @@ import org.openflexo.connie.expr.BindingValue.AbstractBindingPathElement;
 import org.openflexo.connie.expr.BindingValue.MethodCallBindingPathElement;
 import org.openflexo.connie.expr.BindingValue.NormalBindingPathElement;
 import org.openflexo.connie.expr.Expression;
+import org.openflexo.connie.expr.ExpressionEvaluator;
 import org.openflexo.connie.expr.ExpressionTransformer;
-import org.openflexo.connie.expr.parser.ExpressionParser;
-import org.openflexo.connie.expr.parser.ParseException;
 import org.openflexo.connie.java.JavaBindingFactory;
-import org.openflexo.kvc.InvalidKeyValuePropertyException;
+import org.openflexo.connie.java.expr.JavaExpressionEvaluator;
+import org.openflexo.connie.java.expr.JavaPrettyPrinter;
+import org.openflexo.connie.java.parser.ExpressionParser;
 import org.openflexo.pamela.model.ModelEntity;
 
 /**
@@ -67,7 +69,7 @@ public abstract class JMLExpressionBased<T, I> extends DefaultBindable {
 	}
 
 	public T evaluate(I object, Map<String, Object> values)
-			throws TypeMismatchException, NullReferenceException, InvocationTargetException {
+			throws TypeMismatchException, NullReferenceException, ReflectiveOperationException {
 		return expression.getBindingValue(new BindingEvaluationContext() {
 
 			@Override
@@ -78,10 +80,15 @@ public abstract class JMLExpressionBased<T, I> extends DefaultBindable {
 				else {
 					T returned = (T) values.get(variable.getVariableName());
 					if (returned == null) {
-						System.err.println("??? Tiens je trouve rien pour " + variable);
+						System.err.println("Cannot get value for " + variable);
 					}
 					return returned;
 				}
+			}
+
+			@Override
+			public ExpressionEvaluator getEvaluator() {
+				return new JavaExpressionEvaluator(this);
 			}
 		});
 	}
@@ -130,7 +137,7 @@ public abstract class JMLExpressionBased<T, I> extends DefaultBindable {
 		}
 
 		public Object evaluate(I object, Map<String, Object> values)
-				throws TypeMismatchException, NullReferenceException, InvocationTargetException {
+				throws TypeMismatchException, NullReferenceException, ReflectiveOperationException {
 			return valueExpression.getBindingValue(new BindingEvaluationContext() {
 
 				@Override
@@ -146,19 +153,28 @@ public abstract class JMLExpressionBased<T, I> extends DefaultBindable {
 						return returned;
 					}
 				}
+
+				@Override
+				public ExpressionEvaluator getEvaluator() {
+					return new JavaExpressionEvaluator(this);
+				}
+
 			});
 		}
 
 	}
 
-	private static final String HISTORY_VARIABLE_NAME = "HISTORY_VARIABLE";
+	private static final String HISTORY_VARIABLE_NAME = "history_variable";
 	private static int CURRENT_HISTORY_VARIABLE_ID = 0;
+
+	private static JavaBindingFactory JAVA_BINDING_FACTORY = new JavaBindingFactory();
 
 	private String extractHistoryVariableAndNormalizeBindingPath(String bindingPath) {
 		Expression expression = null;
 		try {
 			bindingPath = bindingPath.replace("/old", HISTORY_VARIABLE_NAME);
-			expression = ExpressionParser.parse(bindingPath);
+			System.out.println("Parsing " + bindingPath);
+			expression = ExpressionParser.parse(bindingPath, this);
 			if (expression != null) {
 				expression = expression.transform(new ExpressionTransformer() {
 					@Override
@@ -180,7 +196,7 @@ public abstract class JMLExpressionBased<T, I> extends DefaultBindable {
 										bindingModel.addToBindingVariables(newHistoryVariable);
 										// System.out.println("variableName=" + variableName);
 										// System.out.println("args=" + methodCall.args.get(0));
-										return new BindingValue(variableName);
+										return new BindingValue(variableName, JMLExpressionBased.this, JavaPrettyPrinter.getInstance());
 									} catch (ParseException e1) {
 										e1.printStackTrace();
 										return null;
