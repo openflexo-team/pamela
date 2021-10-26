@@ -203,7 +203,7 @@ public abstract class JMLExpressionBased<T, I> extends DefaultBindable {
 								// UnresolvedBindingVariable objectBV = new UnresolvedBindingVariable(OBJECT);
 								List<BindingPathElement> bp2 = new ArrayList<>(bindingPath.getBindingPath());
 								bp2.add(0, JAVA_BINDING_FACTORY.makeSimplePathElement(objectBV,
-										bindingPath.getBindingVariable().getVariableName()));
+										bindingPath.getBindingVariable().getVariableName(), bindingPath.getOwner()));
 								bindingPath.setBindingVariable(objectBV);
 								bindingPath.setBindingPath(bp2);
 							}
