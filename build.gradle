@@ -11,7 +11,6 @@ buildscript {
 subprojects {
 	repositories {
         maven { url "https://maven.openflexo.org/artifactory/openflexo-deps/" }
-  		maven { url "https://maven.openflexo.org/artifactory/openflexo-java10/" }
     }
 }
 
