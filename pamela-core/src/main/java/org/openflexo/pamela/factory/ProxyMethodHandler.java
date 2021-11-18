@@ -1605,10 +1605,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								String oppositeValueAsString = se.toString(oppositeValue);
 								if ((singleValueAsString == null && oppositeValueAsString != null)
 										|| (singleValueAsString != null && !singleValueAsString.equals(oppositeValueAsString))) {
-									System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" + singleValue
-											+ " opposite=" + oppositeValue);
-									System.out.println("object1=" + getObject() + " of " + getObject().getClass());
-									System.out.println("object2=" + obj + " of " + obj.getClass());
+									//System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" + singleValue
+									//		+ " opposite=" + oppositeValue);
+									//System.out.println("object1=" + getObject() + " of " + getObject().getClass());
+									//System.out.println("object2=" + obj + " of " + obj.getClass());
 									return false;
 								}
 							} catch (InvalidDataException e) {
@@ -1620,8 +1620,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								// Ignore
 							}
 							else if (!_isEqual(singleValue, oppositeValue, seen, considerProperty)) {
-								System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + "opposite="
-										+ oppositeValue);
+								//System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + "opposite="
+								//		+ oppositeValue);
 								return false;
 							}
 						}
@@ -1630,9 +1630,9 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 						List<Object> values = (List) invokeGetter(p);
 						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
 						if (!_isEqual(values, oppositeValues, seen, considerProperty)) {
-							System.out.println("values=" + values);
-							System.out.println("oppositeValues=" + oppositeValues);
-							System.out.println("Equals fails because of LIST property difference" + p);
+							//System.out.println("values=" + values);
+							//System.out.println("oppositeValues=" + oppositeValues);
+							//System.out.println("Equals fails because of LIST property difference" + p);
 							return false;
 						}
 						break;
