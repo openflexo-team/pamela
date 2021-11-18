@@ -249,7 +249,7 @@ public interface AccessibleProxyObject extends HasPropertyChangeSupport, KeyValu
 	 *            a function returning boolean indicating if supplied property has to be considered
 	 * @return
 	 */
-	public boolean equalsObject(Object obj, Function<ModelProperty, Boolean> considerProperty);
+	public boolean equalsObject(Object obj, Function<ModelProperty<?>, Boolean> considerProperty);
 
 	/**
 	 * Called to update current object while comparing it to opposite object, (which must be of right type!), examining each property
