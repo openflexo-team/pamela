@@ -12,13 +12,13 @@ task buildWebsite{
     }
 
     exec {
-        println '\n [3/] Copying main_features documentation markdown files \n'
+        println '\n [3/] Copying pamela-core documentation markdown files \n'
         commandLine 'cp', '-r', 'pamela-core/src/site/markdown/.', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/pamela-core/'
     }
 
     exec {
-        println '\n [4/] Copying security_patterns documentation markdown files \n'
-        commandLine 'cp', '-r', 'pamela-security-patterns/src/site/markdown/.', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/pamela-core/'
+        println '\n [4/] Copying pamela-security-patterns documentation markdown files \n'
+        commandLine 'cp', '-r', 'pamela-security-patterns/src/site/markdown/.', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/pamela-security-patterns/'
     }
 
     exec {

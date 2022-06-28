@@ -189,7 +189,7 @@ The package ``org.openflexo.pamela.test.test1`` contains basic unit tests for co
 
 #### 2.4 Reference documentation
 
-The javadoc for Pamela can be found [here](./pamela-core/apidocs/index.md).
+The javadoc for Pamela can be found .
 
    
   

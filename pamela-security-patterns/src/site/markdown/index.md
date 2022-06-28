@@ -4,7 +4,7 @@
  
 A significant experiment in PAMELA is the implementation of security patterns weaved on domain code.
 
-Security patterns library was developped in the context of [Design patterns and Aspect programming](../pamela-core/15-design_patterns.html).
+Security patterns library was developped in the context of [Design patterns and Aspect programming](../pamela-core/15-design_patterns.md).
 
 In this context, the PAMELA framework is extended to include the notion of Pattern, i.e. a composition of multiple classes. Included to this experiment, the security pattern is specified by expected behavior defined and formalized by a pattern contract. This contract is defined by formal properties and the PAMELA framework ensures the property verification at run-time.
 
@@ -19,10 +19,10 @@ Summarizing, implementing Patterns with PAMELA provides the ability to monitor t
 
 Security patterns library todays contains following patterns:
 
- - [Authenticator](Authenticator.html)
- - [Authorization](Authorization.html)
- - [SingleAccessPoint](SingleAccessPoint.html)
- - [Owner](Owner.html)
+ - [Authenticator](Authenticator.md)
+ - [Authorization](Authorization.md)
+ - [SingleAccessPoint](SingleAccessPoint.md)
+ - [Owner](Owner.md)
  
  
 
