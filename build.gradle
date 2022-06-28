@@ -55,6 +55,10 @@ tasks.register('buildWebsite') {
             println '\n [10/10] Copying javadoc files via ssh \n'
             commandLine 'scp', '-r', './javadoc', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/javadoc/'
         }
+
+        exec {
+            commandLine 'rm', '-rf', 'pamela'
+        }
     }
 }
 
