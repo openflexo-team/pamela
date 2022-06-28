@@ -47,7 +47,7 @@ task buildWebsite{
 
     exec {
         println '\n [9/9] Copying javadoc files via ssh \n'
-        commandLine 'scp', '-r', 'javadoc/*', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/javadoc/'
+        commandLine 'scp', '-r', './javadoc', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/javadoc/'
     }
 }
 
