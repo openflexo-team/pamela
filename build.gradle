@@ -46,6 +46,7 @@ task buildWebsite{
 
     exec {
         println '\n [9/9] Copying javadoc files via ssh \n'
+        workingDir '/home/jenkins/jenkins-agent/pamela-docusaurus/'
         commandLine 'scp', '-r', 'javadoc/', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/javadoc/'
     }
 }
@@ -62,3 +63,6 @@ buildscript {
 
 version = "1.6.1"
 apply plugin: 'org.openflexo.buildconfig'
+
+
+scp -r build/ jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/
