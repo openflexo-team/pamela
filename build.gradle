@@ -41,8 +41,7 @@ task buildWebsite{
 
     exec {
         println '\n [8/9] Copying static files via ssh \n'
-        workingDir '/home/jenkins/jenkins-agent/pamela-docusaurus/'
-        commandLine 'scp', '-r', 'build/*', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/'
+        commandLine 'scp', '-r', '/home/jenkins/jenkins-agent/pamela-docusaurus/build/*', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/'
     }
 
     exec {
