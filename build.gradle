@@ -2,47 +2,52 @@ task buildWebsite{
 
     exec {
         println '\n ### Build Started ### \n'
-        println '\n [1/] Pulling changes from Github \n'
+        println '\n [1/9] Pulling changes from Github \n'
         commandLine 'git', 'pull', 'origin', '1.6.1'
     }
 
     exec {
-        println '\n [2/] Copying root documentation markdown files \n'
+        println '\n [2/9] Copying root documentation markdown files \n'
         commandLine 'cp', '-r', 'src/site/markdown/.', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/'
     }
 
     exec {
-        println '\n [3/] Copying pamela-core documentation markdown files \n'
+        println '\n [3/9] Copying pamela-core documentation markdown files \n'
         commandLine 'cp', '-r', 'pamela-core/src/site/markdown/.', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/pamela-core/'
     }
 
     exec {
-        println '\n [4/] Copying pamela-security-patterns documentation markdown files \n'
+        println '\n [4/9] Copying pamela-security-patterns documentation markdown files \n'
         commandLine 'cp', '-r', 'pamela-security-patterns/src/site/markdown/.', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/pamela-security-patterns/'
     }
 
     exec {
         ignoreExitValue true
-        println '\n [5/] Building pamela-core javadoc \n'
+        println '\n [5/9] Building pamela-core javadoc \n'
         commandLine 'javadoc', '-d', 'javadoc/pamela-core', '-sourcepath', 'pamela-core/src/main/java', '-subpackages', 'org', '-doctitle', 'Pamela-core 1.6.1-SNAPSHOT API' 
     }
 
     exec {
         ignoreExitValue true
-        println '\n [6/] Building pamela-security-patterns javadoc \n'
+        println '\n [6/9] Building pamela-security-patterns javadoc \n'
         commandLine 'javadoc', '-d', 'javadoc/pamela-security-patterns', '-sourcepath', 'pamela-security-patterns/src/main/java', '-subpackages', 'org', '-doctitle', 'Pamela-Security-Patterns 1.6.1-SNAPSHOT API' 
     }
 
     exec {
-        println '\n [7/] Building Static files \n'
+        println '\n [7/9] Building Static files \n'
         workingDir '/home/jenkins/jenkins-agent/pamela-docusaurus/'
         commandLine 'npm', 'run', 'build'
     }
 
-    // exec {
-    //     println '\n [8/] Copying static files via ssh \n'
-    //     commandLine 'scp', '-r', 'build/', 'jenkins@openflexo.org:/home/www/sites/docusaurus/'
-    // }
+    exec {
+        println '\n [8/9] Copying static files via ssh \n'
+        commandLine 'scp', '-r', 'build/', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/'
+    }
+
+    exec {
+        println '\n [9/9] Copying javadoc files via ssh \n'
+        commandLine 'scp', '-r', 'javadoc/', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/javadoc/'
+    }
 }
 
 buildscript {
