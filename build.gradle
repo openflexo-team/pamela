@@ -57,6 +57,7 @@ tasks.register('buildWebsite') {
         }
 
         exec {
+            workingDir '/home/jenkins/jenkins-agent/pamela-docusaurus/'
             commandLine 'rm', '-rf', 'pamela'
         }
     }
