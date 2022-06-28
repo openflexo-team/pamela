@@ -17,3 +17,4 @@ Here is a non-exhaustive list of the most common Java annotations used for a PAM
 - `@Embedded`: allows to declare a given *ModelProperty* as embedded according to PAMELA semantics.
 - `@Imports` and `@Imports`: allows to declare entities to be included in the inferred metamodel by `ModelContext` computation.
 - `@XMLElement` and `@XMLAttribute`: used to specify XML serialization for PAMELA instances.
+
