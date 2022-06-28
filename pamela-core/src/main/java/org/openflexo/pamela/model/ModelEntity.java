@@ -998,6 +998,14 @@ public class ModelEntity<I> {
 		return initializers.get(m);
 	}
 
+	public ModelInitializer getInitializerForArgs(Object[] args) throws ModelDefinitionException {
+		Class<?>[] types = new Class[args.length];
+		for (int i = 0; i < args.length; i++) {
+			types[i] = args[i].getClass();
+		}
+		return getInitializerForArgs(types);
+	}
+
 	public ModelInitializer getInitializerForArgs(Class<?>[] types) throws ModelDefinitionException {
 		List<ModelInitializer> list = getPossibleInitializers(types);
 		if (list.size() == 0) {
