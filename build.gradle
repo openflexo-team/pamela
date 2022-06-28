@@ -8,17 +8,17 @@ task buildWebsite{
 
     exec {
         println '\n [2/] Copying root documentation markdown files \n'
-        commandLine 'cp', '-r', 'src/site/markdown/*', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/'
+        commandLine 'cp', '-r', 'src/site/markdown/.', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/'
     }
 
     exec {
         println '\n [3/] Copying main_features documentation markdown files \n'
-        commandLine 'cp', '-r', 'pamela-core/src/site/markdown/!(index.md)', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/pamela-core/'
+        commandLine 'cp', '-r', 'pamela-core/src/site/markdown/.', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/pamela-core/'
     }
 
     exec {
         println '\n [4/] Copying security_patterns documentation markdown files \n'
-        commandLine 'cp', '-r', 'pamela-security-patterns/src/site/markdown/*', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/pamela-core/'
+        commandLine 'cp', '-r', 'pamela-security-patterns/src/site/markdown/.', '/home/jenkins/jenkins-agent/pamela-docusaurus/docs/pamela-core/'
     }
 
     exec {

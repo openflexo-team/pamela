@@ -61,5 +61,3 @@ From a technical point of view, PAMELA implementation uses *javassist* reflectio
 
 The PAMELA framework is 100% pure Java (> 1.5), compilable by a standard Java compiler and
 executable in a standard Java Virtual Machine.
-
-[<< Common annotations](./annotations.html)
