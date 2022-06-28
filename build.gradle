@@ -34,7 +34,7 @@ task buildWebsite{
     }
 
     exec {
-        println '\n [7/9] Building Static files \n'
+        println '\n [7/9] Building static files \n'
         workingDir '/home/jenkins/jenkins-agent/pamela-docusaurus/'
         commandLine 'npm', 'run', 'build'
     }
@@ -42,12 +42,12 @@ task buildWebsite{
     exec {
         println '\n [8/9] Copying static files via ssh \n'
         workingDir '/home/jenkins/jenkins-agent/pamela-docusaurus/'
-        commandLine 'scp', '-r', 'build/', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/'
+        commandLine 'scp', '-r', 'build/.', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/'
     }
 
     exec {
         println '\n [9/9] Copying javadoc files via ssh \n'
-        commandLine 'scp', '-r', 'javadoc/', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/javadoc/'
+        commandLine 'scp', '-r', 'javadoc/.', 'jenkins@openflexo.org:/home/www/sites/docusaurus/pamela/javadoc/'
     }
 }
 
