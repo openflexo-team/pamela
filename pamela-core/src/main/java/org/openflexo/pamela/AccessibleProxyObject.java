@@ -197,6 +197,8 @@ public interface AccessibleProxyObject extends HasPropertyChangeSupport, KeyValu
 	 */
 	public Object performSuperFinder(String finderIdentifier, Object value, Class<?> modelEntityInterface);
 
+	public void performSuperInitializer(Object... args);
+
 	/**
 	 * Returns true if this object is currently being serialized
 	 * 
