@@ -77,7 +77,7 @@ The first line of code instantiates a `ModelContext` (the PAMELA model at runtim
 
 A major challenge to be addressed by MDE (Model-Driven Engineering) approaches is the ability to integrate custom implementation to a base of code derived from a model. The major drawback is the way back (round-tripping).
 
-The PAMELA framework provides an elegant way to do it, while using common extension points such as inheritance, as offered by Java language. Custom implementations should be declared in Java classes, either as a unique implementation (use of `@ImplementationClass`) or with partial implementations (use of multiple  `@Implementation`, see [multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.html)).
+The PAMELA framework provides an elegant way to do it, while using common extension points such as inheritance, as offered by Java language. Custom implementations should be declared in Java classes, either as a unique implementation (use of `@ImplementationClass`) or with partial implementations (use of multiple  `@Implementation`, see [multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.md)).
 
 The following example shows how to integrate custom code to the *Book* entity described above. The partial custom implementation is provided by an abstract class, declared in an annotation of its model entity. Custom implementations are defined using usual Java implementation/overrides scheme. Here we define a custom implementation of the `read()` method, which has no annotation (and thus is not processed by the PAMELA framework), and also we customize the getter for *title*, returning a default value when no value is defined for that property. Note that this implementation references default interpreted implementation (call to `performSuperGetter(String)` method).
 
@@ -112,7 +112,7 @@ public static abstract class BookImpl implements Book {
 
 Notice that the name of a property being a string is fragile, any typo or change of the name may lead to an incorrect code and thus an incorrect model. A best practive is to define the property names as Java constants in the entity interface and use this constant everywhere you need the property name (*e.g.* in the call of `performSuperGetter(String)`).
 
-As said previously, PAMELA framework supports multiple inheritance. In this context, it is possible to provide multiple implementation classes for a given *ModelEntity*. To do so, we use abstract inner classes tagged with `@Implementation`, and the composition is made at run-time (see [multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.html)).
+As said previously, PAMELA framework supports multiple inheritance. In this context, it is possible to provide multiple implementation classes for a given *ModelEntity*. To do so, we use abstract inner classes tagged with `@Implementation`, and the composition is made at run-time (see [multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.md)).
 
 ## Download examples
 
@@ -134,5 +134,3 @@ Here are the different versions:
 2. [v2.zip](https://support.openflexo.org/images/components/pamela/examples/v2.zip) : adding behaviour
 3. [v3.zip](https://support.openflexo.org/images/components/pamela/examples/v3.zip) : behaviour modifications (AccessibleProxyObject)
 4. [v4.zip](https://support.openflexo.org/images/components/pamela/examples/v4.zip) : a more complex example
-
-[<< Approach overview](./overview.html) \| [Common annotations >>](./annotations.html)

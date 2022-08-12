@@ -2,7 +2,7 @@
 
 Model-Driven Software Development focuses on managing domain-specific models, which
 represent concerns at conceptual level. Such models are generally represented as various
-artefacts, in many languages and representations. Model-Driven approach also generally
+artifacts, in many languages and representations. Model-Driven approach also generally
 requires code generators to generate source code from models. The underlying semantics of
 this generated code is generally encoded in the code generators and **can be inlined or
 implicitly defined by code generation process, or may be sometimes explicit to the code
@@ -24,5 +24,3 @@ maintaining the link between models and source code during the development proce
 context, the model is developed at the early stages of development process, and is used to
 prototype software application. The model may be manually reverse engineered at the end of
 development process, for documentation purposes.
-
-[Approach overview >>](./overview.html)

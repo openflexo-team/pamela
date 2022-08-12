@@ -108,7 +108,7 @@ Note that Java 8 (1.8) is required for 1.5 last stable version but Java 11 is re
 
 The best way to understand PAMELA is to build your first model.
 
-[Build your first model](./example.html)
+[Build your first model](./example.md)
 
 Look at the examples (download links) at the end of this webpage, and run examples.
 
@@ -171,25 +171,25 @@ The package ``org.openflexo.pamela.test.test1`` contains basic unit tests for co
 
 #### 2.3 Discover PAMELA main features
 
-- [Model at runtime computation, model fragmentation management](./pamela-core/1-model_at_runtime.html)
-- [Life-cycle management](./pamela-core/2-life_cycle_management.html)
-- [Meta-programming support](./pamela-core/3-metaprogramming_support.html)
-- [Multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.html)
-- [Containment management](./pamela-core/5-containment_management.html)
-- [Cloning support](./pamela-core/6-cloning_support.html)
-- [Clipboard operations](./pamela-core/7-clipboard_operations.html)
-- [Notification support](./pamela-core/8-notification_support.html)
-- [Persistance support, XML serialization/deserialization](./pamela-core/9-persistence_support.html)
-- [Equality computing support](./pamela-core/10-equality_computing.html)
-- [Visiting features](./pamela-core/11-visiting_features.html)
-- [Differential updating](./pamela-core/12-differential_updating.html)
-- [Validation API](./pamela-core/13-validation_api.html)
-- [Contract programming, JML](./pamela-core/14-jml.html)
-- [Design patterns, aspect programming](./pamela-core/15-design_patterns.html)
+- [Model at runtime computation, model fragmentation management](./pamela-core/1-model_at_runtime.md)
+- [Life-cycle management](./pamela-core/2-life_cycle_management.md)
+- [Meta-programming support](./pamela-core/3-metaprogramming_support.md)
+- [Multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.md)
+- [Containment management](./pamela-core/5-containment_management.md)
+- [Cloning support](./pamela-core/6-cloning_support.md)
+- [Clipboard operations](./pamela-core/7-clipboard_operations.md)
+- [Notification support](./pamela-core/8-notification_support.md)
+- [Persistance support, XML serialization/deserialization](./pamela-core/9-persistence_support.md)
+- [Equality computing support](./pamela-core/10-equality_computing.md)
+- [Visiting features](./pamela-core/11-visiting_features.md)
+- [Differential updating](./pamela-core/12-differential_updating.md)
+- [Validation API](./pamela-core/13-validation_api.md)
+- [Contract programming, JML](./pamela-core/14-jml.md)
+- [Design patterns, aspect programming](./pamela-core/15-design_patterns.md)
 
 #### 2.4 Reference documentation
 
-The javadoc for Pamela can be found [here](./pamela-core/apidocs/index.html).
+The javadoc for Pamela can be found .
 
    
   
