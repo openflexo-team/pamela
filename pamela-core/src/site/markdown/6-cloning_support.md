@@ -1,3 +1,7 @@
+---
+sidebar_position: 7
+---
+
 # Cloning support
 
 PAMELA framework offers cloning features, and support is provided for many cloning strategies. 

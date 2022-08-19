@@ -1,3 +1,7 @@
+---
+sidebar_position: 12
+---
+
 # Visiting features
 
 Visitor pattern is offered by `AccessibleProxyObject` base API, with the two methods `accept(PAMELAVisitor)` and `accept(PAMELAVisitor,VisitingStrategy)`. 

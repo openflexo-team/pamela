@@ -1,3 +1,7 @@
+---
+sidebar_position: 5
+---
+
 # Multiple inheritance and traits programming
 
 *Traits programming* is generally described as a way to organize the code around the notion of feature (while a more classical methodology in object-oriented programming present a class-oriented structure, where a class generally combines many features around the notion of responsability). With traits programming, classes are defined as the composition of traits using inheritance operation. Multiple inheritance is thus a requirement for such a programming methodology, at the condition that naming collisions (known as diamond problem) may be solved by explicit disambiguation. 

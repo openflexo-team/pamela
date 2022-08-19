@@ -1,3 +1,7 @@
+---
+sidebar_position: 7
+---
+
 # Motivations
 
 Model-Driven Software Development focuses on managing domain-specific models, which

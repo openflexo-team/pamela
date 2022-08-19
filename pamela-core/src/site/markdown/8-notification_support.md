@@ -1,3 +1,7 @@
+---
+sidebar_position: 9
+---
+
 # Notification support
 
 Without any intervention of the developper, PAMELA framework offers a fine-tuned notification support. This notification scheme relies on the execution of write-access *ModelProperties* (properties using `set:`, `add:`, `add:AtIndex:`, `remove:`, `delete:` and `undelete:` protocols). Since the execution of *ModelProperty*-related methods is performed by embedded PAMELA interpreter, a default notification scheme is executed. 

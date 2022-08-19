@@ -1,3 +1,7 @@
+---
+sidebar_position: 4
+---
+
 # Meta-programming support
 
 Following figure represents PAMELA metamodel. 

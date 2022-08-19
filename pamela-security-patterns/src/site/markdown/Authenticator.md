@@ -1,3 +1,7 @@
+---
+sidebar_position: 2
+---
+
 # Authenticator pattern
 
 ## What is the _Authenticator_ pattern?
