@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Openflexo Pamela
  
 ## Introduction
@@ -23,7 +27,7 @@ We aim to avoid separation between model and code to simplify consistency manage
  - Deletion management
  - Clipboard operations (copy, cut, paste) management
  - Multi-level undo/redo support
- - A graphical editor is also provided in this project, allowing to graphically view and edit Pamela models (see [Pamela-editor component](../pamela-editor/index.html)).
+ - A graphical editor is also provided in this project, allowing to graphically view and edit Pamela models.
   
 ### Getting Pamela
 
