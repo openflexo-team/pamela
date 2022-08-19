@@ -1,3 +1,7 @@
+---
+sidebar_position: 5
+---
+
 # A basic example
 
 ## A very basic model with two entities

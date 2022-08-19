@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 # PAMELA objects life-cycle management
 
 A Metamodel computation is represented by a `ModelContext` and uses a `ModelFactory` built with that model context to handle instances of that metamodel. The `ModelFactory` is responsible of the life-cycle of instances of metamodel (construction and destruction of Java instances). `@Initializer` annotation allows to define parametered constructors for *ModelEntity* instances.

@@ -1,3 +1,7 @@
+---
+sidebar_position: 4
+---
+
 # Approach overview
 
 ## Model serialization in source code

@@ -1,3 +1,7 @@
+---
+sidebar_position: 8
+---
+
 # Clipboard operations
 
 PAMELA framework offers a native support for clipboard operations. Model should be annotated with `@PastingPoint` annotations, defined on *ModelProperty*. This indicates that this property may receive the "pasting" of the contents of a given clipboard, if the type of data in clipboard is assignable to the related property (either a single object or a set of object with a compatible type).

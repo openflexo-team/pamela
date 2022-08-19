@@ -1,3 +1,7 @@
+---
+sidebar_position: 5
+---
+
 # Owner pattern
 
 ## What is the _Owner_ pattern?

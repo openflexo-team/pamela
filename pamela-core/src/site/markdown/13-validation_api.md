@@ -1,3 +1,7 @@
+---
+sidebar_position: 14
+---
+
 # Validation API
 
 PAMELA framework natively offers a validation definition scheme at *ModelEntity* level. To be validable, the *ModelEntity* support interface must extends `Validable` interface. This allows to define a set of `ValidationRules`.
