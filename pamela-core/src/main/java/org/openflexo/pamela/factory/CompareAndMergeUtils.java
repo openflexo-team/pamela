@@ -80,6 +80,9 @@ public class CompareAndMergeUtils {
 	 */
 	public static <I> boolean updateWith(ProxyMethodHandler<I> source, I obj) {
 		List<AccessibleProxyObject> outsideReferences = new ArrayList<>();
+		//System.out.println("Thread: " + Thread.currentThread() + " CREATE BiMap !!!");
+		//System.out.println("WAS: " + source.getObject());
+		//System.out.println("WITH: " + obj);
 		BiMap<Object, Object> updatedObjects = HashBiMap.create();
 		boolean returned = updateWith(source, obj, updatedObjects, outsideReferences);
 		// Outside references are still to rebind, do it at the end of update process
@@ -207,7 +210,8 @@ public class CompareAndMergeUtils {
 			}
 		}
 		else {
-			mappedObjects.put(source.getObject(), obj);
+			// The inverse reference might be still registered, clear it
+			mappedObjects.forcePut(source.getObject(), obj);
 		}
 
 		Iterator<ModelProperty<? super I>> properties;
