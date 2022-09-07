@@ -1100,6 +1100,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 
 		if (property.getSetterMethod() == null) {
 			System.err.println("Inconsistent data: cannot find setter for " + property);
+			if (property.getCardinality() == Cardinality.LIST) {
+				// TODO: do it with adder/remover/reindexer methods
+				System.err.println("TODO: do it with adder/remover/reindexer methods");
+			}
 			return;
 		}
 
@@ -1638,7 +1642,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 						if (!_isEqual(values, oppositeValues, seen, considerProperty)) {
 							// System.out.println("values=" + values);
 							// System.out.println("oppositeValues=" + oppositeValues);
-							// System.out.println("Equals fails because of LIST property difference" + p);
+							// System.out.println("Equals fails because of LIST property difference for " + p);
 							return false;
 						}
 						break;
