@@ -50,6 +50,9 @@ import org.openflexo.pamela.model.ModelProperty;
 /**
  * Indicates updater for a given {@link ModelProperty}
  * 
+ * Semantics of @Updater slightly differs from @Setter as new property value is not set to the supplied reference but is updated from the
+ * supplied value
+ * 
  * @author sylvain
  *
  */
