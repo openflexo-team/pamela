@@ -35,22 +35,38 @@
 
 package org.openflexo.pamela.test.updatewith3;
 
+import java.util.List;
+
+import org.openflexo.pamela.annotations.Adder;
+import org.openflexo.pamela.annotations.CloningStrategy;
+import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
+import org.openflexo.pamela.annotations.Embedded;
 import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.annotations.ModelEntity;
-import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.annotations.Reindexer;
+import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.XMLElement;
 
 @ModelEntity
 @XMLElement
-public interface ConceptB extends AbstractConcept {
+public interface ParentConcept extends AbstractConcept {
 
-	static final String CONCEPT_A = "conceptA";
+	static final String CHILDREN = "children";
 
-	@Getter(value = CONCEPT_A)
+	@Getter(value = CHILDREN, cardinality = Cardinality.LIST)
+	@Embedded
+	@CloningStrategy(StrategyType.CLONE)
 	@XMLElement
-	ConceptA getConceptA();
+	public List<ChildConcept> getChildren();
 
-	@Setter(CONCEPT_A)
-	void setConceptA(ConceptA value);
+	@Adder(CHILDREN)
+	public void addToChildren(ChildConcept c);
+
+	@Remover(CHILDREN)
+	public void removeFromChildren(ChildConcept c);
+
+	@Reindexer(CHILDREN)
+	public void moveChildrenToIndex(ChildConcept c, int index);
 
 }
