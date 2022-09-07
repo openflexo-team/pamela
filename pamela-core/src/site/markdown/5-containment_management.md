@@ -1,4 +1,8 @@
-#Containment management
+---
+sidebar_position: 6
+---
+
+# Containment management
 
 As it was previously described, PAMELA metamodel supports containment.
 

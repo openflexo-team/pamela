@@ -1,3 +1,7 @@
+---
+sidebar_position: 13
+---
+
 # Differential updating
 
 Differential updating for object graphs is natively supported using method 

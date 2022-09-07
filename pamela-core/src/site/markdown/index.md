@@ -1,3 +1,7 @@
+---
+sidebar_position: 1
+---
+
 # Pamela : an annotation-based Java modelling framework
 
 PAMELA is an annotation-based Java Modelling framework. PAMELA provides a smooth integration between model and code, and enable Java developers to handle software development both at conceptual level and at source-code level, without code transformation and/or generation, and avoiding round-tripping issues. 

@@ -1,3 +1,7 @@
+---
+sidebar_position: 8
+---
+
 # Frequently Asked Questions
 
 ### 1. Class cannot access its superinterface ?

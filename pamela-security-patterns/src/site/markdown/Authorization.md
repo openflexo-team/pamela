@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 # Authorization pattern
 
 ## What is the _Authorization_ pattern?
