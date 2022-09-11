@@ -556,14 +556,18 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	public <V extends Validable> void revalidate(V validable) throws InterruptedException {
 
 		if (validable != null) {
+			//System.out.println("Avant : \n" + debug());
 			ValidationNode<V> validationNode = getValidationNode(validable);
 			if (validationNode != null) {
 				validationNode.revalidate();
 			}
+			//System.out.println("Apres : \n" + debug());
 		}
 		getPropertyChangeSupport().firePropertyChange("allIssues", null, getAllIssues());
 		getPropertyChangeSupport().firePropertyChange("allErrors", null, getAllErrors());
 		getPropertyChangeSupport().firePropertyChange("allWarnings", null, getAllWarnings());
+		getPropertyChangeSupport().firePropertyChange("errorsCount", null, getErrorsCount());
+		getPropertyChangeSupport().firePropertyChange("warningsCount", null, getWarningsCount());
 
 	}
 
@@ -694,6 +698,27 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		rootNode.clear();
 
+	}
+
+	public String debug() {
+		return debug(getRootNode(), new StringBuffer(), 0).toString();
+	}
+
+	public StringBuffer debug(ValidationNode<?> node, StringBuffer sb, int level) {
+		sb.append(StringUtils.buildWhiteSpaceIndentation(level * 2) + " * " + node.getObject() + "\n");
+		for (ValidationError error : node.getErrors()) {
+			sb.append(StringUtils.buildWhiteSpaceIndentation(level * 2 + 2) + " > " + error + "\n");
+		}
+		for (ValidationWarning warning : node.getWarnings()) {
+			sb.append(StringUtils.buildWhiteSpaceIndentation(level * 2 + 2) + " > " + warning + "\n");
+		}
+		for (InformationIssue info : node.getInfoIssues()) {
+			sb.append(StringUtils.buildWhiteSpaceIndentation(level * 2 + 2) + " > " + info + "\n");
+		}
+		for (ValidationNode<?> childNode : node.getChildNodes()) {
+			debug(childNode, sb, level + 1);
+		}
+		return sb;
 	}
 
 }
