@@ -141,10 +141,35 @@ public class CompareAndMergeUtils {
 						}
 						break;
 					case LIST:
-						List<Object> values = new ArrayList<>((List<Object>) objectHandler.invokeGetter(p));
+						List<Object> values = (List<Object>) objectHandler.invokeGetter(p);
+						for (Object value : new ArrayList<>(values)) {
+							validReference = mappedObjects.inverse().get(value);
+							if (validReference != null) {
+								// We replace this value with the right reference object at right index
+								List<Object> currentValues = (List<Object>) objectHandler.invokeGetter(p);
+								int initialIndex = currentValues.indexOf(value);
+								objectHandler.invokeRemover(p, value);
+								objectHandler.invokeAdder(p, validReference);
+								objectHandler.invokeReindexer(p, validReference, initialIndex);
+								// System.out.println(
+								// "Plutot que " + value + " c'est mieux de mettre " + referenceObject + " a l'index " + initialIndex);
+							}
+							/*else {
+								if (value instanceof AccessibleProxyObject) {
+									// Do it recursively
+									rebindOutsideReferences(mappedObjects, objectHandler.getModelFactory().getHandler(value),
+											processedObjects);
+								}
+							}*/
+						}
+
+						/*List<Object> values = new ArrayList<>((List<Object>) objectHandler.invokeGetter(p));
 						for (Object value : values) {
 							validReference = mappedObjects.inverse().get(value);
 							if (validReference != null) {
+								System.out.println("Je suis sur la propriete " + p + " dans " + objectHandler.getObject());
+								System.out.println("J'avais " + value);
+								System.out.println("Que je remplace par " + validReference);
 								objectHandler.invokeSetter(p, validReference);
 							}
 							else {
@@ -154,7 +179,7 @@ public class CompareAndMergeUtils {
 											processedObjects);
 								}
 							}
-						}
+						}*/
 						break;
 					default:
 						break;
@@ -225,6 +250,13 @@ public class CompareAndMergeUtils {
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
 
+			/* if (p.getPropertyIdentifier().equals("flexoConcepts")) {
+				DEBUG = true;
+			}
+			else {
+				DEBUG = false;
+			} */
+
 			if (!p.isDerived()) {
 
 				if (DEBUG)
@@ -234,7 +266,9 @@ public class CompareAndMergeUtils {
 					case SINGLE:
 						Object singleValue = source.invokeGetter(p);
 						Object oppositeValue = oppositeObjectHandler.invokeGetter(p);
-						// System.out.println("[" + Thread.currentThread().getName() + "] Ici-1 avec " + p.getPropertyIdentifier());
+						if (DEBUG)
+							System.out.println("Property " + p.getPropertyIdentifier() + " singleValue=" + singleValue + " oppositeValue="
+									+ oppositeValue);
 
 						if (!isEqual(singleValue, oppositeValue)) {
 
@@ -277,6 +311,11 @@ public class CompareAndMergeUtils {
 						List<Object> values = new ArrayList<>((List<Object>) source.invokeGetter(p));// invokeGetterForListCardinality(p);
 						List<Object> oppositeValues = new ArrayList<>((List<Object>) oppositeObjectHandler.invokeGetter(p)); // invokeGetterForListCardinality(p);
 						ListMatching matching = match(source, values, oppositeValues);
+						if (DEBUG) {
+							System.out.println(
+									"Property " + p.getPropertyIdentifier() + " values=" + values + " oppositeValues=" + oppositeValues);
+							System.out.println("Property " + p.getPropertyIdentifier() + " : matching=" + matching);
+						}
 						for (Matched m : matching.matchedList) {
 							// System.out.println("match " + m.idx1 + " with " + m.idx2);
 							Object o1 = values.get(m.idx1);
@@ -333,11 +372,17 @@ public class CompareAndMergeUtils {
 						break;
 				}
 			}
+
 		}
 
-		if (DEBUG)
+		if (DEBUG) {
 			System.out.println("<<<<<<< DONE updateWith " + source.getObject() + " with " + obj);
-
+			System.out.println("Mapped objects:");
+			for (Object object1 : mappedObjects.keySet()) {
+				System.out.println(" *** " + object1 + " > " + mappedObjects.get(object1));
+			}
+			System.out.println("outsideReferences=" + outsideReferences);
+		}
 		return true;
 	}
 
@@ -375,7 +420,9 @@ public class CompareAndMergeUtils {
 						Object singleValue = objectHandler.invokeGetter(p);
 						if (mappedObjects.inverse().get(singleValue) != null) {
 							// We replace singleValue with the right reference object
+
 							Object referenceObject = mappedObjects.inverse().get(singleValue);
+
 							objectHandler.invokeSetter(p, referenceObject);
 						}
 						break;
@@ -408,6 +455,20 @@ public class CompareAndMergeUtils {
 	 */
 	private static ListMatching match(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2) {
 		ListMatching returned = bruteForceMatch(source, l1, l2, new HashMap<>());
+		// System.out.println("MATCHING :\n" + returned);
+		return returned;
+	}
+
+	/**
+	 * Compute optimal matching between two lists of objects, given a supplied mapping
+	 * 
+	 * @param l1
+	 * @param l2
+	 * @return
+	 */
+	private static ListMatching match(ProxyMethodHandler<?> source, List<Object> l1, List<Object> l2, Map<Object, Object> visitedObjects) {
+
+		ListMatching returned = bruteForceMatch(source, l1, l2, new HashMap<>(visitedObjects));
 		// System.out.println("MATCHING :\n" + returned);
 		return returned;
 	}
@@ -561,6 +622,7 @@ public class CompareAndMergeUtils {
 		}
 		if (v1 instanceof AccessibleProxyObject && v2 instanceof AccessibleProxyObject) {
 			ProxyMethodHandler<?> handler = source.getModelFactory().getHandler(v1);
+			// System.out.println("Distance between " + handler.getObject() + " and " + v2 + " visited=" + visitedObjects);
 			return getDistance(handler, v2, visitedObjects);
 		}
 		return 1.0;
@@ -747,7 +809,8 @@ public class CompareAndMergeUtils {
 			return 0;
 		}
 		// System.out.println("On matche " + l1 + " et " + l2 + " visited:" + visitedObjects);
-		ListMatching matching = match(source, l1, l2);
+		// ListMatching matching = match(source, l1, l2);
+		ListMatching matching = match(source, l1, l2, visitedObjects);
 		// System.out.println("Matching=" + matching);
 		double total = matching.added.size() + matching.removed.size() + matching.matchedList.size();
 		double score = matching.added.size() + matching.removed.size();

@@ -101,6 +101,9 @@ public class ModelContext {
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
 		executionMonitors = new HashSet<>();
 		if (isFinalModel) {
+			for (ModelEntity entity : modelEntities.values()) {
+				entity.finalizeImport();
+			}
 			discoverPatterns();
 		}
 	}
@@ -129,6 +132,9 @@ public class ModelContext {
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
 		executionMonitors = new HashSet<>();
+		for (ModelEntity entity : modelEntities.values()) {
+			entity.finalizeImport();
+		}
 		discoverPatterns();
 	}
 

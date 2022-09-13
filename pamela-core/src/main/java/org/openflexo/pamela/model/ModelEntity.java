@@ -336,7 +336,7 @@ public class ModelEntity<I> {
 
 	}
 
-	protected void finalizeImport() throws ModelDefinitionException {
+	public void finalizeImport() throws ModelDefinitionException {
 		for (ModelProperty<? super I> property : properties.values()) {
 			property.finalizeImport();
 		}

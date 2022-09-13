@@ -467,6 +467,11 @@ public class ModelProperty<I> {
 							}
 						}
 					}
+					// System.out.println("In entity " + getModelEntity() + " property " + this + " inverse=" + inverseProperty);
+					// System.out.println("Property: " + getPropertyIdentifier() + " isDerivedRelativeToInverseProperty="
+					// + isDerivedRelativeToInverseProperty);
+					// System.out.println("Property: " + inverseProperty.getPropertyIdentifier() + " isDerivedRelativeToInverseProperty="
+					// + inverseProperty.isDerivedRelativeToInverseProperty);
 				}
 			}
 		}
