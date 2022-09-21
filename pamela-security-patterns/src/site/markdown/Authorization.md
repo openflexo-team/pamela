@@ -6,7 +6,7 @@ sidebar_position: 3
 
 ## What is the _Authorization_ pattern?
 
-This security pattern is used to implement an authentication mechanism. A class diagram of the pattern is given below.
+This security pattern is used to implement an authorization mechanism. A class diagram of the pattern is given below.
 
 ![Authorization](https://support.openflexo.org/images/components/pamela/doc/authorization.png)
 

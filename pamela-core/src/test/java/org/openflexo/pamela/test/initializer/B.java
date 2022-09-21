@@ -1,7 +1,6 @@
 /**
  * 
- * Copyright (c) 2013-2014, Openflexo
- * Copyright (c) 2011-2012, AgileBirds
+ * Copyright (c) 2014, Openflexo
  * 
  * This file is part of Pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
@@ -37,48 +36,42 @@
  * 
  */
 
-package org.openflexo.pamela.annotations;
+package org.openflexo.pamela.test.initializer;
 
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.openflexo.pamela.AccessibleProxyObject;
+import org.openflexo.pamela.annotations.Getter;
+import org.openflexo.pamela.annotations.ImplementationClass;
+import org.openflexo.pamela.annotations.Initializer;
+import org.openflexo.pamela.annotations.ModelEntity;
+import org.openflexo.pamela.annotations.Parameter;
+import org.openflexo.pamela.annotations.Setter;
 
-import org.openflexo.pamela.model.ModelProperty;
+@ModelEntity
+@ImplementationClass(B.BImpl.class)
+public interface B extends AccessibleProxyObject {
 
-/**
- * Indicates updater for a given {@link ModelProperty}
- * 
- * Semantics of @Updater slightly differs from @Setter as new property value is not set to the supplied reference but is updated from the
- * supplied value
- * 
- * @author sylvain
- *
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.METHOD)
-public @interface Updater {
+	String FOO = "foo";
+	String VAL = "val";
 
-	String value();
+	@Initializer
+	void create(@Parameter(FOO) String aFoo, @Parameter(VAL) Integer anInteger);
 
-	class UpdaterImpl implements Updater {
+	@Getter(value = FOO)
+	String getFoo();
 
-		private final String value;
+	@Setter(value = FOO)
+	void setFoo(String foo);
 
-		public UpdaterImpl(String value) {
-			this.value = value;
-		}
+	@Getter(value = VAL)
+	Integer getVal();
 
+	@Setter(value = VAL)
+	void setVal(Integer b);
+
+	public static abstract class BImpl implements B {
 		@Override
-		public Class<? extends Annotation> annotationType() {
-			return Updater.class;
+		public String toString() {
+			return "BImpl" + getFoo() + getVal();
 		}
-
-		@Override
-		public String value() {
-			return value;
-		}
-
 	}
 }

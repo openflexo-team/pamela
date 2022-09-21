@@ -65,12 +65,12 @@ import java.util.function.Function;
 
 import javax.annotation.Nonnull;
 
-import org.openflexo.connie.BindingEvaluator;
 import org.openflexo.connie.DataBinding;
+import org.openflexo.connie.binding.javareflect.InvalidKeyValuePropertyException;
 import org.openflexo.connie.exception.NullReferenceException;
 import org.openflexo.connie.exception.TypeMismatchException;
+import org.openflexo.connie.java.util.JavaBindingEvaluator;
 import org.openflexo.connie.type.TypeUtils;
-import org.openflexo.kvc.InvalidKeyValuePropertyException;
 import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
@@ -597,6 +597,11 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				throw new ModelExecutionException("No such finder defined. Finder '" + args[0] + "' could not be found on entity "
 						+ getModelEntity().getImplementedInterface().getName());
 			}
+		}
+		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_INITIALIZER)) {
+			Object[] developpedArgs = (Object[]) args[0];
+			internallyInvokeInitializer(getModelEntity().getInitializerForArgs(developpedArgs), developpedArgs);
+			return null;
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, IS_SERIALIZING)) {
 			return isSerializing();
@@ -1142,6 +1147,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 
 		if (property.getSetterMethod() == null) {
 			System.err.println("Inconsistent data: cannot find setter for " + property);
+			if (property.getCardinality() == Cardinality.LIST) {
+				// TODO: do it with adder/remover/reindexer methods
+				System.err.println("TODO: do it with adder/remover/reindexer methods");
+			}
 			return;
 		}
 
@@ -1652,10 +1661,11 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								String oppositeValueAsString = se.toString(oppositeValue);
 								if ((singleValueAsString == null && oppositeValueAsString != null)
 										|| (singleValueAsString != null && !singleValueAsString.equals(oppositeValueAsString))) {
-									System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" + singleValue
-											+ " opposite=" + oppositeValue);
-									System.out.println("object1=" + getObject() + " of " + getObject().getClass());
-									System.out.println("object2=" + obj + " of " + obj.getClass());
+									// System.out.println("Equals fails because of SINGLE serializable property " + p + " value=" +
+									// singleValue
+									// + " opposite=" + oppositeValue);
+									// System.out.println("object1=" + getObject() + " of " + getObject().getClass());
+									// System.out.println("object2=" + obj + " of " + obj.getClass());
 									return false;
 								}
 							} catch (InvalidDataException e) {
@@ -1667,8 +1677,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								// Ignore
 							}
 							else if (!_isEqual(singleValue, oppositeValue, seen, considerProperty)) {
-								System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + "opposite="
-										+ oppositeValue);
+								// System.out.println("Equals fails because of SINGLE property " + p + " value=" + singleValue + "opposite="
+								// + oppositeValue);
 								return false;
 							}
 						}
@@ -1677,9 +1687,9 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 						List<Object> values = (List) invokeGetter(p);
 						List<Object> oppositeValues = (List) oppositeObjectHandler.invokeGetter(p);
 						if (!_isEqual(values, oppositeValues, seen, considerProperty)) {
-							System.out.println("values=" + values);
-							System.out.println("oppositeValues=" + oppositeValues);
-							System.out.println("Equals fails because of LIST property difference" + p);
+							// System.out.println("values=" + values);
+							// System.out.println("oppositeValues=" + oppositeValues);
+							// System.out.println("Equals fails because of LIST property difference for " + p);
 							return false;
 						}
 						break;
@@ -1868,7 +1878,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								case CUSTOM_CLONE:
 									// We have here to invoke custom code (encoded in getStrategyTypeFactory())
 									try {
-										Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(), getObject());
+										Object computedValue = JavaBindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(),
+												getObject());
 										clonedObjectHandler.invokeSetter(p, computedValue);
 									} catch (InvalidKeyValuePropertyException e1) {
 										e1.printStackTrace();
@@ -1876,7 +1887,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 										e1.printStackTrace();
 									} catch (NullReferenceException e1) {
 										e1.printStackTrace();
-									} catch (InvocationTargetException e1) {
+									} catch (ReflectiveOperationException e1) {
 										e1.printStackTrace();
 									}
 									break;
@@ -2006,7 +2017,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								case FACTORY:
 									// We have here to invoke custom code (encoded in getStrategyTypeFactory())
 									try {
-										Object computedValue = BindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(),
+										Object computedValue = JavaBindingEvaluator.evaluateBinding(p.getStrategyTypeFactory(),
 												clonedObject /*getObject()*/);
 										clonedObjectHandler.invokeSetter(p, computedValue);
 									} catch (InvalidKeyValuePropertyException e1) {
@@ -2015,7 +2026,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 										e1.printStackTrace();
 									} catch (NullReferenceException e1) {
 										e1.printStackTrace();
-									} catch (InvocationTargetException e1) {
+									} catch (ReflectiveOperationException e1) {
 										e1.printStackTrace();
 									}
 									break;

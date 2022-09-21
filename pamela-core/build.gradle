@@ -1,6 +1,6 @@
 dependencies {
   api flexoUtils()
-  api connie()
+  api connieJava()
   api group: 'org.jdom', name: 'jdom2', version: '2.0.6'
   api group: 'org.javassist', name: 'javassist', version: '3.27.0-GA'
 
