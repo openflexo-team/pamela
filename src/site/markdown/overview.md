@@ -50,5 +50,3 @@ This metamodel is classical and reflects a common class diagram vision such as f
 
 A strong interest of the approach is that the model is encoded in Java, and must be compiled. It forces the Java compiler to perform required checks for a PAMELA model encoded in a strong typed program. The execution semantics of models is fully compatible with the Java semantics. Many validation rules are automatically performed by Java compilation, independently of the underlying PAMELA execution semantics.
 
-
-[<< Approach overview](./overview.html) \| [A basic example >>](./example.html)

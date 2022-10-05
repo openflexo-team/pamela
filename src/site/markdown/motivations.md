@@ -28,5 +28,3 @@ maintaining the link between models and source code during the development proce
 context, the model is developed at the early stages of development process, and is used to
 prototype software application. The model may be manually reverse engineered at the end of
 development process, for documentation purposes.
-
-[Approach overview >>](./overview.html)
