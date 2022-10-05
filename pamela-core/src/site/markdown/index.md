@@ -157,7 +157,7 @@ But this implementation is really basic and doesn't provide advanced capabilitie
 
 ## Reference documentation
 
-The javadoc for Pamela can be found [here](./apidocs/index.html).
+The javadoc for Pamela can be found [here](/javadoc/pamela-core/index.html).
 
 ## Frequently Asked Questions
 
