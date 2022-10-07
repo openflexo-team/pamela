@@ -8,7 +8,7 @@ sidebar_position: 2
 
 This security pattern is used to implement an authentication mechanism. A class diagram of the pattern is given below.
 
-![Authenticator](https://support.openflexo.org/images/components/pamela/doc/authenticator.png)
+![Authenticator](/img/authenticator.png)
 
 This pattern allows _Subject_ to be authenticated using a set of objects known as _Authentication Information_. 
 

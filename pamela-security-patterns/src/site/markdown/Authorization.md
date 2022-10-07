@@ -8,7 +8,7 @@ sidebar_position: 3
 
 This security pattern is used to implement an authentication mechanism. A class diagram of the pattern is given below.
 
-![Authorization](https://support.openflexo.org/images/components/pamela/doc/authorization.png)
+![Authorization](/img/authorization.png)
 
 PAMELA implementation of the pattern is build around three entities: _Subjects_, _Resources_ and _Permission Checkers_. _Subjects_ are the entities which want to access the _Resource_. _Resources_ need to be secured. Each of these have a _Permission Checker_ which can say whether an access to the _Resource_ is authorized based on the _Resource Identifier_ and the _Subject Identifier_ trying to access the resource. The authorization mechanism is thus the dynamic check to the of the _Permission Checker_ of a _Resource_ every time a _Subject_ tries to access it. 
 
