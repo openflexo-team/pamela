@@ -12,7 +12,7 @@ To do so, we argue that source code is the right artefact to encode the model wi
 
 The following figure presents the PAMELA approach for storing model in source code. The model is inlined across many source code files, with a set of annotations covering the PAMELA metamodel as presented below.
 
-![PamelaVisionV2](https://support.openflexo.org/images/components/pamela/PamelaVisionV2.png)
+![PamelaVisionV2](/images/PamelaVisionV2.png)
 
 [//]: # (@Sylvain, je ne suis pas sur que l'on comprenne bien que le modele est dans les fichiers Java)
 [//]: # (@Sylvain, avant tu n'as jamais evoqué le fait que cela permet des model @ runtime aussi)
@@ -39,7 +39,7 @@ The code size is reduced because each abstraction factorize a recognized pattern
 The PAMELA metamodel is presented in the following figure.
 This metamodel is classical and reflects a common class diagram vision such as found in UML.
 
-![PamelaMetaModel](https://support.openflexo.org/images/components/pamela/PamelaMetaModel.png)
+![PamelaMetaModel](/images/PamelaMetaModel.png)
 
 - A `PAMELAModel` is defined as a set of references to `ModelEntity`.
 - A `ModelEntity` reflects a concept and is encoded in a Java `interface`. The PAMELA metamodel allows multiple inheritance: thus `ModelEntity` may define a set of parent entities. A `ModelEntity` also defines some properties, encoded as `ModelProperty`. Note that reification of `ModelEntity` is performed in a Java `interface` (and not a class), which only defines API without any implementation for methods. A partial base implementation can be given using an abstract class (conforming to the implemented interface).
