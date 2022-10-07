@@ -130,10 +130,10 @@ gradle run
 
 Here are the different versions:
 
-1. [v1.zip](https://support.openflexo.org/images/components/pamela/examples/v1.zip) : minimal example
-2. [v2.zip](https://support.openflexo.org/images/components/pamela/examples/v2.zip) : adding behaviour
-3. [v3.zip](https://support.openflexo.org/images/components/pamela/examples/v3.zip) : behaviour modifications (AccessibleProxyObject)
-4. [v4.zip](https://support.openflexo.org/images/components/pamela/examples/v4.zip) : a more complex example
+1. [v1.zip](/examples/v1.zip) : minimal example
+2. [v2.zip](/examples/v2.zip) : adding behaviour
+3. [v3.zip](/examples/v3.zip) : behaviour modifications (AccessibleProxyObject)
+4. [v4.zip](/examples/v4.zip) : a more complex example
 
 ### 2. Download and build PAMELA framework in your environment
 

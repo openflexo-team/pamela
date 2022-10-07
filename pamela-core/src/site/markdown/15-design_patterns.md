@@ -26,11 +26,11 @@ The *PAMELA Pattern* approach:
 
 To declare a *Pattern* on existing code, pattern elements such as *Pattern Stakeholders* and methods need to be annotated with provided pattern-specific  annotations. These annotations will be discovered at run-time by the `PatternFactory` and stored in `PatternDefinition` attributes.
 
-![PAMELAAuthenticator_CD](https://support.openflexo.org/images/components/pamela/PAMELAAuthenticator_CD.png)
+![PAMELAAuthenticator_CD](/images/PAMELAAuthenticator_CD.png)
 
 To validate the implementation of our approach in PAMELA we propose an implementation of the \emph{Authenticator pattern} as a cyber-security contract. Previous figure presents the previous class structure in the case of the Authenticator pattern. Note that each attribute of the `AuthenticatorPatternDefinition` class has a corresponding annotation (displayed as a comment).
 
-![AuthenticatorPattern4](https://support.openflexo.org/images/components/pamela/AuthenticatorPattern4.png)
+![AuthenticatorPattern4](/images/AuthenticatorPattern4.png)
 
 Previous figure presents the composition of the *Authenticator* pattern with an existing base of code. The  *Authenticator pattern* requires the definition of two *stakeholders* (*Authenticator* role and *Subject* role) which have to be played by instances of provided Java classes. A set of annotations coming with the security pattern definition is used to explicit that roles (respectively `@Authenticator` and `@AuthenticatorSubject` annotations). The definition of the pattern also requires the distribution of responsibilities and relationships according to the underlying semantics of the pattern (here, the authentication concerns). The request authentication method is identified using the `@RequestAuthentication` annotation. In the same way, we must identify some responsibilities in the `Client` class: the method providing the  *Authenticator* access, the method providing the authentication information, the method setting the proof of identity and the `authenticate()` method itself.
 
@@ -94,7 +94,7 @@ At run-time, both functional code and security pattern logic, i.e pattern behavi
 
 This implementation, unlike JML, provides a contract enforcement mechanism which is hard-coded within PAMELA *Pattern* classes. This abstraction is closer to the requirements of the end-user, who may want to add an authentication mechanism to an existing code. The user only need to annotate his code and PAMELA will automatically handle the pattern business logic (both, pattern behavior and assertion checking).
 
-![AuthenticatorControlFlow](https://support.openflexo.org/images/components/pamela/AuthenticatorControlFlow.png)
+![AuthenticatorControlFlow](/images/AuthenticatorControlFlow.png)
 
 Previous figure depicts  the control flow of the execution of a method annotated with `RequiresAuthentication`. 
 This annotation is used to identify methods which must trigger the authentication process before being executed. The call will thus be handled as follows:

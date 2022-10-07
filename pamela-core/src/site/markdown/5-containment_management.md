@@ -20,7 +20,7 @@ Following figure presents life-cycle for any object managed with PAMELA. Any cal
 
 In the context of containment relationships, this status is propagated along container hierarchy: any object beeing modified implies its container (which may be an unique object or a set of objects) being modified too. `modified` status for a given instance may be retrieved using `isModified()` method defined in `AccessibleProxyObject` Java interface. In the case of a custom method beeing implemented, which has side-effect (impacting its internal data), a `setModified(boolean)` method is offered to the developper to indicates the modification. Saving object graph brings back object status in `Alive/Saved` status: in this case `isModified()` method returns false.
 
-![LifeCycle](https://support.openflexo.org/images/components/pamela/LifeCycle.png)
+![LifeCycle](/images/LifeCycle.png)
 
 
  

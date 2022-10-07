@@ -6,7 +6,7 @@ sidebar_position: 4
 
 Following figure represents PAMELA metamodel. 
 
-![PamelaMetaModel](https://support.openflexo.org/images/components/pamela/PamelaMetaModel.png)
+![PamelaMetaModel](/images/PamelaMetaModel.png)
 
 Concept of *ModelProperty* represent access to a value (simple or with multiple cardinality). This read-access is implicitely implemented using `get:` protocol. Following the same logic, PAMELA properties may expose following protocols used to define semantics of the *ModelProperty* :
 

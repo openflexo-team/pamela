@@ -10,13 +10,13 @@ A Metamodel computation is represented by a `ModelContext` and uses a `ModelFact
 
 Following figure illustrates life-cycle of objects beeing instantiated as PAMELA instances. The `ModelFactory` initiates creation and triggers right constructor during a phase where the object is in `isCreating` status.
 
-![LifeCycle](https://support.openflexo.org/images/components/pamela/LifeCycle.png)
+![LifeCycle](/images/LifeCycle.png)
 
 Modifications of objects are internally tracked by PAMELA interpreter which manages `modified` status, according to containment semantics as presented further (a contained object modification implies object flagged as modified, and implied container flagged as modified too). Saving object graph brings back object status in `Alive/Saved` status.
 
 Since calls to any features of model objects are dispatched by the internal interpreter, PAMELA runtime offers a multi-level undo/redo stack tooling. When enabled, this scheme allows to store and manage an edition model composed of atomic edits. Following figure presents atomic edits metamodel for a fine-grained model modification tracking system. That mechanism provides undo/redo features, virtually unlimited. For performance reasons, we can set a maximum depth for undo/redo operations.
 
-![AtomicEditMetaModel](https://support.openflexo.org/images/components/pamela/AtomicEditMetaModel.png)
+![AtomicEditMetaModel](/images/AtomicEditMetaModel.png)
 
 `DeletableProxyObject` provides delete (and undelete) features to *ModelEntity* instances. Deletion features are performed using a context which is a graph closure computation for all the objects which have to be deleted. PAMELA also offers undelete feature which allow to resurrect a deleted object. Deleted objects are still resurectable until they are still in the undo/redo stack. A deleted object who is leaving scope of maximum depth of undo/redo stack is destroyed. Object is fully dereferenced, ready for garbage collecting, and cannot be resurrected again.
 
