@@ -97,6 +97,13 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	private final Map<Validable, ValidationNode<?>> nodes = new HashMap<>();
 
+	/**
+	 * Represents validation for a given {@link Validable} object
+	 * 
+	 * @author sylvainguerin
+	 *
+	 * @param <V>
+	 */
 	public class ValidationNode<V extends Validable> implements PropertyChangeListener {
 
 		private final V object;
@@ -159,6 +166,11 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			return childNodes;
 		}
 
+		/**
+		 * Apply validation on this node : first apply all relevant {@link ValidationRule}, and then do it for children<br>
+		 * Note that this method should be called only the first time validation is performed on that node. When already performed, use
+		 * {@link #revalidate()}
+		 */
 		private void validate() {
 
 			_performValidate();
@@ -172,14 +184,21 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		}
 
+		/**
+		 * Internally called to structurally update ValidationNode tree (append and/or remove children)
+		 * 
+		 * @return boolean indicating if some chidren nodes were added or removed
+		 */
 		private boolean _updateChildren() {
 
 			if (object == null) {
 				return false;
 			}
 
-			boolean childrenWereAdded = false;
+			boolean childrenWereModified = false;
 			Collection<? extends Validable> embeddedValidableObjects = object.getEmbeddedValidableObjects();
+
+			List<ValidationNode> childrenToRemove = new ArrayList<>(childNodes);
 
 			if (embeddedValidableObjects != null) {
 				for (Validable embeddedValidable : new ArrayList<>(embeddedValidableObjects)) {
@@ -190,12 +209,24 @@ public class ValidationReport implements HasPropertyChangeSupport {
 						childNodes.add(childNode);
 						nodes.put(embeddedValidable, childNode);
 						childNode.validate();
-						childrenWereAdded = true;
+						childrenWereModified = true;
+					}
+					else {
+						childrenToRemove.remove(childNode);
 					}
 				}
 			}
 
-			return childrenWereAdded;
+			if (childrenToRemove.size() > 0) {
+				// Some children are no more existant, remove them
+				for (ValidationNode childToRemove : childrenToRemove) {
+					childNodes.remove(childToRemove);
+					nodes.remove(childToRemove.getObject());
+					childrenWereModified = true;
+				}
+			}
+
+			return childrenWereModified;
 		}
 
 		private void _performValidate() {
@@ -255,6 +286,13 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		}
 
+		/**
+		 * Apply validation on this node, asserting it has already been performed.<br>
+		 * 
+		 * First apply all relevant {@link ValidationRule}, then update the structure, and finally validate children<
+		 * 
+		 * @throws InterruptedException
+		 */
 		private void revalidate() throws InterruptedException {
 
 			clear();
@@ -543,6 +581,9 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		getPropertyChangeSupport().firePropertyChange("errorIssuesRegarding(V)", false, true);
 		getPropertyChangeSupport().firePropertyChange("warningIssuesRegarding(V)", false, true);
 
+		getPropertyChangeSupport().firePropertyChange("errorsCount", null, getErrorsCount());
+		getPropertyChangeSupport().firePropertyChange("warningsCount", null, getWarningsCount());
+
 	}
 
 	/**
@@ -556,14 +597,14 @@ public class ValidationReport implements HasPropertyChangeSupport {
 	public <V extends Validable> void revalidate(V validable) throws InterruptedException {
 
 		if (validable != null) {
+			// System.out.println("Avant : \n" + debug());
 			ValidationNode<V> validationNode = getValidationNode(validable);
 			if (validationNode != null) {
 				validationNode.revalidate();
 			}
+			// System.out.println("Apres : \n" + debug());
 		}
-		getPropertyChangeSupport().firePropertyChange("allIssues", null, getAllIssues());
-		getPropertyChangeSupport().firePropertyChange("allErrors", null, getAllErrors());
-		getPropertyChangeSupport().firePropertyChange("allWarnings", null, getAllWarnings());
+		notifyChange();
 
 	}
 
@@ -694,6 +735,27 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 		rootNode.clear();
 
+	}
+
+	public String debug() {
+		return debug(getRootNode(), new StringBuffer(), 0).toString();
+	}
+
+	public StringBuffer debug(ValidationNode<?> node, StringBuffer sb, int level) {
+		sb.append(StringUtils.buildWhiteSpaceIndentation(level * 2) + " * " + node.getObject() + "\n");
+		for (ValidationError error : node.getErrors()) {
+			sb.append(StringUtils.buildWhiteSpaceIndentation(level * 2 + 2) + " > " + error + "\n");
+		}
+		for (ValidationWarning warning : node.getWarnings()) {
+			sb.append(StringUtils.buildWhiteSpaceIndentation(level * 2 + 2) + " > " + warning + "\n");
+		}
+		for (InformationIssue info : node.getInfoIssues()) {
+			sb.append(StringUtils.buildWhiteSpaceIndentation(level * 2 + 2) + " > " + info + "\n");
+		}
+		for (ValidationNode<?> childNode : node.getChildNodes()) {
+			debug(childNode, sb, level + 1);
+		}
+		return sb;
 	}
 
 }

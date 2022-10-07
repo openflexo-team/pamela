@@ -1,7 +1,6 @@
 /**
  * 
- * Copyright (c) 2013-2014, Openflexo
- * Copyright (c) 2011-2012, AgileBirds
+ * Copyright (c) 2014, Openflexo
  * 
  * This file is part of Pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
@@ -37,48 +36,22 @@
  * 
  */
 
-package org.openflexo.pamela.annotations;
+package org.openflexo.pamela.test.initializer;
 
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.openflexo.pamela.annotations.ImplementationClass;
+import org.openflexo.pamela.annotations.ModelEntity;
 
-import org.openflexo.pamela.model.ModelProperty;
+@ModelEntity
+@ImplementationClass(C.CImpl.class)
+public interface C extends B {
 
-/**
- * Indicates updater for a given {@link ModelProperty}
- * 
- * Semantics of @Updater slightly differs from @Setter as new property value is not set to the supplied reference but is updated from the
- * supplied value
- * 
- * @author sylvain
- *
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.METHOD)
-public @interface Updater {
-
-	String value();
-
-	class UpdaterImpl implements Updater {
-
-		private final String value;
-
-		public UpdaterImpl(String value) {
-			this.value = value;
-		}
+	public static abstract class CImpl extends BImpl implements C {
 
 		@Override
-		public Class<? extends Annotation> annotationType() {
-			return Updater.class;
+		public void create(String aFoo, Integer anInteger) {
+			performSuperInitializer(aFoo, anInteger);
+			System.out.println("Create C with foo=" + getFoo() + " val=" + getVal());
+			setVal(getVal() * 2);
 		}
-
-		@Override
-		public String value() {
-			return value;
-		}
-
 	}
 }

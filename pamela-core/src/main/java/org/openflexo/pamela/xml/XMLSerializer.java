@@ -55,7 +55,8 @@ import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.LineSeparator;
 import org.jdom2.output.XMLOutputter;
-import org.openflexo.connie.BindingEvaluator;
+import org.openflexo.connie.java.JavaBindingFactory;
+import org.openflexo.connie.java.util.JavaBindingEvaluator;
 import org.openflexo.pamela.ModelContextLibrary;
 import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.exceptions.InvalidDataException;
@@ -149,12 +150,14 @@ public class XMLSerializer {
 		return writer.toString();
 	}
 
+	private static JavaBindingFactory JAVA_BINDING_FACTORY = new JavaBindingFactory();
+
 	private String generateReference(Object o, XMLElement xmlElement) {
 
 		if (xmlElement != null && !xmlElement.idFactory().equals(XMLElement.NO_ID_FACTORY)) {
 			Object computedValue;
 			try {
-				computedValue = BindingEvaluator.evaluateBinding(xmlElement.idFactory(), o);
+				computedValue = JavaBindingEvaluator.evaluateBinding(xmlElement.idFactory(), o, JAVA_BINDING_FACTORY);
 				return computedValue.toString();
 			} catch (Exception e) {
 				System.err.println("Could not evaluate " + xmlElement.idFactory() + " for " + o);

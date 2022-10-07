@@ -55,7 +55,7 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import org.openflexo.connie.binding.ReflectionUtils;
+import org.openflexo.connie.binding.javareflect.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.CloneableProxyObject;
@@ -102,7 +102,7 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * @param <I>
  *            java type addressed by this entity
  */
-public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
+public class ModelEntity<I> {
 
 	/**
 	 * The implemented interface corresponding to this model entity
@@ -192,7 +192,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	ModelEntity(@Nonnull Class<I> implementedInterface) throws ModelDefinitionException {
 
-		super(implementedInterface.getName());
+		super(/*implementedInterface.getName()*/);
 
 		this.implementedInterface = implementedInterface;
 		declaredModelProperties = new HashMap<>();
@@ -336,7 +336,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 
 	}
 
-	protected void finalizeImport() throws ModelDefinitionException {
+	public void finalizeImport() throws ModelDefinitionException {
 		for (ModelProperty<? super I> property : properties.values()) {
 			property.finalizeImport();
 		}
@@ -998,6 +998,14 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 		return initializers.get(m);
 	}
 
+	public ModelInitializer getInitializerForArgs(Object[] args) throws ModelDefinitionException {
+		Class<?>[] types = new Class[args.length];
+		for (int i = 0; i < args.length; i++) {
+			types[i] = args[i].getClass();
+		}
+		return getInitializerForArgs(types);
+	}
+
 	public ModelInitializer getInitializerForArgs(Class<?>[] types) throws ModelDefinitionException {
 		List<ModelInitializer> list = getPossibleInitializers(types);
 		if (list.size() == 0) {
@@ -1240,7 +1248,7 @@ public class ModelEntity<I> extends org.openflexo.connie.cg.Type {
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_REMOVER_ENTITY)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_DELETER_ENTITY)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER_ENTITY)
-						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_FINDER)
+						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.PERFORM_SUPER_INITIALIZER)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_SERIALIZING)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_DESERIALIZING)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.IS_MODIFIED)

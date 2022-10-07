@@ -46,7 +46,7 @@ import java.text.Collator;
 import java.util.Arrays;
 import java.util.List;
 
-import org.openflexo.connie.binding.ReflectionUtils;
+import org.openflexo.connie.binding.javareflect.ReflectionUtils;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy;
@@ -467,6 +467,11 @@ public class ModelProperty<I> {
 							}
 						}
 					}
+					// System.out.println("In entity " + getModelEntity() + " property " + this + " inverse=" + inverseProperty);
+					// System.out.println("Property: " + getPropertyIdentifier() + " isDerivedRelativeToInverseProperty="
+					// + isDerivedRelativeToInverseProperty);
+					// System.out.println("Property: " + inverseProperty.getPropertyIdentifier() + " isDerivedRelativeToInverseProperty="
+					// + inverseProperty.isDerivedRelativeToInverseProperty);
 				}
 			}
 		}

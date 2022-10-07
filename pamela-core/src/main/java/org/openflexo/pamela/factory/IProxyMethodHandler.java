@@ -68,6 +68,7 @@ public class IProxyMethodHandler {
 	public static Method PERFORM_SUPER_DELETER;
 	public static Method PERFORM_SUPER_UNDELETER;
 	public static Method PERFORM_SUPER_FINDER;
+	public static Method PERFORM_SUPER_INITIALIZER;
 	public static Method PERFORM_SUPER_GETTER_ENTITY;
 	public static Method PERFORM_SUPER_SETTER_ENTITY;
 	public static Method PERFORM_SUPER_ADDER_ENTITY;
@@ -123,6 +124,7 @@ public class IProxyMethodHandler {
 					Array.newInstance(Object.class, 0).getClass());
 			PERFORM_SUPER_UNDELETER = DeletableProxyObject.class.getMethod("performSuperUndelete", Boolean.TYPE);
 			PERFORM_SUPER_FINDER = AccessibleProxyObject.class.getMethod("performSuperFinder", String.class, Object.class);
+			PERFORM_SUPER_INITIALIZER = AccessibleProxyObject.class.getMethod("performSuperInitializer", Object[].class);
 			PERFORM_SUPER_GETTER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperGetter", String.class, Class.class);
 			PERFORM_SUPER_SETTER_ENTITY = AccessibleProxyObject.class.getMethod("performSuperSetter", String.class, Object.class,
 					Class.class);
