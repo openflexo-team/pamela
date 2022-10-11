@@ -14,7 +14,7 @@ generation**. The following figure illustrates the classical vision for for Mode
 Engineering where some Java classes (on the right) are generated from a UML class diagram
 (on the left).
 
-![ClassicalVision](https://support.openflexo.org/images/components/pamela/ClassicalVision.png)
+![ClassicalVision](/images/ClassicalVision.png)
 
 A first major drawback of this approach is the gap created between the conceptual level
 (the model) and the source code, where semantics may be totally hidden or implicit.
@@ -28,5 +28,3 @@ maintaining the link between models and source code during the development proce
 context, the model is developed at the early stages of development process, and is used to
 prototype software application. The model may be manually reverse engineered at the end of
 development process, for documentation purposes.
-
-[Approach overview >>](./overview.html)

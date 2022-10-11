@@ -23,37 +23,37 @@ PAMELA approach has been tested and validated on some java-based industrial proj
 
 # Overview
 
-- [Motivations](./motivations.html)
-- [Approach overview](./overview.html)
-- [A basic example](./example.html)
-- [Common annotations](./annotations.html)
-- [Behind the scene](./behind_the_scene.html)
+- [Motivations](./motivations.md)
+- [Approach overview](./overview.md)
+- [A basic example](./example.md)
+- [Common annotations](./annotations.md)
+- [Behind the scene](./behind_the_scene.md)
 
 # Features
 
-- [Model at runtime computation, model fragmentation management](./pamela-core/1-model_at_runtime.html)
-- [Life-cycle management](./pamela-core/2-life_cycle_management.html)
-- [Meta-programming support](./pamela-core/3-metaprogramming_support.html)
-- [Multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.html)
-- [Containment management](./pamela-core/5-containment_management.html)
-- [Cloning support](./pamela-core/6-cloning_support.html)
-- [Clipboard operations](./pamela-core/7-clipboard_operations.html)
-- [Notification support](./pamela-core/8-notification_support.html)
-- [Persistance support, XML serialization/deserialization](./pamela-core/9-persistence_support.html)
-- [Equality computing support](./pamela-core/10-equality_computing.html)
-- [Visiting features](./pamela-core/11-visiting_features.html)
-- [Differential updating](./pamela-core/12-differential_updating.html)
-- [Validation API](./pamela-core/13-validation_api.html)
-- [Contract programming, JML](./pamela-core/14-jml.html)
-- [Design patterns, aspect programming](./pamela-core/15-design_patterns.html)
+- [Model at runtime computation, model fragmentation management](./pamela-core/1-model_at_runtime.md)
+- [Life-cycle management](./pamela-core/2-life_cycle_management.md)
+- [Meta-programming support](./pamela-core/3-metaprogramming_support.md)
+- [Multiple inheritance and traits programming](./pamela-core/4-multiple_inheritance.md)
+- [Containment management](./pamela-core/5-containment_management.md)
+- [Cloning support](./pamela-core/6-cloning_support.md)
+- [Clipboard operations](./pamela-core/7-clipboard_operations.md)
+- [Notification support](./pamela-core/8-notification_support.md)
+- [Persistance support, XML serialization/deserialization](./pamela-core/9-persistence_support.md)
+- [Equality computing support](./pamela-core/10-equality_computing.md)
+- [Visiting features](./pamela-core/11-visiting_features.md)
+- [Differential updating](./pamela-core/12-differential_updating.md)
+- [Validation API](./pamela-core/13-validation_api.md)
+- [Contract programming, JML](./pamela-core/14-jml.md)
+- [Design patterns, aspect programming](./pamela-core/15-design_patterns.md)
 
 # Getting started
 
-Want to start with Pamela ? Read our ["Getting started" guide](./getting_started.html)
+Want to start with Pamela ? Read our ["Getting started" guide](./getting_started.md)
 
 # Contents of this package
 
 PAMELA project contains two separate components (defined here as modules):
 
-- [Pamela-core component](./pamela-core/index.html), which contains the Pamela core library
-- [Pamela-SecurityPatterns component](./pamela-security-patterns/index.html), which is a library of security-oriented patterns
+- [Pamela-core component](./pamela-core/index.md), which contains the Pamela core library
+- [Pamela-SecurityPatterns component](./pamela-security-patterns/index.md), which is a library of security-oriented patterns
