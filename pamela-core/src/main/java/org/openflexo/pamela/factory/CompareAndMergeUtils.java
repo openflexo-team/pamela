@@ -79,7 +79,11 @@ public class CompareAndMergeUtils {
 	 * @return boolean indicating if update was successfull
 	 */
 	public static <I> boolean updateWith(ProxyMethodHandler<I> source, I obj) {
-		return updateWith(source, obj, HashBiMap.create());
+		BiMap<Object, Object> mappedObjects = HashBiMap.create();
+		boolean returned = updateWith(source, obj, mappedObjects);
+		// At the end of processing, perform a new pass to set external references
+		updateReferences(source,mappedObjects);
+		return returned;
 	}
 
 	/**
@@ -255,7 +259,7 @@ public class CompareAndMergeUtils {
 			}
 
 		}
-
+		
 		if (DEBUG) {
 			System.out.println("<<<<<<< DONE updateWith " + source.getObject() + " with " + obj);
 			System.out.println("Mapped objects:");
