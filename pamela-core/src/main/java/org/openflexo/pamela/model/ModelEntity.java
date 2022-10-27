@@ -77,6 +77,7 @@ import org.openflexo.pamela.annotations.Reindexer;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.StringConverter;
+import org.openflexo.pamela.annotations.Updater;
 import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.annotations.jml.Invariant;
 import org.openflexo.pamela.exceptions.MissingImplementationException;
@@ -1215,6 +1216,9 @@ public class ModelEntity<I> {
 				return true;
 			}
 			if (method.getAnnotation(Setter.class) != null) {
+				return true;
+			}
+			if (method.getAnnotation(Updater.class) != null) {
 				return true;
 			}
 			if (method.getAnnotation(Finder.class) != null) {
