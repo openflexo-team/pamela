@@ -16,4 +16,6 @@ public interface SettablePropertyImplementation<I, T> extends PropertyImplementa
 
 	public void set(T value) throws ModelDefinitionException;
 
+	public void update(T aValue) throws ModelDefinitionException;
+
 }

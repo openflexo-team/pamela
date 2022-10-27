@@ -33,6 +33,10 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 		super(handler, property);
 	}
 
+	protected void setInternalValue(T aValue) {
+		this.internalValue = aValue;
+	}
+
 	@Override
 	public T get() throws ModelDefinitionException {
 		if (getProperty().getGetter() == null) {
@@ -225,6 +229,10 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 
 		}
 
+	}
+
+	public void update(T aValue) throws ModelDefinitionException {
+		set(aValue);
 	}
 
 	@Override

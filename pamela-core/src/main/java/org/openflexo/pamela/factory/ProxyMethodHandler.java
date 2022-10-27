@@ -87,6 +87,7 @@ import org.openflexo.pamela.annotations.PastingPoint;
 import org.openflexo.pamela.annotations.Reindexer;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.annotations.Updater;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
@@ -365,7 +366,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
 			boolean callSetModifiedAtTheEnd = false;
 			if (property != null) {
-				if (PamelaUtils.methodIsEquivalentTo(method, property.getSetterMethod())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, property.getSetterMethod())
+						|| PamelaUtils.methodIsEquivalentTo(method, property.getUpdaterMethod())) {
 					// We have found a concrete implementation of that method as a setter call
 					// We will invoke it, but also notify UndoManager, and call setModified() after setter invoking
 					// System.out.println("DETECTS SET with " + proceed + " instead of " + method);
@@ -452,6 +454,13 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		if (setter != null) {
 			String id = setter.value();
 			internallyInvokeSetter(id, args[0], true);
+			return null;
+		}
+
+		Updater updater = method.getAnnotation(Updater.class);
+		if (updater != null) {
+			String id = updater.value();
+			internallyInvokeUpdater(id, args[0], true);
 			return null;
 		}
 
@@ -689,6 +698,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				internallyInvokeSetter(property, args[0], true);
 				return null;
 			}
+			else if (PamelaUtils.methodIsEquivalentTo(method, property.getUpdaterMethod())) {
+				internallyInvokeUpdater(property, args[0], true);
+				return null;
+			}
 			else if (PamelaUtils.methodIsEquivalentTo(method, property.getAdderMethod())) {
 				internallyInvokeAdder(property, args[0], true);
 				return null;
@@ -803,6 +816,24 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
 		if (propertyImplementation instanceof SettablePropertyImplementation) {
 			internallyInvokeSetter(property, (SettablePropertyImplementation) propertyImplementation, value, trackAtomicEdit);
+		}
+		else {
+			throw new ModelDefinitionException(
+					"Property implementation does not support SET protocol: " + property.getPropertyImplementation());
+		}
+	}
+
+	protected void internallyInvokeUpdater(String propertyIdentifier, Object value, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
+		internallyInvokeUpdater(property, value, trackAtomicEdit);
+	}
+
+	public void internallyInvokeUpdater(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+		if (propertyImplementation instanceof SettablePropertyImplementation) {
+			internallyInvokeUpdater(property, (SettablePropertyImplementation) propertyImplementation, value, trackAtomicEdit);
 		}
 		else {
 			throw new ModelDefinitionException(
@@ -1341,6 +1372,17 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			}
 		}
 		propertyImplementation.set(value);
+	}
+
+	private <T> void internallyInvokeUpdater(ModelProperty<? super I> property, SettablePropertyImplementation<I, T> propertyImplementation,
+			T value, boolean trackAtomicEdit) throws ModelDefinitionException {
+		if (trackAtomicEdit && getUndoManager() != null) {
+			Object oldValue = invokeGetter(property);
+			if (oldValue != value) {
+				getUndoManager().addEdit(new SetCommand<>(getObject(), getModelEntity(), property, oldValue, value, getModelFactory()));
+			}
+		}
+		propertyImplementation.update(value);
 	}
 
 	private <T> void internallyInvokeAdder(ModelProperty<? super I> property, MultiplePropertyImplementation<I, T> propertyImplementation,
