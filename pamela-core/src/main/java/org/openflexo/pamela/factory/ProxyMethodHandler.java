@@ -279,7 +279,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		boolean keepGoing = true;
 		Object invoke = null;
 
-		if (enableAssertionChecking) {
+		if (enableAssertionChecking && getModelEntity().isMethodToBeMonitored(method)) {
 			assertionChecking = checkOnEntry(method, args);
 		}
 
@@ -387,7 +387,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			wrapper.getPattern().processMethodAfterInvoke(self, method, wrapper.getKlass(), invoke, args);
 		}*/
 
-		if (enableAssertionChecking && assertionChecking) {
+		if (enableAssertionChecking && assertionChecking && getModelEntity().isMethodToBeMonitored(method)) {
 			checkOnExit(method, args);
 		}
 

@@ -37,17 +37,50 @@
  * 
  */
 
-package org.openflexo.pamela;
+package org.openflexo.pamela.annotations.monitoring;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Interface that PAMELA objects should implements to be able to define contrat-programming (aka JML)
+ * Annotation used to tune cloning strategy for a given property
  * 
  * @author sylvain
- * 
+ *
  */
-public interface SpecifiableProxyObject {
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Target(value = ElementType.TYPE)
+public @interface MonitoredEntity {
 
-	public void enableAssertionChecking();
+	/**
+	 * The strategy to be applied for monitoring
+	 *
+	 * @author sylvain
+	 *
+	 */
+	public enum MonitoringStrategy {
+		/**
+		 * All methods except internal methods are monitored
+		 */
+		CheckAllMethods,
+		/**
+		 * All methods are monitored by default, except those flagged as @Unmonitored
+		 */
+		CheckAllMethodsExcludeUnmonitored,
+		/**
+		 * All interpretated methods and methods flagged as @Monitored are monitored
+		 */
+		CheckInterpretedAndMonitoredMethods,
+		/**
+		 * All methods are unmonitored except those explicitely flagged as @Monitored
+		 */
+		CheckMonitoredMethodsOnly
+	}
 
-	public void disableAssertionChecking();
+	MonitoringStrategy value() default MonitoringStrategy.CheckInterpretedAndMonitoredMethods;
+
 }

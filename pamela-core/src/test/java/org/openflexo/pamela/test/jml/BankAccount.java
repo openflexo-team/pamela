@@ -36,7 +36,7 @@
 package org.openflexo.pamela.test.jml;
 
 import org.openflexo.pamela.AccessibleProxyObject;
-import org.openflexo.pamela.SpecifiableProxyObject;
+import org.openflexo.pamela.MonitorableProxyObject;
 import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.ImplementationClass;
 import org.openflexo.pamela.annotations.Initializer;
@@ -47,12 +47,14 @@ import org.openflexo.pamela.annotations.jml.Ensures;
 import org.openflexo.pamela.annotations.jml.Invariant;
 import org.openflexo.pamela.annotations.jml.MethodParameter;
 import org.openflexo.pamela.annotations.jml.Requires;
+import org.openflexo.pamela.annotations.monitoring.MonitoredEntity;
 import org.openflexo.pamela.test.jml.BankAccount.BankAccountImpl;
 
 @ModelEntity
 @ImplementationClass(BankAccountImpl.class)
+@MonitoredEntity
 @Invariant("(balance >= 0) && (balance <= 1000)")
-public interface BankAccount extends AccessibleProxyObject, SpecifiableProxyObject {
+public interface BankAccount extends AccessibleProxyObject, MonitorableProxyObject {
 
 	static final int MAX_BALANCE = 1000;
 	static final String BALANCE = "balance";

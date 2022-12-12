@@ -129,7 +129,7 @@ public class ModelFactory implements IObjectGraphFactory {
 						return true;
 					}
 
-					if (aModelEntity.getJMLMethodDefinition(method) != null) {
+					if (modelEntity.getJMLMethodDefinition(method) != null) {
 						return true;
 					}
 
@@ -149,13 +149,13 @@ public class ModelFactory implements IObjectGraphFactory {
 					if (modelEntity.getPropertyForMethod(method) != null) {
 						return true;
 					}
+
+					if (modelEntity.isMethodToBeMonitored(method)) {
+						return true;
+					}
+
+					// In all other case, return false
 					return false;
-					// Old code
-					/*
-					 * return Modifier.isAbstract(method.getModifiers()) ||
-					 * method.getName().equals("toString") && method.getParameterTypes().length == 0
-					 * && method.getDeclaringClass() == Object.class;
-					 */
 				}
 			});
 			Class<?> implementingClass = modelEntity.getImplementingClass();

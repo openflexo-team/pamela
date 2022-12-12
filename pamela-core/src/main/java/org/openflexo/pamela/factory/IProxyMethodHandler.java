@@ -47,7 +47,7 @@ import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.KeyValueCoding;
-import org.openflexo.pamela.SpecifiableProxyObject;
+import org.openflexo.pamela.MonitorableProxyObject;
 import org.openflexo.pamela.model.PAMELAVisitor;
 import org.openflexo.pamela.validation.Validable;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
@@ -165,8 +165,8 @@ public class IProxyMethodHandler {
 			OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("objectForKey", String.class);
 			SET_OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("setObjectForKey", Object.class, String.class);
 			GET_TYPE_FOR_KEY = KeyValueCoding.class.getMethod("getTypeForKey", String.class);
-			ENABLE_ASSERTION_CHECKING = SpecifiableProxyObject.class.getMethod("enableAssertionChecking");
-			DISABLE_ASSERTION_CHECKING = SpecifiableProxyObject.class.getMethod("disableAssertionChecking");
+			ENABLE_ASSERTION_CHECKING = MonitorableProxyObject.class.getMethod("enableAssertionChecking");
+			DISABLE_ASSERTION_CHECKING = MonitorableProxyObject.class.getMethod("disableAssertionChecking");
 
 		} catch (SecurityException e) {
 			e.printStackTrace();

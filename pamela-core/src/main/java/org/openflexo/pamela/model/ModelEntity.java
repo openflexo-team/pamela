@@ -62,7 +62,7 @@ import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.KeyValueCoding;
 import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.SpecifiableProxyObject;
+import org.openflexo.pamela.MonitorableProxyObject;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy;
 import org.openflexo.pamela.annotations.Finder;
@@ -79,6 +79,10 @@ import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.StringConverter;
 import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.annotations.jml.Invariant;
+import org.openflexo.pamela.annotations.monitoring.Monitored;
+import org.openflexo.pamela.annotations.monitoring.MonitoredEntity;
+import org.openflexo.pamela.annotations.monitoring.Unmonitored;
+import org.openflexo.pamela.annotations.monitoring.MonitoredEntity.MonitoringStrategy;
 import org.openflexo.pamela.exceptions.MissingImplementationException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
@@ -118,6 +122,11 @@ public class ModelEntity<I> {
 	 * The implementationClass associated with this model entity
 	 */
 	private final ImplementationClass implementationClass;
+
+	/**
+	 * Annotation declaring this entity as monitored, if any
+	 */
+	private final MonitoredEntity monitoredEntity;
 
 	/**
 	 * The {@link XMLElement} annotation, if any
@@ -190,6 +199,9 @@ public class ModelEntity<I> {
 
 	private final Map<Class<I>, Set<Method>> delegateImplementations;
 
+	private final List<Method> explicitelyMonitoredMethods = new ArrayList<>();
+	private final List<Method> explicitelyUnmonitoredMethods = new ArrayList<>();
+
 	ModelEntity(@Nonnull Class<I> implementedInterface) throws ModelDefinitionException {
 
 		super(/*implementedInterface.getName()*/);
@@ -205,6 +217,7 @@ public class ModelEntity<I> {
 		// xmlElement = implementedInterface.getAnnotation(XMLElement.class);
 		modify = implementedInterface.getAnnotation(Modify.class);
 		isAbstract = entityAnnotation.isAbstract();
+		monitoredEntity = implementedInterface.getAnnotation(MonitoredEntity.class);
 		// We resolve here the model super interface
 		// The corresponding model entity MUST be resolved later
 		for (Class<?> i : implementedInterface.getInterfaces()) {
@@ -284,13 +297,21 @@ public class ModelEntity<I> {
 			}
 
 			// Register JML annotations if class is implementing SpecifiableProxyObject
-			if (SpecifiableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+			if (MonitorableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
 				registerJMLAnnotations(m);
+			}
+
+			if (m.isAnnotationPresent(Monitored.class)) {
+				explicitelyMonitoredMethods.add(m);
+			}
+
+			if (m.isAnnotationPresent(Unmonitored.class)) {
+				explicitelyUnmonitoredMethods.add(m);
 			}
 		}
 
 		// Register JML annotations if class is implementing SpecifiableProxyObject
-		if (SpecifiableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+		if (MonitorableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
 			registerJMLAnnotations();
 		}
 
@@ -474,6 +495,8 @@ public class ModelEntity<I> {
 				for (ModelProperty<? super I> property : parentEntity.properties.values()) {
 					createMergedProperty(property.getPropertyIdentifier(), true);
 				}
+				explicitelyMonitoredMethods.addAll(parentEntity.explicitelyMonitoredMethods);
+				explicitelyUnmonitoredMethods.addAll(parentEntity.explicitelyUnmonitoredMethods);
 			}
 		}
 
@@ -789,6 +812,36 @@ public class ModelEntity<I> {
 
 	public ImplementationClass getImplementationClass() {
 		return implementationClass;
+	}
+
+	private MonitoringStrategy monitoringStrategy = null;
+	private boolean monitoringStrategyIsComputed = false;
+
+	public MonitoringStrategy getMonitoringStrategy() {
+		if (monitoringStrategyIsComputed) {
+			return monitoringStrategy;
+		}
+		monitoringStrategyIsComputed = true;
+		if (monitoredEntity != null) {
+			monitoringStrategy = monitoredEntity.value();
+			return monitoringStrategy;
+		}
+		else {
+			try {
+				if (getDirectSuperEntities() != null) {
+					for (ModelEntity<? super I> e : getDirectSuperEntities()) {
+						monitoringStrategy = e.getMonitoringStrategy();
+						if (monitoringStrategy != null) {
+							return monitoringStrategy;
+						}
+					}
+				}
+			} catch (ModelDefinitionException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+
 	}
 
 	private boolean xmlElementHasBeenRetrieved = false;
@@ -1301,7 +1354,7 @@ public class ModelEntity<I> {
 					return true;
 				}
 			}
-			if (SpecifiableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+			if (MonitorableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
 				if (PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.ENABLE_ASSERTION_CHECKING)
 						|| PamelaUtils.methodIsEquivalentTo(method, ProxyMethodHandler.DISABLE_ASSERTION_CHECKING)) {
 					return true;
@@ -1366,7 +1419,7 @@ public class ModelEntity<I> {
 	private JMLInvariant<I> invariant;
 
 	private void registerJMLAnnotations() {
-		if (SpecifiableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+		if (MonitorableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
 			if (getImplementedInterface().isAnnotationPresent(Invariant.class)) {
 				invariant = new JMLInvariant<>(getImplementedInterface().getAnnotation(Invariant.class), this);
 			}
@@ -1405,7 +1458,58 @@ public class ModelEntity<I> {
 		return invariant;
 	}
 
+	public boolean isMethodToBeMonitored(Method method) {
+		if (getMonitoringStrategy() != null) {
+			switch (getMonitoringStrategy()) {
+				case CheckAllMethods:
+					return !isInternalMethod(method);
+				case CheckAllMethodsExcludeUnmonitored:
+					if (isMethodExplicitelyFlaggedAsUnmonitored(method)) {
+						return false;
+					}
+					return !isInternalMethod(method);
+				case CheckInterpretedAndMonitoredMethods:
+					if (getJMLMethodDefinition(method) != null) {
+						return true;
+					}
+					/*if (context.isMethodInvolvedInPattern(method)) {
+						return true;
+					}*/
+					if (getPropertyForMethod(method) != null) {
+						return true;
+					}
+					return isMethodExplicitelyFlaggedAsMonitored(method);
+				case CheckMonitoredMethodsOnly:
+					return isMethodExplicitelyFlaggedAsMonitored(method);
+			}
+		}
+		return false;
+	}
+
+	private boolean isInternalMethod(Method method) {
+		return false;
+	}
+
+	private boolean isMethodExplicitelyFlaggedAsMonitored(Method method) {
+		for (Method m : explicitelyMonitoredMethods) {
+			if (PamelaUtils.methodIsEquivalentTo(method, m)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isMethodExplicitelyFlaggedAsUnmonitored(Method method) {
+		for (Method m : explicitelyUnmonitoredMethods) {
+			if (PamelaUtils.methodIsEquivalentTo(method, m)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static boolean isModelEntity(Class<?> type) {
 		return type.isAnnotationPresent(org.openflexo.pamela.annotations.ModelEntity.class);
 	}
+
 }
