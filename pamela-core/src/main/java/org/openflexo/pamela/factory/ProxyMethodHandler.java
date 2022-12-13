@@ -72,9 +72,11 @@ import org.openflexo.connie.exception.TypeMismatchException;
 import org.openflexo.connie.java.util.JavaBindingEvaluator;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.AccessibleProxyObject;
+import org.openflexo.pamela.AssertionViolationException;
 import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.addon.EntityAddOn;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
 import org.openflexo.pamela.annotations.ComplexEmbedded;
@@ -93,15 +95,10 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.NoSuchEntityException;
 import org.openflexo.pamela.exceptions.UnitializedEntityException;
 import org.openflexo.pamela.factory.ModelFactory.PAMELAProxyFactory;
-import org.openflexo.pamela.jml.JMLEnsures;
-import org.openflexo.pamela.jml.JMLMethodDefinition;
-import org.openflexo.pamela.jml.JMLRequires;
-import org.openflexo.pamela.jml.SpecificationsViolationException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.model.PAMELAVisitor;
 import org.openflexo.pamela.model.PAMELAVisitor.VisitingStrategy;
-import org.openflexo.pamela.model.predicates.PropertyPredicate;
 import org.openflexo.pamela.model.property.DefaultMultiplePropertyImplementation;
 import org.openflexo.pamela.model.property.DefaultSinglePropertyImplementation;
 import org.openflexo.pamela.model.property.MultiplePropertyImplementation;
@@ -175,13 +172,15 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	private final EditingContext editingContext;
 
 	private Stack<Method> assertionCheckingStack = new Stack<>();
-	private Map<Method, Map<String, Object>> historyValues;
+	// private Map<Method, Map<String, Object>> historyValues;
+
+	private Map<EntityAddOn<I, ?>, Object> runtimeContextForAddOns = new HashMap<>();
 
 	public ProxyMethodHandler(PAMELAProxyFactory<I> pamelaProxyFactory, EditingContext editingContext) throws ModelDefinitionException {
 		this.pamelaProxyFactory = pamelaProxyFactory;
 		this.editingContext = editingContext;
 		// values = new HashMap<>(getModelEntity().getPropertiesSize(), 1.0f);
-		historyValues = new HashMap<>();
+		// historyValues = new HashMap<>();
 		propertyImplementations = new HashMap<>(getModelEntity().getPropertiesSize(), 1.0f);
 		initialized = !getModelEntity().hasInitializers();
 		initDelegateImplementations();
@@ -281,7 +280,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		Object invoke = null;
 
 		if (enableAssertionChecking && getModelEntity().isMethodToBeMonitored(method)) {
-			assertionChecking = checkOnEntry(method, args);
+			assertionChecking = checkOnMethodEntry(method, args);
 		}
 
 		for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()) {
@@ -389,7 +388,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}*/
 
 		if (enableAssertionChecking && assertionChecking && getModelEntity().isMethodToBeMonitored(method)) {
-			checkOnExit(method, args);
+			checkOnMethodExit(method, args);
 		}
 
 		return invoke;
@@ -471,7 +470,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 					}
 				}
 				// Also throw SpecificationsViolationException
-				if (SpecificationsViolationException.class.isAssignableFrom(e.getTargetException().getClass())) {
+				if (AssertionViolationException.class.isAssignableFrom(e.getTargetException().getClass())) {
 					throw e.getTargetException();
 				}
 				// If we come here, this means that this exception was unexpected
@@ -2534,7 +2533,17 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return assertionCheckingStack;
 	}
 
-	private boolean checkOnEntry(Method method, Object[] args) {
+	/**
+	 * Perform monitoring by triggering assertion checking in the entry of related {@link Method}, asserting this {@link Method} is to be
+	 * monitored
+	 * 
+	 * @param method
+	 *            The method on which we enter
+	 * @param args
+	 *            Arguments of the call
+	 * @return
+	 */
+	private boolean checkOnMethodEntry(Method method, Object[] args) {
 
 		if (!assertionCheckingStack.isEmpty() && assertionCheckingStack.peek() == method) {
 			return false;
@@ -2544,12 +2553,21 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 
 		// System.out.println("--------> checkOnEntry " + method);
 
-		for (PropertyPredicate propertyPredicate : getModelEntity().lesPredicatesAVerifier) {
+		/*for (PropertyPredicate propertyPredicate : getModelEntity().lesPredicatesAVerifier) {
 			propertyPredicate.check(this);
+		}*/
+
+		if (method.getName().contains("aMonitoredMethod")) {
+			System.out.println("Pour " + method + " j'execute: " + getModelEntity().isMethodToBeMonitored(method));
+			System.out.println("Les addOns: " + getModelEntity().getEntityAddOns());
 		}
 
-		checkInvariant();
+		for (EntityAddOn<I, ?> entityAddOn : getModelEntity().getEntityAddOns()) {
+			entityAddOn.checkOnMethodEntry(method, this, args);
+		}
 
+		/*checkInvariant();
+		
 		JMLMethodDefinition<? super I> jmlMethodDefinition = getModelEntity().getJMLMethodDefinition(method);
 		if (jmlMethodDefinition != null) {
 			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
@@ -2562,23 +2580,37 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				Map<String, Object> historyValuesForThisMethod = ((JMLEnsures) jmlMethodDefinition.getEnsures()).checkOnEntry(this, args);
 				historyValues.put(method, historyValuesForThisMethod);
 			}
-		}
+		}*/
 
 		return true;
 	}
 
-	private void checkInvariant() {
+	/*private void checkInvariant() {
 		if (getModelEntity().getInvariant() != null) {
 			getModelEntity().getInvariant().check(this);
 		}
-	}
+	}*/
 
-	private void checkOnExit(Method method, Object[] args) {
+	/**
+	 * Perform monitoring by triggering assertion checking in the exit of related {@link Method}, asserting this {@link Method} is to be
+	 * monitored
+	 * 
+	 * @param method
+	 *            The method from which we exit
+	 * @param args
+	 *            Arguments of the call
+	 * @return
+	 */
+	private void checkOnMethodExit(Method method, Object[] args) {
 
 		// System.out.println("<-------- checkOnExit " + method);
 
-		checkInvariant();
+		for (EntityAddOn<I, ?> entityAddOn : getModelEntity().getEntityAddOns()) {
+			entityAddOn.checkOnMethodExit(method, this, args);
+		}
 
+		/*checkInvariant();
+		
 		JMLMethodDefinition<? super I> jmlMethodDefinition = getModelEntity().getJMLMethodDefinition(method);
 		if (jmlMethodDefinition != null) {
 			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
@@ -2586,12 +2618,35 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				// System.out.println("Check post-condition " + jmlMethodDefinition.getEnsures().getExpression());
 				((JMLEnsures) jmlMethodDefinition.getEnsures()).checkOnExit(this, args, historyValues.get(method));
 			}
-		}
+		}*/
 
 		// checkedMethod = null;
 
 		assertionCheckingStack.pop();
 
+	}
+
+	/**
+	 * Retrieve run-time context for this object and supplied {@link EntityAddOn}
+	 * 
+	 * @param addOn
+	 *            related addOn
+	 * @return
+	 */
+	public Object getRuntimeContextForAddOn(EntityAddOn<I, ?> addOn) {
+		return runtimeContextForAddOns.get(addOn);
+	}
+
+	/**
+	 * Stores run-time context for this object and supplied {@link EntityAddOn}
+	 * 
+	 * @param runtimeContext
+	 *            the context to store
+	 * @param addOn
+	 *            related addOn
+	 */
+	public void storeRuntimeContextForAddOn(Object runtimeContext, EntityAddOn<I, ?> addOn) {
+		runtimeContextForAddOns.put(addOn, runtimeContext);
 	}
 
 }

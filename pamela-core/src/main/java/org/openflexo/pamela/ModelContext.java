@@ -44,6 +44,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,10 +55,13 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Logger;
 
 import javax.annotation.Nonnull;
 
 import org.openflexo.connie.type.TypeUtils;
+import org.openflexo.pamela.addon.EntityAddOn;
+import org.openflexo.pamela.addon.PamelaAddOn;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
@@ -82,6 +86,9 @@ import org.openflexo.toolbox.StringUtils;
  */
 public class ModelContext {
 
+	@SuppressWarnings("unused")
+	private static final Logger logger = Logger.getLogger(ModelContext.class.getPackage().getName());
+
 	private Map<Class, ModelEntity> modelEntities;
 	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
 	private final Map<ModelEntity<?>, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
@@ -105,6 +112,7 @@ public class ModelContext {
 			for (ModelEntity entity : modelEntities.values()) {
 				entity.finalizeImport();
 			}
+			installAddOns();
 			discoverPatterns();
 		}
 	}
@@ -136,6 +144,7 @@ public class ModelContext {
 		for (ModelEntity entity : modelEntities.values()) {
 			entity.finalizeImport();
 		}
+		installAddOns();
 		discoverPatterns();
 	}
 
@@ -197,7 +206,11 @@ public class ModelContext {
 		return modelEntitiesByXmlTag.get(xmlElementName);
 	}
 
-	public Iterator<ModelEntity> getEntities() {
+	public Collection<ModelEntity> getEntities() {
+		return modelEntities.values();
+	}
+
+	public Iterator<ModelEntity> getEntitiesIterator() {
 		return modelEntities.values().iterator();
 	}
 
@@ -326,6 +339,37 @@ public class ModelContext {
 
 	public boolean removeExecutionMonitor(ExecutionMonitor m) {
 		return this.executionMonitors.remove(m);
+	}
+
+	/**
+	 * Perform install all add-ons found in the class path
+	 * 
+	 * @throws ModelDefinitionException
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void installAddOns() throws ModelDefinitionException {
+		ServiceLoader<PamelaAddOn> loader = ServiceLoader.load(PamelaAddOn.class);
+
+		for (PamelaAddOn addOn : loader) {
+			installAddOn(addOn);
+		}
+	}
+
+	/**
+	 * Install supplied addOn
+	 * 
+	 * @param addOn
+	 * @throws ModelDefinitionException
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private <AO extends PamelaAddOn<AO>> void installAddOn(AO addOn) throws ModelDefinitionException {
+		logger.info("Install add-on " + addOn.getClass());
+		for (ModelEntity modelEntity : getEntities()) {
+			EntityAddOn<?, AO> entityAddOn = addOn.makeAddOnForEntity(modelEntity);
+			if (entityAddOn != null) {
+				modelEntity.installEntityAddOn(entityAddOn, addOn);
+			}
+		}
 	}
 
 	/**

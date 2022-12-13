@@ -123,38 +123,21 @@ public class ModelFactory implements IObjectGraphFactory {
 				@Override
 				public boolean isHandled(Method method) {
 
+					// Abstract methods should be intercepted !
 					if (Modifier.isAbstract(method.getModifiers()))
 						return true;
-					if (method.getName().equals("toString")) {
+
+					// In related ModelEntity requires it, return true
+					if (modelEntity.isMethodToBeIntercepted(method)) {
 						return true;
 					}
 
-					if (modelEntity.getJMLMethodDefinition(method) != null) {
-						return true;
-					}
-
+					// The method may also be involved in a pattern
 					if (context.isMethodInvolvedInPattern(method)) {
 						return true;
 					}
 
-					/*
-					 * if (context.getPatternContext().getRelatedPatternsFromClass(aModelEntity.
-					 * getImplementedInterface()).size() > 0) { try {
-					 * aModelEntity.getImplementedInterface().getMethod(method.getName(),
-					 * method.getParameterTypes()); return true; } catch (NoSuchMethodException e) {
-					 * } }
-					 */
-
-					// TODO perf issue ??? Check this !
-					if (modelEntity.getPropertyForMethod(method) != null) {
-						return true;
-					}
-
-					if (modelEntity.isMethodToBeMonitored(method)) {
-						return true;
-					}
-
-					// In all other case, return false
+					// In all other cases, return false
 					return false;
 				}
 			});
@@ -467,7 +450,7 @@ public class ModelFactory implements IObjectGraphFactory {
 			}
 			if (entity == null) {
 				System.out.println("Debug model context");
-				Iterator<ModelEntity> it = modelContext.getEntities();
+				Iterator<ModelEntity> it = modelContext.getEntitiesIterator();
 				while (it.hasNext()) {
 					ModelEntity<?> next = it.next();
 					System.out.println("> " + next);
@@ -1021,7 +1004,7 @@ public class ModelFactory implements IObjectGraphFactory {
 	public void checkMethodImplementations() throws ModelDefinitionException, MissingImplementationException {
 		ModelContext modelContext = getModelContext();
 		MissingImplementationException thrown = null;
-		for (Iterator<ModelEntity> it = modelContext.getEntities(); it.hasNext();) {
+		for (Iterator<ModelEntity> it = modelContext.getEntitiesIterator(); it.hasNext();) {
 			ModelEntity<?> e = it.next();
 			try {
 				e.checkMethodImplementations(this);

@@ -103,7 +103,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 		validationModelFactory = new ModelFactory(modelContext);
 
-		Iterator<ModelEntity> it = modelContext.getEntities();
+		Iterator<ModelEntity> it = modelContext.getEntitiesIterator();
 
 		while (it.hasNext()) {
 			ModelEntity e = it.next();
@@ -114,7 +114,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		}
 
 		// Now manage inheritance
-		it = modelContext.getEntities();
+		it = modelContext.getEntitiesIterator();
 		while (it.hasNext()) {
 			ModelEntity e = it.next();
 			// System.out.println("assertTrue(validationModel.getValidationModelFactory().getModelContext().getModelEntity("

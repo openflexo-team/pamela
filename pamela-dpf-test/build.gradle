@@ -1,0 +1,5 @@
+dependencies {
+  implementation project(':pamela-core')
+  implementation project(':pamela-jml')
+  implementation project(':pamela-ppf')
+}

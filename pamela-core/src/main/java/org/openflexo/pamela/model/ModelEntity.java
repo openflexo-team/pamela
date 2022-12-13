@@ -63,6 +63,8 @@ import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.KeyValueCoding;
 import org.openflexo.pamela.ModelContext;
 import org.openflexo.pamela.MonitorableProxyObject;
+import org.openflexo.pamela.addon.EntityAddOn;
+import org.openflexo.pamela.addon.PamelaAddOn;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy;
 import org.openflexo.pamela.annotations.Finder;
@@ -73,17 +75,15 @@ import org.openflexo.pamela.annotations.Import;
 import org.openflexo.pamela.annotations.Imports;
 import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.annotations.Modify;
+import org.openflexo.pamela.annotations.Monitored;
+import org.openflexo.pamela.annotations.MonitoredEntity;
 import org.openflexo.pamela.annotations.Reindexer;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.StringConverter;
+import org.openflexo.pamela.annotations.Unmonitored;
 import org.openflexo.pamela.annotations.XMLElement;
-import org.openflexo.pamela.annotations.jml.Invariant;
-import org.openflexo.pamela.annotations.monitoring.Monitored;
-import org.openflexo.pamela.annotations.monitoring.MonitoredEntity;
-import org.openflexo.pamela.annotations.monitoring.MonitoredEntity.MonitoringStrategy;
-import org.openflexo.pamela.annotations.monitoring.NonNull;
-import org.openflexo.pamela.annotations.monitoring.Unmonitored;
+import org.openflexo.pamela.annotations.MonitoredEntity.MonitoringStrategy;
 import org.openflexo.pamela.exceptions.MissingImplementationException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
@@ -91,11 +91,7 @@ import org.openflexo.pamela.exceptions.PropertyClashException;
 import org.openflexo.pamela.factory.ModelFactory;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
-import org.openflexo.pamela.jml.JMLInvariant;
-import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
-import org.openflexo.pamela.model.predicates.PropertyPredicate;
-import org.openflexo.pamela.model.predicates.TotalPredicate;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
@@ -205,7 +201,9 @@ public class ModelEntity<I> {
 	private final List<Method> explicitelyMonitoredMethods = new ArrayList<>();
 	private final List<Method> explicitelyUnmonitoredMethods = new ArrayList<>();
 
-	public List<PropertyPredicate> lesPredicatesAVerifier = new ArrayList<>();
+	private final Map<PamelaAddOn<?>, EntityAddOn<I, ?>> addOns = new HashMap<>();
+
+	// public List<PropertyPredicate> lesPredicatesAVerifier = new ArrayList<>();
 
 	ModelEntity(@Nonnull Class<I> implementedInterface) throws ModelDefinitionException {
 
@@ -251,17 +249,13 @@ public class ModelEntity<I> {
 			}
 		}
 
-		// We scan already all the declared properties but we do not resolve their type. We do not resolve inherited properties either.
+		// We scan already all the declared properties but we do not resolve their type.
+		// We do not resolve inherited properties either.
 		for (Method m : getImplementedInterface().getDeclaredMethods()) {
 			String propertyIdentifier = getPropertyIdentifier(m);
 			ModelProperty<I> property = null;
 
-			System.out.println("propertyIdentifier=" + propertyIdentifier);
-
-			// Sylvain: i commented following condition, as if a Pamela method overrides an interface where parent method
-			// was not annotated, property was ignored. But i dont't understand the reason of this condition
-			// Guillaume, could you please check this ?
-			if (propertyIdentifier == null /*|| !declaredModelProperties.containsKey(propertyIdentifier)*/) {
+			if (propertyIdentifier == null) {
 				List<Method> overridenMethods = ReflectionUtils.getOverridenMethods(m);
 				for (Method override : overridenMethods) {
 					propertyIdentifier = getPropertyIdentifier(override);
@@ -306,9 +300,9 @@ public class ModelEntity<I> {
 			}
 
 			// Register JML annotations if class is implementing SpecifiableProxyObject
-			if (MonitorableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+			/*if (MonitorableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
 				registerJMLAnnotations(m);
-			}
+			}*/
 
 			if (m.isAnnotationPresent(Monitored.class)) {
 				explicitelyMonitoredMethods.add(m);
@@ -318,17 +312,17 @@ public class ModelEntity<I> {
 				explicitelyUnmonitoredMethods.add(m);
 			}
 
-			if (m.isAnnotationPresent(NonNull.class)) {
+			/*if (m.isAnnotationPresent(NonNull.class)) {
 				System.out.println("J'ai trouve un NonNull");
 				System.out.println("La property: " + property);
 				lesPredicatesAVerifier.add(new TotalPredicate(property));
-			}
+			}*/
 		}
 
 		// Register JML annotations if class is implementing SpecifiableProxyObject
-		if (MonitorableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
+		/*if (MonitorableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
 			registerJMLAnnotations();
-		}
+		}*/
 
 		// Init delegate implementations
 		delegateImplementations = new HashMap<>();
@@ -813,6 +807,11 @@ public class ModelEntity<I> {
 		return false;
 	}
 
+	/**
+	 * Return the most specialized interface (PAMELA final interface) describing this {@link ModelEntity}
+	 * 
+	 * @return
+	 */
 	final public Class<I> getImplementedInterface() {
 		return implementedInterface;
 	}
@@ -1008,7 +1007,7 @@ public class ModelEntity<I> {
 
 	public List<ModelEntity> getAllDescendants(ModelContext modelContext) throws ModelDefinitionException {
 		List<ModelEntity> returned = new ArrayList<>();
-		Iterator<ModelEntity> i = modelContext.getEntities();
+		Iterator<ModelEntity> i = modelContext.getEntitiesIterator();
 		while (i.hasNext()) {
 			ModelEntity<?> entity = i.next();
 			if (isAncestorOf(entity)) {
@@ -1430,49 +1429,13 @@ public class ModelEntity<I> {
 
 	}
 
-	private Map<String, JMLMethodDefinition> jmlMethods = new HashMap<>();
-	private JMLInvariant<I> invariant;
-
-	private void registerJMLAnnotations() {
-		if (MonitorableProxyObject.class.isAssignableFrom(getImplementedInterface())) {
-			if (getImplementedInterface().isAnnotationPresent(Invariant.class)) {
-				invariant = new JMLInvariant<>(getImplementedInterface().getAnnotation(Invariant.class), this);
-			}
-		}
-	}
-
-	private JMLMethodDefinition<I> registerJMLAnnotations(Method method) {
-		if (JMLMethodDefinition.hasJMLAnnotations(method)) {
-			JMLMethodDefinition<I> returned = new JMLMethodDefinition<>(method, this);
-			jmlMethods.put(returned.getSignature(), returned);
-			return returned;
-		}
-		return null;
-	}
-
-	public JMLMethodDefinition<? super I> getJMLMethodDefinition(Method method) {
-		JMLMethodDefinition<? super I> returned = jmlMethods.get(PamelaUtils.getSignature(method, getImplementedInterface(), true));
-		if (returned == null) {
-			try {
-				if (getDirectSuperEntities() != null) {
-					for (ModelEntity<? super I> superEntity : getDirectSuperEntities()) {
-						returned = superEntity.getJMLMethodDefinition(method);
-						if (returned != null) {
-							return returned;
-						}
-					}
-				}
-			} catch (ModelDefinitionException e) {
-				e.printStackTrace();
-			}
-		}
-		return returned;
-	}
-
-	public JMLInvariant<I> getInvariant() {
-		return invariant;
-	}
-
+	/**
+	 * Indicates if supplied method execution should trigger a monitoring, given the {@link MonitoringStrategy} defined for this
+	 * {@link ModelEntity} (no @MonitoredEntity declaration indicates that no monitoring has to be performed)
+	 * 
+	 * @param method
+	 * @return
+	 */
 	public boolean isMethodToBeMonitored(Method method) {
 		if (getMonitoringStrategy() != null) {
 			switch (getMonitoringStrategy()) {
@@ -1484,9 +1447,14 @@ public class ModelEntity<I> {
 					}
 					return !isInternalMethod(method);
 				case CheckInterpretedAndMonitoredMethods:
-					if (getJMLMethodDefinition(method) != null) {
-						return true;
+					for (EntityAddOn<I, ?> entityAddOn : addOns.values()) {
+						if (entityAddOn.isMethodToBeMonitored(method)) {
+							return true;
+						}
 					}
+					/*if (getJMLMethodDefinition(method) != null) {
+						return true;
+					}*/
 					/*if (context.isMethodInvolvedInPattern(method)) {
 						return true;
 					}*/
@@ -1499,6 +1467,59 @@ public class ModelEntity<I> {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Indicates if supplied method should be intercepted in the context of this {@link EntityAddOn}
+	 * 
+	 * @param method
+	 * @return
+	 */
+	public boolean isMethodToBeIntercepted(Method method) {
+		if (method.getName().equals("toString")) {
+			return true;
+		}
+		if (getPropertyForMethod(method) != null) {
+			return true;
+		}
+		if (isMethodToBeMonitored(method)) {
+			return true;
+		}
+		for (EntityAddOn<I, ?> entityAddOn : addOns.values()) {
+			if (entityAddOn.isMethodToBeIntercepted(method)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Install in this {@link ModelEntity} the {@link EntityAddOn} related to {@link PamelaAddOn}
+	 * 
+	 * @param entityAO
+	 * @param addOn
+	 */
+	public <AO extends PamelaAddOn<AO>> void installEntityAddOn(EntityAddOn<I, AO> entityAO, AO addOn) {
+		addOns.put(addOn, entityAO);
+	}
+
+	/**
+	 * Return {@link EntityAddOn} related to {@link PamelaAddOn} installed in this {@link ModelEntity}
+	 * 
+	 * @param addOn
+	 * @return
+	 */
+	public <AO extends PamelaAddOn<AO>> EntityAddOn<I, AO> getEntityAddOn(AO addOn) {
+		return (EntityAddOn<I, AO>) addOns.get(addOn);
+	}
+
+	/**
+	 * Return a collection of all {@link EntityAddOn} installed for this {@link ModelEntity}
+	 * 
+	 * @return
+	 */
+	public Collection<EntityAddOn<I, ?>> getEntityAddOns() {
+		return addOns.values();
 	}
 
 	private boolean isInternalMethod(Method method) {
