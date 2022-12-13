@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.openflexo.pamela.ModelContextLibrary;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.jml.SpecificationsViolationException;
+import org.openflexo.pamela.model.predicates.PropertyPredicateMonitoringViolationException;
 
 public class TestTotalMultipleCardinality {
 
@@ -42,7 +42,7 @@ public class TestTotalMultipleCardinality {
 		try {
 			x3.aMonitoredMethod();
 			fail();
-		} catch (SpecificationsViolationException e) {
+		} catch (PropertyPredicateMonitoringViolationException e) {
 			// Invariant violation: object.singleY != null as expected
 		}
 

@@ -101,6 +101,7 @@ import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.model.PAMELAVisitor;
 import org.openflexo.pamela.model.PAMELAVisitor.VisitingStrategy;
+import org.openflexo.pamela.model.predicates.PropertyPredicate;
 import org.openflexo.pamela.model.property.DefaultMultiplePropertyImplementation;
 import org.openflexo.pamela.model.property.DefaultSinglePropertyImplementation;
 import org.openflexo.pamela.model.property.MultiplePropertyImplementation;
@@ -2542,6 +2543,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		assertionCheckingStack.push(method);
 
 		// System.out.println("--------> checkOnEntry " + method);
+
+		for (PropertyPredicate propertyPredicate : getModelEntity().lesPredicatesAVerifier) {
+			propertyPredicate.check(this);
+		}
 
 		checkInvariant();
 

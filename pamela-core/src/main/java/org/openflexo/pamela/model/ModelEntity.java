@@ -81,8 +81,9 @@ import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.annotations.jml.Invariant;
 import org.openflexo.pamela.annotations.monitoring.Monitored;
 import org.openflexo.pamela.annotations.monitoring.MonitoredEntity;
-import org.openflexo.pamela.annotations.monitoring.Unmonitored;
 import org.openflexo.pamela.annotations.monitoring.MonitoredEntity.MonitoringStrategy;
+import org.openflexo.pamela.annotations.monitoring.NonNull;
+import org.openflexo.pamela.annotations.monitoring.Unmonitored;
 import org.openflexo.pamela.exceptions.MissingImplementationException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
@@ -93,6 +94,8 @@ import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.jml.JMLInvariant;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
+import org.openflexo.pamela.model.predicates.PropertyPredicate;
+import org.openflexo.pamela.model.predicates.TotalPredicate;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
@@ -202,6 +205,8 @@ public class ModelEntity<I> {
 	private final List<Method> explicitelyMonitoredMethods = new ArrayList<>();
 	private final List<Method> explicitelyUnmonitoredMethods = new ArrayList<>();
 
+	public List<PropertyPredicate> lesPredicatesAVerifier = new ArrayList<>();
+
 	ModelEntity(@Nonnull Class<I> implementedInterface) throws ModelDefinitionException {
 
 		super(/*implementedInterface.getName()*/);
@@ -249,6 +254,10 @@ public class ModelEntity<I> {
 		// We scan already all the declared properties but we do not resolve their type. We do not resolve inherited properties either.
 		for (Method m : getImplementedInterface().getDeclaredMethods()) {
 			String propertyIdentifier = getPropertyIdentifier(m);
+			ModelProperty<I> property = null;
+
+			System.out.println("propertyIdentifier=" + propertyIdentifier);
+
 			// Sylvain: i commented following condition, as if a Pamela method overrides an interface where parent method
 			// was not annotated, property was ignored. But i dont't understand the reason of this condition
 			// Guillaume, could you please check this ?
@@ -264,7 +273,7 @@ public class ModelEntity<I> {
 
 			if (propertyIdentifier != null && !declaredModelProperties.containsKey(propertyIdentifier)) {
 				// The next line creates the property
-				ModelProperty<I> property = ModelProperty.getModelProperty(propertyIdentifier, this);
+				property = ModelProperty.getModelProperty(propertyIdentifier, this);
 				declaredModelProperties.put(propertyIdentifier, property);
 			}
 			org.openflexo.pamela.annotations.Initializer initializer = m.getAnnotation(org.openflexo.pamela.annotations.Initializer.class);
@@ -307,6 +316,12 @@ public class ModelEntity<I> {
 
 			if (m.isAnnotationPresent(Unmonitored.class)) {
 				explicitelyUnmonitoredMethods.add(m);
+			}
+
+			if (m.isAnnotationPresent(NonNull.class)) {
+				System.out.println("J'ai trouve un NonNull");
+				System.out.println("La property: " + property);
+				lesPredicatesAVerifier.add(new TotalPredicate(property));
 			}
 		}
 
