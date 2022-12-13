@@ -53,7 +53,8 @@ public class PPFAddOn implements PamelaAddOn<PPFAddOn> {
 
 	@Override
 	public <I> PPFEntityAddOn<I> makeAddOnForEntity(ModelEntity<I> modelEntity) throws ModelDefinitionException {
-		if (MonitorableProxyObject.class.isAssignableFrom(modelEntity.getImplementedInterface())) {
+		if (MonitorableProxyObject.class.isAssignableFrom(modelEntity.getImplementedInterface())
+				&& PPFEntityAddOn.hasPPFAnnotations(modelEntity.getImplementedInterface())) {
 			return new PPFEntityAddOn<>(modelEntity, this);
 		}
 		return null;

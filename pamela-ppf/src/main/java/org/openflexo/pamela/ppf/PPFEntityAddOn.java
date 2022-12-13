@@ -43,14 +43,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import org.openflexo.pamela.addon.EntityAddOn;
+import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
+import org.openflexo.pamela.ppf.annotations.Card;
+import org.openflexo.pamela.ppf.annotations.NonEmpty;
 import org.openflexo.pamela.ppf.annotations.NonNull;
-import org.openflexo.pamela.ppf.predicates.TotalPredicate;
+import org.openflexo.pamela.ppf.predicates.CardPredicate;
+import org.openflexo.pamela.ppf.predicates.NonEmptyPredicate;
+import org.openflexo.pamela.ppf.predicates.NonNullPredicate;
 
 /**
  * Extends {@link ModelEntity} by providing required information and behaviour required for managing PPF in the context of a ModelEntity
@@ -61,7 +67,18 @@ import org.openflexo.pamela.ppf.predicates.TotalPredicate;
  */
 public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 
+	private static final Logger logger = Logger.getLogger(PPFEntityAddOn.class.getPackage().getName());
+
 	private Map<ModelProperty<? super I>, List<PropertyPredicate<? super I>>> predicates;
+
+	public static boolean hasPPFAnnotations(Class<?> aClass) {
+		for (Method method : aClass.getDeclaredMethods()) {
+			if (PropertyPredicate.hasPPFAnnotations(method)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	public PPFEntityAddOn(ModelEntity<I> modelEntity, PPFAddOn ppfAddOn) throws ModelDefinitionException {
 		super(modelEntity, ppfAddOn);
@@ -76,11 +93,10 @@ public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 	}
 
 	private void discoverPredicates(Method method) throws ModelDefinitionException {
-		if (method.isAnnotationPresent(NonNull.class)) {
-			System.out.println("J'ai trouve un NonNull");
+		if (PropertyPredicate.hasPPFAnnotations(method)) {
 			ModelProperty<? super I> modelProperty = getModelEntity().getPropertyForMethod(method);
 			if (modelProperty == null) {
-				System.err.println("Found @NonNull in non-property method");
+				logger.warning("Found PPF annotation in non-property method " + method);
 				return;
 			}
 			List<PropertyPredicate<? super I>> predicatesForProperty = predicates.get(modelProperty);
@@ -88,8 +104,15 @@ public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 				predicatesForProperty = new ArrayList<>();
 				predicates.put(modelProperty, predicatesForProperty);
 			}
-			System.out.println("La property: " + modelProperty);
-			predicatesForProperty.add(new TotalPredicate(modelProperty));
+			if (method.isAnnotationPresent(NonNull.class)) {
+				predicatesForProperty.add(new NonNullPredicate<>(modelProperty));
+			}
+			if (method.isAnnotationPresent(NonEmpty.class) && modelProperty.getCardinality() == Cardinality.LIST) {
+				predicatesForProperty.add(new NonEmptyPredicate<>(modelProperty));
+			}
+			if (method.isAnnotationPresent(Card.class) && modelProperty.getCardinality() == Cardinality.LIST) {
+				predicatesForProperty.add(new CardPredicate<>(modelProperty, method.getAnnotation(Card.class)));
+			}
 		}
 	}
 
@@ -120,22 +143,23 @@ public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 	}
 
 	@Override
-	public void checkOnMethodEntry(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args) {
+	public void checkOnMethodEntry(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args) throws PPFViolationException {
 		checkPredicates(proxyMethodHandler);
 	}
 
 	@Override
-	public void checkOnMethodExit(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args) {
+	public void checkOnMethodExit(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args) throws PPFViolationException {
 		checkPredicates(proxyMethodHandler);
 	}
 
-	private void checkPredicates(ProxyMethodHandler<I> proxyMethodHandler) {
+	private void checkPredicates(ProxyMethodHandler<I> proxyMethodHandler) throws PPFViolationException {
 		for (ModelProperty<? super I> modelProperty : predicates.keySet()) {
 			checkPredicatesForProperty(modelProperty, proxyMethodHandler);
 		}
 	}
 
-	private void checkPredicatesForProperty(ModelProperty<? super I> modelProperty, ProxyMethodHandler<I> proxyMethodHandler) {
+	private void checkPredicatesForProperty(ModelProperty<? super I> modelProperty, ProxyMethodHandler<I> proxyMethodHandler)
+			throws PPFViolationException {
 		List<PropertyPredicate<? super I>> propertyPredicates = predicates.get(modelProperty);
 		if (propertyPredicates != null) {
 			for (PropertyPredicate<? super I> propertyPredicate : propertyPredicates) {
@@ -144,7 +168,8 @@ public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 		}
 	}
 
-	private void checkPredicate(PropertyPredicate<? super I> propertyPredicate, ProxyMethodHandler<I> proxyMethodHandler) {
+	private void checkPredicate(PropertyPredicate<? super I> propertyPredicate, ProxyMethodHandler<I> proxyMethodHandler)
+			throws PPFViolationException {
 		propertyPredicate.check(proxyMethodHandler);
 	}
 

@@ -1,7 +1,7 @@
 /**
  * 
  * Copyright (c) 2013-2014, Openflexo
- * Copyright (c) 2012-2012, AgileBirds
+ * Copyright (c) 2011-2012, AgileBirds
  * 
  * This file is part of Pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
@@ -36,39 +36,27 @@
  * or visit www.openflexo.org if you need additional information.
  * 
  */
-package org.openflexo.pamela.ppf;
 
-import java.lang.reflect.Method;
+package org.openflexo.pamela.ppf.annotations;
 
-import org.openflexo.pamela.factory.ProxyMethodHandler;
-import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.ppf.annotations.Card;
-import org.openflexo.pamela.ppf.annotations.NonEmpty;
-import org.openflexo.pamela.ppf.annotations.NonNull;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A monitorable predicate which applies to a single property
+ * Annotation defining that related property should be defined
  * 
  * @author sylvain
- *
+ * 
  */
-public abstract class PropertyPredicate<I> {
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Target(ElementType.METHOD)
+public @interface Card {
 
-	private final ModelProperty<I> property;
+	int min() default 0;
 
-	public PropertyPredicate(ModelProperty<I> property) {
-		this.property = property;
-	}
-
-	public ModelProperty<I> getProperty() {
-		return property;
-	}
-
-	public abstract void check(ProxyMethodHandler<? extends I> proxyMethodHandler) throws PPFViolationException;
-
-	public static boolean hasPPFAnnotations(Method method) {
-		return method.isAnnotationPresent(NonNull.class) || method.isAnnotationPresent(NonEmpty.class)
-				|| method.isAnnotationPresent(Card.class);
-	}
-
+	int max() default Integer.MAX_VALUE;
 }

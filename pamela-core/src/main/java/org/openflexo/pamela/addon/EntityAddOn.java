@@ -40,6 +40,7 @@ package org.openflexo.pamela.addon;
 
 import java.lang.reflect.Method;
 
+import org.openflexo.pamela.AssertionViolationException;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 
@@ -126,7 +127,8 @@ public abstract class EntityAddOn<I, AO extends PamelaAddOn<AO>> {
 	 *            Arguments of the call
 	 * @return
 	 */
-	public abstract void checkOnMethodEntry(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args);
+	public abstract void checkOnMethodEntry(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args)
+			throws AssertionViolationException;
 
 	/**
 	 * Perform monitoring by triggering assertion checking for this {@link EntityAddOn} in the exit of related {@link Method}, asserting
@@ -140,6 +142,7 @@ public abstract class EntityAddOn<I, AO extends PamelaAddOn<AO>> {
 	 *            Arguments of the call
 	 * @return
 	 */
-	public abstract void checkOnMethodExit(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args);
+	public abstract void checkOnMethodExit(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args)
+			throws AssertionViolationException;
 
 }

@@ -86,7 +86,6 @@ import org.openflexo.toolbox.StringUtils;
  */
 public class ModelContext {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(ModelContext.class.getPackage().getName());
 
 	private Map<Class, ModelEntity> modelEntities;

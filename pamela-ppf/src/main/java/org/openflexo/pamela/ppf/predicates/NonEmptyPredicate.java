@@ -36,39 +36,48 @@
  * or visit www.openflexo.org if you need additional information.
  * 
  */
-package org.openflexo.pamela.ppf;
+package org.openflexo.pamela.ppf.predicates;
 
-import java.lang.reflect.Method;
+import java.util.List;
+import java.util.logging.Logger;
 
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.ppf.annotations.Card;
-import org.openflexo.pamela.ppf.annotations.NonEmpty;
-import org.openflexo.pamela.ppf.annotations.NonNull;
+import org.openflexo.pamela.ppf.PPFViolationException;
+import org.openflexo.pamela.ppf.PropertyPredicate;
 
 /**
- * A monitorable predicate which applies to a single property
+ * "Total" predicate : property value should not be empty
  * 
  * @author sylvain
  *
  */
-public abstract class PropertyPredicate<I> {
+public class NonEmptyPredicate<I> extends PropertyPredicate<I> {
 
-	private final ModelProperty<I> property;
+	private static final Logger logger = Logger.getLogger(NonEmptyPredicate.class.getPackage().getName());
 
-	public PropertyPredicate(ModelProperty<I> property) {
-		this.property = property;
+	public NonEmptyPredicate(ModelProperty<I> property) {
+		super(property);
 	}
 
-	public ModelProperty<I> getProperty() {
-		return property;
+	@Override
+	public void check(ProxyMethodHandler<? extends I> proxyMethodHandler) throws PPFViolationException {
+		logger.info("Checking NonEmptyPredicate for " + getProperty() + " and object " + proxyMethodHandler.getObject());
+		Object value = proxyMethodHandler.invokeGetter(getProperty());
+		if (value == null) {
+			throw new PPFViolationException("Property " + getProperty() + " not defined for " + proxyMethodHandler.getObject(),
+					proxyMethodHandler);
+		}
+		if (value instanceof List) {
+			if (((List) value).size() == 0) {
+				throw new PPFViolationException("Property " + getProperty() + " is empty for " + proxyMethodHandler.getObject(),
+						proxyMethodHandler);
+			}
+		}
+		else {
+			throw new PPFViolationException(
+					"Unexpected property value " + value + " for " + getProperty() + " for " + proxyMethodHandler.getObject(),
+					proxyMethodHandler);
+		}
 	}
-
-	public abstract void check(ProxyMethodHandler<? extends I> proxyMethodHandler) throws PPFViolationException;
-
-	public static boolean hasPPFAnnotations(Method method) {
-		return method.isAnnotationPresent(NonNull.class) || method.isAnnotationPresent(NonEmpty.class)
-				|| method.isAnnotationPresent(Card.class);
-	}
-
 }

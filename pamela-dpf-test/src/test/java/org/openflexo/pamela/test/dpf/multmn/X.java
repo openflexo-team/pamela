@@ -33,55 +33,32 @@
  *
  */
 
-package org.openflexo.pamela.test.dpf;
+package org.openflexo.pamela.test.dpf.multmn;
 
-import org.openflexo.pamela.AccessibleProxyObject;
+import java.util.List;
+
+import org.openflexo.pamela.MonitorableProxyObject;
+import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.Getter;
-import org.openflexo.pamela.annotations.ImplementationClass;
-import org.openflexo.pamela.annotations.Initializer;
+import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.annotations.ModelEntity;
-import org.openflexo.pamela.annotations.Monitored;
-import org.openflexo.pamela.annotations.MonitoredEntity;
-import org.openflexo.pamela.annotations.MonitoredEntity.MonitoringStrategy;
-import org.openflexo.pamela.annotations.Parameter;
-import org.openflexo.pamela.annotations.Setter;
-import org.openflexo.pamela.test.dpf.AbstractConcept.AbstractConceptImpl;
+import org.openflexo.pamela.annotations.Remover;
+import org.openflexo.pamela.ppf.annotations.Card;
+import org.openflexo.pamela.test.dpf.AbstractConcept;
 
 @ModelEntity
-@MonitoredEntity(MonitoringStrategy.CheckMonitoredMethodsOnly)
-@ImplementationClass(AbstractConceptImpl.class)
-public interface AbstractConcept extends AccessibleProxyObject {
+public interface X extends AbstractConcept, MonitorableProxyObject {
 
-	static final String NAME = "name";
+	static final String Y = "y";
 
-	@Initializer
-	void create(@Parameter(NAME) String aName);
+	@Getter(value = Y, cardinality = Cardinality.LIST)
+	@Card(min = 1, max = 2)
+	public List<Y> getY();
 
-	@Getter(NAME)
-	String getName();
+	@Adder(Y)
+	public void addToY(Y y);
 
-	@Setter(NAME)
-	public void setName(String aName);
-
-	@Monitored
-	public void aMonitoredMethod();
-
-	public static abstract class AbstractConceptImpl implements AbstractConcept {
-
-		protected Class getImplementedInterface() {
-			return (Class) getClass().getGenericInterfaces()[0];
-		}
-
-		@Override
-		public String toString() {
-			return getImplementedInterface().getSimpleName() + "[" + getName() + "]";
-		}
-
-		@Override
-		public void aMonitoredMethod() {
-			System.out.println("Hello world !");
-		}
-
-	}
+	@Remover(Y)
+	public void removeFromY(Y y);
 
 }
