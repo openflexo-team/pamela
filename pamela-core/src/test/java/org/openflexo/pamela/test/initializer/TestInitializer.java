@@ -17,7 +17,7 @@ public class TestInitializer {
 	@Test
 	public void testInitializer() throws ModelDefinitionException {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(A.class, D.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(A.class, D.class));
 
 		A a = factory.newInstance(A.class, "toto", 42);
 		assertEquals("toto", a.getFoo());

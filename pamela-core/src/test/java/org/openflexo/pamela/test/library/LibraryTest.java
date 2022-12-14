@@ -29,7 +29,7 @@ public class LibraryTest {
 	public void testFactory() {
 
 		try {
-			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(Library.class));
+			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(Library.class));
 
 			ModelEntity<Library> libraryEntity = factory.getModelContext().getModelEntity(Library.class);
 			ModelEntity<Book> bookEntity = factory.getModelContext().getModelEntity(Book.class);
@@ -51,7 +51,7 @@ public class LibraryTest {
 
 		// Instantiate the meta-model
 		// by computing the closure of concepts graph
-		PamelaMetaModel pamelaMetaModel = PamelaMetaModelLibrary.getModelContext(Library.class);
+		PamelaMetaModel pamelaMetaModel = PamelaMetaModelLibrary.retrieveMetaModel(Library.class);
 		// Instantiate the factory
 		PamelaModelFactory factory = new PamelaModelFactory(pamelaMetaModel);
 		// Instantiate a Library

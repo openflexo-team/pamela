@@ -109,13 +109,13 @@ public class PamelaMetaModel {
 		}
 	}
 
-	public PamelaMetaModel(Class<?> baseClass, List<PamelaMetaModel> contexts) throws ModelDefinitionException {
+	public PamelaMetaModel(Class<?> baseClass, List<PamelaMetaModel> metaModels) throws ModelDefinitionException {
 		this.baseClass = baseClass;
 		modelEntities = new HashMap<>();
 		modelEntitiesByXmlTag = new HashMap<>();
 		modelPropertiesByXmlTag = new HashMap<>();
-		for (PamelaMetaModel context : contexts) {
-			for (Entry<String, ModelEntity<?>> e : context.modelEntitiesByXmlTag.entrySet()) {
+		for (PamelaMetaModel metaModel : metaModels) {
+			for (Entry<String, ModelEntity<?>> e : metaModel.modelEntitiesByXmlTag.entrySet()) {
 				ModelEntity<?> entity = modelEntitiesByXmlTag.put(e.getKey(), e.getValue());
 				// TODO: handle properly namespaces. Different namespaces allows to have identical tags
 				// See also importModelEntity(Class<T>)
@@ -124,7 +124,7 @@ public class PamelaMetaModel {
 							entity + " and " + e.getValue() + " declare the same XML tag but not the same implemented interface");
 				}
 			}
-			modelEntities.putAll(context.modelEntities);
+			modelEntities.putAll(metaModel.modelEntities);
 		}
 		if (baseClass != null) {
 			ModelEntity<?> modelEntity = ModelEntityLibrary.importEntity(baseClass);
@@ -140,23 +140,23 @@ public class PamelaMetaModel {
 	}
 
 	public PamelaMetaModel(List<Class<?>> baseClasses) throws ModelDefinitionException {
-		this(null, makeModelContextList(baseClasses));
+		this(null, makeMetaModelList(baseClasses));
 	}
 
-	private static List<PamelaMetaModel> makeModelContextList(List<Class<?>> baseClasses) throws ModelDefinitionException {
+	private static List<PamelaMetaModel> makeMetaModelList(List<Class<?>> baseClasses) throws ModelDefinitionException {
 		List<PamelaMetaModel> returned = new ArrayList<>();
 		for (Class<?> c : baseClasses) {
-			returned.add(PamelaMetaModelLibrary.getModelContext(c, false));
+			returned.add(PamelaMetaModelLibrary.retrieveMetaModel(c, false));
 		}
 		return returned;
 	}
 
-	public PamelaMetaModel(PamelaMetaModel... contexts) throws ModelDefinitionException {
-		this(null, contexts);
+	public PamelaMetaModel(PamelaMetaModel... metaModels) throws ModelDefinitionException {
+		this(null, metaModels);
 	}
 
-	public PamelaMetaModel(Class<?> baseClass, PamelaMetaModel... contexts) throws ModelDefinitionException {
-		this(baseClass, Arrays.asList(contexts));
+	public PamelaMetaModel(Class<?> baseClass, PamelaMetaModel... metaModels) throws ModelDefinitionException {
+		this(baseClass, Arrays.asList(metaModels));
 	}
 
 	private void appendEntity(ModelEntity<?> modelEntity, Set<ModelEntity<?>> visited) throws ModelDefinitionException {

@@ -49,8 +49,8 @@ import java.util.Set;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 
 /**
- * The {@link PamelaMetaModelLibrary} represent the API used to instantiate a PAMELA model (a {@link PamelaMetaModel}). Computed
- * {@link PamelaMetaModel} are stored in an internal cache.<br>
+ * The {@link PamelaMetaModelLibrary} represent the API used to instantiate a {@link PamelaMetaModel}. Computed {@link PamelaMetaModel} are
+ * stored in an internal cache.<br>
  * 
  * The idea behind this is to instantiate required model using a list of class acting as base entries. The inheritance links as well as the
  * properties links (getter/setter) are explored - both are dependancy links -, as well as <tt>@Imports</tt> and <tt>@Import</tt>
@@ -70,37 +70,37 @@ import org.openflexo.pamela.exceptions.ModelDefinitionException;
  */
 public class PamelaMetaModelLibrary {
 
-	private static final Map<Class<?>, PamelaMetaModel> contexts = new Hashtable<>();
-	private static final Map<Set<Class<?>>, PamelaMetaModel> setContexts = new Hashtable<>();
+	private static final Map<Class<?>, PamelaMetaModel> metaModelsForClasses = new Hashtable<>();
+	private static final Map<Set<Class<?>>, PamelaMetaModel> metaModelsForClassSets = new Hashtable<>();
 
 	/**
-	 * Return (compute when not existant) a {@link PamelaMetaModel} (a PAMELA model) from supplied base class a unique entry point
+	 * Return (compute when not existant) a {@link PamelaMetaModel} from supplied base class a unique entry point
 	 * 
 	 * @param baseClass
 	 *            unique entry point
 	 * @return
 	 * @throws ModelDefinitionException
 	 */
-	public static synchronized PamelaMetaModel getModelContext(Class<?> baseClass) throws ModelDefinitionException {
-		return getModelContext(baseClass, true);
+	public static synchronized PamelaMetaModel retrieveMetaModel(Class<?> baseClass) throws ModelDefinitionException {
+		return retrieveMetaModel(baseClass, true);
 	}
 
 	/**
-	 * Return (compute when not existant) a {@link PamelaMetaModel} (a PAMELA model) from supplied base class a unique entry point
+	 * Return (compute when not existant) a {@link PamelaMetaModel} from supplied base class a unique entry point
 	 * 
 	 * @param baseClass
 	 *            unique entry point
-	 * @param isFinalModelContext
+	 * @param isFinalMetaModel
 	 *            true when final
 	 * @return
 	 * @throws ModelDefinitionException
 	 */
-	static synchronized PamelaMetaModel getModelContext(Class<?> baseClass, boolean isFinalModelContext) throws ModelDefinitionException {
-		PamelaMetaModel context = contexts.get(baseClass);
-		if (context == null) {
-			contexts.put(baseClass, context = new PamelaMetaModel(baseClass, isFinalModelContext));
+	static synchronized PamelaMetaModel retrieveMetaModel(Class<?> baseClass, boolean isFinalMetaModel) throws ModelDefinitionException {
+		PamelaMetaModel returned = metaModelsForClasses.get(baseClass);
+		if (returned == null) {
+			metaModelsForClasses.put(baseClass, returned = new PamelaMetaModel(baseClass, isFinalMetaModel));
 		}
-		return context;
+		return returned;
 	}
 
 	/**
@@ -109,45 +109,45 @@ public class PamelaMetaModelLibrary {
 	 * @param baseClass
 	 * @return
 	 */
-	public static boolean hasContext(Class<?> baseClass) {
-		return contexts.get(baseClass) != null;
+	public static boolean hasMetaModel(Class<?> baseClass) {
+		return metaModelsForClasses.get(baseClass) != null;
 	}
 
 	/**
-	 * Return (compute when not existant) a {@link PamelaMetaModel} (a PAMELA model) from supplied base classes as multiple entry points
+	 * Return (compute when not existant) a {@link PamelaMetaModel} from supplied base classes as multiple entry points
 	 * 
 	 * @param classes
 	 *            classes to consider to compute graph closure
 	 * @return
 	 * @throws ModelDefinitionException
 	 */
-	public static PamelaMetaModel getCompoundModelContext(List<Class<?>> classes) throws ModelDefinitionException {
+	public static PamelaMetaModel retrieveMetaModel(List<Class<?>> classes) throws ModelDefinitionException {
 		if (classes.size() == 1) {
-			return getModelContext(classes.get(0), true);
+			return retrieveMetaModel(classes.get(0), true);
 		}
 
 		Set<Class<?>> set = new HashSet<>(classes);
-		PamelaMetaModel context = setContexts.get(set);
+		PamelaMetaModel context = metaModelsForClassSets.get(set);
 		if (context == null) {
-			setContexts.put(set, context = new PamelaMetaModel(classes));
+			metaModelsForClassSets.put(set, context = new PamelaMetaModel(classes));
 		}
 		return context;
 	}
 
 	/**
-	 * Return (compute when not existant) a {@link PamelaMetaModel} (a PAMELA model) from supplied base classes as multiple entry points
+	 * Return (compute when not existant) a {@link PamelaMetaModel} from supplied base classes as multiple entry points
 	 * 
 	 * @param classes
 	 *            classes to consider to compute graph closure
 	 * @return
 	 * @throws ModelDefinitionException
 	 */
-	public static PamelaMetaModel getCompoundModelContext(Class<?>... classes) throws ModelDefinitionException {
-		return getCompoundModelContext(Arrays.asList(classes));
+	public static PamelaMetaModel retrieveMetaModel(Class<?>... classes) throws ModelDefinitionException {
+		return retrieveMetaModel(Arrays.asList(classes));
 	}
 
 	/**
-	 * Return (compute when not existant) a {@link PamelaMetaModel} (a PAMELA model) from supplied base classes as multiple entry points
+	 * Return (compute when not existant) a {@link PamelaMetaModel} from supplied base classes as multiple entry points
 	 * 
 	 * @param baseClass
 	 *            main entry point
@@ -156,21 +156,21 @@ public class PamelaMetaModelLibrary {
 	 * @return
 	 * @throws ModelDefinitionException
 	 */
-	public static PamelaMetaModel getCompoundModelContext(Class<?> baseClass, Class<?>[] classes) throws ModelDefinitionException {
+	public static PamelaMetaModel retrieveMetaModel(Class<?> baseClass, Class<?>[] classes) throws ModelDefinitionException {
 		Class<?>[] newArray = new Class[classes.length + 1];
 		for (int i = 0; i < classes.length; i++) {
 			newArray[i] = classes[i];
 		}
 		newArray[classes.length] = baseClass;
 
-		return getCompoundModelContext(newArray);
+		return retrieveMetaModel(newArray);
 	}
 
 	/**
 	 * Clear cache
 	 */
 	public static void clearCache() {
-		contexts.clear();
-		setContexts.clear();
+		metaModelsForClasses.clear();
+		metaModelsForClassSets.clear();
 	}
 }
