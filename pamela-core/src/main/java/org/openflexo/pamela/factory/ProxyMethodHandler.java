@@ -273,6 +273,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return createdByCloning;
 	}
 
+	private boolean isPerformingAssertionChecking = false;
+
 	@Override
 	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 		boolean assertionChecking = false;
@@ -280,7 +282,14 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		Object invoke = null;
 
 		if (enableAssertionChecking && getModelEntity().isMethodToBeMonitored(method)) {
-			assertionChecking = checkOnMethodEntry(method, args);
+			if (!isPerformingAssertionChecking) {
+				try {
+					isPerformingAssertionChecking = true;
+					assertionChecking = checkOnMethodEntry(method, args);
+				} finally {
+					isPerformingAssertionChecking = false;
+				}
+			}
 		}
 
 		for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()) {
@@ -388,7 +397,14 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}*/
 
 		if (enableAssertionChecking && assertionChecking && getModelEntity().isMethodToBeMonitored(method)) {
-			checkOnMethodExit(method, args);
+			if (!isPerformingAssertionChecking) {
+				try {
+					isPerformingAssertionChecking = true;
+					checkOnMethodExit(method, args);
+				} finally {
+					isPerformingAssertionChecking = false;
+				}
+			}
 		}
 
 		return invoke;
@@ -2557,10 +2573,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			propertyPredicate.check(this);
 		}*/
 
-		if (method.getName().contains("aMonitoredMethod")) {
+		/*if (method.getName().contains("aMonitoredMethod")) {
 			System.out.println("Pour " + method + " j'execute: " + getModelEntity().isMethodToBeMonitored(method));
 			System.out.println("Les addOns: " + getModelEntity().getEntityAddOns());
-		}
+		}*/
 
 		for (EntityAddOn<I, ?> entityAddOn : getModelEntity().getEntityAddOns()) {
 			entityAddOn.checkOnMethodEntry(method, this, args);

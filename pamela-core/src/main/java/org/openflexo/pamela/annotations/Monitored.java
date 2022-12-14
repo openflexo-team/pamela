@@ -56,4 +56,15 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Monitored {
 
+	public enum MonitoringTriggerStrategy {
+		CheckOnEntry, CheckOnExit, CheckOnEntryAndExit
+	}
+
+	public enum CheckingScope {
+		Local, Global
+	}
+
+	MonitoringTriggerStrategy triggerStrategy() default MonitoringTriggerStrategy.CheckOnEntryAndExit;
+
+	CheckingScope checkingScope() default CheckingScope.Global;
 }

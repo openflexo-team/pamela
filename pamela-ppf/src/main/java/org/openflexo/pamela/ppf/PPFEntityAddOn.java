@@ -144,15 +144,15 @@ public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 
 	@Override
 	public void checkOnMethodEntry(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args) throws PPFViolationException {
-		checkPredicates(proxyMethodHandler);
+		checkAllPredicates(proxyMethodHandler);
 	}
 
 	@Override
 	public void checkOnMethodExit(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args) throws PPFViolationException {
-		checkPredicates(proxyMethodHandler);
+		checkAllPredicates(proxyMethodHandler);
 	}
 
-	private void checkPredicates(ProxyMethodHandler<I> proxyMethodHandler) throws PPFViolationException {
+	private void checkAllPredicates(ProxyMethodHandler<I> proxyMethodHandler) throws PPFViolationException {
 		for (ModelProperty<? super I> modelProperty : predicates.keySet()) {
 			checkPredicatesForProperty(modelProperty, proxyMethodHandler);
 		}
