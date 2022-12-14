@@ -3,10 +3,10 @@ package org.openflexo.pamela.test.dpf.multmn;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.annotations.MonitoredEntity.MonitoringStrategy;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.ppf.PPFViolationException;
 import org.openflexo.pamela.test.dpf.AbstractConcept;
@@ -40,7 +40,7 @@ public class TestMultMN {
 
 	private void performTest(MonitoringStrategy monitoringStrategy) throws ModelDefinitionException {
 
-		ModelFactory factory = new ModelFactory(ModelContextLibrary.getModelContext(X.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getModelContext(X.class));
 		ModelEntity<AbstractConcept> abstractConceptEntity = factory.getModelContext().getModelEntity(AbstractConcept.class);
 		abstractConceptEntity.setMonitoringStrategy(monitoringStrategy);
 
@@ -105,7 +105,7 @@ public class TestMultMN {
 
 	private void performTestRepairAssertionFailed(MonitoringStrategy monitoringStrategy) throws ModelDefinitionException {
 
-		ModelFactory factory = new ModelFactory(ModelContextLibrary.getModelContext(X.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getModelContext(X.class));
 		ModelEntity<AbstractConcept> abstractConceptEntity = factory.getModelContext().getModelEntity(AbstractConcept.class);
 		abstractConceptEntity.setMonitoringStrategy(monitoringStrategy);
 
