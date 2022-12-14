@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.CompareAndMergeUtils;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 
 /**
  * Test PAMELA updateWith(Object) feature
@@ -24,9 +24,9 @@ import org.openflexo.pamela.factory.ModelFactory;
  */
 public class TestUpdateWith {
 
-	private static ModelFactory createFactory() {
+	private static PamelaModelFactory createFactory() {
 		try {
-			return new ModelFactory(ModelContextLibrary.getCompoundModelContext(ConceptA.class, ConceptC1.class, ConceptC2.class));
+			return new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(ConceptA.class, ConceptC1.class, ConceptC2.class));
 		} catch (ModelDefinitionException e) {
 			return null;
 		}
@@ -67,13 +67,13 @@ public class TestUpdateWith {
 		fail("Property notification " + propertyName + " from " + oldValue + " to " + newValue + " not fired !");
 	}
 
-	private static double getDistance(ModelFactory factory, Object o1, Object o2) {
+	private static double getDistance(PamelaModelFactory factory, Object o1, Object o2) {
 		return CompareAndMergeUtils.getDistance(factory, o1, o2);
 	}
 
 	@Test
 	public void testSimpleUpdating() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptA a2 = factory.newInstance(ConceptA.class);
 
@@ -118,7 +118,7 @@ public class TestUpdateWith {
 
 	@Test
 	public void testUpdatingWithEmbedding() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptB b1 = factory.newInstance(ConceptB.class);
 		a1.setValue("Hello");
@@ -178,7 +178,7 @@ public class TestUpdateWith {
 	 */
 	@Test
 	public void testUpdatingWithMultipleEmbedding1() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptB b1 = factory.newInstance(ConceptB.class);
 		a1.setValue("Hello");
@@ -263,7 +263,7 @@ public class TestUpdateWith {
 	 */
 	@Test
 	public void testUpdatingWithMultipleEmbeddingAddingFirst() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptB b1 = factory.newInstance(ConceptB.class);
 		a1.setValue("Hello");
@@ -333,7 +333,7 @@ public class TestUpdateWith {
 	 */
 	@Test
 	public void testUpdatingWithMultipleEmbeddingAddingMiddle() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptB b1 = factory.newInstance(ConceptB.class);
 		a1.setValue("Hello");
@@ -399,7 +399,7 @@ public class TestUpdateWith {
 	 */
 	@Test
 	public void testUpdatingWithMultipleEmbeddingAddingEnd() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptB b1 = factory.newInstance(ConceptB.class);
 		a1.setValue("Hello");
@@ -463,7 +463,7 @@ public class TestUpdateWith {
 	 */
 	@Test
 	public void testUpdatingWithMultipleEmbeddingRemovingFirst() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptB b1 = factory.newInstance(ConceptB.class);
 		a1.setValue("Hello");
@@ -527,7 +527,7 @@ public class TestUpdateWith {
 	 */
 	@Test
 	public void testUpdatingWithMultipleEmbeddingRemovingMiddle() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptB b1 = factory.newInstance(ConceptB.class);
 		a1.setValue("Hello");
@@ -591,7 +591,7 @@ public class TestUpdateWith {
 	 */
 	@Test
 	public void testUpdatingWithMultipleEmbeddingRemovingEnd() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptB b1 = factory.newInstance(ConceptB.class);
 		a1.setValue("Hello");
@@ -655,7 +655,7 @@ public class TestUpdateWith {
 	 */
 	@Test
 	public void testUpdatingAvoidUpdatingWithDifferentTypes() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		a1.setValue("Hello");
 
@@ -700,7 +700,7 @@ public class TestUpdateWith {
 	 */
 	@Test
 	public void testUpdatingReorder() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		a1.setValue("Hello");
 
@@ -753,7 +753,7 @@ public class TestUpdateWith {
 	 */
 	@Test
 	public void testUpdatingWithMultipleEmbeddingHeterogeneousContext() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		a1.setValue("Hello");
 

@@ -40,7 +40,7 @@ package org.openflexo.pamela.converter;
 
 import java.util.logging.Level;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.rm.Resource;
 
@@ -83,7 +83,7 @@ public class RelativePathResourceConverter extends Converter<Resource> {
 	}
 
 	@Override
-	public Resource convertFromString(String value, ModelFactory factory) {
+	public Resource convertFromString(String value, PamelaModelFactory factory) {
 
 		// System.out.println("Je cherche " + value);
 

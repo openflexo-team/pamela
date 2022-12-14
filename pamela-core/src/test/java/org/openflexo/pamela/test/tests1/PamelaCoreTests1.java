@@ -13,11 +13,11 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openflexo.pamela.AccessibleProxyObject;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.UnitializedEntityException;
 import org.openflexo.pamela.factory.Clipboard;
 import org.openflexo.pamela.factory.EmbeddingType;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.test.AbstractPAMELATest;
 import org.openflexo.toolbox.FileUtils;
 
@@ -29,8 +29,8 @@ import org.openflexo.toolbox.FileUtils;
  */
 public class PamelaCoreTests1 extends AbstractPAMELATest {
 
-	private ModelFactory factory;
-	private ModelContext modelContext;
+	private PamelaModelFactory factory;
+	private PamelaMetaModel pamelaMetaModel;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -45,8 +45,8 @@ public class PamelaCoreTests1 extends AbstractPAMELATest {
 	@Before
 	public void setUp() throws Exception {
 		new File("/tmp").mkdirs();
-		modelContext = new ModelContext(FlexoProcess.class);
-		factory = new ModelFactory(modelContext);
+		pamelaMetaModel = new PamelaMetaModel(FlexoProcess.class);
+		factory = new PamelaModelFactory(pamelaMetaModel);
 	}
 
 	@Override
@@ -61,11 +61,11 @@ public class PamelaCoreTests1 extends AbstractPAMELATest {
 	 */
 	public void test1() throws Exception {
 
-		System.out.println(modelContext.debug());
+		System.out.println(pamelaMetaModel.debug());
 
-		assertEquals(11, modelContext.getEntityCount());
+		assertEquals(11, pamelaMetaModel.getEntityCount());
 
-		validateBasicModelContext(modelContext);
+		validateBasicModelContext(pamelaMetaModel);
 	}
 
 	public void test2() throws Exception {

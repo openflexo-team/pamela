@@ -1,6 +1,6 @@
 package org.openflexo.pamela.patterns;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 
 import java.lang.reflect.Method;
 
@@ -8,11 +8,11 @@ import java.lang.reflect.Method;
  * Interface specifying an execution monitor. Such an entity is notified every time a method is handled by the {@link org.openflexo.pamela.factory.ProxyMethodHandler}.
  */
 public abstract class ExecutionMonitor {
-    protected ModelContext modelContext;
+    protected PamelaMetaModel pamelaMetaModel;
 
-    public ExecutionMonitor(ModelContext context){
-        this.modelContext = context;
-        this.modelContext.addExecutionMonitor(this);
+    public ExecutionMonitor(PamelaMetaModel context){
+        this.pamelaMetaModel = context;
+        this.pamelaMetaModel.addExecutionMonitor(this);
     }
 
     /**

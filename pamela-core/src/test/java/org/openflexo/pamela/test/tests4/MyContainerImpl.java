@@ -38,15 +38,15 @@
 
 package org.openflexo.pamela.test.tests4;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 
 public abstract class MyContainerImpl implements MyContainer {
 
 	private MyContents lecontenu = null;
-	private ModelFactory factory = null;
+	private PamelaModelFactory factory = null;
 	private String contentURI = null;
 
-	public void setFactory(ModelFactory fact) {
+	public void setFactory(PamelaModelFactory fact) {
 		factory = fact;
 	}
 

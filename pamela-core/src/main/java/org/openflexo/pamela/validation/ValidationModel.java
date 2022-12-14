@@ -51,9 +51,9 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import org.openflexo.connie.type.TypeUtils;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.annotations.DefineValidationRule;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
@@ -72,20 +72,20 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 	public static final String DELETED_PROPERTY = "deleted";
 
 	private final Map<Class<?>, ValidationRuleSet<?>> ruleSets;
-	private ModelFactory validationModelFactory;
+	private PamelaModelFactory validationModelFactory;
 	private List<Class<?>> sortedClasses;
 	private ValidationRuleFilter ruleFilter = null;
 
 	private final PropertyChangeSupport pcSupport;
 
-	public ValidationModel(ModelContext modelContext) {
+	public ValidationModel(PamelaMetaModel pamelaMetaModel) {
 		super();
 
 		pcSupport = new PropertyChangeSupport(this);
 
 		ruleSets = new HashMap<>();
 
-		searchAndRegisterValidationRules(modelContext);
+		searchAndRegisterValidationRules(pamelaMetaModel);
 	}
 
 	@Override
@@ -99,11 +99,11 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void searchAndRegisterValidationRules(ModelContext modelContext) {
+	private void searchAndRegisterValidationRules(PamelaMetaModel pamelaMetaModel) {
 
-		validationModelFactory = new ModelFactory(modelContext);
+		validationModelFactory = new PamelaModelFactory(pamelaMetaModel);
 
-		Iterator<ModelEntity> it = modelContext.getEntities();
+		Iterator<ModelEntity> it = pamelaMetaModel.getEntities();
 
 		while (it.hasNext()) {
 			ModelEntity e = it.next();
@@ -114,7 +114,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		}
 
 		// Now manage inheritance
-		it = modelContext.getEntities();
+		it = pamelaMetaModel.getEntities();
 		while (it.hasNext()) {
 			ModelEntity e = it.next();
 			// System.out.println("assertTrue(validationModel.getValidationModelFactory().getModelContext().getModelEntity("
@@ -138,7 +138,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		}
 	}
 
-	public ModelFactory getValidationModelFactory() {
+	public PamelaModelFactory getValidationModelFactory() {
 		return validationModelFactory;
 	}
 

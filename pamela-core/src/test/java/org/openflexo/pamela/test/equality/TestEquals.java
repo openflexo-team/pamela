@@ -3,9 +3,9 @@ package org.openflexo.pamela.test.equality;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 
 public class TestEquals {
 
@@ -17,7 +17,7 @@ public class TestEquals {
 	@Test
 	public void testEquals() throws ModelDefinitionException {
 
-		ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(A.class, B.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(A.class, B.class));
 
 		A a1 = factory.newInstance(A.class);
 		B b1 = factory.newInstance(B.class);

@@ -42,7 +42,7 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
 import org.openflexo.pamela.CloneableProxyObject;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
 
@@ -63,8 +63,8 @@ public class SetCommand<I> extends AtomicEdit<I> {
 	private ModelProperty<? super I> modelProperty;
 
 	public SetCommand(I updatedObject, ModelEntity<I> modelEntity, ModelProperty<? super I> modelProperty, Object oldValue,
-			Object newValue, ModelFactory modelFactory) {
-		super(modelEntity, modelFactory);
+			Object newValue, PamelaModelFactory pamelaModelFactory) {
+		super(modelEntity, pamelaModelFactory);
 		this.updatedObject = updatedObject;
 		this.modelProperty = modelProperty;
 		this.oldValue = oldValue;

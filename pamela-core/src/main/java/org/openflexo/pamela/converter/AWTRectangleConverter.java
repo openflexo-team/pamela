@@ -40,7 +40,7 @@ package org.openflexo.pamela.converter;
 
 import java.awt.Rectangle;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
 /**
@@ -58,7 +58,7 @@ public class AWTRectangleConverter extends Converter<Rectangle> {
 	}
 
 	@Override
-	public Rectangle convertFromString(String value, ModelFactory factory) {
+	public Rectangle convertFromString(String value, PamelaModelFactory factory) {
 		if (value == null) {
 			return null;
 		}

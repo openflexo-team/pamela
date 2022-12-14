@@ -74,7 +74,7 @@ import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
 import org.openflexo.pamela.annotations.ComplexEmbedded;
@@ -93,15 +93,15 @@ import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.NoSuchEntityException;
 import org.openflexo.pamela.exceptions.UnitializedEntityException;
-import org.openflexo.pamela.factory.ModelFactory.PAMELAProxyFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory.PAMELAProxyFactory;
 import org.openflexo.pamela.jml.JMLEnsures;
 import org.openflexo.pamela.jml.JMLMethodDefinition;
 import org.openflexo.pamela.jml.JMLRequires;
 import org.openflexo.pamela.jml.SpecificationsViolationException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.model.PAMELAVisitor;
-import org.openflexo.pamela.model.PAMELAVisitor.VisitingStrategy;
+import org.openflexo.pamela.model.PamelaVisitor;
+import org.openflexo.pamela.model.PamelaVisitor.VisitingStrategy;
 import org.openflexo.pamela.model.property.DefaultMultiplePropertyImplementation;
 import org.openflexo.pamela.model.property.DefaultSinglePropertyImplementation;
 import org.openflexo.pamela.model.property.MultiplePropertyImplementation;
@@ -229,7 +229,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return editingContext;
 	}
 
-	public ModelFactory getModelFactory() {
+	public PamelaModelFactory getModelFactory() {
 		return pamelaProxyFactory.getModelFactory();
 	}
 
@@ -249,7 +249,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return pamelaProxyFactory.getOverridingSuperClass();
 	}
 
-	private ModelContext getModelContext() {
+	private PamelaMetaModel getModelContext() {
 		return getModelFactory().getModelContext();
 	}
 
@@ -608,10 +608,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			return getReferencedObjects();
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, ACCEPT_VISITOR)) {
-			return acceptVisitor((PAMELAVisitor) args[0]);
+			return acceptVisitor((PamelaVisitor) args[0]);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, ACCEPT_WITH_STRATEGY_VISITOR)) {
-			return acceptVisitor((PAMELAVisitor) args[0], (VisitingStrategy) args[1]);
+			return acceptVisitor((PamelaVisitor) args[0], (VisitingStrategy) args[1]);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, IS_DELETED)) {
 			return deleted;
@@ -1426,7 +1426,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 	}
 
-	private Object acceptVisitor(PAMELAVisitor pamelaVisitor, VisitingStrategy visitingStrategy) {
+	private Object acceptVisitor(PamelaVisitor pamelaVisitor, VisitingStrategy visitingStrategy) {
 		switch (visitingStrategy) {
 			case Embedding:
 				acceptVisitorEmbeddingStrategy((AccessibleProxyObject) getObject(), pamelaVisitor, new HashSet<Object>());
@@ -1441,7 +1441,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return null;
 	}
 
-	private static void acceptVisitorEmbeddingStrategy(AccessibleProxyObject object, PAMELAVisitor pamelaVisitor,
+	private static void acceptVisitorEmbeddingStrategy(AccessibleProxyObject object, PamelaVisitor pamelaVisitor,
 			Set<Object> visitedObjects) {
 		if (!visitedObjects.contains(object)) {
 			visitedObjects.add(object);
@@ -1458,7 +1458,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 	}
 
-	private static void acceptVisitorExhaustiveStrategy(AccessibleProxyObject object, PAMELAVisitor pamelaVisitor,
+	private static void acceptVisitorExhaustiveStrategy(AccessibleProxyObject object, PamelaVisitor pamelaVisitor,
 			Set<Object> visitedObjects) {
 		if (!visitedObjects.contains(object)) {
 			visitedObjects.add(object);
@@ -1475,7 +1475,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 	}
 
-	private Object acceptVisitor(PAMELAVisitor pamelaVisitor) {
+	private Object acceptVisitor(PamelaVisitor pamelaVisitor) {
 		return acceptVisitor(pamelaVisitor, VisitingStrategy.Embedding);
 	}
 

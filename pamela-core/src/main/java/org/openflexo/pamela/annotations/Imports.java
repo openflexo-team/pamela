@@ -45,12 +45,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 
 /**
  * Annotation used to contain multiple {@link Import} annotations<br>
  * 
- * Those imports allows to indicate classes to embed in the computation of PAMELA meta-model ({@link ModelContext}) from compiled code
+ * Those imports allows to indicate classes to embed in the computation of PAMELA meta-model ({@link PamelaMetaModel}) from compiled code
  * 
  * @author sylvain
  *

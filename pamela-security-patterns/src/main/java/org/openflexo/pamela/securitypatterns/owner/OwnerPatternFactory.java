@@ -1,6 +1,6 @@
 package org.openflexo.pamela.securitypatterns.owner;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.securitypatterns.owner.annotations.OwnedObject;
@@ -12,8 +12,8 @@ import java.lang.reflect.Method;
 
 public class OwnerPatternFactory extends AbstractPatternFactory<OwnerPatternDefinition> {
 
-    public OwnerPatternFactory(ModelContext modelContext) {
-        super(modelContext);
+    public OwnerPatternFactory(PamelaMetaModel pamelaMetaModel) {
+        super(pamelaMetaModel);
     }
 
     @Override

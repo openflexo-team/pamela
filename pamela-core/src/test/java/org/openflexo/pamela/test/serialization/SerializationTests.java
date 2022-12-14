@@ -13,7 +13,7 @@ import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.RestrictiveDeserializationException;
 import org.openflexo.pamela.exceptions.RestrictiveSerializationException;
 import org.openflexo.pamela.factory.DeserializationPolicy;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.factory.SerializationPolicy;
 import org.openflexo.pamela.test.AbstractPAMELATest;
 import org.openflexo.pamela.test.tests1.AbstractNode;
@@ -30,16 +30,16 @@ public class SerializationTests extends AbstractPAMELATest {
 	private static final Duration DURATION_VALUE = new Duration(10, DurationUnit.SECONDS);
 	private static final FileFormat FILEFORMAT_VALUE = FileFormat.JAR;
 	private File file;
-	private ModelFactory factory;
-	private ModelFactory factory2;
+	private PamelaModelFactory factory;
+	private PamelaModelFactory factory2;
 
 	@Override
 	@Before
 	public void setUp() throws IOException, ModelDefinitionException {
 		clearModelEntityLibrary();
 		file = File.createTempFile("PAMELA-TestSerialization", ".xml");
-		factory2 = new ModelFactory(MyNode.class);
-		factory = new ModelFactory(FlexoProcess.class);
+		factory2 = new PamelaModelFactory(MyNode.class);
+		factory = new PamelaModelFactory(FlexoProcess.class);
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class SerializationTests extends AbstractPAMELATest {
 		}
 		// Just to make sure
 		process = null;
-		factory = new ModelFactory(FlexoProcess.class);
+		factory = new PamelaModelFactory(FlexoProcess.class);
 		try (FileInputStream fis = new FileInputStream(file)) {
 			process = (FlexoProcess) factory.deserialize(fis, DeserializationPolicy.RESTRICTIVE);
 			Assert.fail("Restrictive deserialization should not allow the deserialization of a " + MyNode.class.getName());
@@ -105,7 +105,7 @@ public class SerializationTests extends AbstractPAMELATest {
 		} catch (Exception e) {
 			fail(e.getMessage());
 		}
-		factory = new ModelFactory(FlexoProcess.class);
+		factory = new PamelaModelFactory(FlexoProcess.class);
 		try (FileInputStream fis = new FileInputStream(file)) {
 			process = (FlexoProcess) factory.deserialize(fis, DeserializationPolicy.EXTENSIVE);
 		} catch (RestrictiveDeserializationException e) {

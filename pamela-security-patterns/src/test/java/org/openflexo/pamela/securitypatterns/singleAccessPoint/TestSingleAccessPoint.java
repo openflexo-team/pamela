@@ -2,17 +2,17 @@ package org.openflexo.pamela.securitypatterns.singleAccessPoint;
 
 import junit.framework.TestCase;
 import org.junit.Test;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.securitypatterns.singleAccessPoint.model.*;
 
 public class TestSingleAccessPoint extends TestCase {
-    static ModelContext context;
+    static PamelaMetaModel context;
 
     @Test
     public void testPatternAnalysis() throws Exception{
-        ModelContext context = new ModelContext(Accessor.class);
+        PamelaMetaModel context = new PamelaMetaModel(Accessor.class);
 
         assertEquals(1, context.getPatternDefinitions(SingleAccessPointPatternDefinition.class).size());
         SingleAccessPointPatternDefinition patternDefinition = context.getPatternDefinitions(SingleAccessPointPatternDefinition.class).get(0);
@@ -30,8 +30,8 @@ public class TestSingleAccessPoint extends TestCase {
 
     @Test
     public void testValidAccess() throws Exception{
-        context = new ModelContext(Accessor.class);
-        ModelFactory factory = new ModelFactory(context);
+        context = new PamelaMetaModel(Accessor.class);
+        PamelaModelFactory factory = new PamelaModelFactory(context);
 
         ProtectedSystem system = factory.newInstance(ProtectedSystem.class);
         Accessor accessor = factory.newInstance(Accessor.class);
@@ -50,8 +50,8 @@ public class TestSingleAccessPoint extends TestCase {
 
     @Test
     public void testUnauthorizedAccess() throws Exception{
-        ModelContext context = new ModelContext(Accessor.class);
-        ModelFactory factory = new ModelFactory(context);
+        PamelaMetaModel context = new PamelaMetaModel(Accessor.class);
+        PamelaModelFactory factory = new PamelaModelFactory(context);
 
         ProtectedSystem system = factory.newInstance(ProtectedSystem.class);
         Accessor accessor = factory.newInstance(Accessor.class);

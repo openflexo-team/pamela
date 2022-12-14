@@ -1,6 +1,6 @@
 package org.openflexo.pamela.securitypatterns.executionMonitors;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.patterns.ExecutionMonitor;
@@ -40,7 +40,7 @@ public class CustomStack extends ExecutionMonitor {
     }
     private Stack<Frame> customStack;
 
-    public CustomStack(ModelContext context){
+    public CustomStack(PamelaMetaModel context){
         super(context);
         this.customStack = new Stack<>();
     }
@@ -80,6 +80,6 @@ public class CustomStack extends ExecutionMonitor {
     }
 
     private boolean isMonitored(Object instance) {
-        return !this.modelContext.getUpperEntities(instance).isEmpty();
+        return !this.pamelaMetaModel.getUpperEntities(instance).isEmpty();
     }
 }

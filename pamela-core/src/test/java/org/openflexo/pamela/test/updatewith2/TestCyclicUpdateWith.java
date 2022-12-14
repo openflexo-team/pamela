@@ -11,10 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.CompareAndMergeUtils;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 
 /**
  * Test PAMELA updateWith(Object) feature
@@ -24,9 +24,9 @@ import org.openflexo.pamela.factory.ModelFactory;
  */
 public class TestCyclicUpdateWith {
 
-	private static ModelFactory createFactory() {
+	private static PamelaModelFactory createFactory() {
 		try {
-			return new ModelFactory(ModelContextLibrary.getCompoundModelContext(ConceptA.class, ConceptB.class, ConceptC.class));
+			return new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(ConceptA.class, ConceptB.class, ConceptC.class));
 		} catch (ModelDefinitionException e) {
 			return null;
 		}
@@ -67,13 +67,13 @@ public class TestCyclicUpdateWith {
 		fail("Property notification " + propertyName + " from " + oldValue + " to " + newValue + " not fired !");
 	}
 
-	private static double getDistance(ModelFactory factory, Object o1, Object o2) {
+	private static double getDistance(PamelaModelFactory factory, Object o1, Object o2) {
 		return CompareAndMergeUtils.getDistance(factory, o1, o2);
 	}
 
 	@Test
 	public void testCyclicUpdating() throws Exception {
-		ModelFactory factory = createFactory();
+		PamelaModelFactory factory = createFactory();
 
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptB b1 = factory.newInstance(ConceptB.class);

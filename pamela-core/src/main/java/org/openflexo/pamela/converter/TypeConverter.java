@@ -51,7 +51,7 @@ import org.openflexo.connie.type.ParameterizedTypeImpl;
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.connie.type.WildcardTypeImpl;
 import org.openflexo.pamela.exceptions.InvalidDataException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
 /**
@@ -72,7 +72,7 @@ public class TypeConverter extends Converter<Type> {
 	}
 
 	@Override
-	public Type convertFromString(String value, ModelFactory factory) throws InvalidDataException {
+	public Type convertFromString(String value, PamelaModelFactory factory) throws InvalidDataException {
 
 		value = value.trim();
 		if (StringUtils.isEmpty(value)) {

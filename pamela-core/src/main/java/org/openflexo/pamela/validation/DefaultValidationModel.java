@@ -38,7 +38,7 @@
 
 package org.openflexo.pamela.validation;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 
 /**
  * Default {@link ValidationModel} implementation
@@ -48,8 +48,8 @@ import org.openflexo.pamela.ModelContext;
  */
 public class DefaultValidationModel extends ValidationModel {
 
-	public DefaultValidationModel(ModelContext modelContext) {
-		super(modelContext);
+	public DefaultValidationModel(PamelaMetaModel pamelaMetaModel) {
+		super(pamelaMetaModel);
 	}
 
 	@Override

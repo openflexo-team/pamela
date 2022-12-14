@@ -40,7 +40,7 @@ package org.openflexo.pamela.converter;
 
 import java.text.ParseException;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.Duration;
 import org.openflexo.toolbox.Duration.DurationUnit;
@@ -58,7 +58,7 @@ public class DurationConverter extends Converter<Duration> {
 	}
 
 	@Override
-	public Duration convertFromString(String aValue, ModelFactory factory) {
+	public Duration convertFromString(String aValue, PamelaModelFactory factory) {
 		try {
 			return tryToConvertFromString(aValue);
 		} catch (ParseException e) {

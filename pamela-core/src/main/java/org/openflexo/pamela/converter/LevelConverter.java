@@ -40,7 +40,7 @@ package org.openflexo.pamela.converter;
 
 import java.util.logging.Level;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.StringUtils;
 
@@ -57,7 +57,7 @@ public class LevelConverter extends Converter<Level> {
 	}
 
 	@Override
-	public Level convertFromString(String value, ModelFactory factory) {
+	public Level convertFromString(String value, PamelaModelFactory factory) {
 		if (StringUtils.isEmpty(value)) {
 			return null;
 		}

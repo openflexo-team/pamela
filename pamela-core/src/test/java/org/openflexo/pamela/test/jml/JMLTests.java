@@ -5,8 +5,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.jml.SpecificationsViolationException;
 import org.openflexo.pamela.test.AbstractPAMELATest;
 
@@ -18,8 +18,8 @@ import org.openflexo.pamela.test.AbstractPAMELATest;
  */
 public class JMLTests extends AbstractPAMELATest {
 
-	private ModelFactory factory;
-	private ModelContext modelContext;
+	private PamelaModelFactory factory;
+	private PamelaMetaModel pamelaMetaModel;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -33,8 +33,8 @@ public class JMLTests extends AbstractPAMELATest {
 	@Override
 	@Before
 	public void setUp() throws Exception {
-		modelContext = new ModelContext(BankAccount.class);
-		factory = new ModelFactory(modelContext);
+		pamelaMetaModel = new PamelaMetaModel(BankAccount.class);
+		factory = new PamelaModelFactory(pamelaMetaModel);
 	}
 
 	@Override

@@ -7,13 +7,13 @@ import java.io.File;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.Implementation;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.XMLAttribute;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 
 /**
  * Unit test for <a href="https://bugs.openflexo.org/browse/PAMELA-27">PAMELA-27</a>
@@ -53,14 +53,14 @@ public class DelegateImplementationTest {
 		}
 	}
 
-	private ModelFactory factory;
-	private ModelContext modelContext;
+	private PamelaModelFactory factory;
+	private PamelaMetaModel pamelaMetaModel;
 
 	@Before
 	public void setUp() throws Exception {
 		new File("/tmp").mkdirs();
-		modelContext = new ModelContext(AnEntity.class);
-		factory = new ModelFactory(modelContext);
+		pamelaMetaModel = new PamelaMetaModel(AnEntity.class);
+		factory = new PamelaModelFactory(pamelaMetaModel);
 	}
 
 	@Test

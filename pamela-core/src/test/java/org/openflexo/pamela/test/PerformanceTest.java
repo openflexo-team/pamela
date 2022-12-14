@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.ModelEntity;
@@ -13,7 +13,7 @@ import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 
 /**
  * Class of tests to measure the performance of pamela vs regular written classes.
@@ -62,7 +62,7 @@ public class PerformanceTest {
 		 * @return the root object of the model (in order to keep a reference to the model and avoid the GC to garbage collect the memory
 		 *         before the memory footprint has been computed).
 		 */
-		public Object run(ModelFactory factory);
+		public Object run(PamelaModelFactory factory);
 	}
 
 	/**
@@ -167,7 +167,7 @@ public class PerformanceTest {
 	 */
 	public static class BuildBasicModelRunnable implements TestRunnable {
 		@Override
-		public Object run(ModelFactory factory) {
+		public Object run(PamelaModelFactory factory) {
 			return buildModel(5, 7, factory); // 97656 objects
 		}
 	}
@@ -192,7 +192,7 @@ public class PerformanceTest {
 		}
 
 		@Override
-		public Object run(ModelFactory factory) {
+		public Object run(PamelaModelFactory factory) {
 			ModelObject object = buildModel(5, 4, factory);
 			removeAndReaddChildren(object);
 			return object;
@@ -208,7 +208,7 @@ public class PerformanceTest {
 	public static class DumbModelRunnable implements TestRunnable {
 
 		@Override
-		public Object run(ModelFactory factory) {
+		public Object run(PamelaModelFactory factory) {
 			ModelObject // object = buildModel(99999, 1, factory);
 			object = buildModel(999, 1, factory);// 1000 objects
 			return object;
@@ -227,7 +227,7 @@ public class PerformanceTest {
 	 *            the factory to use to build the model with pamela, else the factory is null
 	 * @return the root object of the model.
 	 */
-	public static ModelObject buildModel(int numberOfChildren, int depth, ModelFactory factory) {
+	public static ModelObject buildModel(int numberOfChildren, int depth, PamelaModelFactory factory) {
 		ModelObject object;
 		if (factory != null) {
 			object = factory.newInstance(ModelObject.class);
@@ -253,7 +253,7 @@ public class PerformanceTest {
 	 *            the TestRunnable to run
 	 * @return the TestResult, ie, time execution, memory footprint and the root object of the model
 	 */
-	private static TestRunnableResult runRunnable(ModelFactory factory, TestRunnable runnable) {
+	private static TestRunnableResult runRunnable(PamelaModelFactory factory, TestRunnable runnable) {
 		TestRunnableResult result = new TestRunnableResult();
 		long startMem, endMem, start, end;
 		startMem = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
@@ -275,7 +275,7 @@ public class PerformanceTest {
 	 * @param factory
 	 *            the factory to pass to the TestRunnable when using pamela objects. Cannot be null
 	 */
-	private static void testModel(TestRunnable runnable, ModelFactory factory, ModelFactory factory2) {
+	private static void testModel(TestRunnable runnable, PamelaModelFactory factory, PamelaModelFactory factory2) {
 		long proxyTime = 0, proxyMem = 0, regularTime = 0, regularMem = 0;
 		for (int i = 0; i < 10; i++) {
 			TestRunnableResult result = runRunnable(factory2, runnable);
@@ -310,10 +310,10 @@ public class PerformanceTest {
 	}
 
 	public static void main(String[] args) throws ModelDefinitionException {
-		ModelContext mapping = new ModelContext(ModelObject.class);
-		ModelFactory factory = new ModelFactory(mapping);
+		PamelaMetaModel mapping = new PamelaMetaModel(ModelObject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(mapping);
 		factory.setListImplementationClass(ArrayList.class);
-		ModelFactory factory2 = new ModelFactory(mapping);
+		PamelaModelFactory factory2 = new PamelaModelFactory(mapping);
 		factory.setListImplementationClass(Vector.class);
 		PerformanceTest.testModel(new DumbModelRunnable(), factory, factory2);
 		PerformanceTest.testModel(new BuildBasicModelRunnable(), factory, factory2);

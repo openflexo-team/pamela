@@ -1,9 +1,9 @@
 package org.openflexo.pamela.securitypatterns.authenticator;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.securitypatterns.authenticator.model.IAuthenticator;
 import org.openflexo.pamela.securitypatterns.authenticator.model.Subject;
 
@@ -13,7 +13,7 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testPatternAnalysis() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
+		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
 		assertEquals(1, context.getPatternDefinitions(AuthenticatorPatternDefinition.class).size());
 		AuthenticatorPatternDefinition patternDefinition = context.getPatternDefinitions(AuthenticatorPatternDefinition.class).get(0);
 		assertEquals(Subject.PATTERN_ID, patternDefinition.getIdentifier());
@@ -31,8 +31,8 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testAuthenticateValid() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, "id1");
 		subject.setManager(manager);
@@ -44,8 +44,8 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testRequiresAuthentication() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, "id1");
 		subject.setManager(manager);
@@ -58,8 +58,8 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testAuthenticatorInvalidReturn() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, "id");
 		subject.setManager(manager);
@@ -69,8 +69,8 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testInstanceDiscovery() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		assertNull(context.getPatternInstances(manager));
 		Subject subject = factory.newInstance(Subject.class, "id");
@@ -84,8 +84,8 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testAuthInfoUniqueness() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, manager, "id");
 		Subject subject2 = factory.newInstance(Subject.class, manager, "id2");
@@ -99,8 +99,8 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testAuthenticatorInvariant() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, manager, "id");
 		subject.setManager(manager);
@@ -117,8 +117,8 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testAuthInfoInvariant() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, manager, "id");
 		subject.setAuthInfo("id");
@@ -135,8 +135,8 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testIdProofForgery() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, manager, "id");
 		subject.setIdProof(-1);
@@ -155,8 +155,8 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testInvariantValidityWithDynamicPrivilegeRules() throws Exception {
-		ModelContext context = new ModelContext(Subject.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, manager, "id");
 		subject.authenticate();

@@ -43,7 +43,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Authenticator;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 
 /**
  * Abstract base class for an instance of a {@link PatternDefinition}<br>
@@ -74,7 +74,7 @@ public abstract class PatternInstance<P extends PatternDefinition> {
 		return patternDefinition;
 	}
 
-	public ModelContext getModelContext() {
+	public PamelaMetaModel getModelContext() {
 		return patternDefinition.getModelContext();
 	}
 

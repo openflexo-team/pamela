@@ -1,7 +1,7 @@
 /**
  * 
  * Copyright (c) 2013-2014, Openflexo
- * Copyright (c) 2011-2012, AgileBirds
+ * Copyright (c) 2012-2012, AgileBirds
  * 
  * This file is part of Pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
@@ -37,19 +37,27 @@
  * 
  */
 
-package org.openflexo.pamela.model;
+package org.openflexo.pamela.factory;
 
-/**
- * Implemented by a model visitor
- * 
- * @author sylvain
- * 
- */
-public interface PAMELAVisitor {
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-	public void visit(Object object);
+import org.jdom2.Namespace;
 
-	public enum VisitingStrategy {
-		Embedding, Exhaustive
+public class PamelaConstants {
+	public static final String NAMESPACE_PREFIX = "p";
+	public static final String NS = "http://www.openflexo.org/pamela/";
+	public static final Namespace NAMESPACE = Namespace.getNamespace(NAMESPACE_PREFIX, NS);
+	public static final String CLASS_ATTRIBUTE = "class";
+	public static final String MODEL_ENTITY_ATTRIBUTE = "modelEntity";
+
+	public static final String Q_CLASS_ATTRIBUTE = NAMESPACE_PREFIX + ":" + CLASS_ATTRIBUTE;
+	public static final String Q_MODEL_ENTITY_ATTRIBUTE = NAMESPACE_PREFIX + ":" + MODEL_ENTITY_ATTRIBUTE;
+
+	public static final Set<String> PAMELA_ATTRIBUTES = Stream.of(CLASS_ATTRIBUTE, MODEL_ENTITY_ATTRIBUTE).collect(Collectors.toSet());
+
+	public static boolean isPamelaAttribute(String namespace, String name) {
+		return PamelaConstants.NS.equals(namespace) && PamelaConstants.PAMELA_ATTRIBUTES.contains(name);
 	}
 }

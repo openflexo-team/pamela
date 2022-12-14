@@ -557,7 +557,7 @@ public class CompareAndMergeUtils {
 	 * @param o2
 	 * @return
 	 */
-	public static double getDistance(ModelFactory factory, Object o1, Object o2) {
+	public static double getDistance(PamelaModelFactory factory, Object o1, Object o2) {
 		return getDistance(factory.getHandler(o1), o2);
 	}
 

@@ -1,6 +1,6 @@
 package org.openflexo.pamela.securitypatterns.owner;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
@@ -22,8 +22,8 @@ public class OwnerPatternDefinition extends PatternDefinition {
     protected ModelProperty ownerProperty;
     protected CustomStack customStack;
 
-    public OwnerPatternDefinition(String identifier, ModelContext modelContext) {
-        super(identifier, modelContext);
+    public OwnerPatternDefinition(String identifier, PamelaMetaModel pamelaMetaModel) {
+        super(identifier, pamelaMetaModel);
         this.isValid = true;
         this.pureMethods = new HashSet<>();
         this.message = "\n";
