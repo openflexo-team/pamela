@@ -1526,6 +1526,12 @@ public class ModelEntity<I> {
 		if (method.getName().equals("hashCode")) {
 			return true;
 		}
+		if (method.getName().equals("disableAssertionChecking")) {
+			return true;
+		}
+		if (method.getName().equals("enableAssertionChecking")) {
+			return true;
+		}
 		return false;
 	}
 
