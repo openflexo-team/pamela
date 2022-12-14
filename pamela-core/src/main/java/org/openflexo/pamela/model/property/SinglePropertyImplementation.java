@@ -19,4 +19,7 @@ public interface SinglePropertyImplementation<I, T> extends SettablePropertyImpl
 
 	@Override
 	public void set(T aValue) throws ModelDefinitionException;
+
+	@Override
+	public void update(T aValue) throws ModelDefinitionException;
 }

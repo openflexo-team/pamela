@@ -61,7 +61,7 @@ import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.KeyValueCoding;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.SpecifiableProxyObject;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy;
@@ -77,13 +77,14 @@ import org.openflexo.pamela.annotations.Reindexer;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.StringConverter;
+import org.openflexo.pamela.annotations.Updater;
 import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.annotations.jml.Invariant;
 import org.openflexo.pamela.exceptions.MissingImplementationException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.PropertyClashException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.jml.JMLInvariant;
@@ -932,15 +933,15 @@ public class ModelEntity<I> {
 		return "ModelEntity[" + getImplementedInterface().getSimpleName() + "]";
 	}
 
-	public List<ModelEntity> getAllDescendantsAndMe(ModelContext modelContext) throws ModelDefinitionException {
-		List<ModelEntity> returned = getAllDescendants(modelContext);
+	public List<ModelEntity> getAllDescendantsAndMe(PamelaMetaModel pamelaMetaModel) throws ModelDefinitionException {
+		List<ModelEntity> returned = getAllDescendants(pamelaMetaModel);
 		returned.add(this);
 		return returned;
 	}
 
-	public List<ModelEntity> getAllDescendants(ModelContext modelContext) throws ModelDefinitionException {
+	public List<ModelEntity> getAllDescendants(PamelaMetaModel pamelaMetaModel) throws ModelDefinitionException {
 		List<ModelEntity> returned = new ArrayList<>();
-		Iterator<ModelEntity> i = modelContext.getEntities();
+		Iterator<ModelEntity> i = pamelaMetaModel.getEntities();
 		while (i.hasNext()) {
 			ModelEntity<?> entity = i.next();
 			if (isAncestorOf(entity)) {
@@ -1147,7 +1148,7 @@ public class ModelEntity<I> {
 	 * @throws MissingImplementationException
 	 *             when an implementation was not found
 	 */
-	public void checkMethodImplementations(ModelFactory factory) throws ModelDefinitionException, MissingImplementationException {
+	public void checkMethodImplementations(PamelaModelFactory factory) throws ModelDefinitionException, MissingImplementationException {
 		// Abstract entities are allowed not to provide all implementations
 		if (isAbstract()) {
 			return;
@@ -1195,12 +1196,12 @@ public class ModelEntity<I> {
 	}
 
 	/**
-	 * Check that this entity provides an implementation for supplied method, given a {@link ModelFactory}
+	 * Check that this entity provides an implementation for supplied method, given a {@link PamelaModelFactory}
 	 * 
 	 * @return true if an implementation was found
 	 * @throws ModelDefinitionException
 	 */
-	private boolean checkMethodImplementation(Method method, ModelFactory factory) throws ModelDefinitionException {
+	private boolean checkMethodImplementation(Method method, PamelaModelFactory factory) throws ModelDefinitionException {
 
 		// Abstract entities are allowed not to provide all implementations
 		ModelProperty<?> property = getPropertyForMethod(method);
@@ -1215,6 +1216,9 @@ public class ModelEntity<I> {
 				return true;
 			}
 			if (method.getAnnotation(Setter.class) != null) {
+				return true;
+			}
+			if (method.getAnnotation(Updater.class) != null) {
 				return true;
 			}
 			if (method.getAnnotation(Finder.class) != null) {
@@ -1328,12 +1332,12 @@ public class ModelEntity<I> {
 	}
 
 	/**
-	 * Check that this entity provides an implementation for supplied method, given a {@link ModelFactory}
+	 * Check that this entity provides an implementation for supplied method, given a {@link PamelaModelFactory}
 	 * 
 	 * @return true if an implementation was found
 	 * @throws ModelDefinitionException
 	 */
-	private boolean checkMethodImplementationInDelegateImplementations(Method method, ModelFactory factory)
+	private boolean checkMethodImplementationInDelegateImplementations(Method method, PamelaModelFactory factory)
 			throws ModelDefinitionException {
 		// Look up in delegate implementation class
 		if (getDelegateImplementations().size() > 0) {

@@ -2,9 +2,9 @@ package org.openflexo.pamela.securitypatterns.owner;
 
 import junit.framework.TestCase;
 import org.junit.Test;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.securitypatterns.owner.model.MyObject;
 import org.openflexo.pamela.securitypatterns.owner.model.MyOwner;
 
@@ -14,7 +14,7 @@ public class TestOwner extends TestCase {
 
     @Test
     public void testPatternAnalysis() throws Exception {
-        ModelContext context = new ModelContext(MyObject.class);
+        PamelaMetaModel context = new PamelaMetaModel(MyObject.class);
 
         assertEquals(1, context.getPatternDefinitions(OwnerPatternDefinition.class).size());
         OwnerPatternDefinition patternDefinition = context.getPatternDefinitions(OwnerPatternDefinition.class).get(0);
@@ -28,8 +28,8 @@ public class TestOwner extends TestCase {
 
     @Test
     public void testAuthorizedAccess() throws Exception {
-        ModelContext context = new ModelContext(MyObject.class);
-        ModelFactory factory = new ModelFactory(context);
+        PamelaMetaModel context = new PamelaMetaModel(MyObject.class);
+        PamelaModelFactory factory = new PamelaModelFactory(context);
 
         MyObject object = factory.newInstance(MyObject.class);
         assertEquals(42, object.method2(42));
@@ -47,8 +47,8 @@ public class TestOwner extends TestCase {
 
     @Test
     public void testUnauthorizedAccess() throws Exception{
-        ModelContext context = new ModelContext(MyObject.class);
-        ModelFactory factory = new ModelFactory(context);
+        PamelaMetaModel context = new PamelaMetaModel(MyObject.class);
+        PamelaModelFactory factory = new PamelaModelFactory(context);
 
         MyObject object = factory.newInstance(MyObject.class);
         assertEquals(42, object.method2(42));

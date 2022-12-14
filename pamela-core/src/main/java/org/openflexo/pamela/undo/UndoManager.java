@@ -46,14 +46,14 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
  * A PAMELA {@link UndoManager} tracks and record PAMELA atomic edits into aggregates named compound edit.<br>
  * It provides a way to undo or redo the appropriate edits.<br>
  * 
- * To instantiate and enable an {@link UndoManager}, use the {@link ModelFactory#createUndoManager()} method.<br>
+ * To instantiate and enable an {@link UndoManager}, use the {@link PamelaModelFactory#createUndoManager()} method.<br>
  * 
  * {@link UndoManager} internally manages a list of {@link CompoundEdit}, which are aggregates of PAMELA atomic events ({@link AtomicEdit}).
  * <br>
@@ -161,7 +161,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		else {
 
 			if (currentEdition != null) {
-				System.err.println("[PLEASE TRACK ME] : UndoManager exception: already recording " + currentEdition.getPresentationName());
+				logger.warning("[PLEASE TRACK ME] : UndoManager exception: already recording " + currentEdition.getPresentationName());
 				if (currentEdition.getPresentationName().equals(UNIDENTIFIED_RECORDING)) {
 					currentEdition.setPresentationName(presentationName);
 				}
@@ -205,7 +205,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		}
 		else if (currentEdition != edit) {
 			logger.warning("UndoManager exception: was not recording this edit");
-			//(new Exception("UndoManager exception: was not recording this edit")).printStackTrace();
+			// (new Exception("UndoManager exception: was not recording this edit")).printStackTrace();
 			return null;
 		}
 

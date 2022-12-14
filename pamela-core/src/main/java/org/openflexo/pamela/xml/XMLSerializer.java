@@ -57,14 +57,14 @@ import org.jdom2.output.LineSeparator;
 import org.jdom2.output.XMLOutputter;
 import org.openflexo.connie.java.JavaBindingFactory;
 import org.openflexo.connie.java.util.JavaBindingEvaluator;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.RestrictiveSerializationException;
-import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.factory.PAMELAConstants;
+import org.openflexo.pamela.factory.PamelaModelFactory;
+import org.openflexo.pamela.factory.PamelaConstants;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.factory.SerializationPolicy;
 import org.openflexo.pamela.factory.StringEncoder;
@@ -100,20 +100,20 @@ public class XMLSerializer {
 	private Map<Object, Object> alreadySerialized;
 
 	private int id = 0;
-	private final ModelFactory modelFactory;
+	private final PamelaModelFactory pamelaModelFactory;
 	private final SerializationPolicy policy;
 
-	public XMLSerializer(ModelFactory modelFactory) {
-		this(modelFactory, SerializationPolicy.PERMISSIVE);
+	public XMLSerializer(PamelaModelFactory pamelaModelFactory) {
+		this(pamelaModelFactory, SerializationPolicy.PERMISSIVE);
 	}
 
-	public XMLSerializer(ModelFactory modelFactory, SerializationPolicy policy) {
-		this.modelFactory = modelFactory;
+	public XMLSerializer(PamelaModelFactory pamelaModelFactory, SerializationPolicy policy) {
+		this.pamelaModelFactory = pamelaModelFactory;
 		this.policy = policy;
 	}
 
 	private StringEncoder getStringEncoder() {
-		return modelFactory.getStringEncoder();
+		return pamelaModelFactory.getStringEncoder();
 	}
 
 	public Document serializeDocument(Object object, OutputStream out, boolean resetModifiedStatus)
@@ -177,11 +177,11 @@ public class XMLSerializer {
 			boolean serializeModelEntityName = false;
 			XMLElement xmlElement = modelEntity.getXMLElement();
 			String xmlTag = modelEntity.getXMLTag();
-			if (modelFactory.getModelContext().getModelEntity(implementedInterface) == null) {
+			if (pamelaModelFactory.getModelContext().getModelEntity(implementedInterface) == null) {
 				serializeModelEntityName = true;
 				switch (policy) {
 					case EXTENSIVE:
-						List<ModelEntity<?>> upperEntities = modelFactory.getModelContext().getUpperEntities(object);
+						List<ModelEntity<?>> upperEntities = pamelaModelFactory.getModelContext().getUpperEntities(object);
 						if (upperEntities.size() == 0) {
 							throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
 									+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
@@ -192,10 +192,10 @@ public class XMLSerializer {
 						}
 						ModelEntity<?> e = upperEntities.get(0);
 						xmlTag = e.getXMLTag();
-						modelEntity = ModelContextLibrary.getModelContext(implementedInterface).getModelEntity(implementedInterface);
+						modelEntity = PamelaMetaModelLibrary.getModelContext(implementedInterface).getModelEntity(implementedInterface);
 						break;
 					case PERMISSIVE:
-						upperEntities = modelFactory.getModelContext().getUpperEntities(object);
+						upperEntities = pamelaModelFactory.getModelContext().getUpperEntities(object);
 						if (upperEntities.size() == 0) {
 							throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
 									+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
@@ -233,11 +233,11 @@ public class XMLSerializer {
 						returned = new Element(elementName, namespace);
 						returned.setAttribute(ID, reference.toString());
 						if (serializeModelEntityName) {
-							returned.setAttribute(PAMELAConstants.MODEL_ENTITY_ATTRIBUTE,
-									handler.getModelEntity().getImplementedInterface().getName(), PAMELAConstants.NAMESPACE);
+							returned.setAttribute(PamelaConstants.MODEL_ENTITY_ATTRIBUTE,
+									handler.getModelEntity().getImplementedInterface().getName(), PamelaConstants.NAMESPACE);
 							if (handler.getOverridingSuperClass() != null) {
-								returned.setAttribute(PAMELAConstants.CLASS_ATTRIBUTE, handler.getOverridingSuperClass().getName(),
-										PAMELAConstants.NAMESPACE);
+								returned.setAttribute(PamelaConstants.CLASS_ATTRIBUTE, handler.getOverridingSuperClass().getName(),
+										PamelaConstants.NAMESPACE);
 							}
 						}
 						Iterator<ModelProperty<? super I>> properties = modelEntity.getProperties();
@@ -247,7 +247,7 @@ public class XMLSerializer {
 								Object oValue = handler.invokeGetter(p);
 								boolean ignoreProperty = false;
 								try {
-									if (oValue != null && oValue.equals(p.getDefaultValue(modelFactory))) {
+									if (oValue != null && oValue.equals(p.getDefaultValue(pamelaModelFactory))) {
 										// This is the default value, no need to
 										// serialize this
 										ignoreProperty = true;

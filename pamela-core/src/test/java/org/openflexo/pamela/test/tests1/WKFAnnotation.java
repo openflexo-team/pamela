@@ -7,7 +7,7 @@ import org.openflexo.pamela.annotations.Parameter;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.StringConverter;
 import org.openflexo.pamela.exceptions.InvalidDataException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
 @ModelEntity
@@ -39,7 +39,7 @@ public interface WKFAnnotation extends TestModelObject {
 		}
 
 		@Override
-		public WKFAnnotation convertFromString(String value, ModelFactory factory) throws InvalidDataException {
+		public WKFAnnotation convertFromString(String value, PamelaModelFactory factory) throws InvalidDataException {
 			return factory.newInstance(WKFAnnotation.class, value);
 		}
 

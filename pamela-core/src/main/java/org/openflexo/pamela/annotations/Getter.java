@@ -45,7 +45,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.factory.StringEncoder;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
@@ -102,7 +102,7 @@ public @interface Getter {
 
 	/**
 	 * Indicates that the type returned by this getter can be converted to a string using a {@link Converter}. Upon
-	 * serialization/deserialization, the {@link ModelFactory} will provide, through its {@link StringEncoder}, an appropriate
+	 * serialization/deserialization, the {@link PamelaModelFactory} will provide, through its {@link StringEncoder}, an appropriate
 	 * {@link Converter}. Failing to do that will result in an Exception
 	 * 
 	 * The default value is <code>false</code>

@@ -41,7 +41,7 @@ package org.openflexo.pamela.undo;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
 
@@ -62,8 +62,8 @@ public class AddCommand<I> extends AtomicEdit<I> {
 	private final int index;
 
 	public AddCommand(I updatedObject, ModelEntity<I> modelEntity, ModelProperty<? super I> modelProperty, Object addedValue,
-			ModelFactory modelFactory) {
-		super(modelEntity, modelFactory);
+			PamelaModelFactory pamelaModelFactory) {
+		super(modelEntity, pamelaModelFactory);
 		this.updatedObject = updatedObject;
 		this.modelProperty = modelProperty;
 		this.addedValue = addedValue;
@@ -71,8 +71,8 @@ public class AddCommand<I> extends AtomicEdit<I> {
 	}
 
 	public AddCommand(I updatedObject, ModelEntity<I> modelEntity, ModelProperty<? super I> modelProperty, Object addedValue, int index,
-			ModelFactory modelFactory) {
-		super(modelEntity, modelFactory);
+			PamelaModelFactory pamelaModelFactory) {
+		super(modelEntity, pamelaModelFactory);
 		this.updatedObject = updatedObject;
 		this.modelProperty = modelProperty;
 		this.addedValue = addedValue;

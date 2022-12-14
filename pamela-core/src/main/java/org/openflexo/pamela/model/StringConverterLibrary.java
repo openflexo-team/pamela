@@ -55,7 +55,7 @@ import java.util.StringTokenizer;
 
 import org.openflexo.pamela.converter.DataBindingConverter;
 import org.openflexo.pamela.exceptions.InvalidDataException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 
 import com.google.common.primitives.Primitives;
 
@@ -130,7 +130,7 @@ public class StringConverterLibrary {
 			return converterClass;
 		}
 
-		public abstract T convertFromString(String value, ModelFactory factory) throws InvalidDataException;
+		public abstract T convertFromString(String value, PamelaModelFactory factory) throws InvalidDataException;
 
 		public abstract String convertToString(T value);
 
@@ -148,7 +148,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Boolean convertFromString(String value, ModelFactory factory) {
+		public Boolean convertFromString(String value, PamelaModelFactory factory) {
 			return Boolean.valueOf(value.equalsIgnoreCase("true") || value.equalsIgnoreCase("yes"));
 		}
 
@@ -171,7 +171,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Number convertFromString(String value, ModelFactory factory) {
+		public Number convertFromString(String value, PamelaModelFactory factory) {
 			try {
 				Number returned = Integer.parseInt(value);
 				// System.out.println("Build a integer: "+value);
@@ -218,7 +218,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Integer convertFromString(String value, ModelFactory factory) {
+		public Integer convertFromString(String value, PamelaModelFactory factory) {
 			return Integer.valueOf(value);
 		}
 
@@ -241,7 +241,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Short convertFromString(String value, ModelFactory factory) {
+		public Short convertFromString(String value, PamelaModelFactory factory) {
 			return Short.valueOf(value);
 		}
 
@@ -264,7 +264,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Long convertFromString(String value, ModelFactory factory) {
+		public Long convertFromString(String value, PamelaModelFactory factory) {
 			return Long.valueOf(value);
 		}
 
@@ -287,7 +287,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Float convertFromString(String value, ModelFactory factory) {
+		public Float convertFromString(String value, PamelaModelFactory factory) {
 			return Float.valueOf(value);
 		}
 
@@ -310,7 +310,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Double convertFromString(String value, ModelFactory factory) {
+		public Double convertFromString(String value, PamelaModelFactory factory) {
 			try {
 				return Double.valueOf(value);
 			} catch (NumberFormatException e) {
@@ -343,7 +343,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public String convertFromString(String value, ModelFactory factory) {
+		public String convertFromString(String value, PamelaModelFactory factory) {
 			return value;
 		}
 
@@ -369,7 +369,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Date convertFromString(String value, ModelFactory factory) {
+		public Date convertFromString(String value, PamelaModelFactory factory) {
 			try {
 				return tryToConvertFromString(value);
 			} catch (ParseException e) {
@@ -437,7 +437,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public URL convertFromString(String value, ModelFactory factory) {
+		public URL convertFromString(String value, PamelaModelFactory factory) {
 			try {
 				return new URL(value);
 			} catch (MalformedURLException e) {
@@ -468,7 +468,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public File convertFromString(String value, ModelFactory factory) {
+		public File convertFromString(String value, PamelaModelFactory factory) {
 			return new File(value);
 		}
 
@@ -495,7 +495,7 @@ public class StringConverterLibrary {
 
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		@Override
-		public Class<T> convertFromString(String value, ModelFactory factory) throws InvalidDataException {
+		public Class<T> convertFromString(String value, PamelaModelFactory factory) throws InvalidDataException {
 			try {
 				return (Class) Class.forName(value);
 			} catch (ClassNotFoundException e) {
@@ -526,7 +526,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Point convertFromString(String value, ModelFactory factory) {
+		public Point convertFromString(String value, PamelaModelFactory factory) {
 			try {
 				Point returned = new Point();
 				StringTokenizer st = new StringTokenizer(value, ",");
@@ -566,7 +566,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Color convertFromString(String value, ModelFactory factory) {
+		public Color convertFromString(String value, PamelaModelFactory factory) {
 			return new Color(redFromString(value), greenFromString(value), blueFromString(value));
 		}
 
@@ -602,7 +602,7 @@ public class StringConverterLibrary {
 		}
 
 		@Override
-		public Font convertFromString(String value, ModelFactory factory) {
+		public Font convertFromString(String value, PamelaModelFactory factory) {
 			return new Font(nameFromString(value), styleFromString(value), sizeFromString(value));
 		}
 

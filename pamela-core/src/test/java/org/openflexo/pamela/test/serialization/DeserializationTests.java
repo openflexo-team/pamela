@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.DeserializationPolicy;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.factory.SerializationPolicy;
 import org.openflexo.pamela.model.ModelEntityLibrary;
 import org.openflexo.pamela.test.serialization.Node.NodeImpl;
@@ -26,13 +26,13 @@ import org.openflexo.test.TestOrder;
 public class DeserializationTests {
 
 	private static File file;
-	private static ModelFactory factory;
+	private static PamelaModelFactory factory;
 
 	@BeforeClass
 	public static void setUpClass() throws IOException, ModelDefinitionException {
 		ModelEntityLibrary.clear();
 		file = File.createTempFile("PAMELA-TestDeserialization", ".xml");
-		factory = new ModelFactory(Node.class);
+		factory = new PamelaModelFactory(Node.class);
 	}
 
 	@AfterClass

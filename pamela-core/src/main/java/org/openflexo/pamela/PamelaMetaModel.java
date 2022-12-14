@@ -59,7 +59,7 @@ import javax.annotation.Nonnull;
 
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelEntityLibrary;
 import org.openflexo.pamela.model.ModelProperty;
@@ -73,14 +73,14 @@ import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.toolbox.StringUtils;
 
 /**
- * A {@link ModelContext} represents a PAMELA meta-model dynamically infered from the exploration of compiled code<br>
+ * A {@link PamelaMetaModel} represents a PAMELA meta-model dynamically infered from the exploration of compiled code<br>
  * 
- * Build and access to a {@link ModelContext} should be performed using API provided by {@link ModelContextLibrary}
+ * Build and access to a {@link PamelaMetaModel} should be performed using API provided by {@link PamelaMetaModelLibrary}
  * 
  * @author sylvain
  *
  */
-public class ModelContext {
+public class PamelaMetaModel {
 
 	private Map<Class, ModelEntity> modelEntities;
 	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
@@ -91,7 +91,7 @@ public class ModelContext {
 	private Map<Object, Set<PatternInstance<?>>> patternInstances = new HashMap<>();
 	private Map<PatternDefinition, Set<PatternInstance<?>>> registeredPatternInstances = new HashMap<>();
 
-	ModelContext(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
+	PamelaMetaModel(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
 		this.baseClass = baseClass;
 		modelEntities = new HashMap<>();
 		modelEntitiesByXmlTag = new HashMap<>();
@@ -109,12 +109,12 @@ public class ModelContext {
 		}
 	}
 
-	public ModelContext(Class<?> baseClass, List<ModelContext> contexts) throws ModelDefinitionException {
+	public PamelaMetaModel(Class<?> baseClass, List<PamelaMetaModel> contexts) throws ModelDefinitionException {
 		this.baseClass = baseClass;
 		modelEntities = new HashMap<>();
 		modelEntitiesByXmlTag = new HashMap<>();
 		modelPropertiesByXmlTag = new HashMap<>();
-		for (ModelContext context : contexts) {
+		for (PamelaMetaModel context : contexts) {
 			for (Entry<String, ModelEntity<?>> e : context.modelEntitiesByXmlTag.entrySet()) {
 				ModelEntity<?> entity = modelEntitiesByXmlTag.put(e.getKey(), e.getValue());
 				// TODO: handle properly namespaces. Different namespaces allows to have identical tags
@@ -139,23 +139,23 @@ public class ModelContext {
 		discoverPatterns();
 	}
 
-	public ModelContext(List<Class<?>> baseClasses) throws ModelDefinitionException {
+	public PamelaMetaModel(List<Class<?>> baseClasses) throws ModelDefinitionException {
 		this(null, makeModelContextList(baseClasses));
 	}
 
-	private static List<ModelContext> makeModelContextList(List<Class<?>> baseClasses) throws ModelDefinitionException {
-		List<ModelContext> returned = new ArrayList<>();
+	private static List<PamelaMetaModel> makeModelContextList(List<Class<?>> baseClasses) throws ModelDefinitionException {
+		List<PamelaMetaModel> returned = new ArrayList<>();
 		for (Class<?> c : baseClasses) {
-			returned.add(ModelContextLibrary.getModelContext(c, false));
+			returned.add(PamelaMetaModelLibrary.getModelContext(c, false));
 		}
 		return returned;
 	}
 
-	public ModelContext(ModelContext... contexts) throws ModelDefinitionException {
+	public PamelaMetaModel(PamelaMetaModel... contexts) throws ModelDefinitionException {
 		this(null, contexts);
 	}
 
-	public ModelContext(Class<?> baseClass, ModelContext... contexts) throws ModelDefinitionException {
+	public PamelaMetaModel(Class<?> baseClass, PamelaMetaModel... contexts) throws ModelDefinitionException {
 		this(baseClass, Arrays.asList(contexts));
 	}
 
@@ -212,17 +212,17 @@ public class ModelContext {
 	/**
 	 * Return the appropriate {@link ModelPropertyXMLTag} matching searched XML Tag, supplied as parameter (xmlTag).<br>
 	 * Note that required parameters include the entity which gives the context where such XML tag is to be looked-up, and the
-	 * {@link ModelFactory} to use.<br>
+	 * {@link PamelaModelFactory} to use.<br>
 	 * TODO: Also note that this implementation is not safe when using multiple factories, because caching is performed whithout taking
 	 * modelFactory under account.
 	 * 
 	 * @param entity
-	 * @param modelFactory
+	 * @param pamelaModelFactory
 	 * @param xmlTag
 	 * @return
 	 * @throws ModelDefinitionException
 	 */
-	public <I> ModelPropertyXMLTag<I> getPropertyForXMLTag(ModelEntity<I> entity, ModelFactory modelFactory, String xmlTag)
+	public <I> ModelPropertyXMLTag<I> getPropertyForXMLTag(ModelEntity<I> entity, PamelaModelFactory pamelaModelFactory, String xmlTag)
 			throws ModelDefinitionException {
 
 		Map<String, ModelPropertyXMLTag<?>> tags = modelPropertiesByXmlTag.get(entity);
@@ -257,7 +257,7 @@ public class ModelContext {
 						// Fixed issue while commenting following line and replacing it by a call to model-factory specific StringEncoder
 						// } else if (StringConverterLibrary.getInstance().hasConverter(property.getType())) {
 					}
-					else if (modelFactory.getStringEncoder().isConvertable(property.getType())) {
+					else if (pamelaModelFactory.getStringEncoder().isConvertable(property.getType())) {
 						ModelPropertyXMLTag<I> tag = new ModelPropertyXMLTag<>(property);
 						ModelPropertyXMLTag<?> put = tags.put(tag.getTag(), tag);
 						if (put != null) {
@@ -293,7 +293,7 @@ public class ModelContext {
 
 	public String debug() {
 		StringBuffer returned = new StringBuffer();
-		returned.append("*************** ModelContext ****************\n");
+		returned.append("*************** PamelaMetaModel ****************\n");
 		returned.append("Entities number: " + modelEntities.size() + "\n");
 		for (ModelEntity entity : modelEntities.values()) {
 			returned.append("------------------- ").append(entity.getImplementedInterface().getSimpleName())
@@ -371,7 +371,7 @@ public class ModelContext {
 		for (Class<? extends AbstractPatternFactory<?>> factoryClass : factories) {
 			// System.out.println("Analysing pattern: " + factoryClass);
 			try {
-				Constructor<? extends AbstractPatternFactory<?>> constructor = factoryClass.getConstructor(ModelContext.class);
+				Constructor<? extends AbstractPatternFactory<?>> constructor = factoryClass.getConstructor(PamelaMetaModel.class);
 				AbstractPatternFactory<?> patternFactory = constructor.newInstance(this);
 				patternFactories.add(patternFactory);
 				for (ModelEntity<?> modelEntity : modelEntities.values()) {

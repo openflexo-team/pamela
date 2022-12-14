@@ -38,13 +38,13 @@
 
 package org.openflexo.pamela.test.tests4;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 
 public abstract class MyContentsImpl implements MyContents {
 
 	private String something = null;
 
-	public static MyContents fromString(ModelFactory MF, String someString) {
+	public static MyContents fromString(PamelaModelFactory MF, String someString) {
 
 		MyContents inst = MF.newInstance(MyContents.class);
 		inst.setValue(someString);

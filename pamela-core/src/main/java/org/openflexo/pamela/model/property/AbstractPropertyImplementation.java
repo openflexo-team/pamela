@@ -3,8 +3,8 @@ package org.openflexo.pamela.model.property;
 import java.beans.PropertyChangeSupport;
 
 import org.openflexo.pamela.factory.IProxyMethodHandler;
-import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.factory.ModelFactory.PAMELAProxyFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory.PAMELAProxyFactory;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
@@ -42,7 +42,7 @@ public abstract class AbstractPropertyImplementation<I, T> implements PropertyIm
 		return getHandler().getObject();
 	}
 
-	public ModelFactory getModelFactory() {
+	public PamelaModelFactory getModelFactory() {
 		return getHandler().getModelFactory();
 	}
 

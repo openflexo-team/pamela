@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.model.ModelEntity;
@@ -20,7 +20,7 @@ import org.openflexo.pamela.securitypatterns.authorization.annotations.*;
  * It has the responsibility of:
  * <ul>
  * <li>Managing life-cycle of {@link org.openflexo.pamela.test.securitypatterns.authorization.AuthorizationPatternInstance}, while being notified of the creation of new instances by the
- * {@link org.openflexo.pamela.test.factory.ModelFactory} and {@link org.openflexo.pamela.test.ModelContext}</li>
+ * {@link org.openflexo.pamela.test.PamelaModelFactory.ModelFactory} and {@link org.openflexo.pamela.test.PamelaMetaModel}</li>
  * <li>Tagging and storing methods which are relevant to the pattern</li>
  * </ul>
  *
@@ -82,8 +82,8 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 	private boolean isValid;
 	private String message;
 
-	public AuthorizationPatternDefinition(String identifier, ModelContext modelContext) {
-		super(identifier, modelContext);
+	public AuthorizationPatternDefinition(String identifier, PamelaMetaModel pamelaMetaModel) {
+		super(identifier, pamelaMetaModel);
 		this.subjectIdParameters = new HashMap<>();
 		this.resourceIdParameters = new HashMap<>();
 		this.resourceAccessMethods = new HashMap<>();

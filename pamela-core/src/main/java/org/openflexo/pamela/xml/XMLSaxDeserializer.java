@@ -54,13 +54,13 @@ import java.util.stream.Stream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.RestrictiveDeserializationException;
 import org.openflexo.pamela.factory.DeserializationPolicy;
-import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.factory.PAMELAConstants;
+import org.openflexo.pamela.factory.PamelaModelFactory;
+import org.openflexo.pamela.factory.PamelaConstants;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
@@ -82,7 +82,7 @@ public class XMLSaxDeserializer extends DefaultHandler {
 	public static final String CLASS_NAME = "className";
 
 	public static final Set<String> IGNORED_ATTRIBUTES = Stream
-			.of(ID, ID_REF, CLASS_NAME, "xmlns:p", PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE, PAMELAConstants.Q_CLASS_ATTRIBUTE)
+			.of(ID, ID_REF, CLASS_NAME, "xmlns:p", PamelaConstants.Q_MODEL_ENTITY_ATTRIBUTE, PamelaConstants.Q_CLASS_ATTRIBUTE)
 			.collect(Collectors.toSet());
 
 	@FunctionalInterface
@@ -90,8 +90,8 @@ public class XMLSaxDeserializer extends DefaultHandler {
 		void resolve(TransformedObjectInfo resolved) throws SAXException;
 	}
 
-	private final ModelFactory factory;
-	private final ModelContext context;
+	private final PamelaModelFactory factory;
+	private final PamelaMetaModel context;
 
 	/**
 	 * Stores already serialized objects where value is the serialized object and key is an object coding the unique identifier of the
@@ -114,11 +114,11 @@ public class XMLSaxDeserializer extends DefaultHandler {
 
 	private TransformedObjectInfo rootInfo = null;
 
-	public XMLSaxDeserializer(ModelFactory factory) {
+	public XMLSaxDeserializer(PamelaModelFactory factory) {
 		this(factory, DeserializationPolicy.PERMISSIVE);
 	}
 
-	public XMLSaxDeserializer(ModelFactory factory, DeserializationPolicy policy) {
+	public XMLSaxDeserializer(PamelaModelFactory factory, DeserializationPolicy policy) {
 		this.factory = factory;
 		this.policy = policy;
 		this.context = factory.getModelContext();
@@ -321,10 +321,10 @@ public class XMLSaxDeserializer extends DefaultHandler {
 			Class<Object> implementedInterface = null;
 			// Unused Class<Object> implementingClass = null;
 
-			String entityName = attributes.getValue(PAMELAConstants.Q_MODEL_ENTITY_ATTRIBUTE);
+			String entityName = attributes.getValue(PamelaConstants.Q_MODEL_ENTITY_ATTRIBUTE);
 			String className = attributes.getValue(CLASS_NAME);
 			if (className == null) {
-				className = attributes.getValue(PAMELAConstants.Q_CLASS_ATTRIBUTE);
+				className = attributes.getValue(PamelaConstants.Q_CLASS_ATTRIBUTE);
 			}
 
 			// ----- Warning -----

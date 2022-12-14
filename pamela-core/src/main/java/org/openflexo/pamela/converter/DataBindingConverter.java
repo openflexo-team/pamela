@@ -40,7 +40,7 @@ package org.openflexo.pamela.converter;
 
 import org.openflexo.connie.DataBinding;
 import org.openflexo.pamela.exceptions.InvalidDataException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 
 /**
@@ -56,7 +56,7 @@ public class DataBindingConverter extends Converter<DataBinding<?>> {
 	}
 
 	@Override
-	public DataBinding<?> convertFromString(String value, ModelFactory factory) throws InvalidDataException {
+	public DataBinding<?> convertFromString(String value, PamelaModelFactory factory) throws InvalidDataException {
 		return new DataBinding<>(value);
 	}
 

@@ -45,9 +45,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.annotations.Ensures;
@@ -61,7 +61,7 @@ import org.openflexo.pamela.patterns.annotations.Requires;
  * It has the responsibility of:
  * <ul>
  * <li>Managing life-cycle of related {@link PatternInstance}, while beeing notified from the creation of new instances by the
- * {@link ModelFactory} and {@link ModelContext}</li>
+ * {@link PamelaModelFactory} and {@link PamelaMetaModel}</li>
  * <li>Tagging which methods have to be involved in pattern</li>
  * </ul>
  * 
@@ -73,14 +73,14 @@ import org.openflexo.pamela.patterns.annotations.Requires;
 public abstract class PatternDefinition {
 
 	private final String identifier; // identifier as found in annotations
-	private final ModelContext modelContext;
+	private final PamelaMetaModel pamelaMetaModel;
 
 	private final Map<Method, List<Requires>> preconditions;
 	private final Map<Method, List<Ensures>> postconditions;
 
-	public PatternDefinition(String identifier, ModelContext modelContext) {
+	public PatternDefinition(String identifier, PamelaMetaModel pamelaMetaModel) {
 		this.identifier = identifier;
-		this.modelContext = modelContext;
+		this.pamelaMetaModel = pamelaMetaModel;
 		preconditions = new HashMap<>();
 		postconditions = new HashMap<>();
 	}
@@ -89,8 +89,8 @@ public abstract class PatternDefinition {
 		return identifier;
 	}
 
-	public ModelContext getModelContext() {
-		return modelContext;
+	public PamelaMetaModel getModelContext() {
+		return pamelaMetaModel;
 	}
 
 	public abstract void finalizeDefinition() throws ModelDefinitionException;

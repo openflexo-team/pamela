@@ -41,9 +41,9 @@ package org.openflexo.pamela.securitypatterns.authenticator;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
@@ -57,7 +57,7 @@ import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequiresA
  * It has the responsibility of:
  * <ul>
  * <li>Managing life-cycle of {@link AuthenticatorPatternInstance}, while beeing notified from the creation of new instances by the
- * {@link ModelFactory} and {@link ModelContext}</li>
+ * {@link PamelaModelFactory} and {@link PamelaMetaModel}</li>
  * <li>Tagging which methods have to be involved in pattern</li>
  * </ul>
  * 
@@ -81,8 +81,8 @@ public class AuthenticatorPatternDefinition extends PatternDefinition {
 
 	public Method proofOfIdentityGetterMethod; // derived property
 
-	public AuthenticatorPatternDefinition(String identifier, ModelContext modelContext) {
-		super(identifier, modelContext);
+	public AuthenticatorPatternDefinition(String identifier, PamelaMetaModel pamelaMetaModel) {
+		super(identifier, pamelaMetaModel);
 	}
 
 	@Override

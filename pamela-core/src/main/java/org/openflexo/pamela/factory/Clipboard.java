@@ -56,7 +56,7 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
  */
 public class Clipboard {
 
-	private final ModelFactory modelFactory;
+	private final PamelaModelFactory pamelaModelFactory;
 	private final Object[] originalContents;
 	private Object[] lastReferenceContents;
 	private Object contents;
@@ -64,9 +64,9 @@ public class Clipboard {
 
 	private Object copyContext;
 
-	protected Clipboard(ModelFactory modelFactory, Object... objects)
+	protected Clipboard(PamelaModelFactory pamelaModelFactory, Object... objects)
 			throws ModelExecutionException, ModelDefinitionException, CloneNotSupportedException {
-		this.modelFactory = modelFactory;
+		this.pamelaModelFactory = pamelaModelFactory;
 
 		this.originalContents = objects;
 		this.lastReferenceContents = objects;
@@ -79,15 +79,15 @@ public class Clipboard {
 		if (isSingleObject) {
 			Object object = objects[0];
 
-			if (modelFactory.getHandler(object) == null) {
+			if (pamelaModelFactory.getHandler(object) == null) {
 				throw new ModelExecutionException(
-						"Object has no handler in supplied ModelFactory, object=" + object + " modelFactory=" + modelFactory);
+						"Object has no handler in supplied PamelaModelFactory, object=" + object + " pamelaModelFactory=" + pamelaModelFactory);
 			}
 
-			contents = modelFactory.getHandler(object).cloneObject(objects);
+			contents = pamelaModelFactory.getHandler(object).cloneObject(objects);
 		}
 		else {
-			contents = modelFactory.getHandler(objects[0]).cloneObjects(objects);
+			contents = pamelaModelFactory.getHandler(objects[0]).cloneObjects(objects);
 		}
 	}
 
@@ -112,8 +112,8 @@ public class Clipboard {
 		return null;
 	}
 
-	public ModelFactory getModelFactory() {
-		return modelFactory;
+	public PamelaModelFactory getModelFactory() {
+		return pamelaModelFactory;
 	}
 
 	public Object[] getOriginalContents() {
@@ -184,7 +184,7 @@ public class Clipboard {
 		}
 		if (isSingleObject()) {
 			returned.append("------------------- " + contents + " -------------------\n");
-			List<Object> embeddedList = modelFactory.getEmbeddedObjects(contents, EmbeddingType.CLOSURE);
+			List<Object> embeddedList = pamelaModelFactory.getEmbeddedObjects(contents, EmbeddingType.CLOSURE);
 			for (Object e : embeddedList) {
 				returned.append(Integer.toHexString(e.hashCode()) + " Embedded: " + e + "\n");
 			}
@@ -193,7 +193,7 @@ public class Clipboard {
 			List<?> contentsList = (List<?>) contents;
 			for (Object object : contentsList) {
 				returned.append("------------------- " + object + " -------------------\n");
-				List<Object> embeddedList = modelFactory.getEmbeddedObjects(object, EmbeddingType.CLOSURE, contentsList.toArray());
+				List<Object> embeddedList = pamelaModelFactory.getEmbeddedObjects(object, EmbeddingType.CLOSURE, contentsList.toArray());
 				for (Object e : embeddedList) {
 					returned.append(Integer.toHexString(e.hashCode()) + " Embedded: " + e + "\n");
 				}
@@ -214,7 +214,7 @@ public class Clipboard {
 		if (isSingleObject) {
 			lastReferenceContents = new Object[1];
 			lastReferenceContents[0] = contents;
-			contents = modelFactory.getHandler(contents).cloneObject(contents);
+			contents = pamelaModelFactory.getHandler(contents).cloneObject(contents);
 		}
 		else {
 			List<?> contentsList = (List<?>) contents;
@@ -222,7 +222,7 @@ public class Clipboard {
 			for (int i = 0; i < contentsList.size(); i++) {
 				lastReferenceContents[i] = contentsList.get(i);
 			}
-			contents = modelFactory.getHandler(contentsList.get(0)).cloneObjects(contentsList.toArray());
+			contents = pamelaModelFactory.getHandler(contentsList.get(0)).cloneObjects(contentsList.toArray());
 		}
 	}
 

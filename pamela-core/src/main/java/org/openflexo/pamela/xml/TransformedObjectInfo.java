@@ -39,7 +39,7 @@ import java.lang.reflect.Method;
 
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.DeserializationFinalizer;
 import org.openflexo.pamela.model.DeserializationInitializer;
 import org.openflexo.pamela.model.ModelEntity;
@@ -55,7 +55,7 @@ public class TransformedObjectInfo {
 
 	private static final Object[] EMPTY_ARGS = new Object[0];
 
-	private final ModelFactory factory;
+	private final PamelaModelFactory factory;
 
 	private final Object parent;
 	private final ModelProperty<Object> leadingProperty;
@@ -65,7 +65,7 @@ public class TransformedObjectInfo {
 	private boolean resolved = false;
 	private Object object;
 
-	public TransformedObjectInfo(ModelFactory factory, Object parent, ModelProperty<Object> leadingProperty,
+	public TransformedObjectInfo(PamelaModelFactory factory, Object parent, ModelProperty<Object> leadingProperty,
 			ModelEntity<Object> modelEntity) {
 		this.factory = factory;
 		this.parent = parent;

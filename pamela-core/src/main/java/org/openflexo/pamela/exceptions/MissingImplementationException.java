@@ -40,7 +40,7 @@ package org.openflexo.pamela.exceptions;
 
 import java.lang.reflect.Method;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 
 /**
@@ -52,7 +52,7 @@ import org.openflexo.pamela.model.ModelEntity;
 @SuppressWarnings("serial")
 public class MissingImplementationException extends Exception {
 
-	public MissingImplementationException(ModelEntity<?> entity, Method method, ModelFactory factory) {
+	public MissingImplementationException(ModelEntity<?> entity, Method method, PamelaModelFactory factory) {
 		super("No implementation found for entity: " + entity.getImplementedInterface() + " method=" + method);
 	}
 

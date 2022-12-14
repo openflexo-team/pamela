@@ -41,7 +41,7 @@ package org.openflexo.pamela.test;
 
 import junit.framework.TestCase;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelEntityLibrary;
@@ -62,13 +62,13 @@ public abstract class AbstractPAMELATest extends TestCase {
 		ModelEntityLibrary.clear();
 	}
 
-	protected void validateBasicModelContext(ModelContext modelContext) throws ModelDefinitionException {
-		ModelEntity<TestModelObject> modelObjectEntity = modelContext.getModelEntity(TestModelObject.class);
-		ModelEntity<FlexoProcess> processEntity = modelContext.getModelEntity(FlexoProcess.class);
-		ModelEntity<AbstractNode> abstractNodeEntity = modelContext.getModelEntity(AbstractNode.class);
-		ModelEntity<StartNode> startNodeEntity = modelContext.getModelEntity(StartNode.class);
-		ModelEntity<TokenEdge> tokenEdgeEntity = modelContext.getModelEntity(TokenEdge.class);
-		ModelEntity<WKFObject> wkfObjectEntity = modelContext.getModelEntity(WKFObject.class);
+	protected void validateBasicModelContext(PamelaMetaModel pamelaMetaModel) throws ModelDefinitionException {
+		ModelEntity<TestModelObject> modelObjectEntity = pamelaMetaModel.getModelEntity(TestModelObject.class);
+		ModelEntity<FlexoProcess> processEntity = pamelaMetaModel.getModelEntity(FlexoProcess.class);
+		ModelEntity<AbstractNode> abstractNodeEntity = pamelaMetaModel.getModelEntity(AbstractNode.class);
+		ModelEntity<StartNode> startNodeEntity = pamelaMetaModel.getModelEntity(StartNode.class);
+		ModelEntity<TokenEdge> tokenEdgeEntity = pamelaMetaModel.getModelEntity(TokenEdge.class);
+		ModelEntity<WKFObject> wkfObjectEntity = pamelaMetaModel.getModelEntity(WKFObject.class);
 
 		assertNotNull(processEntity);
 		assertNotNull(abstractNodeEntity);
@@ -93,6 +93,6 @@ public abstract class AbstractPAMELATest extends TestCase {
 		assertNotNull(abstractNodeProcessProperty);
 		assertNotNull(abstractNodeProcessProperty.getInverseProperty(processEntity));
 		assertNotNull(abstractNodeProcessProperty.getSetter());
-		assertTrue(modelObjectEntity.getAllDescendants(modelContext).contains(processEntity));
+		assertTrue(modelObjectEntity.getAllDescendants(pamelaMetaModel).contains(processEntity));
 	}
 }

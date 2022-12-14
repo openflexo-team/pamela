@@ -5,8 +5,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.test.AbstractPAMELATest;
 
 /**
@@ -17,8 +17,8 @@ import org.openflexo.pamela.test.AbstractPAMELATest;
  */
 public class PropertyImplementationTests extends AbstractPAMELATest {
 
-	private ModelFactory factory;
-	private ModelContext modelContext;
+	private PamelaModelFactory factory;
+	private PamelaMetaModel pamelaMetaModel;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -32,8 +32,8 @@ public class PropertyImplementationTests extends AbstractPAMELATest {
 	@Override
 	@Before
 	public void setUp() throws Exception {
-		modelContext = new ModelContext(Concept.class);
-		factory = new ModelFactory(modelContext);
+		pamelaMetaModel = new PamelaMetaModel(Concept.class);
+		factory = new PamelaModelFactory(pamelaMetaModel);
 	}
 
 	@Override

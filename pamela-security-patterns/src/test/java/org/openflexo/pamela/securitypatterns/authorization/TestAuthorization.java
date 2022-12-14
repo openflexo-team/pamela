@@ -1,10 +1,10 @@
 package org.openflexo.pamela.securitypatterns.authorization;
 
 import junit.framework.TestCase;
-import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.securitypatterns.authorization.model.PermissionChecker;
 import org.openflexo.pamela.securitypatterns.authorization.model.Resource;
 import org.openflexo.pamela.securitypatterns.authorization.model.Subject;
@@ -12,7 +12,7 @@ import org.openflexo.pamela.securitypatterns.authorization.model.Subject;
 public class TestAuthorization extends TestCase {
 
 	public void testPatternAnalysis() throws Exception {
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
 		assertEquals(1, context.getPatternDefinitions(AuthorizationPatternDefinition.class).size());
 		AuthorizationPatternDefinition pattern = context.getPatternDefinitions(AuthorizationPatternDefinition.class).get(0);
 		assertEquals(PermissionChecker.PATTERN,pattern.getIdentifier());
@@ -69,8 +69,8 @@ public class TestAuthorization extends TestCase {
 	}
 
 	public void testInstanceDiscovery() throws Exception {
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		AuthorizationPatternDefinition patternDefinition = context.getPatternDefinitions(AuthorizationPatternDefinition.class).iterator().next();
 		AuthorizationPatternInstance<Subject, Resource, PermissionChecker> patternInstance;
 
@@ -99,8 +99,8 @@ public class TestAuthorization extends TestCase {
 	}
 
 	public void testCheckerChange() throws Exception{
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);AuthorizationPatternDefinition patternDefinition = context.getPatternDefinitions(AuthorizationPatternDefinition.class).iterator().next();
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaModelFactory factory = new PamelaModelFactory(context);AuthorizationPatternDefinition patternDefinition = context.getPatternDefinitions(AuthorizationPatternDefinition.class).iterator().next();
 		AuthorizationPatternInstance<Subject, Resource, PermissionChecker> patternInstance;
 		PermissionChecker checker = factory.newInstance(PermissionChecker.class);
 		Resource r1 = factory.newInstance(Resource.class, "resource id", 42.);
@@ -120,8 +120,8 @@ public class TestAuthorization extends TestCase {
 
 
 	public void testAccessGrantedNoParameter() throws Exception {
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		PermissionChecker checker = factory.newInstance(PermissionChecker.class);
 		Resource resource = factory.newInstance(Resource.class, "Pool", 1., checker);
 		Resource resource1 = factory.newInstance(Resource.class, "Pool2", 17., checker);
@@ -132,8 +132,8 @@ public class TestAuthorization extends TestCase {
 	}
 
 	public void testAccessDenied() throws Exception {
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		PermissionChecker checker = factory.newInstance(PermissionChecker.class);
 		Resource resource = factory.newInstance(Resource.class, "Pool", 1., checker);
 		Subject nobody = factory.newInstance(Subject.class, 2, "toto");
@@ -147,8 +147,8 @@ public class TestAuthorization extends TestCase {
 
 
 	public void testAccessGrantedWithParameter() throws Exception {
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		PermissionChecker checker = factory.newInstance(PermissionChecker.class);
 		Resource resource = factory.newInstance(Resource.class, "Pool", 1., checker);
 		Resource resource1 = factory.newInstance(Resource.class, "Pool2", 17., checker);
@@ -160,8 +160,8 @@ public class TestAuthorization extends TestCase {
 	}
 
 	public void testOverrideAttempt() throws Exception{
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		PermissionChecker checker = factory.newInstance(PermissionChecker.class);
 		Resource resource = factory.newInstance(Resource.class, "Pool", 1., checker);
 		try {
@@ -175,8 +175,8 @@ public class TestAuthorization extends TestCase {
 
 
 	public void testResourceIdInvariant() throws Exception {
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 
 		PermissionChecker checker = factory.newInstance(PermissionChecker.class);
 		Resource r1 = factory.newInstance(Resource.class, "ID", 3.14, checker);
@@ -190,8 +190,8 @@ public class TestAuthorization extends TestCase {
 	}
 
 	public void testResourceFinalCheckerInvariant() throws Exception {
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 
 		PermissionChecker checker = factory.newInstance(PermissionChecker.class);
 		Resource r1 = factory.newInstance(Resource.class, "ID", 3.14, checker);
@@ -205,8 +205,8 @@ public class TestAuthorization extends TestCase {
 	}
 
 	public void testSubjectIdInvariant() throws Exception {
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 
 		Subject user = factory.newInstance(Subject.class, 42, "ID");
 
@@ -219,8 +219,8 @@ public class TestAuthorization extends TestCase {
 	}
 
 	public void testSubjectIdInvariantBis() throws Exception {
-		ModelContext context = new ModelContext(ModelContextLibrary.getCompoundModelContext(Subject.class, Resource.class));
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModel context = new PamelaMetaModel(PamelaMetaModelLibrary.getCompoundModelContext(Subject.class, Resource.class));
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 
 		Subject user = factory.newInstance(Subject.class, 42, "ID");
 
