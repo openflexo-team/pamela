@@ -40,7 +40,7 @@ public class TestMultMN {
 
 	private void performTest(MonitoringStrategy monitoringStrategy) throws ModelDefinitionException {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getModelContext(X.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(X.class));
 		ModelEntity<AbstractConcept> abstractConceptEntity = factory.getModelContext().getModelEntity(AbstractConcept.class);
 		abstractConceptEntity.setMonitoringStrategy(monitoringStrategy);
 
@@ -105,7 +105,7 @@ public class TestMultMN {
 
 	private void performTestRepairAssertionFailed(MonitoringStrategy monitoringStrategy) throws ModelDefinitionException {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getModelContext(X.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(X.class));
 		ModelEntity<AbstractConcept> abstractConceptEntity = factory.getModelContext().getModelEntity(AbstractConcept.class);
 		abstractConceptEntity.setMonitoringStrategy(monitoringStrategy);
 
