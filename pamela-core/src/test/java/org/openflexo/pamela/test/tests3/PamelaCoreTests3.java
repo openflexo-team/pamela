@@ -25,7 +25,7 @@ public class PamelaCoreTests3 {
 	public void testFactory() {
 
 		try {
-			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(MySpecializedContainer.class,
+			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(MySpecializedContainer.class,
 					MySpecializedContents.class));
 
 			ModelEntity<MyContainer> myContainerEntity = factory.getModelContext().getModelEntity(MyContainer.class);
@@ -52,7 +52,7 @@ public class PamelaCoreTests3 {
 	@Test
 	public void testInstanciate() throws Exception {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(MySpecializedContainer.class,
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(MySpecializedContainer.class,
 				MySpecializedContents.class));
 
 		MySpecializedContainer container = factory.newInstance(MySpecializedContainer.class);

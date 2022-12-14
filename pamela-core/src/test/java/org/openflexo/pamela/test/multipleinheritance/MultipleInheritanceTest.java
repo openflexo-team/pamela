@@ -26,7 +26,7 @@ public class MultipleInheritanceTest {
 
 		try {
 			// Var unused PamelaModelFactory factory =
-			new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(A.class, B.class, C.class, D1.class));
+			new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(A.class, B.class, C.class, D1.class));
 
 			fail();
 		} catch (ModelDefinitionException e) {
@@ -41,7 +41,7 @@ public class MultipleInheritanceTest {
 	public void testFactory2() {
 
 		try {
-			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(A.class, B.class, C.class, D2.class));
+			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(A.class, B.class, C.class, D2.class));
 
 			ModelEntity<A> AEntity = factory.getModelContext().getModelEntity(A.class);
 			ModelEntity<B> BEntity = factory.getModelContext().getModelEntity(B.class);
@@ -65,7 +65,7 @@ public class MultipleInheritanceTest {
 	@Test
 	public void testInstanciate() throws Exception {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(A.class, B.class, C.class, D2.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(A.class, B.class, C.class, D2.class));
 
 		D2 d2 = factory.newInstance(D2.class);
 
