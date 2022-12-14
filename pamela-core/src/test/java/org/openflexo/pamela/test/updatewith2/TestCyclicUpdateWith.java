@@ -26,7 +26,7 @@ public class TestCyclicUpdateWith {
 
 	private static PamelaModelFactory createFactory() {
 		try {
-			return new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(ConceptA.class, ConceptB.class, ConceptC.class));
+			return new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(ConceptA.class, ConceptB.class, ConceptC.class));
 		} catch (ModelDefinitionException e) {
 			return null;
 		}

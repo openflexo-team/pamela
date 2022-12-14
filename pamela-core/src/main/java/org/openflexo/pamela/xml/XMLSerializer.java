@@ -192,7 +192,7 @@ public class XMLSerializer {
 						}
 						ModelEntity<?> e = upperEntities.get(0);
 						xmlTag = e.getXMLTag();
-						modelEntity = PamelaMetaModelLibrary.getModelContext(implementedInterface).getModelEntity(implementedInterface);
+						modelEntity = PamelaMetaModelLibrary.retrieveMetaModel(implementedInterface).getModelEntity(implementedInterface);
 						break;
 					case PERMISSIVE:
 						upperEntities = pamelaModelFactory.getModelContext().getUpperEntities(object);

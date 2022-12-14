@@ -35,7 +35,7 @@ public class TestVisitor implements PamelaVisitor {
 	@Test
 	public void testEmbeddingVisitor() throws Exception {
 
-		PamelaMetaModel pamelaMetaModel = PamelaMetaModelLibrary.getCompoundModelContext(ConceptA.class, ConceptC1.class, ConceptC2.class);
+		PamelaMetaModel pamelaMetaModel = PamelaMetaModelLibrary.retrieveMetaModel(ConceptA.class, ConceptC1.class, ConceptC2.class);
 		PamelaModelFactory factory = new PamelaModelFactory(pamelaMetaModel);
 
 		ConceptA a1 = factory.newInstance(ConceptA.class);

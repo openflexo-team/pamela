@@ -54,7 +54,7 @@ public class InitializePropertyTest {
 	 */
 	@Test
 	public void test1() throws Exception {
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(AContainer.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(AContainer.class));
 
 		AContainer container = factory.newInstance(AContainer.class);
 		assertNotNull(container);

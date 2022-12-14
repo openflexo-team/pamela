@@ -27,7 +27,7 @@ public class TestUpdateWith {
 
 	private static PamelaModelFactory createFactory() {
 		try {
-			return new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(ParentConcept.class, ChildConcept.class));
+			return new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(ParentConcept.class, ChildConcept.class));
 		} catch (ModelDefinitionException e) {
 			return null;
 		}

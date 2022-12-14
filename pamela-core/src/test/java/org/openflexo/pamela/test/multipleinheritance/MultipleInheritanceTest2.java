@@ -26,7 +26,7 @@ public class MultipleInheritanceTest2 {
 	public void testFactory() {
 
 		try {
-			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(Calculator.class));
+			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(Calculator.class));
 
 			ModelEntity<Calculator> calculatorEntity = factory.getModelContext().getModelEntity(Calculator.class);
 
@@ -44,7 +44,7 @@ public class MultipleInheritanceTest2 {
 	@Test
 	public void testInstanciate() throws Exception {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(Calculator.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(Calculator.class));
 
 		Calculator calculator = factory.newInstance(Calculator.class);
 		assertEquals(-1, calculator.getStoredValue());

@@ -270,7 +270,7 @@ public class PamelaModelFactory implements IObjectGraphFactory {
 	}
 
 	public PamelaModelFactory(Class<?> baseClass) throws ModelDefinitionException {
-		this(PamelaMetaModelLibrary.getModelContext(baseClass));
+		this(PamelaMetaModelLibrary.retrieveMetaModel(baseClass));
 	}
 
 	public PamelaModelFactory(PamelaMetaModel pamelaMetaModel) {

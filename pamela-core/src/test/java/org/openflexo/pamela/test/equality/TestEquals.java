@@ -17,7 +17,7 @@ public class TestEquals {
 	@Test
 	public void testEquals() throws ModelDefinitionException {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(A.class, B.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(A.class, B.class));
 
 		A a1 = factory.newInstance(A.class);
 		B b1 = factory.newInstance(B.class);

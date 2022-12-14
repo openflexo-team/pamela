@@ -24,7 +24,7 @@ public class ContainmentTest {
 	public void testFactory() {
 
 		try {
-			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(TestContainerA.class, TestContainerB.class,
+			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(TestContainerA.class, TestContainerB.class,
 					TestEmbeddedA.class, TestEmbeddedB.class));
 
 			ModelEntity<TestContainerA> containerAEntity = factory.getModelContext().getModelEntity(TestContainerA.class);
@@ -49,7 +49,7 @@ public class ContainmentTest {
 	@Test
 	public void testInstanciate() throws Exception {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(TestContainerA.class, TestContainerB.class,
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(TestContainerA.class, TestContainerB.class,
 				TestEmbeddedA.class, TestEmbeddedB.class));
 
 		TestContainerA containerA = factory.newInstance(TestContainerA.class);
