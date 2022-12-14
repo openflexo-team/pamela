@@ -1532,6 +1532,11 @@ public class ModelEntity<I> {
 		if (method.getName().equals("enableAssertionChecking")) {
 			return true;
 		}
+		if (method.getName().equals("equalsObject")) {
+			System.out.println("Tiens alors : equalsObject defined in " + method.getDeclaringClass());
+			// System.exit(-1);
+			return true;
+		}
 		return false;
 	}
 

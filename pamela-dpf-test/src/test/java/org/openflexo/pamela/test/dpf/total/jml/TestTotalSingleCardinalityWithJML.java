@@ -11,7 +11,7 @@ import org.openflexo.pamela.jml.JMLAssertionViolationException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.test.dpf.AbstractConcept;
 
-public class TestTotalMultipleCardinality {
+public class TestTotalSingleCardinalityWithJML {
 
 	@Test
 	public void testCheckMonitoredMethodsOnly() throws ModelDefinitionException {
@@ -46,9 +46,8 @@ public class TestTotalMultipleCardinality {
 		Y y1 = factory.newInstance(Y.class, "y1");
 		Y y2 = factory.newInstance(Y.class, "y2");
 
-		x1.addToMultipleY(y1);
-		x2.addToMultipleY(y1);
-		x2.addToMultipleY(y2);
+		x1.setSingleY(y1);
+		x2.setSingleY(y2);
 
 		System.out.println("x1=" + x1);
 		System.out.println("x2=" + x2);
@@ -67,14 +66,14 @@ public class TestTotalMultipleCardinality {
 
 		if (monitoringStrategy == MonitoringStrategy.CheckMonitoredMethodsOnly) {
 			Y y3 = factory.newInstance(Y.class, "y3");
-			x3.addToMultipleY(y3);
+			x3.setSingleY(y3);
 			x3.aMonitoredMethod();
 		}
 		else {
 			// Call to x3.setSingleY(y3) will trigger property checking which will fail
 			try {
 				Y y3 = factory.newInstance(Y.class, "y3");
-				x3.addToMultipleY(y3);
+				x3.setSingleY(y3);
 				x3.aMonitoredMethod();
 			} catch (JMLAssertionViolationException e) {
 				// Invariant violation

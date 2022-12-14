@@ -46,7 +46,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation defining that related property should be defined
+ * Annotation defining that related property cardinality should be in a given range
  * 
  * @author sylvain
  * 

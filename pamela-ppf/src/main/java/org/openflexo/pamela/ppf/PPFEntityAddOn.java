@@ -52,9 +52,11 @@ import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.ppf.annotations.Card;
+import org.openflexo.pamela.ppf.annotations.Irreflexive;
 import org.openflexo.pamela.ppf.annotations.NonEmpty;
 import org.openflexo.pamela.ppf.annotations.NonNull;
 import org.openflexo.pamela.ppf.predicates.CardPredicate;
+import org.openflexo.pamela.ppf.predicates.IrreflexivePredicate;
 import org.openflexo.pamela.ppf.predicates.NonEmptyPredicate;
 import org.openflexo.pamela.ppf.predicates.NonNullPredicate;
 
@@ -112,6 +114,9 @@ public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 			}
 			if (method.isAnnotationPresent(Card.class) && modelProperty.getCardinality() == Cardinality.LIST) {
 				predicatesForProperty.add(new CardPredicate<>(modelProperty, method.getAnnotation(Card.class)));
+			}
+			if (method.isAnnotationPresent(Irreflexive.class)) {
+				predicatesForProperty.add(new IrreflexivePredicate<>(modelProperty));
 			}
 		}
 	}

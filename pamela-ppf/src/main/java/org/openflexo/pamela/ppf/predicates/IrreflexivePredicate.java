@@ -36,40 +36,52 @@
  * or visit www.openflexo.org if you need additional information.
  * 
  */
-package org.openflexo.pamela.ppf;
+package org.openflexo.pamela.ppf.predicates;
 
-import java.lang.reflect.Method;
+import java.util.List;
+import java.util.logging.Logger;
 
+import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.ppf.annotations.Card;
-import org.openflexo.pamela.ppf.annotations.Irreflexive;
-import org.openflexo.pamela.ppf.annotations.NonEmpty;
-import org.openflexo.pamela.ppf.annotations.NonNull;
+import org.openflexo.pamela.ppf.PPFViolationException;
+import org.openflexo.pamela.ppf.PropertyPredicate;
 
 /**
- * A monitorable predicate which applies to a single property
+ * "Irreflexive" predicate : (for all x in X, x not in f(x))
  * 
  * @author sylvain
  *
  */
-public abstract class PropertyPredicate<I> {
+public class IrreflexivePredicate<I> extends PropertyPredicate<I> {
 
-	private final ModelProperty<I> property;
+	private static final Logger logger = Logger.getLogger(IrreflexivePredicate.class.getPackage().getName());
 
-	public PropertyPredicate(ModelProperty<I> property) {
-		this.property = property;
+	public IrreflexivePredicate(ModelProperty<I> property) {
+		super(property);
 	}
 
-	public ModelProperty<I> getProperty() {
-		return property;
+	@Override
+	public void check(ProxyMethodHandler<? extends I> proxyMethodHandler) {
+		logger.info("Checking IrreflexivePredicate for " + getProperty() + " and object " + proxyMethodHandler.getObject());
+		Object value = proxyMethodHandler.invokeGetter(getProperty());
+		if (getProperty().getCardinality() == Cardinality.LIST) {
+			if (value != null) {
+				if (((List) value).contains(proxyMethodHandler.getObject())) {
+					throw new PPFViolationException(
+							"Property " + getProperty() + " is irreflexive and should not contain " + proxyMethodHandler.getObject(),
+							proxyMethodHandler);
+				}
+			}
+		}
+		else if (getProperty().getCardinality() == Cardinality.SINGLE) {
+			if (value != null) {
+				if (value == proxyMethodHandler.getObject()) {
+					throw new PPFViolationException(
+							"Property " + getProperty() + " is irreflexive and should not reference " + proxyMethodHandler.getObject(),
+							proxyMethodHandler);
+				}
+			}
+		}
 	}
-
-	public abstract void check(ProxyMethodHandler<? extends I> proxyMethodHandler) throws PPFViolationException;
-
-	public static boolean hasPPFAnnotations(Method method) {
-		return method.isAnnotationPresent(NonNull.class) || method.isAnnotationPresent(NonEmpty.class)
-				|| method.isAnnotationPresent(Card.class) || method.isAnnotationPresent(Irreflexive.class);
-	}
-
 }
