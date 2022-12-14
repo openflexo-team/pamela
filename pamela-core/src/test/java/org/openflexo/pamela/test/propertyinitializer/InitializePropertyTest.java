@@ -36,8 +36,8 @@
 package org.openflexo.pamela.test.propertyinitializer;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContextLibrary;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -54,7 +54,7 @@ public class InitializePropertyTest {
 	 */
 	@Test
 	public void test1() throws Exception {
-		ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(AContainer.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(AContainer.class));
 
 		AContainer container = factory.newInstance(AContainer.class);
 		assertNotNull(container);

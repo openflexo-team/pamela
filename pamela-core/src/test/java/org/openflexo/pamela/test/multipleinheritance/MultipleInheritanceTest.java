@@ -5,9 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 
 /**
@@ -25,8 +25,8 @@ public class MultipleInheritanceTest {
 	public void testFactory() {
 
 		try {
-			// Var unused ModelFactory factory =
-			new ModelFactory(ModelContextLibrary.getCompoundModelContext(A.class, B.class, C.class, D1.class));
+			// Var unused PamelaModelFactory factory =
+			new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(A.class, B.class, C.class, D1.class));
 
 			fail();
 		} catch (ModelDefinitionException e) {
@@ -41,7 +41,7 @@ public class MultipleInheritanceTest {
 	public void testFactory2() {
 
 		try {
-			ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(A.class, B.class, C.class, D2.class));
+			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(A.class, B.class, C.class, D2.class));
 
 			ModelEntity<A> AEntity = factory.getModelContext().getModelEntity(A.class);
 			ModelEntity<B> BEntity = factory.getModelContext().getModelEntity(B.class);
@@ -65,7 +65,7 @@ public class MultipleInheritanceTest {
 	@Test
 	public void testInstanciate() throws Exception {
 
-		ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(A.class, B.class, C.class, D2.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(A.class, B.class, C.class, D2.class));
 
 		D2 d2 = factory.newInstance(D2.class);
 

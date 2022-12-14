@@ -44,8 +44,8 @@ import java.util.function.Function;
 
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.model.PAMELAVisitor;
-import org.openflexo.pamela.model.PAMELAVisitor.VisitingStrategy;
+import org.openflexo.pamela.model.PamelaVisitor;
+import org.openflexo.pamela.model.PamelaVisitor.VisitingStrategy;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 /**
@@ -273,21 +273,21 @@ public interface AccessibleProxyObject extends HasPropertyChangeSupport, KeyValu
 	public void destroy();
 
 	/**
-	 * Called to be visited by a {@link PAMELAVisitor}
+	 * Called to be visited by a {@link PamelaVisitor}
 	 * 
 	 * Default strategy is Embedding
 	 * 
 	 * @param visitor
 	 */
-	public void accept(PAMELAVisitor visitor);
+	public void accept(PamelaVisitor visitor);
 
 	/**
-	 * Called to be visited by a {@link PAMELAVisitor}
+	 * Called to be visited by a {@link PamelaVisitor}
 	 * 
 	 * @param visitor
 	 * @param strategy
 	 */
-	public void accept(PAMELAVisitor visitor, VisitingStrategy strategy);
+	public void accept(PamelaVisitor visitor, VisitingStrategy strategy);
 
 	/**
 	 * Return the list of all objects beeing directely referenced as embedded in this object

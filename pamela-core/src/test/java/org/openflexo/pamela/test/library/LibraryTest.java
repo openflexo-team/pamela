@@ -5,10 +5,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.validation.DefaultValidationModel;
 import org.openflexo.pamela.validation.ValidationModel;
@@ -29,7 +29,7 @@ public class LibraryTest {
 	public void testFactory() {
 
 		try {
-			ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(Library.class));
+			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(Library.class));
 
 			ModelEntity<Library> libraryEntity = factory.getModelContext().getModelEntity(Library.class);
 			ModelEntity<Book> bookEntity = factory.getModelContext().getModelEntity(Book.class);
@@ -51,9 +51,9 @@ public class LibraryTest {
 
 		// Instantiate the meta-model
 		// by computing the closure of concepts graph
-		ModelContext modelContext = ModelContextLibrary.getModelContext(Library.class);
+		PamelaMetaModel pamelaMetaModel = PamelaMetaModelLibrary.getModelContext(Library.class);
 		// Instantiate the factory
-		ModelFactory factory = new ModelFactory(modelContext);
+		PamelaModelFactory factory = new PamelaModelFactory(pamelaMetaModel);
 		// Instantiate a Library
 		Library myLibrary = factory.newInstance(Library.class);
 		myLibrary.setName("My library");
@@ -63,7 +63,7 @@ public class LibraryTest {
 		myLibrary.addToBooks(myFirstBook);
 		myLibrary.addToBooks(anOtherBook);
 
-		ValidationModel validationModel = new DefaultValidationModel(modelContext);
+		ValidationModel validationModel = new DefaultValidationModel(pamelaMetaModel);
 		ValidationReport validationReport = new ValidationReport(validationModel, myLibrary);
 		System.out.println(validationReport.reportAsString());
 

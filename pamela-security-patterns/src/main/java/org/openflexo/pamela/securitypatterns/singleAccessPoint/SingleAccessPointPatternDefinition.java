@@ -1,6 +1,6 @@
 package org.openflexo.pamela.securitypatterns.singleAccessPoint;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.ExecutionMonitor;
@@ -36,8 +36,8 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
     private boolean isValid;
     protected CustomStack customStack;
 
-    public SingleAccessPointPatternDefinition(String identifier, ModelContext modelContext) {
-        super(identifier, modelContext);
+    public SingleAccessPointPatternDefinition(String identifier, PamelaMetaModel pamelaMetaModel) {
+        super(identifier, pamelaMetaModel);
         this.accessorEntities = new HashMap<>();
         this.checkpointParams = new HashMap<>();
         this.message = "\n";

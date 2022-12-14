@@ -2,9 +2,9 @@ package org.openflexo.pamela.test.tests1;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.factory.EditingContextImpl;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.test.AbstractPAMELATest;
 import org.openflexo.pamela.undo.CompoundEdit;
 import org.openflexo.pamela.undo.UndoManager;
@@ -14,15 +14,15 @@ import org.openflexo.pamela.undo.UndoManager;
  */
 public class UndoRedoTests extends AbstractPAMELATest {
 
-	private ModelFactory factory;
-	private ModelContext modelContext;
+	private PamelaModelFactory factory;
+	private PamelaMetaModel pamelaMetaModel;
 	private UndoManager undoManager;
 
 	@Override
 	@Before
 	public void setUp() throws Exception {
-		modelContext = new ModelContext(WKFObject.class);
-		factory = new ModelFactory(modelContext);
+		pamelaMetaModel = new PamelaMetaModel(WKFObject.class);
+		factory = new PamelaModelFactory(pamelaMetaModel);
 
 		final EditingContextImpl editingContext = new EditingContextImpl();
 		editingContext.createUndoManager();
@@ -32,7 +32,7 @@ public class UndoRedoTests extends AbstractPAMELATest {
 
 	@Test
 	public void testAttributesUndoRedo() throws Exception {
-		final String defaultValue = (String) modelContext.getModelEntity(TestModelObject.class).getModelProperty(TestModelObject.NAME)
+		final String defaultValue = (String) pamelaMetaModel.getModelEntity(TestModelObject.class).getModelProperty(TestModelObject.NAME)
 				.getDefaultValue(factory);
 		final CompoundEdit initial = undoManager.startRecording("initial");
 

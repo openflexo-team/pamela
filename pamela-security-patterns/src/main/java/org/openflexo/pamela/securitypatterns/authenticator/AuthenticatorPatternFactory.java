@@ -43,7 +43,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticateMethod;
@@ -62,8 +62,8 @@ import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequestAu
  */
 public class AuthenticatorPatternFactory extends AbstractPatternFactory<AuthenticatorPatternDefinition> {
 
-	public AuthenticatorPatternFactory(ModelContext modelContext) {
-		super(modelContext);
+	public AuthenticatorPatternFactory(PamelaMetaModel pamelaMetaModel) {
+		super(pamelaMetaModel);
 	}
 
 	@Override

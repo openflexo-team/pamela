@@ -43,7 +43,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Authenticator;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.patterns.annotations.Ensures;
 import org.openflexo.pamela.patterns.annotations.Requires;
 
@@ -76,7 +76,7 @@ public abstract class PatternInstance<P extends PatternDefinition> {
 		return patternDefinition;
 	}
 
-	public ModelContext getModelContext() {
+	public PamelaMetaModel getModelContext() {
 		return patternDefinition.getModelContext();
 	}
 

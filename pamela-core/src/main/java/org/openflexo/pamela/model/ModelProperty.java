@@ -69,8 +69,8 @@ import org.openflexo.pamela.annotations.XMLAttribute;
 import org.openflexo.pamela.annotations.XMLElement;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.factory.PAMELAConstants;
+import org.openflexo.pamela.factory.PamelaModelFactory;
+import org.openflexo.pamela.factory.PamelaConstants;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.StringUtils;
 
@@ -319,10 +319,10 @@ public class ModelProperty<I> {
 		if (propertyIdentifier == null || propertyIdentifier.equals("")) {
 			throw new ModelDefinitionException("No property identifier defined!");
 		}
-		if (getXMLAttribute() != null && getXMLAttribute().xmlTag().equals(PAMELAConstants.CLASS_ATTRIBUTE)
-				&& getXMLAttribute().namespace().equals(PAMELAConstants.NS)) {
+		if (getXMLAttribute() != null && getXMLAttribute().xmlTag().equals(PamelaConstants.CLASS_ATTRIBUTE)
+				&& getXMLAttribute().namespace().equals(PamelaConstants.NS)) {
 			throw new ModelDefinitionException(
-					"Invalid property identifier '" + PAMELAConstants.CLASS_ATTRIBUTE + "' with namespace " + PAMELAConstants.NS + "!");
+					"Invalid property identifier '" + PamelaConstants.CLASS_ATTRIBUTE + "' with namespace " + PamelaConstants.NS + "!");
 		}
 		if (getGetter() == null) {
 			throw new ModelDefinitionException(
@@ -1101,7 +1101,7 @@ public class ModelProperty<I> {
 
 	private Object defaultValue;
 
-	public Object getDefaultValue(ModelFactory factory) throws InvalidDataException {
+	public Object getDefaultValue(PamelaModelFactory factory) throws InvalidDataException {
 		if (defaultValue != null) {
 			return defaultValue;
 		}

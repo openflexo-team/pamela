@@ -42,7 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.FileUtils;
 
@@ -66,7 +66,7 @@ public class RelativePathFileConverter extends Converter<File> {
 	}
 
 	@Override
-	public File convertFromString(String value, ModelFactory factory) {
+	public File convertFromString(String value, PamelaModelFactory factory) {
 		File file = new File(relativePath, value);
 		if (!file.exists()) {
 			logger.warning("Cannot fin relative file: " + value + " in " + relativePath + " searched:" + file.getAbsolutePath());

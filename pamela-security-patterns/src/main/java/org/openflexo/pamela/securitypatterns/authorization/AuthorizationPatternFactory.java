@@ -2,7 +2,7 @@ package org.openflexo.pamela.securitypatterns.authorization;
 
 import java.lang.annotation.Annotation;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.securitypatterns.authorization.annotations.AuthorizationChecker;
@@ -16,8 +16,8 @@ import org.openflexo.pamela.securitypatterns.authorization.annotations.Protected
  */
 public class AuthorizationPatternFactory extends AbstractPatternFactory<AuthorizationPatternDefinition> {
 
-	public AuthorizationPatternFactory(ModelContext modelContext) {
-		super(modelContext);
+	public AuthorizationPatternFactory(PamelaMetaModel pamelaMetaModel) {
+		super(pamelaMetaModel);
 	}
 
 	@Override

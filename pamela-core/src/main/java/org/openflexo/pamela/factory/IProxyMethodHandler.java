@@ -48,7 +48,7 @@ import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.KeyValueCoding;
 import org.openflexo.pamela.MonitorableProxyObject;
-import org.openflexo.pamela.model.PAMELAVisitor;
+import org.openflexo.pamela.model.PamelaVisitor;
 import org.openflexo.pamela.validation.Validable;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
@@ -157,9 +157,9 @@ public class IProxyMethodHandler {
 			GET_EMBEDDED = AccessibleProxyObject.class.getMethod("getEmbeddedObjects");
 			GET_EMBEDDED_VALIDABLE = Validable.class.getMethod("getEmbeddedValidableObjects");
 			GET_REFERENCED = AccessibleProxyObject.class.getMethod("getReferencedObjects");
-			ACCEPT_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class);
-			ACCEPT_WITH_STRATEGY_VISITOR = AccessibleProxyObject.class.getMethod("accept", PAMELAVisitor.class,
-					PAMELAVisitor.VisitingStrategy.class);
+			ACCEPT_VISITOR = AccessibleProxyObject.class.getMethod("accept", PamelaVisitor.class);
+			ACCEPT_WITH_STRATEGY_VISITOR = AccessibleProxyObject.class.getMethod("accept", PamelaVisitor.class,
+					PamelaVisitor.VisitingStrategy.class);
 			DESTROY = AccessibleProxyObject.class.getMethod("destroy");
 			HAS_KEY = KeyValueCoding.class.getMethod("hasKey", String.class);
 			OBJECT_FOR_KEY = KeyValueCoding.class.getMethod("objectForKey", String.class);

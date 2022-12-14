@@ -40,12 +40,12 @@ package org.openflexo.pamela.undo;
 
 import javax.swing.undo.UndoableEdit;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 
 /**
  * This is an atomic edit managed by PAMELA.<br>
- * This edit is defined in the context of a given {@link ModelFactory} which should be passed at construction<br>
+ * This edit is defined in the context of a given {@link PamelaModelFactory} which should be passed at construction<br>
  * An {@link AtomicEdit} always addresses a {@link ModelEntity}
  * 
  * @author sylvain
@@ -54,16 +54,16 @@ import org.openflexo.pamela.model.ModelEntity;
  */
 public abstract class AtomicEdit<I> implements UndoableEdit {
 
-	private ModelFactory modelFactory;
+	private PamelaModelFactory pamelaModelFactory;
 	private ModelEntity<I> modelEntity;
 
-	public AtomicEdit(ModelEntity<I> modelEntity, ModelFactory modelFactory) {
+	public AtomicEdit(ModelEntity<I> modelEntity, PamelaModelFactory pamelaModelFactory) {
 		this.modelEntity = modelEntity;
-		this.modelFactory = modelFactory;
+		this.pamelaModelFactory = pamelaModelFactory;
 	}
 
-	public ModelFactory getModelFactory() {
-		return modelFactory;
+	public PamelaModelFactory getModelFactory() {
+		return pamelaModelFactory;
 	}
 
 	public ModelEntity<I> getModelEntity() {
@@ -87,7 +87,7 @@ public abstract class AtomicEdit<I> implements UndoableEdit {
 	@Override
 	public void die() {
 		modelEntity = null;
-		modelFactory = null;
+		pamelaModelFactory = null;
 	}
 
 	@Override

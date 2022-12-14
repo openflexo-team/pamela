@@ -38,7 +38,7 @@
 
 package org.openflexo.pamela.converter;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.toolbox.FileFormat;
 
@@ -55,7 +55,7 @@ public class FileFormatConverter extends Converter<FileFormat> {
 	}
 
 	@Override
-	public FileFormat convertFromString(String value, ModelFactory factory) {
+	public FileFormat convertFromString(String value, PamelaModelFactory factory) {
 		return FileFormat.getFileFormat(value);
 	}
 

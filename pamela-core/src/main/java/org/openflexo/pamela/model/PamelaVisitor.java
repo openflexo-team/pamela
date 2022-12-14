@@ -45,7 +45,7 @@ package org.openflexo.pamela.model;
  * @author sylvain
  * 
  */
-public interface PAMELAVisitor {
+public interface PamelaVisitor {
 
 	public void visit(Object object);
 

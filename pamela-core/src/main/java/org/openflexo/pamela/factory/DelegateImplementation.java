@@ -234,7 +234,7 @@ public class DelegateImplementation<I> extends ProxyFactory implements MethodHan
 		return masterMethodHandler.getPamelaProxyFactory().getModelEntity();
 	}
 
-	public ModelFactory getModelFactory() {
+	public PamelaModelFactory getModelFactory() {
 		return masterMethodHandler.getPamelaProxyFactory().getModelFactory();
 	}
 

@@ -3,10 +3,10 @@ package org.openflexo.pamela.securitypatterns.authenticator;
 import java.beans.PropertyChangeEvent;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.securitypatterns.authenticator.model2.MyAuthenticator;
 import org.openflexo.pamela.securitypatterns.authenticator.model2.MySubject;
 
@@ -16,8 +16,8 @@ public class TestSecuredAuthenticator extends TestCase {
 
 	@Test
 	public void testPatternAnalysis() throws Exception {
-		ModelContextLibrary.clearCache();
-		ModelContext context = ModelContextLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
+		PamelaMetaModelLibrary.clearCache();
+		PamelaMetaModel context = PamelaMetaModelLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
 		assertEquals(1, context.getPatternDefinitions(AuthenticatorPatternDefinition.class).size());
 		AuthenticatorPatternDefinition patternDefinition = context.getPatternDefinitions(AuthenticatorPatternDefinition.class).get(0);
 		assertEquals(MySubject.PATTERN_ID, patternDefinition.getIdentifier());
@@ -36,9 +36,9 @@ public class TestSecuredAuthenticator extends TestCase {
 	// Functional test
 	@Test
 	public void testAuthenticateValid() throws Exception {
-		ModelContextLibrary.clearCache();
-		ModelContext context = ModelContextLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModelLibrary.clearCache();
+		PamelaMetaModel context = PamelaMetaModelLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		MyAuthenticator manager = factory.newInstance(MyAuthenticator.class);
 		MySubject subject = factory.newInstance(MySubject.class, "id1");
 		subject.setManager(manager);
@@ -50,9 +50,9 @@ public class TestSecuredAuthenticator extends TestCase {
 
 	@Test
 	public void testRequiresAuthentication() throws Exception {
-		ModelContextLibrary.clearCache();
-		ModelContext context = ModelContextLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModelLibrary.clearCache();
+		PamelaMetaModel context = PamelaMetaModelLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		MyAuthenticator manager = factory.newInstance(MyAuthenticator.class);
 		MySubject subject = factory.newInstance(MySubject.class, "id1");
 		manager.addUser(subject.getAuthInfo());
@@ -75,9 +75,9 @@ public class TestSecuredAuthenticator extends TestCase {
 
 	@Test
 	public void testAuthenticatorInvalidReturn() throws Exception {
-		ModelContextLibrary.clearCache();
-		ModelContext context = ModelContextLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModelLibrary.clearCache();
+		PamelaMetaModel context = PamelaMetaModelLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		MyAuthenticator manager = factory.newInstance(MyAuthenticator.class);
 		MySubject subject = factory.newInstance(MySubject.class, "id1");
 		subject.setManager(manager);
@@ -88,9 +88,9 @@ public class TestSecuredAuthenticator extends TestCase {
 
 	@Test
 	public void testInstanceDiscovery() throws Exception {
-		ModelContextLibrary.clearCache();
-		ModelContext context = ModelContextLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModelLibrary.clearCache();
+		PamelaMetaModel context = PamelaMetaModelLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		MyAuthenticator manager = factory.newInstance(MyAuthenticator.class);
 		assertNull(context.getPatternInstances(manager));
 		MySubject subject = factory.newInstance(MySubject.class, "id");
@@ -107,9 +107,9 @@ public class TestSecuredAuthenticator extends TestCase {
 
 	@Test
 	public void testAuthInfoUniqueness() throws Exception {
-		ModelContextLibrary.clearCache();
-		ModelContext context = ModelContextLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModelLibrary.clearCache();
+		PamelaMetaModel context = PamelaMetaModelLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		MyAuthenticator manager = factory.newInstance(MyAuthenticator.class);
 		MySubject subject = factory.newInstance(MySubject.class, "id");
 		subject.setManager(manager);
@@ -129,9 +129,9 @@ public class TestSecuredAuthenticator extends TestCase {
 
 	@Test
 	public void testAuthenticatorInvariant() throws Exception {
-		ModelContextLibrary.clearCache();
-		ModelContext context = ModelContextLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModelLibrary.clearCache();
+		PamelaMetaModel context = PamelaMetaModelLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		MyAuthenticator manager = factory.newInstance(MyAuthenticator.class);
 		MySubject subject = factory.newInstance(MySubject.class, "id");
 		subject.setManager(manager);
@@ -150,9 +150,9 @@ public class TestSecuredAuthenticator extends TestCase {
 
 	@Test
 	public void testAuthInfoInvariant() throws Exception {
-		ModelContextLibrary.clearCache();
-		ModelContext context = ModelContextLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModelLibrary.clearCache();
+		PamelaMetaModel context = PamelaMetaModelLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		MyAuthenticator manager = factory.newInstance(MyAuthenticator.class);
 		MySubject subject = factory.newInstance(MySubject.class, "id");
 		subject.setManager(manager);
@@ -171,9 +171,9 @@ public class TestSecuredAuthenticator extends TestCase {
 
 	@Test
 	public void testIdProofForgery() throws Exception {
-		ModelContextLibrary.clearCache();
-		ModelContext context = ModelContextLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
-		ModelFactory factory = new ModelFactory(context);
+		PamelaMetaModelLibrary.clearCache();
+		PamelaMetaModel context = PamelaMetaModelLibrary.getCompoundModelContext(MySubject.class, MyAuthenticator.class);
+		PamelaModelFactory factory = new PamelaModelFactory(context);
 		MyAuthenticator manager = factory.newInstance(MyAuthenticator.class);
 		MySubject subject = factory.newInstance(MySubject.class, "id");
 		subject.setManager(manager);

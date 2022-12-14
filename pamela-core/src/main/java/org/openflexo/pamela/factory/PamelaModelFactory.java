@@ -57,8 +57,8 @@ import java.util.Vector;
 
 import org.openflexo.IObjectGraphFactory;
 import org.openflexo.pamela.DeletableProxyObject;
-import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.annotations.PastingPoint;
 import org.openflexo.pamela.exceptions.MissingImplementationException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
@@ -80,26 +80,26 @@ import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
 /**
- * The {@link ModelFactory} is responsible for creating new instances of PAMELA entities.<br>
+ * The {@link PamelaModelFactory} is responsible for creating new instances of PAMELA entities.<br>
  * 
  * This class should be considered stateless, regarding to the state of handled instances.<br>
  * 
- * Note that a {@link ModelFactory} might refer to an {@link EditingContext}. When so, new instances are automatically registered in this
- * {@link EditingContext}.
+ * Note that a {@link PamelaModelFactory} might refer to an {@link EditingContext}. When so, new instances are automatically registered in
+ * this {@link EditingContext}.
  * 
  * @author sylvain
  * 
  */
-public class ModelFactory implements IObjectGraphFactory {
+public class PamelaModelFactory implements IObjectGraphFactory {
 
 	private Class<?> defaultModelClass = Object.class;
 	private Class<? extends List> listImplementationClass = Vector.class;
 
 	private final Map<Class, PAMELAProxyFactory> proxyFactories;
 	private final StringEncoder stringEncoder;
-	private final ModelContext modelContext;
+	private final PamelaMetaModel pamelaMetaModel;
 
-	private ModelContext extendedContext;
+	private PamelaMetaModel extendedContext;
 
 	private EditingContext editingContext;
 
@@ -116,7 +116,7 @@ public class ModelFactory implements IObjectGraphFactory {
 		private boolean locked = false;
 		private boolean overridingSuperClass = false;
 
-		public PAMELAProxyFactory(ModelEntity<I> aModelEntity, ModelContext context) throws ModelDefinitionException {
+		public PAMELAProxyFactory(ModelEntity<I> aModelEntity, PamelaMetaModel context) throws ModelDefinitionException {
 			super();
 			this.modelEntity = aModelEntity;
 			setFilter(new MethodFilter() {
@@ -190,13 +190,86 @@ public class ModelFactory implements IObjectGraphFactory {
 			super.setSuperclass(clazz);
 		}
 
-		public ModelFactory getModelFactory() {
-			return ModelFactory.this;
+		public PamelaModelFactory getModelFactory() {
+			return PamelaModelFactory.this;
 		}
 
 		public ModelEntity<I> getModelEntity() {
 			return modelEntity;
 		}
+
+		/*public I newInstance(Object... args) throws IllegalArgumentException, NoSuchMethodException, InstantiationException,
+				IllegalAccessException, InvocationTargetException, ModelDefinitionException {
+			if (modelEntity.isAbstract()) {
+				throw new InstantiationException(modelEntity + " is declared as an abstract entity, cannot instantiate it");
+			}
+			locked = true;
+			ProxyMethodHandler<I> handler = new ProxyMethodHandler<>(this, getEditingContext());
+		
+			if (args == null) {
+				args = new Object[0];
+			}
+		
+			I returned = null;
+			if (modelEntity.isSimplePamelaInstrumentation()) {
+				Class<?>[] paramTypesArray = new Class<?>[args.length];
+				for (int i = 0; i < args.length; i++) {
+					paramTypesArray[i] = args[i].getClass();
+				}
+				returned = (I) create(paramTypesArray, args, handler);
+				handler.setObject(returned);
+			}
+			else {
+				returned = (I) create(new Class<?>[0], new Object[0], handler);
+				handler.setObject(returned);
+				if (args.length > 0 || modelEntity.hasInitializers()) {
+					Class<?>[] types = new Class<?>[args.length];
+					for (int i = 0; i < args.length; i++) {
+						Object o = args[i];
+						if (isProxyObject(o)) {
+							ModelEntity<?> modelEntity = getModelEntityForInstance(o);
+							types[i] = modelEntity.getImplementedInterface();
+						}
+						else {
+							types[i] = o != null ? o.getClass() : null;
+						}
+					}
+					ModelInitializer initializerForArgs = modelEntity.getInitializerForArgs(types);
+					if (initializerForArgs != null) {
+						handler.initializing = true;
+						try {
+							initializerForArgs.getInitializingMethod().invoke(returned, args);
+						} finally {
+							handler.initializing = false;
+							handler.initialized = true;
+						}
+					}
+					else {
+						if (args.length > 0) {
+							StringBuilder sb = new StringBuilder();
+							for (Class<?> c : types) {
+								if (sb.length() > 0) {
+									sb.append(',');
+								}
+								sb.append(c != null ? c.getName() : "<null>");
+		
+							}
+							throw new NoSuchMethodException("Could not find any initializer with args " + sb.toString());
+						}
+					}
+				}
+			}
+		
+			// looks for property to initialize
+			for (ModelProperty<? super I> property : modelEntity.getPropertyIterable()) {
+				if (property.getInitialize() != null) {
+					handler.invokeSetter(property, PamelaModelFactory.this.newInstance(property.getType()));
+				}
+			}
+		
+			objectHasBeenCreated(returned, modelEntity.getImplementedInterface());
+			return returned;
+		}*/
 
 		public I newInstance(Object... args) throws IllegalArgumentException, NoSuchMethodException, InstantiationException,
 				IllegalAccessException, InvocationTargetException, ModelDefinitionException {
@@ -274,7 +347,7 @@ public class ModelFactory implements IObjectGraphFactory {
 			// looks for property to initialize
 			for (ModelProperty<? super I> property : modelEntity.getPropertyIterable()) {
 				if (property.getInitialize() != null) {
-					handler.invokeSetter(property, ModelFactory.this.newInstance(property.getType()));
+					handler.invokeSetter(property, PamelaModelFactory.this.newInstance(property.getType()));
 				}
 			}
 
@@ -324,24 +397,25 @@ public class ModelFactory implements IObjectGraphFactory {
 			}
 			return returned;
 		}
+
 	}
 
-	public ModelFactory(Class<?> baseClass) throws ModelDefinitionException {
-		this(ModelContextLibrary.getModelContext(baseClass));
+	public PamelaModelFactory(Class<?> baseClass) throws ModelDefinitionException {
+		this(PamelaMetaModelLibrary.getModelContext(baseClass));
 	}
 
-	public ModelFactory(ModelContext modelContext) {
-		this.modelContext = modelContext;
+	public PamelaModelFactory(PamelaMetaModel pamelaMetaModel) {
+		this.pamelaMetaModel = pamelaMetaModel;
 		proxyFactories = new HashMap<>();
 		stringEncoder = new StringEncoder(this);
 	}
 
-	public ModelContext getModelContext() {
-		return modelContext;
+	public PamelaMetaModel getModelContext() {
+		return pamelaMetaModel;
 	}
 
-	public ModelContext getExtendedContext() {
-		return extendedContext != null ? extendedContext : modelContext;
+	public PamelaMetaModel getExtendedContext() {
+		return extendedContext != null ? extendedContext : pamelaMetaModel;
 	}
 
 	public <I> I newInstance(ModelEntity<I> modelEntity) {
@@ -428,10 +502,10 @@ public class ModelFactory implements IObjectGraphFactory {
 		}
 	}
 
-	/*
-	 * Unused private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I>
-	 * implementedInterface) throws ModelDefinitionException { return
-	 * getProxyFactory(implementedInterface, true); }
+	/* Unused
+		private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I> implementedInterface) throws ModelDefinitionException {
+			return getProxyFactory(implementedInterface, true);
+		}
 	 */
 	private <I> PAMELAProxyFactory<I> getProxyFactory(Class<I> implementedInterface, boolean create) throws ModelDefinitionException {
 		return getProxyFactory(implementedInterface, create, false);
@@ -450,7 +524,7 @@ public class ModelFactory implements IObjectGraphFactory {
 			}
 			if (entity == null) {
 				System.out.println("Debug model context");
-				Iterator<ModelEntity> it = modelContext.getEntitiesIterator();
+				Iterator<ModelEntity> it = pamelaMetaModel.getEntitiesIterator();
 				while (it.hasNext()) {
 					ModelEntity<?> next = it.next();
 					System.out.println("> " + next);
@@ -544,11 +618,9 @@ public class ModelFactory implements IObjectGraphFactory {
 			// Vincent: Check this, handler can be of DelegateImplementation
 			// Type( in the case of Edition actions containers)
 			// ???
-			/*
-			 * if(((ProxyObject) object).getHandler() instanceof DelegateImplementation){
-			 * return ((DelegateImplementation<I>) ((ProxyObject)
-			 * object).getHandler()).getMasterMethodHandler(); }
-			 */
+			/*if(((ProxyObject) object).getHandler() instanceof DelegateImplementation){
+				return ((DelegateImplementation<I>) ((ProxyObject) object).getHandler()).getMasterMethodHandler();
+			}*/
 			if (((ProxyObject) object).getHandler() instanceof ProxyMethodHandler) {
 				return (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
 			}
@@ -557,9 +629,9 @@ public class ModelFactory implements IObjectGraphFactory {
 	}
 
 	public <I> ModelEntity<I> importClass(Class<I> klass) throws ModelDefinitionException {
-		ModelEntity<I> modelEntity = modelContext.getModelEntity(klass);
+		ModelEntity<I> modelEntity = pamelaMetaModel.getModelEntity(klass);
 		if (modelEntity == null) {
-			extendedContext = new ModelContext(klass, getExtendedContext());
+			extendedContext = new PamelaMetaModel(klass, getExtendedContext());
 			modelEntity = extendedContext.getModelEntity(klass);
 		}
 		return modelEntity;
@@ -730,8 +802,7 @@ public class ModelFactory implements IObjectGraphFactory {
 					}
 				}
 			}
-			// System.out.println("Embedded in "+father+" : "+child+" conditioned to
-			// required presence of "+requiredPresence);
+			// System.out.println("Embedded in "+father+" : "+child+" conditioned to required presence of "+requiredPresence);
 		}
 	}
 
@@ -1002,9 +1073,9 @@ public class ModelFactory implements IObjectGraphFactory {
 	 *             when an implementation was not found
 	 */
 	public void checkMethodImplementations() throws ModelDefinitionException, MissingImplementationException {
-		ModelContext modelContext = getModelContext();
+		PamelaMetaModel pamelaMetaModel = getModelContext();
 		MissingImplementationException thrown = null;
-		for (Iterator<ModelEntity> it = modelContext.getEntitiesIterator(); it.hasNext();) {
+		for (Iterator<ModelEntity> it = pamelaMetaModel.getEntitiesIterator(); it.hasNext();) {
 			ModelEntity<?> e = it.next();
 			try {
 				e.checkMethodImplementations(this);

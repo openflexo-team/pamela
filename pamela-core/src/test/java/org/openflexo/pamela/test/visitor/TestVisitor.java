@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContext;
-import org.openflexo.pamela.ModelContextLibrary;
-import org.openflexo.pamela.factory.ModelFactory;
-import org.openflexo.pamela.model.PAMELAVisitor;
+import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
+import org.openflexo.pamela.factory.PamelaModelFactory;
+import org.openflexo.pamela.model.PamelaVisitor;
 import org.openflexo.pamela.test.updatewith.ConceptA;
 import org.openflexo.pamela.test.updatewith.ConceptB;
 import org.openflexo.pamela.test.updatewith.ConceptC;
@@ -22,7 +22,7 @@ import org.openflexo.pamela.test.updatewith.ConceptC2;
  * @author sylvain
  * 
  */
-public class TestVisitor implements PAMELAVisitor {
+public class TestVisitor implements PamelaVisitor {
 
 	private List<Object> visitedObjects = new ArrayList<Object>();
 
@@ -35,8 +35,8 @@ public class TestVisitor implements PAMELAVisitor {
 	@Test
 	public void testEmbeddingVisitor() throws Exception {
 
-		ModelContext modelContext = ModelContextLibrary.getCompoundModelContext(ConceptA.class, ConceptC1.class, ConceptC2.class);
-		ModelFactory factory = new ModelFactory(modelContext);
+		PamelaMetaModel pamelaMetaModel = PamelaMetaModelLibrary.getCompoundModelContext(ConceptA.class, ConceptC1.class, ConceptC2.class);
+		PamelaModelFactory factory = new PamelaModelFactory(pamelaMetaModel);
 
 		ConceptA a1 = factory.newInstance(ConceptA.class);
 		ConceptB b1 = factory.newInstance(ConceptB.class);
@@ -69,8 +69,8 @@ public class TestVisitor implements PAMELAVisitor {
 	@Test
 	public void testEmbeddingVisitor2() throws Exception {
 
-		ModelContext modelContext = new ModelContext(Graph.class);
-		ModelFactory factory = new ModelFactory(modelContext);
+		PamelaMetaModel pamelaMetaModel = new PamelaMetaModel(Graph.class);
+		PamelaModelFactory factory = new PamelaModelFactory(pamelaMetaModel);
 
 		Graph graph = factory.newInstance(Graph.class);
 

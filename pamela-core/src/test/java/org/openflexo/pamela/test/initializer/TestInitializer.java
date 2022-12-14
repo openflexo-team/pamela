@@ -3,9 +3,9 @@ package org.openflexo.pamela.test.initializer;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 
 public class TestInitializer {
 
@@ -17,7 +17,7 @@ public class TestInitializer {
 	@Test
 	public void testInitializer() throws ModelDefinitionException {
 
-		ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(A.class, D.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(A.class, D.class));
 
 		A a = factory.newInstance(A.class, "toto", 42);
 		assertEquals("toto", a.getFoo());

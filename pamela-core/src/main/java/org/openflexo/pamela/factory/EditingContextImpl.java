@@ -90,7 +90,7 @@ public class EditingContextImpl implements EditingContext {
 	}
 
 	/**
-	 * Creates and register an UndoManager tracking edits on this ModelFactory
+	 * Creates and register an UndoManager tracking edits on this PamelaModelFactory
 	 * 
 	 * @return
 	 */

@@ -41,7 +41,7 @@ package org.openflexo.pamela.undo;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 
 /**
@@ -57,8 +57,8 @@ public class DeleteCommand<I> extends AtomicEdit<I> {
 
 	private I deletedObject;
 
-	public DeleteCommand(I deletedObject, ModelEntity<I> modelEntity, ModelFactory modelFactory) {
-		super(modelEntity, modelFactory);
+	public DeleteCommand(I deletedObject, ModelEntity<I> modelEntity, PamelaModelFactory pamelaModelFactory) {
+		super(modelEntity, pamelaModelFactory);
 		this.deletedObject = deletedObject;
 	}
 

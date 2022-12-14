@@ -30,8 +30,8 @@ public class TestTypeConverter extends AbstractPAMELATest {
 		typeConverter = new TypeConverter(null);
 
 		/*new File("/tmp").mkdirs();
-		modelContext = new ModelContext(FlexoProcess.class);
-		factory = new ModelFactory(modelContext);*/
+		pamelaMetaModel = new PamelaMetaModel(FlexoProcess.class);
+		factory = new PamelaModelFactory(pamelaMetaModel);*/
 	}
 
 	@Override

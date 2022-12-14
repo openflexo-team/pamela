@@ -5,9 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 
 /**
@@ -26,7 +26,7 @@ public class MultipleInheritanceTest2 {
 	public void testFactory() {
 
 		try {
-			ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(Calculator.class));
+			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(Calculator.class));
 
 			ModelEntity<Calculator> calculatorEntity = factory.getModelContext().getModelEntity(Calculator.class);
 
@@ -44,7 +44,7 @@ public class MultipleInheritanceTest2 {
 	@Test
 	public void testInstanciate() throws Exception {
 
-		ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(Calculator.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(Calculator.class));
 
 		Calculator calculator = factory.newInstance(Calculator.class);
 		assertEquals(-1, calculator.getStoredValue());

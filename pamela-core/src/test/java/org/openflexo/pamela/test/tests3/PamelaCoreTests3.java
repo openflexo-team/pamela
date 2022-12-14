@@ -5,9 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.openflexo.pamela.ModelContextLibrary;
+import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.ModelEntity;
 
 /**
@@ -25,7 +25,7 @@ public class PamelaCoreTests3 {
 	public void testFactory() {
 
 		try {
-			ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(MySpecializedContainer.class,
+			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(MySpecializedContainer.class,
 					MySpecializedContents.class));
 
 			ModelEntity<MyContainer> myContainerEntity = factory.getModelContext().getModelEntity(MyContainer.class);
@@ -52,7 +52,7 @@ public class PamelaCoreTests3 {
 	@Test
 	public void testInstanciate() throws Exception {
 
-		ModelFactory factory = new ModelFactory(ModelContextLibrary.getCompoundModelContext(MySpecializedContainer.class,
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.getCompoundModelContext(MySpecializedContainer.class,
 				MySpecializedContents.class));
 
 		MySpecializedContainer container = factory.newInstance(MySpecializedContainer.class);

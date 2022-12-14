@@ -308,7 +308,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 			}
 
 			if (getObject() == getRootObject() && getAllIssues().size() == 0) {
-				addToValidationIssues(new InformationIssue<>(object, "consistency_check_ok"));
+				addToValidationIssues(new ConsistencySuccessfullyChecked<>(object, "consistency_check_ok"));
 			}
 		}
 
@@ -334,8 +334,8 @@ public class ValidationReport implements HasPropertyChangeSupport {
 							logger.info("Fixing automatically...");
 						}
 						((ProblemIssue<R, ? super V>) issue).getFixProposals().get(0).apply(false);
-						addToValidationIssues(new InformationIssue<>(object, "fixed_automatically:" + " " + issue.getMessage() + " : "
-								+ (((ProblemIssue<R, ? super V>) issue).getFixProposals()).get(0).getMessage()));
+						addToValidationIssues(new ConsistencySuccessfullyChecked<>(object, "fixed_automatically:" + " " + issue.getMessage()
+								+ " : " + (((ProblemIssue<R, ? super V>) issue).getFixProposals()).get(0).getMessage()));
 					}
 					else if (issue instanceof CompoundIssue) {
 						for (ValidationIssue<R, ? super V> containedIssue : ((CompoundIssue<R, ? super V>) issue).getContainedIssues()) {
@@ -346,7 +346,7 @@ public class ValidationReport implements HasPropertyChangeSupport {
 									logger.info("Fixing automatically...");
 								}
 								((ProblemIssue<R, ? super V>) containedIssue).getFixProposals().get(0).apply(false);
-								addToValidationIssues(new InformationIssue<>(containedIssue.getValidable(),
+								addToValidationIssues(new ConsistencySuccessfullyChecked<>(containedIssue.getValidable(),
 										"fixed_automatically:" + " " + containedIssue.getMessage() + " : "
 												+ ((ProblemIssue<R, ? super V>) containedIssue).getFixProposals().get(0).getMessage()));
 							}
@@ -540,6 +540,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 
 	protected <V extends Validable> ValidationNode<V> getValidationNode(V object) {
 		return (ValidationNode<V>) nodes.get(object);
+	}
+
+	public void clear() {
+		rootNode.clear();
 	}
 
 	/**

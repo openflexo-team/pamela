@@ -55,10 +55,10 @@ import com.google.common.primitives.Primitives;
 public class StringEncoder {
 	private Map<Class<?>, Converter<?>> converters = new Hashtable<>();
 
-	private ModelFactory modelFactory;
+	private PamelaModelFactory pamelaModelFactory;
 
-	public StringEncoder(ModelFactory modelFactory) {
-		this.modelFactory = modelFactory;
+	public StringEncoder(PamelaModelFactory pamelaModelFactory) {
+		this.pamelaModelFactory = pamelaModelFactory;
 	}
 
 	public String toString(Object object) throws InvalidDataException {
@@ -67,8 +67,8 @@ public class StringEncoder {
 		}
 		Class<? extends Object> aClass = object.getClass();
 		ProxyMethodHandler<?> handler = null;
-		if (modelFactory != null) {
-			handler = modelFactory.getHandler(object);
+		if (pamelaModelFactory != null) {
+			handler = pamelaModelFactory.getHandler(object);
 		}
 		if (handler != null) {
 			aClass = handler.getModelEntity().getImplementedInterface();
@@ -93,7 +93,7 @@ public class StringEncoder {
 		}
 		Converter<T> converter = converterForClass(type);
 		if (converter != null) {
-			return converter.convertFromString(value, modelFactory);
+			return converter.convertFromString(value, pamelaModelFactory);
 		}
 		else if (type.isEnum()) {
 			try {

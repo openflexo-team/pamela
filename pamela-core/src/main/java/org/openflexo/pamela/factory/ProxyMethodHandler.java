@@ -75,7 +75,7 @@ import org.openflexo.pamela.AccessibleProxyObject;
 import org.openflexo.pamela.AssertionViolationException;
 import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.addon.EntityAddOn;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
@@ -89,16 +89,17 @@ import org.openflexo.pamela.annotations.PastingPoint;
 import org.openflexo.pamela.annotations.Reindexer;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.annotations.Updater;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.NoSuchEntityException;
 import org.openflexo.pamela.exceptions.UnitializedEntityException;
-import org.openflexo.pamela.factory.ModelFactory.PAMELAProxyFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory.PAMELAProxyFactory;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.model.PAMELAVisitor;
-import org.openflexo.pamela.model.PAMELAVisitor.VisitingStrategy;
+import org.openflexo.pamela.model.PamelaVisitor;
+import org.openflexo.pamela.model.PamelaVisitor.VisitingStrategy;
 import org.openflexo.pamela.model.property.DefaultMultiplePropertyImplementation;
 import org.openflexo.pamela.model.property.DefaultSinglePropertyImplementation;
 import org.openflexo.pamela.model.property.MultiplePropertyImplementation;
@@ -233,7 +234,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return editingContext;
 	}
 
-	public ModelFactory getModelFactory() {
+	public PamelaModelFactory getModelFactory() {
 		return pamelaProxyFactory.getModelFactory();
 	}
 
@@ -253,7 +254,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return pamelaProxyFactory.getOverridingSuperClass();
 	}
 
-	private ModelContext getModelContext() {
+	private PamelaMetaModel getModelContext() {
 		return getModelFactory().getModelContext();
 	}
 
@@ -428,7 +429,8 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
 			boolean callSetModifiedAtTheEnd = false;
 			if (property != null) {
-				if (PamelaUtils.methodIsEquivalentTo(method, property.getSetterMethod())) {
+				if (PamelaUtils.methodIsEquivalentTo(method, property.getSetterMethod())
+						|| PamelaUtils.methodIsEquivalentTo(method, property.getUpdaterMethod())) {
 					// We have found a concrete implementation of that method as a setter call
 					// We will invoke it, but also notify UndoManager, and call setModified() after setter invoking
 					// System.out.println("DETECTS SET with " + proceed + " instead of " + method);
@@ -515,6 +517,13 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		if (setter != null) {
 			String id = setter.value();
 			internallyInvokeSetter(id, args[0], true);
+			return null;
+		}
+
+		Updater updater = method.getAnnotation(Updater.class);
+		if (updater != null) {
+			String id = updater.value();
+			internallyInvokeUpdater(id, args[0], true);
 			return null;
 		}
 
@@ -662,10 +671,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			return getReferencedObjects();
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, ACCEPT_VISITOR)) {
-			return acceptVisitor((PAMELAVisitor) args[0]);
+			return acceptVisitor((PamelaVisitor) args[0]);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, ACCEPT_WITH_STRATEGY_VISITOR)) {
-			return acceptVisitor((PAMELAVisitor) args[0], (VisitingStrategy) args[1]);
+			return acceptVisitor((PamelaVisitor) args[0], (VisitingStrategy) args[1]);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, IS_DELETED)) {
 			return deleted;
@@ -750,6 +759,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			}
 			else if (PamelaUtils.methodIsEquivalentTo(method, property.getSetterMethod())) {
 				internallyInvokeSetter(property, args[0], true);
+				return null;
+			}
+			else if (PamelaUtils.methodIsEquivalentTo(method, property.getUpdaterMethod())) {
+				internallyInvokeUpdater(property, args[0], true);
 				return null;
 			}
 			else if (PamelaUtils.methodIsEquivalentTo(method, property.getAdderMethod())) {
@@ -866,6 +879,24 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
 		if (propertyImplementation instanceof SettablePropertyImplementation) {
 			internallyInvokeSetter(property, (SettablePropertyImplementation) propertyImplementation, value, trackAtomicEdit);
+		}
+		else {
+			throw new ModelDefinitionException(
+					"Property implementation does not support SET protocol: " + property.getPropertyImplementation());
+		}
+	}
+
+	protected void internallyInvokeUpdater(String propertyIdentifier, Object value, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		ModelProperty<? super I> property = getModelEntity().getModelProperty(propertyIdentifier);
+		internallyInvokeUpdater(property, value, trackAtomicEdit);
+	}
+
+	public void internallyInvokeUpdater(ModelProperty<? super I> property, Object value, boolean trackAtomicEdit)
+			throws ModelDefinitionException {
+		PropertyImplementation<? super I, ?> propertyImplementation = getPropertyImplementation(property);
+		if (propertyImplementation instanceof SettablePropertyImplementation) {
+			internallyInvokeUpdater(property, (SettablePropertyImplementation) propertyImplementation, value, trackAtomicEdit);
 		}
 		else {
 			throw new ModelDefinitionException(
@@ -1406,6 +1437,17 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		propertyImplementation.set(value);
 	}
 
+	private <T> void internallyInvokeUpdater(ModelProperty<? super I> property, SettablePropertyImplementation<I, T> propertyImplementation,
+			T value, boolean trackAtomicEdit) throws ModelDefinitionException {
+		if (trackAtomicEdit && getUndoManager() != null) {
+			Object oldValue = invokeGetter(property);
+			if (oldValue != value) {
+				getUndoManager().addEdit(new SetCommand<>(getObject(), getModelEntity(), property, oldValue, value, getModelFactory()));
+			}
+		}
+		propertyImplementation.update(value);
+	}
+
 	private <T> void internallyInvokeAdder(ModelProperty<? super I> property, MultiplePropertyImplementation<I, T> propertyImplementation,
 			T value, int index, boolean trackAtomicEdit) throws ModelDefinitionException {
 		// System.out.println("Invoke ADDER "+property.getPropertyIdentifier());
@@ -1447,7 +1489,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 	}
 
-	private Object acceptVisitor(PAMELAVisitor pamelaVisitor, VisitingStrategy visitingStrategy) {
+	private Object acceptVisitor(PamelaVisitor pamelaVisitor, VisitingStrategy visitingStrategy) {
 		switch (visitingStrategy) {
 			case Embedding:
 				acceptVisitorEmbeddingStrategy((AccessibleProxyObject) getObject(), pamelaVisitor, new HashSet<Object>());
@@ -1462,7 +1504,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		return null;
 	}
 
-	private static void acceptVisitorEmbeddingStrategy(AccessibleProxyObject object, PAMELAVisitor pamelaVisitor,
+	private static void acceptVisitorEmbeddingStrategy(AccessibleProxyObject object, PamelaVisitor pamelaVisitor,
 			Set<Object> visitedObjects) {
 		if (!visitedObjects.contains(object)) {
 			visitedObjects.add(object);
@@ -1479,7 +1521,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 	}
 
-	private static void acceptVisitorExhaustiveStrategy(AccessibleProxyObject object, PAMELAVisitor pamelaVisitor,
+	private static void acceptVisitorExhaustiveStrategy(AccessibleProxyObject object, PamelaVisitor pamelaVisitor,
 			Set<Object> visitedObjects) {
 		if (!visitedObjects.contains(object)) {
 			visitedObjects.add(object);
@@ -1496,7 +1538,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 	}
 
-	private Object acceptVisitor(PAMELAVisitor pamelaVisitor) {
+	private Object acceptVisitor(PamelaVisitor pamelaVisitor) {
 		return acceptVisitor(pamelaVisitor, VisitingStrategy.Embedding);
 	}
 

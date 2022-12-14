@@ -45,7 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openflexo.connie.type.TypeUtils;
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.annotations.Ensures;
 import org.openflexo.pamela.patterns.annotations.Requires;
@@ -61,11 +61,11 @@ import org.openflexo.pamela.patterns.annotations.Requires;
 public abstract class AbstractPatternFactory<P extends PatternDefinition> {
 
 	private Map<String, P> patternDefinitions;
-	private ModelContext modelContext;
+	private PamelaMetaModel pamelaMetaModel;
 
-	public AbstractPatternFactory(ModelContext modelContext) {
+	public AbstractPatternFactory(PamelaMetaModel pamelaMetaModel) {
 		patternDefinitions = new HashMap<>();
-		this.modelContext = modelContext;
+		this.pamelaMetaModel = pamelaMetaModel;
 	}
 
 	protected Class<? extends P> getPatternDefinitionClass() {
@@ -76,8 +76,8 @@ public abstract class AbstractPatternFactory<P extends PatternDefinition> {
 		P returned = patternDefinitions.get(patternId);
 		if (returned == null && createWhenNonExistant) {
 			try {
-				Constructor<? extends P> constructor = getPatternDefinitionClass().getConstructor(String.class, ModelContext.class);
-				returned = constructor.newInstance(patternId, modelContext);
+				Constructor<? extends P> constructor = getPatternDefinitionClass().getConstructor(String.class, PamelaMetaModel.class);
+				returned = constructor.newInstance(patternId, pamelaMetaModel);
 				patternDefinitions.put(patternId, returned);
 			} catch (Exception e) {
 				e.printStackTrace();

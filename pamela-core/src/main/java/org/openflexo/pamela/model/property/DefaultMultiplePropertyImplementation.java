@@ -73,6 +73,11 @@ public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropert
 	}
 
 	@Override
+	public void update(List<T> aValue) throws ModelDefinitionException {
+		set(aValue);
+	}
+
+	@Override
 	public void addTo(T aValue) throws ModelDefinitionException {
 		addTo(aValue, -1);
 	}

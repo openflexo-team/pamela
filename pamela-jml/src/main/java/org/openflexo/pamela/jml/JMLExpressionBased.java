@@ -18,7 +18,7 @@ import org.openflexo.connie.binding.javareflect.JavaInstanceMethodPathElement;
 import org.openflexo.connie.exception.NullReferenceException;
 import org.openflexo.connie.exception.TransformException;
 import org.openflexo.connie.exception.TypeMismatchException;
-import org.openflexo.connie.expr.BindingValue;
+import org.openflexo.connie.expr.BindingPath;
 import org.openflexo.connie.expr.Expression;
 import org.openflexo.connie.expr.ExpressionEvaluator;
 import org.openflexo.connie.expr.ExpressionTransformer;
@@ -177,8 +177,8 @@ public abstract class JMLExpressionBased<T, I> extends DefaultBindable {
 				expression = expression.transform(new ExpressionTransformer() {
 					@Override
 					public Expression performTransformation(Expression e) throws TransformException {
-						if (e instanceof BindingValue) {
-							BindingValue bindingPath = (BindingValue) e;
+						if (e instanceof BindingPath) {
+							BindingPath bindingPath = (BindingPath) e;
 							BindingVariable objectBV = bindingModel.bindingVariableNamed(OBJECT);
 							if (bindingPath.getBindingVariable() == null && bindingPath.getBindingPath().size() > 0
 									&& bindingPath.getBindingPathElementAtIndex(0) instanceof JavaInstanceMethodPathElement) {
@@ -222,7 +222,7 @@ public abstract class JMLExpressionBased<T, I> extends DefaultBindable {
 										bindingModel.addToBindingVariables(newHistoryVariable);
 										// System.out.println("variableName=" + variableName);
 										// System.out.println("args=" + methodCall.args.get(0));
-										return new BindingValue(variableName, JMLExpressionBased.this, JavaPrettyPrinter.getInstance());
+										return new BindingPath(variableName, JMLExpressionBased.this, JavaPrettyPrinter.getInstance());
 									} catch (ParseException e1) {
 										e1.printStackTrace();
 										return null;
