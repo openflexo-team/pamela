@@ -279,7 +279,7 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 		return localizedInContext(validationRule.getRuleDescription(), validationRule);
 	}
 
-	public final String localizedIssueMessage(ValidationIssue<?, ?> issue) {
+	public String localizedIssueMessage(ValidationIssue<?, ?> issue) {
 		if (issue == null) {
 			return null;
 		}
@@ -303,6 +303,9 @@ public abstract class ValidationModel implements HasPropertyChangeSupport {
 
 	public static String asBindingExpression(String localized) {
 		boolean someReplacementsWerePerformed = false;
+		if (localized == null) {
+			return "null";
+		}
 		while (localized.contains("($")) {
 			someReplacementsWerePerformed = true;
 			int startIndex = localized.indexOf("($");

@@ -542,6 +542,10 @@ public class ValidationReport implements HasPropertyChangeSupport {
 		return (ValidationNode<V>) nodes.get(object);
 	}
 
+	public void clear() {
+		rootNode.clear();
+	}
+
 	/**
 	 * 
 	 * @param validable
