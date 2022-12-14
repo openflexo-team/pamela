@@ -77,13 +77,13 @@ import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.annotations.Modify;
 import org.openflexo.pamela.annotations.Monitored;
 import org.openflexo.pamela.annotations.MonitoredEntity;
+import org.openflexo.pamela.annotations.MonitoredEntity.MonitoringStrategy;
 import org.openflexo.pamela.annotations.Reindexer;
 import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
 import org.openflexo.pamela.annotations.StringConverter;
 import org.openflexo.pamela.annotations.Unmonitored;
 import org.openflexo.pamela.annotations.XMLElement;
-import org.openflexo.pamela.annotations.MonitoredEntity.MonitoringStrategy;
 import org.openflexo.pamela.exceptions.MissingImplementationException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
@@ -829,13 +829,11 @@ public class ModelEntity<I> {
 	}
 
 	private MonitoringStrategy monitoringStrategy = null;
-	private boolean monitoringStrategyIsComputed = false;
 
 	public MonitoringStrategy getMonitoringStrategy() {
-		if (monitoringStrategyIsComputed) {
+		if (monitoringStrategy != null) {
 			return monitoringStrategy;
 		}
-		monitoringStrategyIsComputed = true;
 		if (monitoredEntity != null) {
 			monitoringStrategy = monitoredEntity.value();
 			return monitoringStrategy;
@@ -844,9 +842,8 @@ public class ModelEntity<I> {
 			try {
 				if (getDirectSuperEntities() != null) {
 					for (ModelEntity<? super I> e : getDirectSuperEntities()) {
-						monitoringStrategy = e.getMonitoringStrategy();
-						if (monitoringStrategy != null) {
-							return monitoringStrategy;
+						if (e.getMonitoringStrategy() != null) {
+							return e.getMonitoringStrategy();
 						}
 					}
 				}
@@ -855,7 +852,10 @@ public class ModelEntity<I> {
 			}
 			return null;
 		}
+	}
 
+	public void setMonitoringStrategy(MonitoringStrategy monitoringStrategy) {
+		this.monitoringStrategy = monitoringStrategy;
 	}
 
 	private boolean xmlElementHasBeenRetrieved = false;
@@ -1523,6 +1523,9 @@ public class ModelEntity<I> {
 	}
 
 	private boolean isInternalMethod(Method method) {
+		if (method.getName().equals("hashCode")) {
+			return true;
+		}
 		return false;
 	}
 
