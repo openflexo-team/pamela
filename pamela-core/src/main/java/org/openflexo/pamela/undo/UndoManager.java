@@ -161,7 +161,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		else {
 
 			if (currentEdition != null) {
-				System.err.println("[PLEASE TRACK ME] : UndoManager exception: already recording " + currentEdition.getPresentationName());
+				logger.warning("[PLEASE TRACK ME] : UndoManager exception: already recording " + currentEdition.getPresentationName());
 				if (currentEdition.getPresentationName().equals(UNIDENTIFIED_RECORDING)) {
 					currentEdition.setPresentationName(presentationName);
 				}
@@ -205,7 +205,7 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		}
 		else if (currentEdition != edit) {
 			logger.warning("UndoManager exception: was not recording this edit");
-			//(new Exception("UndoManager exception: was not recording this edit")).printStackTrace();
+			// (new Exception("UndoManager exception: was not recording this edit")).printStackTrace();
 			return null;
 		}
 
