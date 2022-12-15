@@ -36,10 +36,10 @@ public class TestTotalSingleCardinality {
 	private void performTest(MonitoringStrategy monitoringStrategy) throws ModelDefinitionException {
 
 		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(X.class));
-		ModelEntity<AbstractConcept> abstractConceptEntity = factory.getModelContext().getModelEntity(AbstractConcept.class);
+		ModelEntity<AbstractConcept> abstractConceptEntity = factory.getMetaModel().getModelEntity(AbstractConcept.class);
 		abstractConceptEntity.setMonitoringStrategy(monitoringStrategy);
 
-		ModelEntity<X> xEntity = factory.getModelContext().getModelEntity(X.class);
+		ModelEntity<X> xEntity = factory.getMetaModel().getModelEntity(X.class);
 		System.out.println("MonitoringStategy: " + xEntity.getMonitoringStrategy());
 
 		X x1 = factory.newInstance(X.class, "x1");

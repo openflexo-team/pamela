@@ -31,8 +31,8 @@ public class LibraryTest {
 		try {
 			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(Library.class));
 
-			ModelEntity<Library> libraryEntity = factory.getModelContext().getModelEntity(Library.class);
-			ModelEntity<Book> bookEntity = factory.getModelContext().getModelEntity(Book.class);
+			ModelEntity<Library> libraryEntity = factory.getMetaModel().getModelEntity(Library.class);
+			ModelEntity<Book> bookEntity = factory.getMetaModel().getModelEntity(Book.class);
 
 			assertNotNull(libraryEntity);
 			assertNotNull(bookEntity);

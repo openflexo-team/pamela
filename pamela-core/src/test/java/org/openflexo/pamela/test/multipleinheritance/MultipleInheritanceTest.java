@@ -43,10 +43,10 @@ public class MultipleInheritanceTest {
 		try {
 			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(A.class, B.class, C.class, D2.class));
 
-			ModelEntity<A> AEntity = factory.getModelContext().getModelEntity(A.class);
-			ModelEntity<B> BEntity = factory.getModelContext().getModelEntity(B.class);
-			ModelEntity<C> CEntity = factory.getModelContext().getModelEntity(C.class);
-			ModelEntity<D2> D2Entity = factory.getModelContext().getModelEntity(D2.class);
+			ModelEntity<A> AEntity = factory.getMetaModel().getModelEntity(A.class);
+			ModelEntity<B> BEntity = factory.getMetaModel().getModelEntity(B.class);
+			ModelEntity<C> CEntity = factory.getMetaModel().getModelEntity(C.class);
+			ModelEntity<D2> D2Entity = factory.getMetaModel().getModelEntity(D2.class);
 
 			assertNotNull(AEntity);
 			assertNotNull(BEntity);

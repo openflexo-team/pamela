@@ -8,10 +8,15 @@ import java.util.Set;
 
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.PatternDefinition;
-import org.openflexo.pamela.securitypatterns.authorization.annotations.*;
+import org.openflexo.pamela.securitypatterns.authorization.annotations.AccessResource;
+import org.openflexo.pamela.securitypatterns.authorization.annotations.CheckAccess;
+import org.openflexo.pamela.securitypatterns.authorization.annotations.PermissionCheckerGetter;
+import org.openflexo.pamela.securitypatterns.authorization.annotations.ResourceID;
+import org.openflexo.pamela.securitypatterns.authorization.annotations.SubjectID;
 
 /**
  * Represents an occurrence of an <code>Authorization Pattern</code>. An instance is uniquely identified by the <code>patternID</code> field
@@ -19,8 +24,9 @@ import org.openflexo.pamela.securitypatterns.authorization.annotations.*;
  *
  * It has the responsibility of:
  * <ul>
- * <li>Managing life-cycle of {@link org.openflexo.pamela.test.securitypatterns.authorization.AuthorizationPatternInstance}, while being notified of the creation of new instances by the
- * {@link org.openflexo.pamela.test.PamelaModelFactory.ModelFactory} and {@link org.openflexo.pamela.test.PamelaMetaModel}</li>
+ * <li>Managing life-cycle of {@link org.openflexo.pamela.test.securitypatterns.authorization.AuthorizationPatternInstance}, while being
+ * notified of the creation of new instances by the {@link org.openflexo.pamela.test.PamelaModelFactory.ModelFactory} and
+ * {@link org.openflexo.pamela.test.PamelaMetaModel}</li>
  * <li>Tagging and storing methods which are relevant to the pattern</li>
  * </ul>
  *
@@ -35,13 +41,14 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 	/**
 	 * Wrapper of all relevant information related to subject accessMethods.
 	 */
-	public static class SubjectAccessMethodWrapper{
+	public static class SubjectAccessMethodWrapper {
 
-		private final String methodID; //method id of the access method
+		private final String methodID; // method id of the access method
 		private final ArrayList<Integer> realIndexes; // indexes of the actual parameter of the corresponding resource access method.
-		private final HashMap<String, Integer> paramMapping; // map between the resource identifier paramID and the index of the parameter for the method
+		private final HashMap<String, Integer> paramMapping; // map between the resource identifier paramID and the index of the parameter
+																// for the method
 
-		private SubjectAccessMethodWrapper(String methodID, ArrayList<Integer> realIndexes, HashMap<String, Integer> paramMapping){
+		private SubjectAccessMethodWrapper(String methodID, ArrayList<Integer> realIndexes, HashMap<String, Integer> paramMapping) {
 			this.methodID = methodID;
 			this.realIndexes = realIndexes;
 			this.paramMapping = paramMapping;
@@ -60,24 +67,24 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 		}
 	}
 
-	private ModelEntity<?> subject; //@AuthorizationSubject
-	private ModelEntity<?> resource; //@ProtectedResource
+	private ModelEntity<?> subject; // @AuthorizationSubject
+	private ModelEntity<?> resource; // @ProtectedResource
 	private ModelEntity<?> checker; // @PermissionChecker
 
-	//Subject
-	private final HashMap<String, Method> subjectIdGetters;//@SubjectID getters
-	private final HashMap<Method, SubjectAccessMethodWrapper> subjectAccessMethods; //@AccessResource im Subject
+	// Subject
+	private final HashMap<String, Method> subjectIdGetters;// @SubjectID getters
+	private final HashMap<Method, SubjectAccessMethodWrapper> subjectAccessMethods; // @AccessResource im Subject
 
-	//Resource
-	private final HashMap<String, Method> resourceAccessMethods; //@AccessResource in Resource
-	private final HashMap<String, Method> resourceIdGetters;//@ResourceID getters
-	private Method checkerGetter; //@PermissionCheckerGetter
+	// Resource
+	private final HashMap<String, Method> resourceAccessMethods; // @AccessResource in Resource
+	private final HashMap<String, Method> resourceIdGetters;// @ResourceID getters
+	private Method checkerGetter; // @PermissionCheckerGetter
 
-	//PermissionChecker
-	private final HashMap<String, Integer> subjectIdParameters;//@SubjectID
-	private final HashMap<String, Integer> resourceIdParameters;//@ResourceID
-	private Method checkMethod; //@CheckAccess
-	private int methodIdIndex; //@MethodID
+	// PermissionChecker
+	private final HashMap<String, Integer> subjectIdParameters;// @SubjectID
+	private final HashMap<String, Integer> resourceIdParameters;// @ResourceID
+	private Method checkMethod; // @CheckAccess
+	private int methodIdIndex; // @MethodID
 
 	private boolean isValid;
 	private String message;
@@ -97,51 +104,52 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 
 	@Override
 	public void finalizeDefinition() throws ModelDefinitionException {
-		for (SubjectAccessMethodWrapper wrapper : this.subjectAccessMethods.values()){
-			if (!this.resourceAccessMethods.containsKey(wrapper.getMethodID())){ //Check if access methods are coherent between subjects and resources
+		for (SubjectAccessMethodWrapper wrapper : this.subjectAccessMethods.values()) {
+			if (!this.resourceAccessMethods.containsKey(wrapper.getMethodID())) { // Check if access methods are coherent between subjects
+																					// and resources
 				this.isValid = false;
 				message += String.format("Unknown access method %s in Resource class.\n", wrapper.getMethodID());
 			}
-			for (String id : wrapper.getParamMapping().keySet()){ //Check if resource ids as subject access method parameters are valid
-				if (!this.resourceIdParameters.containsKey(id)){
+			for (String id : wrapper.getParamMapping().keySet()) { // Check if resource ids as subject access method parameters are valid
+				if (!this.resourceIdParameters.containsKey(id)) {
 					this.isValid = false;
 					message += String.format("Unknown resource identifier %s in subject accessMethod.\n", id);
 				}
 			}
 		}
-		//Check if ids are coherent with check method
-		for (String subjectId : subjectIdParameters.keySet()){
-			if (!this.subjectIdGetters.containsKey(subjectId)){
+		// Check if ids are coherent with check method
+		for (String subjectId : subjectIdParameters.keySet()) {
+			if (!this.subjectIdGetters.containsKey(subjectId)) {
 				this.isValid = false;
 				this.message += String.format("Unknown subject identifier %s in check method.\n", subjectId);
 			}
 		}
-		for (String resourceId : resourceIdParameters.keySet()){
-			if (!this.resourceIdGetters.containsKey(resourceId)){
+		for (String resourceId : resourceIdParameters.keySet()) {
+			if (!this.resourceIdGetters.containsKey(resourceId)) {
 				this.isValid = false;
 				this.message += String.format("Unknown subject identifier %s in check method.\n", resourceId);
 			}
 		}
-		if (!this.isValid){
+		if (!this.isValid) {
 			throw new ModelDefinitionException(this.message);
 		}
 	}
 
 	@Override
-	public  <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
-		if (modelEntity == this.subject || modelEntity == this.resource){
-			Set<?> instanceSet = this.getModelContext().getPatternInstances(this);
+	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model) {
+		if (modelEntity == this.subject || modelEntity == this.resource) {
+			Set<?> instanceSet = model.getPatternInstances(this);
 			AuthorizationPatternInstance patternInstance;
-			if (instanceSet == null){
-				patternInstance = new AuthorizationPatternInstance(this);
+			if (instanceSet == null) {
+				patternInstance = new AuthorizationPatternInstance(this, model);
 			}
 			else {
 				patternInstance = (AuthorizationPatternInstance) instanceSet.iterator().next();
 			}
-			if (modelEntity == this.subject){
+			if (modelEntity == this.subject) {
 				patternInstance.attachSubject(newInstance);
 			}
-			else if (modelEntity == this.resource){
+			else if (modelEntity == this.resource) {
 				patternInstance.attachResource(newInstance);
 			}
 		}
@@ -153,13 +161,13 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 
 	@Override
 	public boolean isMethodInvolvedInPattern(Method m) {
-		for (Method method: this.resourceAccessMethods.values()){
-			if (PamelaUtils.methodIsEquivalentTo(m, method)){
+		for (Method method : this.resourceAccessMethods.values()) {
+			if (PamelaUtils.methodIsEquivalentTo(m, method)) {
 				return true;
 			}
 		}
-		for (Method method : this.subjectAccessMethods.keySet()){
-			if (PamelaUtils.methodIsEquivalentTo(m, method)){
+		for (Method method : this.subjectAccessMethods.keySet()) {
+			if (PamelaUtils.methodIsEquivalentTo(m, method)) {
 				return true;
 			}
 		}
@@ -167,9 +175,10 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 	}
 
 	protected void addSubjectModelEntity(ModelEntity<?> entity) {
-		if (this.subject != null){
+		if (this.subject != null) {
 			this.isValid = false;
-			this.message += "Duplicate @AuthorizationSubject annotation with same pattern id " + getIdentifier() + "in model." + System.lineSeparator();
+			this.message += "Duplicate @AuthorizationSubject annotation with same pattern id " + getIdentifier() + "in model."
+					+ System.lineSeparator();
 		}
 		else {
 			this.subject = entity;
@@ -178,9 +187,11 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 				if (idAnnotation != null && idAnnotation.patternID().compareTo(this.getIdentifier()) == 0) {
 					if (!this.subjectIdGetters.containsKey(idAnnotation.paramID())) {
 						this.subjectIdGetters.put(idAnnotation.paramID(), m);
-					} else {
-						message += "Duplicate @SubjectID annotation with same pattern ID (" + this.getIdentifier()
-								+ ") and paramID (" + idAnnotation.paramID() + ") in " + entity.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
+					}
+					else {
+						message += "Duplicate @SubjectID annotation with same pattern ID (" + this.getIdentifier() + ") and paramID ("
+								+ idAnnotation.paramID() + ") in " + entity.getImplementedInterface().getSimpleName() + "."
+								+ System.lineSeparator();
 					}
 				}
 				AccessResource accessResourceAnnotation = m.getAnnotation(AccessResource.class);
@@ -195,15 +206,20 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 							if (a != null && a.patternID().compareTo(this.getIdentifier()) == 0) {
 								if (!paramMapping.containsKey(a.paramID())) {
 									paramMapping.put(a.paramID(), i);
-								} else {
-									message += String.format("Duplicate ResourceID annotation with same paramID %s in method %s parameters of class %s",
-											a.paramID(), m.getName(), entity.getImplementedInterface().getSimpleName()) + "." + System.lineSeparator();
 								}
-							} else {
+								else {
+									message += String.format(
+											"Duplicate ResourceID annotation with same paramID %s in method %s parameters of class %s",
+											a.paramID(), m.getName(), entity.getImplementedInterface().getSimpleName()) + "."
+											+ System.lineSeparator();
+								}
+							}
+							else {
 								realParams.add(i);
 							}
 						}
-						this.subjectAccessMethods.put(m, new SubjectAccessMethodWrapper(accessResourceAnnotation.methodID(), realParams, paramMapping));
+						this.subjectAccessMethods.put(m,
+								new SubjectAccessMethodWrapper(accessResourceAnnotation.methodID(), realParams, paramMapping));
 					}
 				}
 			}
@@ -211,9 +227,10 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 	}
 
 	protected void addResourceModelEntity(ModelEntity<?> entity) {
-		if (this.resource != null){
+		if (this.resource != null) {
 			this.isValid = false;
-			this.message += "Duplicate @ProtectedResource annotation with same pattern id " + getIdentifier() + "in model." + System.lineSeparator();
+			this.message += "Duplicate @ProtectedResource annotation with same pattern id " + getIdentifier() + "in model."
+					+ System.lineSeparator();
 		}
 		else {
 			this.resource = entity;
@@ -224,8 +241,9 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 						this.resourceIdGetters.put(idAnnotation.paramID(), m);
 					}
 					else {
-						this.message += "Duplicate @ResourceID annotation with same pattern ID (" + this.getIdentifier()
-								+ ") and paramID (" + idAnnotation.paramID() + ") in " + entity.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
+						this.message += "Duplicate @ResourceID annotation with same pattern ID (" + this.getIdentifier() + ") and paramID ("
+								+ idAnnotation.paramID() + ") in " + entity.getImplementedInterface().getSimpleName() + "."
+								+ System.lineSeparator();
 					}
 				}
 				AccessResource accessResourceAnnotation = m.getAnnotation(AccessResource.class);
@@ -234,7 +252,8 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 						this.resourceAccessMethods.put(accessResourceAnnotation.methodID(), m);
 					}
 					else {
-						message += "Duplicate methodID " + accessResourceAnnotation.methodID() + " in class " + entity.getImplementedInterface().getSimpleName();
+						message += "Duplicate methodID " + accessResourceAnnotation.methodID() + " in class "
+								+ entity.getImplementedInterface().getSimpleName();
 					}
 				}
 				PermissionCheckerGetter checkerGetterAnnotation = m.getAnnotation(PermissionCheckerGetter.class);
@@ -244,7 +263,8 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 					}
 					else {
 						message += "Duplicate @PermissionCheckerGetter annotated methods with same patternID "
-								+ checkerGetterAnnotation.patternID() + " in class " + entity.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
+								+ checkerGetterAnnotation.patternID() + " in class " + entity.getImplementedInterface().getSimpleName()
+								+ "." + System.lineSeparator();
 					}
 				}
 			}
@@ -252,9 +272,10 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 	}
 
 	protected void addCheckerModelEntity(ModelEntity<?> entity) {
-		if (this.checker != null){
+		if (this.checker != null) {
 			this.isValid = false;
-			this.message += "Duplicate @AuthorizationChecker annotation with same pattern id " + getIdentifier() + "in model." + System.lineSeparator();
+			this.message += "Duplicate @AuthorizationChecker annotation with same pattern id " + getIdentifier() + "in model."
+					+ System.lineSeparator();
 		}
 		else {
 			this.checker = entity;
@@ -264,7 +285,8 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 					if (this.checkMethod == null) {
 						if (!boolean.class.isAssignableFrom(m.getReturnType())) {
 							this.isValid = false;
-							this.message += String.format("Check method %s in class %s does not return a boolean.%s", m.getName(), checker.getImplementedInterface().getSimpleName(), System.lineSeparator());
+							this.message += String.format("Check method %s in class %s does not return a boolean.%s", m.getName(),
+									checker.getImplementedInterface().getSimpleName(), System.lineSeparator());
 						}
 						this.checkMethod = m;
 						for (int i = 0; i < m.getParameters().length; i++) {
@@ -273,7 +295,9 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 							ResourceID resourceAnnotation = param.getAnnotation(ResourceID.class);
 							if (subjectAnnotation != null && resourceAnnotation != null) {
 								this.isValid = false;
-								this.message += "Parameter with both @SubjectID and @ResourceID annotations with same patternID " + this.getIdentifier() + " in class " + checker.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
+								this.message += "Parameter with both @SubjectID and @ResourceID annotations with same patternID "
+										+ this.getIdentifier() + " in class " + checker.getImplementedInterface().getSimpleName() + "."
+										+ System.lineSeparator();
 							}
 							if (subjectAnnotation != null && subjectAnnotation.patternID().compareTo(this.getIdentifier()) == 0) {
 								if (!this.subjectIdParameters.containsKey(subjectAnnotation.paramID())) {
@@ -281,9 +305,9 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 								}
 								else {
 									this.isValid = false;
-									this.message += "Duplicate @SubjectID annotation with same patternID "
-											+ subjectAnnotation.patternID() + " and paramID " + subjectAnnotation.paramID() + " in method "
-											+ m.getName() + " of class " + checker.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
+									this.message += "Duplicate @SubjectID annotation with same patternID " + subjectAnnotation.patternID()
+											+ " and paramID " + subjectAnnotation.paramID() + " in method " + m.getName() + " of class "
+											+ checker.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
 								}
 							}
 							else if (resourceAnnotation != null && resourceAnnotation.patternID().compareTo(this.getIdentifier()) == 0) {
@@ -292,9 +316,9 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 								}
 								else {
 									this.isValid = false;
-									this.message += "Duplicate @ResourceID annotation with same patternID "
-											+ resourceAnnotation.patternID() + " and paramID " + resourceAnnotation.paramID() + " in method "
-											+ m.getName() + " of class " + checker.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
+									this.message += "Duplicate @ResourceID annotation with same patternID " + resourceAnnotation.patternID()
+											+ " and paramID " + resourceAnnotation.paramID() + " in method " + m.getName() + " of class "
+											+ checker.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
 								}
 							}
 							else if (this.methodIdIndex == -1) {
@@ -302,15 +326,15 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 							}
 							else {
 								this.isValid = false;
-								this.message += "Unidentified parameter at position " + i + " in method "
-										+ m.getName() + " in class " + checker.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
+								this.message += "Unidentified parameter at position " + i + " in method " + m.getName() + " in class "
+										+ checker.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
 							}
 						}
 					}
 					else {
 						this.isValid = false;
-						this.message += "Duplicate @CheckAccess method with same patternID "
-								+ checkAnnotation.patternID() + " in class " + checker.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
+						this.message += "Duplicate @CheckAccess method with same patternID " + checkAnnotation.patternID() + " in class "
+								+ checker.getImplementedInterface().getSimpleName() + "." + System.lineSeparator();
 					}
 				}
 			}

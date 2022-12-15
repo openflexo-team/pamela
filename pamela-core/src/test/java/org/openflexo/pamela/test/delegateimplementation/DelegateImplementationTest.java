@@ -65,14 +65,14 @@ public class DelegateImplementationTest {
 
 	@Test
 	public void testGetterImplementation() {
-		assertNotNull(factory.getModelContext().getModelEntity(AnEntity.class));
+		assertNotNull(factory.getMetaModel().getModelEntity(AnEntity.class));
 		AnEntity entity = factory.newInstance(AnEntity.class);
 		assertEquals(10, entity.getFoo());
 	}
 
 	@Test
 	public void testToString() {
-		assertNotNull(factory.getModelContext().getModelEntity(AnEntity.class));
+		assertNotNull(factory.getMetaModel().getModelEntity(AnEntity.class));
 		AnEntity entity = factory.newInstance(AnEntity.class);
 		assertEquals("ShouldReturnThis", entity.toString());
 	}

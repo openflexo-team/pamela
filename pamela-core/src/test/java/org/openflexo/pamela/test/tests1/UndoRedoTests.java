@@ -26,7 +26,7 @@ public class UndoRedoTests extends AbstractPAMELATest {
 
 		final EditingContextImpl editingContext = new EditingContextImpl();
 		editingContext.createUndoManager();
-		factory.setEditingContext(editingContext);
+		factory.getModel().setEditingContext(editingContext);
 		undoManager = editingContext.getUndoManager();
 	}
 

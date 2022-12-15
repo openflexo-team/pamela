@@ -45,6 +45,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.ReturnWrapper;
@@ -78,8 +79,8 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	private boolean isChecking = false;
 	private boolean isAuthenticated = false;
 
-	public AuthenticatorPatternInstance(AuthenticatorPatternDefinition patternDefinition, S subject) {
-		super(patternDefinition);
+	public AuthenticatorPatternInstance(AuthenticatorPatternDefinition patternDefinition, PamelaModel model, S subject) {
+		super(patternDefinition, model);
 		this.subject = subject;
 		registerStakeHolder(subject, AuthenticatorPatternDefinition.SUBJECT_ROLE);
 		try {
@@ -146,7 +147,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	 * @throws IllegalAccessException
 	 * 
 	 */
-	 void performAuthentication() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	void performAuthentication() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
 		System.out.println("performAuthentication() !!!");
 
@@ -164,7 +165,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 			isAuthenticating = false;
 		}
 	}
-	 
+
 	public void authenticationSuceeded() {
 	}
 
@@ -203,7 +204,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	@Override
 	public ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Object[] args)
 			throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
-			
+
 		System.out.println("On utilise bien le processMethodBeforInvoke");
 		if (instance != getSubject()) {
 			// We are only interested to the method calls on the subject
@@ -399,7 +400,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 		AI currentAuthInfo = retrieveAuthentificationInformation();
 		if (currentAuthInfo != null) {
-			for (PatternInstance<AuthenticatorPatternDefinition> pi : getModelContext().getPatternInstances(getPatternDefinition())) {
+			for (PatternInstance<AuthenticatorPatternDefinition> pi : getModel().getPatternInstances(getPatternDefinition())) {
 				AuthenticatorPatternInstance otherInstance = (AuthenticatorPatternInstance) pi;
 				AI oppositeAuthInfo = (AI) otherInstance.retrieveAuthentificationInformation();
 				if (otherInstance != this) {

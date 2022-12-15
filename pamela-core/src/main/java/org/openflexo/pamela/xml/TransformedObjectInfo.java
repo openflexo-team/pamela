@@ -76,7 +76,7 @@ public class TransformedObjectInfo {
 		}
 		else {
 			this.implementedInterface = (Class<Object>) leadingProperty.getType();
-			this.modelEntity = factory.getModelContext().getModelEntity(implementedInterface);
+			this.modelEntity = factory.getMetaModel().getModelEntity(implementedInterface);
 		}
 	}
 

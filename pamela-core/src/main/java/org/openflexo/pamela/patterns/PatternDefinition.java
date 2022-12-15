@@ -47,6 +47,7 @@ import java.util.Map;
 
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.model.ModelEntity;
@@ -89,7 +90,7 @@ public abstract class PatternDefinition {
 		return identifier;
 	}
 
-	public PamelaMetaModel getModelContext() {
+	public PamelaMetaModel getMetaModel() {
 		return pamelaMetaModel;
 	}
 
@@ -133,7 +134,7 @@ public abstract class PatternDefinition {
 		return returned;
 	}
 
-	public abstract <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity);
+	public abstract <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model);
 
 	public void addToPreconditionsForMethod(Requires precondition, Method method) {
 		List<Requires> l = preconditions.get(method);

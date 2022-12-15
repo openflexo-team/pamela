@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.securitypatterns.authenticator.model.IAuthenticator;
 import org.openflexo.pamela.securitypatterns.authenticator.model.Subject;
@@ -70,17 +71,18 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testInstanceDiscovery() throws Exception {
-		PamelaMetaModel context = new PamelaMetaModel(Subject.class);
-		PamelaModelFactory factory = new PamelaModelFactory(context);
+		PamelaMetaModel metaModel = new PamelaMetaModel(Subject.class);
+		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
+		PamelaModel model = factory.getModel();
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
-		assertNull(context.getPatternInstances(manager));
+		assertNull(model.getPatternInstances(manager));
 		Subject subject = factory.newInstance(Subject.class, "id");
-		assertNull(context.getPatternInstances(manager));
-		assertEquals(1, context.getPatternInstances(subject).size());
+		assertNull(model.getPatternInstances(manager));
+		assertEquals(1, model.getPatternInstances(subject).size());
 		subject.setManager(manager);
-		assertEquals(1, context.getPatternInstances(manager).size());
-		assertEquals(1, context.getPatternInstances(subject).size());
-		assertSame(context.getPatternInstances(manager).iterator().next(), context.getPatternInstances(subject).iterator().next());
+		assertEquals(1, model.getPatternInstances(manager).size());
+		assertEquals(1, model.getPatternInstances(subject).size());
+		assertSame(model.getPatternInstances(manager).iterator().next(), model.getPatternInstances(subject).iterator().next());
 	}
 
 	@Test

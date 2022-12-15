@@ -41,22 +41,14 @@ package org.openflexo.pamela.patterns;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.Authenticator;
 
 import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.patterns.annotations.Ensures;
 import org.openflexo.pamela.patterns.annotations.Requires;
 
 /**
  * Abstract base class for an instance of a {@link PatternDefinition}<br>
- * 
- * It has the responsibility of:
- * <ul>
- * <li>Maintaining state variables of the pattern instance</li>
- * <li>Enforcing invariants of the {@link Authenticator} annotated class.</li>
- * <li>Enforcing preconditions of the {@link Authenticator} annotated class.</li>
- * <li>Enforcing postconditions of the {@link Authenticator} annotated class.</li>
- * </ul>
  *
  * @author Caine Silva, Sylvain Guerin
  *
@@ -66,22 +58,28 @@ import org.openflexo.pamela.patterns.annotations.Requires;
 public abstract class PatternInstance<P extends PatternDefinition> {
 
 	private P patternDefinition;
+	private PamelaModel model;
 
-	public PatternInstance(P patternDefinition) {
+	public PatternInstance(P patternDefinition, PamelaModel model) {
 		this.patternDefinition = patternDefinition;
-		patternDefinition.getModelContext().registerPatternInstance(this);
+		this.model = model;
+		model.registerPatternInstance(this);
 	}
 
 	public P getPatternDefinition() {
 		return patternDefinition;
 	}
 
-	public PamelaMetaModel getModelContext() {
-		return patternDefinition.getModelContext();
+	public PamelaMetaModel getMetaModel() {
+		return patternDefinition.getMetaModel();
+	}
+
+	public PamelaModel getModel() {
+		return model;
 	}
 
 	protected void registerStakeHolder(Object stakeHolder, String role) {
-		patternDefinition.getModelContext().registerStakeHolderForPatternInstance(stakeHolder, role, this);
+		getModel().registerStakeHolderForPatternInstance(stakeHolder, role, this);
 	}
 
 	public abstract ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Object[] args)

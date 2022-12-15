@@ -44,7 +44,7 @@ public class DeserializationTests {
 	@TestOrder(1)
 	public void testInitializeAModel() {
 
-		Assert.assertNotNull(factory.getModelContext().getModelEntity(Node.class));
+		Assert.assertNotNull(factory.getMetaModel().getModelEntity(Node.class));
 
 		Node rootNode = factory.newInstance(Node.class);
 		rootNode.setName("Root");

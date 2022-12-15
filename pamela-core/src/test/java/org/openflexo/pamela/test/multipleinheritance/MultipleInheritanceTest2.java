@@ -28,7 +28,7 @@ public class MultipleInheritanceTest2 {
 		try {
 			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(Calculator.class));
 
-			ModelEntity<Calculator> calculatorEntity = factory.getModelContext().getModelEntity(Calculator.class);
+			ModelEntity<Calculator> calculatorEntity = factory.getMetaModel().getModelEntity(Calculator.class);
 
 			assertNotNull(calculatorEntity);
 

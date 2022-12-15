@@ -177,11 +177,11 @@ public class XMLSerializer {
 			boolean serializeModelEntityName = false;
 			XMLElement xmlElement = modelEntity.getXMLElement();
 			String xmlTag = modelEntity.getXMLTag();
-			if (pamelaModelFactory.getModelContext().getModelEntity(implementedInterface) == null) {
+			if (pamelaModelFactory.getMetaModel().getModelEntity(implementedInterface) == null) {
 				serializeModelEntityName = true;
 				switch (policy) {
 					case EXTENSIVE:
-						List<ModelEntity<?>> upperEntities = pamelaModelFactory.getModelContext().getUpperEntities(object);
+						List<ModelEntity<?>> upperEntities = pamelaModelFactory.getMetaModel().getUpperEntities(object);
 						if (upperEntities.size() == 0) {
 							throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
 									+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");
@@ -195,7 +195,7 @@ public class XMLSerializer {
 						modelEntity = PamelaMetaModelLibrary.retrieveMetaModel(implementedInterface).getModelEntity(implementedInterface);
 						break;
 					case PERMISSIVE:
-						upperEntities = pamelaModelFactory.getModelContext().getUpperEntities(object);
+						upperEntities = pamelaModelFactory.getMetaModel().getUpperEntities(object);
 						if (upperEntities.size() == 0) {
 							throw new ModelDefinitionException("Cannot serialize object of type: " + object.getClass().getName()
 									+ " in context " + context.xmlTag() + ". No model entity could be found in the model mapping");

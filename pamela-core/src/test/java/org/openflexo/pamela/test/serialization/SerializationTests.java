@@ -50,10 +50,10 @@ public class SerializationTests extends AbstractPAMELATest {
 	@Test
 	public void testSerializationPolicy() throws Exception {
 
-		Assert.assertNull(factory.getModelContext().getModelEntity(MyNode.class));
-		Assert.assertNotNull(factory2.getModelContext().getModelEntity(MyNode.class));
-		validateBasicModelContext(factory.getModelContext());
-		validateBasicModelContext(factory2.getModelContext());
+		Assert.assertNull(factory.getMetaModel().getModelEntity(MyNode.class));
+		Assert.assertNotNull(factory2.getMetaModel().getModelEntity(MyNode.class));
+		validateBasicModelContext(factory.getMetaModel());
+		validateBasicModelContext(factory2.getMetaModel());
 		FlexoProcess process = (FlexoProcess) factory.newInstance(FlexoProcess.class).init();
 		MyNode node = (MyNode) factory2.newInstance(MyNode.class).init(NODE_NAME);
 		node.setMyProperty(PROPERTY_VALUE);

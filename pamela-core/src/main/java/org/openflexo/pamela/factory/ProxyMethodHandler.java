@@ -255,7 +255,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	}
 
 	private PamelaMetaModel getModelContext() {
-		return getModelFactory().getModelContext();
+		return getModelFactory().getMetaModel();
 	}
 
 	public boolean isDeleting() {
@@ -293,11 +293,11 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			}
 		}
 
-		for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()) {
+		for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
 			monitor.enteringMethod(self, method, args);
 		}
 
-		Set<PatternInstance<?>> patternInstances = getModelFactory().getModelContext().getPatternInstances(self);
+		Set<PatternInstance<?>> patternInstances = getModelFactory().getModel().getPatternInstances(self);
 		if (patternInstances != null) {
 			for (PatternInstance<?> patternInstance : patternInstances) {
 				// TODO: Perf issue : implement a cache here
@@ -329,7 +329,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 					}
 				} catch (InvocationTargetException e) {
 					e.getTargetException().printStackTrace();
-					for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()) {
+					for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
 						monitor.throwingException(self, method, args, e);
 					}
 					throw e.getTargetException();
@@ -360,7 +360,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 					patternInstance.processMethodAfterInvoke(self, method, invoke, args);
 				} catch (InvocationTargetException e) {
 					e.getTargetException().printStackTrace();
-					for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()) {
+					for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
 						monitor.throwingException(self, method, args, e);
 					}
 					throw e.getTargetException();
@@ -389,7 +389,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			}
 		}
 
-		for (ExecutionMonitor monitor : getModelFactory().getModelContext().getExecutionMonitors()) {
+		for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
 			monitor.leavingMethod(self, method, args, invoke);
 		}
 

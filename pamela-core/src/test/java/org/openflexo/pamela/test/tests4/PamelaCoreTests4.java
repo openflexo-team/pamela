@@ -27,8 +27,8 @@ public class PamelaCoreTests4 {
 		try {
 			PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(MyContainer.class, MyContents.class));
 
-			ModelEntity<MyContainer> myContainerEntity = factory.getModelContext().getModelEntity(MyContainer.class);
-			ModelEntity<MyContents> myContentsEntity = factory.getModelContext().getModelEntity(MyContents.class);
+			ModelEntity<MyContainer> myContainerEntity = factory.getMetaModel().getModelEntity(MyContainer.class);
+			ModelEntity<MyContents> myContentsEntity = factory.getMetaModel().getModelEntity(MyContents.class);
 
 			assertNotNull(myContainerEntity);
 			assertNotNull(myContentsEntity);

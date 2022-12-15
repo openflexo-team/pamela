@@ -43,6 +43,7 @@ import java.util.Iterator;
 
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.model.ModelEntity;
@@ -105,11 +106,11 @@ public class AuthenticatorPatternDefinition extends PatternDefinition {
 	}
 
 	@Override
-	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
+	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model) {
 		// System.out.println("notifiedNewInstance " + newInstance);
 		if (modelEntity == subjectModelEntity) {
 			// We create a new PatternInstance for each new instance of subjectModelEntity
-			AuthenticatorPatternInstance<?, I, ?, ?> newPatternInstance = new AuthenticatorPatternInstance(this, newInstance);
+			AuthenticatorPatternInstance<?, I, ?, ?> newPatternInstance = new AuthenticatorPatternInstance(this, model, newInstance);
 		}
 	}
 

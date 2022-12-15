@@ -70,9 +70,7 @@ import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.model.ModelPropertyXMLTag;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.patterns.DeclarePatterns;
-import org.openflexo.pamela.patterns.ExecutionMonitor;
 import org.openflexo.pamela.patterns.PatternDefinition;
-import org.openflexo.pamela.patterns.PatternInstance;
 import org.openflexo.pamela.patterns.PatternLibrary;
 import org.openflexo.toolbox.StringUtils;
 
@@ -92,10 +90,10 @@ public class PamelaMetaModel {
 	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
 	private final Map<ModelEntity<?>, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
 	private final Class<?> baseClass;
-	private final Set<ExecutionMonitor> executionMonitors;
+	// private final Set<ExecutionMonitor> executionMonitors;
 	private List<AbstractPatternFactory<?>> patternFactories = new ArrayList<>();
-	private Map<Object, Set<PatternInstance<?>>> patternInstances = new HashMap<>();
-	private Map<PatternDefinition, Set<PatternInstance<?>>> registeredPatternInstances = new HashMap<>();
+	// private Map<Object, Set<PatternInstance<?>>> patternInstances = new HashMap<>();
+	// private Map<PatternDefinition, Set<PatternInstance<?>>> registeredPatternInstances = new HashMap<>();
 
 	PamelaMetaModel(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
 		this.baseClass = baseClass;
@@ -106,7 +104,7 @@ public class PamelaMetaModel {
 		appendEntity(modelEntity, new HashSet<>());
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
-		executionMonitors = new HashSet<>();
+		// executionMonitors = new HashSet<>();
 		if (isFinalModel) {
 			for (ModelEntity entity : modelEntities.values()) {
 				entity.finalizeImport();
@@ -139,7 +137,7 @@ public class PamelaMetaModel {
 		}
 		modelEntities = Collections.unmodifiableMap(modelEntities);
 		modelEntitiesByXmlTag = Collections.unmodifiableMap(modelEntitiesByXmlTag);
-		executionMonitors = new HashSet<>();
+		// executionMonitors = new HashSet<>();
 		for (ModelEntity entity : modelEntities.values()) {
 			entity.finalizeImport();
 		}
@@ -283,6 +281,8 @@ public class PamelaMetaModel {
 		return (ModelPropertyXMLTag<I>) tags.get(xmlTag);
 	}
 
+	// TODO: Performance issues
+	@Deprecated
 	public List<ModelEntity<?>> getUpperEntities(Object object) {
 		List<ModelEntity<?>> entities = new ArrayList<>();
 		for (Class<?> i : object.getClass().getInterfaces()) {
@@ -291,6 +291,7 @@ public class PamelaMetaModel {
 		return entities;
 	}
 
+	@Deprecated
 	private void appendKnownEntities(List<ModelEntity<?>> entities, Class<?> i) {
 		ModelEntity<?> modelEntity = getModelEntity(i);
 		if (modelEntity != null && !entities.contains(i)) {
@@ -328,17 +329,17 @@ public class PamelaMetaModel {
 
 	// Patterns
 
-	public void addExecutionMonitor(ExecutionMonitor m) {
+	/*public void addExecutionMonitor(ExecutionMonitor m) {
 		this.executionMonitors.add(m);
 	}
-
+	
 	public Set<ExecutionMonitor> getExecutionMonitors() {
 		return this.executionMonitors;
 	}
-
+	
 	public boolean removeExecutionMonitor(ExecutionMonitor m) {
 		return this.executionMonitors.remove(m);
-	}
+	}*/
 
 	/**
 	 * Perform install all add-ons found in the class path
@@ -446,6 +447,10 @@ public class PamelaMetaModel {
 		}
 	}
 
+	public List<AbstractPatternFactory<?>> getPatternFactories() {
+		return patternFactories;
+	}
+
 	public <P extends PatternDefinition> List<P> getPatternDefinitions(Class<P> patternDefinitionClass) {
 		List<P> returned = new ArrayList<>();
 		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
@@ -458,13 +463,13 @@ public class PamelaMetaModel {
 		return returned;
 	}
 
-	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
+	/*public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model) {
 		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
 			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
-				patternDefinition.notifiedNewInstance(newInstance, modelEntity);
+				patternDefinition.notifiedNewInstance(newInstance, modelEntity, model);
 			}
 		}
-	}
+	}*/
 
 	public boolean isMethodInvolvedInPattern(Method method) {
 		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
@@ -478,7 +483,7 @@ public class PamelaMetaModel {
 
 	}
 
-	public <P extends PatternDefinition> void registerPatternInstance(PatternInstance<P> patternInstance) {
+	/*public <P extends PatternDefinition> void registerPatternInstance(PatternInstance<P> patternInstance) {
 		P definition = patternInstance.getPatternDefinition();
 		Set<PatternInstance<?>> s = registeredPatternInstances.get(definition);
 		if (s == null) {
@@ -488,7 +493,7 @@ public class PamelaMetaModel {
 		System.out.println("Registering " + patternInstance);
 		s.add(patternInstance);
 	}
-
+	
 	public void registerStakeHolderForPatternInstance(Object stakeHolder, String role, PatternInstance<?> patternInstance) {
 		Set<PatternInstance<?>> s = patternInstances.get(stakeHolder);
 		if (s == null) {
@@ -498,13 +503,13 @@ public class PamelaMetaModel {
 		System.out.println("Registering " + stakeHolder + " as " + role + " for pattern instance " + patternInstance);
 		s.add(patternInstance);
 	}
-
+	
 	public Set<PatternInstance<?>> getPatternInstances(Object stakeholder) {
 		return patternInstances.get(stakeholder);
 	}
-
+	
 	public <P extends PatternDefinition> Set<PatternInstance<P>> getPatternInstances(P patternDefinition) {
 		return (Set) registeredPatternInstances.get(patternDefinition);
-	}
+	}*/
 
 }
