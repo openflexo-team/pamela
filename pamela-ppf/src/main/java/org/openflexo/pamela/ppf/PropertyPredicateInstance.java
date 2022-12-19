@@ -38,41 +38,54 @@
  */
 package org.openflexo.pamela.ppf;
 
-import java.lang.reflect.Method;
-
 import org.openflexo.pamela.factory.PamelaModel;
-import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.ppf.annotations.Card;
-import org.openflexo.pamela.ppf.annotations.Injective;
-import org.openflexo.pamela.ppf.annotations.Irreflexive;
-import org.openflexo.pamela.ppf.annotations.NonEmpty;
-import org.openflexo.pamela.ppf.annotations.NonNull;
-import org.openflexo.pamela.ppf.annotations.NonOverlapping;
+import org.openflexo.pamela.factory.PamelaModelFactory;
+import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.model.ModelEntity;
+
+import javassist.util.proxy.ProxyObject;
 
 /**
- * A monitorable predicate which applies to a single property
+ * An "instance" of a {@link PropertyPredicate} related to a {@link PamelaModel}
  * 
  * @author sylvain
  *
  */
-public abstract class PropertyPredicate<I> {
+public abstract class PropertyPredicateInstance<I> {
 
-	public static boolean hasPPFAnnotations(Method method) {
-		return method.isAnnotationPresent(NonNull.class) || method.isAnnotationPresent(NonEmpty.class)
-				|| method.isAnnotationPresent(Card.class) || method.isAnnotationPresent(Irreflexive.class)
-				|| method.isAnnotationPresent(Injective.class) || method.isAnnotationPresent(NonOverlapping.class);
+	private final PropertyPredicate<I> predicate;
+	private final PamelaModel model;
+
+	public PropertyPredicateInstance(PropertyPredicate<I> propertyPredicate, PamelaModel model) {
+		predicate = propertyPredicate;
+		this.model = model;
 	}
 
-	private final ModelProperty<I> property;
-
-	public PropertyPredicate(ModelProperty<I> property) {
-		this.property = property;
+	public PropertyPredicate<I> getPredicate() {
+		return predicate;
 	}
 
-	public ModelProperty<I> getProperty() {
-		return property;
+	public PamelaModel getModel() {
+		return model;
 	}
 
-	public abstract PropertyPredicateInstance<I> makeInstance(PamelaModel model);
+	public <I> ProxyMethodHandler<I> getHandler(I object) {
+		if (object instanceof ProxyObject) {
+			if (((ProxyObject) object).getHandler() instanceof ProxyMethodHandler) {
+				return (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
+			}
+		}
+		return null;
+	}
+
+	public abstract void check(ProxyMethodHandler<? extends I> proxyMethodHandler) throws PPFViolationException;
+
+	public void notifiedNewSourceInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModelFactory modelFactory) {
+		// Does nothing by default
+	}
+
+	public <T> void notifiedNewDestinationInstance(T newInstance, ModelEntity<T> modelEntity, PamelaModelFactory modelFactory) {
+		// Does nothing by default
+	}
 
 }

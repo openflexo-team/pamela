@@ -1,7 +1,7 @@
 /**
  * 
  * Copyright (c) 2013-2014, Openflexo
- * Copyright (c) 2012-2012, AgileBirds
+ * Copyright (c) 2011-2012, AgileBirds
  * 
  * This file is part of Pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
@@ -36,43 +36,25 @@
  * or visit www.openflexo.org if you need additional information.
  * 
  */
-package org.openflexo.pamela.ppf;
 
-import java.lang.reflect.Method;
+package org.openflexo.pamela.ppf.annotations;
 
-import org.openflexo.pamela.factory.PamelaModel;
-import org.openflexo.pamela.model.ModelProperty;
-import org.openflexo.pamela.ppf.annotations.Card;
-import org.openflexo.pamela.ppf.annotations.Injective;
-import org.openflexo.pamela.ppf.annotations.Irreflexive;
-import org.openflexo.pamela.ppf.annotations.NonEmpty;
-import org.openflexo.pamela.ppf.annotations.NonNull;
-import org.openflexo.pamela.ppf.annotations.NonOverlapping;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A monitorable predicate which applies to a single property
+ * Annotation defining that related property should be non-overlapping (applies to multiple cardinalities)<br>
+ * Two different objects cannot have the same partial values (for all x,x' in X, f(x) intersect f(x') != emptySet => x=x')
  * 
  * @author sylvain
- *
+ * 
  */
-public abstract class PropertyPredicate<I> {
-
-	public static boolean hasPPFAnnotations(Method method) {
-		return method.isAnnotationPresent(NonNull.class) || method.isAnnotationPresent(NonEmpty.class)
-				|| method.isAnnotationPresent(Card.class) || method.isAnnotationPresent(Irreflexive.class)
-				|| method.isAnnotationPresent(Injective.class) || method.isAnnotationPresent(NonOverlapping.class);
-	}
-
-	private final ModelProperty<I> property;
-
-	public PropertyPredicate(ModelProperty<I> property) {
-		this.property = property;
-	}
-
-	public ModelProperty<I> getProperty() {
-		return property;
-	}
-
-	public abstract PropertyPredicateInstance<I> makeInstance(PamelaModel model);
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Target(ElementType.METHOD)
+public @interface NonOverlapping {
 
 }

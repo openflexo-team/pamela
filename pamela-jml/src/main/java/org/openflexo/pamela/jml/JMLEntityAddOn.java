@@ -39,16 +39,17 @@
 package org.openflexo.pamela.jml;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.openflexo.pamela.addon.EntityAddOn;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.PamelaUtils;
-import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.jml.annotations.Invariant;
 import org.openflexo.pamela.model.ModelEntity;
-import org.openflexo.pamela.model.ModelProperty;
 
 /**
  * Extends {@link ModelEntity} by providing required information and behaviour required for managing JML in the context of a ModelEntity
@@ -77,6 +78,11 @@ public class JMLEntityAddOn<I> extends EntityAddOn<I, JMLAddOn> {
 	public JMLEntityAddOn(ModelEntity<I> modelEntity, JMLAddOn jmlAddOn) throws ModelDefinitionException {
 		super(modelEntity, jmlAddOn);
 		registerJMLAnnotations();
+	}
+
+	@Override
+	public JMLEntityAddOnInstance<I> instantiate(PamelaModel model) {
+		return new JMLEntityAddOnInstance<I>(this, model);
 	}
 
 	private void registerJMLAnnotations() throws ModelDefinitionException {
@@ -145,61 +151,9 @@ public class JMLEntityAddOn<I> extends EntityAddOn<I, JMLAddOn> {
 		return getJMLMethodDefinition(method) != null;
 	}
 
-	public Map<Method, Map<String, Object>> getRuntimeContext(ProxyMethodHandler<I> proxyMethodHandler) {
-		Map<Method, Map<String, Object>> returned = (Map<Method, Map<String, Object>>) proxyMethodHandler.getRuntimeContextForAddOn(this);
-		if (returned == null) {
-			returned = new HashMap<>();
-			proxyMethodHandler.storeRuntimeContextForAddOn(returned, this);
-		}
-		return returned;
-	}
-
 	@Override
-	public void checkOnMethodEntry(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args) {
-
-		// We first check invariants
-		checkInvariant(proxyMethodHandler);
-
-		JMLMethodDefinition<? super I> jmlMethodDefinition = getJMLMethodDefinition(method);
-		if (jmlMethodDefinition != null) {
-			// We check pre-conditions
-			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
-			if (jmlMethodDefinition.getRequires() != null) {
-				// System.out.println("Check pre-condition " + jmlMethodDefinition.getRequires().getExpression());
-				((JMLRequires) jmlMethodDefinition.getRequires()).check(proxyMethodHandler, args);
-			}
-			// And we prepare the postconditions
-			if (jmlMethodDefinition.getEnsures() != null) {
-				// System.out.println("Init post-condition " + jmlMethodDefinition.getEnsures().getExpression());
-				Map<String, Object> historyValuesForThisMethod = ((JMLEnsures) jmlMethodDefinition.getEnsures())
-						.checkOnEntry(proxyMethodHandler, args);
-				getRuntimeContext(proxyMethodHandler).put(method, historyValuesForThisMethod);
-			}
-		}
-	}
-
-	@Override
-	public void checkOnMethodExit(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args) {
-
-		// We first check invariants
-		checkInvariant(proxyMethodHandler);
-
-		JMLMethodDefinition<? super I> jmlMethodDefinition = getJMLMethodDefinition(method);
-		if (jmlMethodDefinition != null) {
-			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
-			// And we check post-conditions
-			if (jmlMethodDefinition.getEnsures() != null) {
-				// System.out.println("Check post-condition " + jmlMethodDefinition.getEnsures().getExpression());
-				((JMLEnsures) jmlMethodDefinition.getEnsures()).checkOnExit(proxyMethodHandler, args,
-						getRuntimeContext(proxyMethodHandler).get(method));
-			}
-		}
-	}
-
-	private void checkInvariant(ProxyMethodHandler<I> proxyMethodHandler) {
-		if (getInvariant() != null) {
-			getInvariant().check(proxyMethodHandler);
-		}
+	public Set<ModelEntity<?>> getEntitiesToMonitor() {
+		return Collections.singleton(getModelEntity());
 	}
 
 }

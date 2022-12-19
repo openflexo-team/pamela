@@ -41,17 +41,19 @@ package org.openflexo.pamela.ppf.predicates;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.ppf.PPFViolationException;
 import org.openflexo.pamela.ppf.PropertyPredicate;
+import org.openflexo.pamela.ppf.PropertyPredicateInstance;
 import org.openflexo.pamela.ppf.annotations.Card;
 
 /**
  * "Card" predicate : cardinality should be in a given range
  * 
  * @author sylvain
- *
+ * 
  */
 public class CardPredicate<I> extends PropertyPredicate<I> {
 
@@ -67,25 +69,37 @@ public class CardPredicate<I> extends PropertyPredicate<I> {
 	}
 
 	@Override
-	public void check(ProxyMethodHandler<? extends I> proxyMethodHandler) throws PPFViolationException {
-		logger.info("Checking CardPredicate for " + getProperty() + " and object " + proxyMethodHandler.getObject());
-		Object value = proxyMethodHandler.invokeGetter(getProperty());
-		if (value == null) {
-			throw new PPFViolationException("Property " + getProperty() + " not defined for " + proxyMethodHandler.getObject(),
-					proxyMethodHandler);
+	public CardPredicateInstance makeInstance(PamelaModel model) {
+		return new CardPredicateInstance(model);
+	}
+
+	public class CardPredicateInstance extends PropertyPredicateInstance<I> {
+
+		public CardPredicateInstance(PamelaModel model) {
+			super(CardPredicate.this, model);
 		}
-		if (value instanceof List) {
-			int cardinality = ((List) value).size();
-			if (cardinality < min || cardinality > max) {
-				throw new PPFViolationException(
-						"Property " + getProperty() + " not in range (" + min + ":" + max + ") for " + proxyMethodHandler.getObject(),
+
+		@Override
+		public void check(ProxyMethodHandler<? extends I> proxyMethodHandler) throws PPFViolationException {
+			logger.info("Checking CardPredicate for " + getProperty() + " and object " + proxyMethodHandler.getObject());
+			Object value = proxyMethodHandler.invokeGetter(getProperty());
+			if (value == null) {
+				throw new PPFViolationException("Property " + getProperty() + " not defined for " + proxyMethodHandler.getObject(),
 						proxyMethodHandler);
 			}
-		}
-		else {
-			throw new PPFViolationException(
-					"Unexpected property value " + value + " for " + getProperty() + " for " + proxyMethodHandler.getObject(),
-					proxyMethodHandler);
+			if (value instanceof List) {
+				int cardinality = ((List) value).size();
+				if (cardinality < min || cardinality > max) {
+					throw new PPFViolationException(
+							"Property " + getProperty() + " not in range (" + min + ":" + max + ") for " + proxyMethodHandler.getObject(),
+							proxyMethodHandler);
+				}
+			}
+			else {
+				throw new PPFViolationException(
+						"Unexpected property value " + value + " for " + getProperty() + " for " + proxyMethodHandler.getObject(),
+						proxyMethodHandler);
+			}
 		}
 	}
 }

@@ -39,13 +39,18 @@
 
 package org.openflexo.pamela.factory;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.addon.EntityAddOn;
+import org.openflexo.pamela.addon.EntityAddOnInstance;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.patterns.ExecutionMonitor;
@@ -73,9 +78,27 @@ public class PamelaModel {
 	private Map<Object, Set<PatternInstance<?>>> patternInstances = new HashMap<>();
 	private Map<PatternDefinition, Set<PatternInstance<?>>> registeredPatternInstances = new HashMap<>();
 
+	private Map<ModelEntity<?>, Set<EntityAddOnInstance<?, ?, ?>>> addOnInstances = new HashMap<>();
+	// private Map<ModelEntity<?>, Set<PropertyPredicateInstance>> predicateInstances = new HashMap<>();
+	private Map<ModelEntity<?>, List<Object>> instances = new HashMap<>();
+
 	public PamelaModel(PamelaMetaModel metaModel) {
 		this.metaModel = metaModel;
 		executionMonitors = new HashSet<>();
+		// We register here the hooks allowing to listen required entities
+		for (EntityAddOn<?, ?> entityAddOn : metaModel.getEntityAddOns()) {
+			Set<ModelEntity<?>> entitiesToMonitor = entityAddOn.getEntitiesToMonitor();
+			if (entitiesToMonitor != null) {
+				for (ModelEntity<?> modelEntity : entitiesToMonitor) {
+					Set<EntityAddOnInstance<?, ?, ?>> aoSet = addOnInstances.get(modelEntity);
+					if (aoSet == null) {
+						aoSet = new HashSet<>();
+						addOnInstances.put(modelEntity, aoSet);
+					}
+					aoSet.add(entityAddOn.instantiate(this));
+				}
+			}
+		}
 	}
 
 	public PamelaMetaModel getMetaModel() {
@@ -144,10 +167,29 @@ public class PamelaModel {
 		return (Set) registeredPatternInstances.get(patternDefinition);
 	}
 
+	public <I> Set<EntityAddOnInstance<I, ?, ?>> getEntityAddOnInstances(ModelEntity<I> modelEntity) {
+		return (Set) addOnInstances.get(modelEntity);
+	}
+
 	/*
 	 * Called by the PamelaModelFactory
 	 */
 	protected <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModelFactory modelFactory) {
+		// Handle required ModelEntity for listening EntityAddOns
+		if (addOnInstances.get(modelEntity) != null) {
+			// This ModelEntity is interesting
+			// First manage the adding of the instance in the Map
+			List<Object> list = instances.get(modelEntity);
+			if (list == null) {
+				list = new ArrayList<>();
+				instances.put(modelEntity, list);
+			}
+			list.add(newInstance);
+			for (EntityAddOnInstance<?, ?, ?> entityAddOnInstance : addOnInstances.get(modelEntity)) {
+				entityAddOnInstance.notifiedNewInstance(newInstance, modelEntity, modelFactory);
+			}
+		}
+
 		// Iterate on all pattern factories declared in the metamodel, and notify creation of new instance
 		for (AbstractPatternFactory<?> patternFactory : getMetaModel().getPatternFactories()) {
 			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
@@ -160,6 +202,10 @@ public class PamelaModel {
 			}
 		}
 
+	}
+
+	public <I> Collection<I> getInstances(ModelEntity<I> modelEntity) {
+		return (Collection<I>) instances.get(modelEntity);
 	}
 
 }

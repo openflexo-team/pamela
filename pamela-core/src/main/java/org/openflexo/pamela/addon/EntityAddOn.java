@@ -39,9 +39,9 @@
 package org.openflexo.pamela.addon;
 
 import java.lang.reflect.Method;
+import java.util.Set;
 
-import org.openflexo.pamela.AssertionViolationException;
-import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.model.ModelEntity;
 
 /**
@@ -100,6 +100,13 @@ public abstract class EntityAddOn<I, AO extends PamelaAddOn<AO>> {
 	}
 
 	/**
+	 * Return a set of {@link ModelEntity} whose instances are to be monitored, as they take part of properties to monitor
+	 * 
+	 * @return
+	 */
+	public abstract Set<ModelEntity<?>> getEntitiesToMonitor();
+
+	/**
 	 * Indicates if supplied method should be intercepted in the context of this {@link EntityAddOn}
 	 * 
 	 * @param method
@@ -116,33 +123,10 @@ public abstract class EntityAddOn<I, AO extends PamelaAddOn<AO>> {
 	public abstract boolean isMethodToBeMonitored(Method method);
 
 	/**
-	 * Perform monitoring by triggering assertion checking for this {@link EntityAddOn} in the entry of related {@link Method}, asserting
-	 * this {@link Method} is to be monitored
+	 * Instantiate this {@link EntityAddOn} for a given {@link PamelaModel}
 	 * 
-	 * @param method
-	 *            The method in which we enter
-	 * @param proxyMethodHandler
-	 *            Handler of the related object
-	 * @param args
-	 *            Arguments of the call
+	 * @param model
 	 * @return
 	 */
-	public abstract void checkOnMethodEntry(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args)
-			throws AssertionViolationException;
-
-	/**
-	 * Perform monitoring by triggering assertion checking for this {@link EntityAddOn} in the exit of related {@link Method}, asserting
-	 * this {@link Method} is to be monitored
-	 * 
-	 * @param method
-	 *            The method from which we exit
-	 * @param proxyMethodHandler
-	 *            Handler of the related object
-	 * @param args
-	 *            Arguments of the call
-	 * @return
-	 */
-	public abstract void checkOnMethodExit(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args)
-			throws AssertionViolationException;
-
+	public abstract EntityAddOnInstance<I, ? extends EntityAddOn<I, AO>, AO> instantiate(PamelaModel model);
 }

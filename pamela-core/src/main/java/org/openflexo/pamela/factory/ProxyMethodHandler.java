@@ -77,6 +77,7 @@ import org.openflexo.pamela.CloneableProxyObject;
 import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.addon.EntityAddOn;
+import org.openflexo.pamela.addon.EntityAddOnInstance;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.CloningStrategy.StrategyType;
 import org.openflexo.pamela.annotations.ComplexEmbedded;
@@ -2592,6 +2593,15 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	}
 
 	/**
+	 * Return the {@link PamelaModel} in which "lives" this object
+	 * 
+	 * @return
+	 */
+	public PamelaModel getModel() {
+		return getPamelaProxyFactory().getModelFactory().getModel();
+	}
+
+	/**
 	 * Perform monitoring by triggering assertion checking in the entry of related {@link Method}, asserting this {@link Method} is to be
 	 * monitored
 	 * 
@@ -2609,45 +2619,20 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 
 		assertionCheckingStack.push(method);
 
-		// System.out.println("--------> checkOnEntry " + method);
-
-		/*for (PropertyPredicate propertyPredicate : getModelEntity().lesPredicatesAVerifier) {
-			propertyPredicate.check(this);
-		}*/
-
-		/*if (method.getName().contains("aMonitoredMethod")) {
-			System.out.println("Pour " + method + " j'execute: " + getModelEntity().isMethodToBeMonitored(method));
-			System.out.println("Les addOns: " + getModelEntity().getEntityAddOns());
-		}*/
-
-		for (EntityAddOn<I, ?> entityAddOn : getModelEntity().getEntityAddOns()) {
-			entityAddOn.checkOnMethodEntry(method, this, args);
+		try {
+			Set<EntityAddOnInstance<I, ?, ?>> entityAddOnInstances = getModel().getEntityAddOnInstances(getModelEntity());
+			if (entityAddOnInstances != null) {
+				for (EntityAddOnInstance<I, ?, ?> entityAddOnInstance : entityAddOnInstances) {
+					entityAddOnInstance.checkOnMethodEntry(method, this, args);
+				}
+			}
+		} catch (AssertionViolationException e) {
+			assertionCheckingStack.pop();
+			throw e;
 		}
-
-		/*checkInvariant();
-		
-		JMLMethodDefinition<? super I> jmlMethodDefinition = getModelEntity().getJMLMethodDefinition(method);
-		if (jmlMethodDefinition != null) {
-			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
-			if (jmlMethodDefinition.getRequires() != null) {
-				// System.out.println("Check pre-condition " + jmlMethodDefinition.getRequires().getExpression());
-				((JMLRequires) jmlMethodDefinition.getRequires()).check(this, args);
-			}
-			if (jmlMethodDefinition.getEnsures() != null) {
-				// System.out.println("Init post-condition " + jmlMethodDefinition.getEnsures().getExpression());
-				Map<String, Object> historyValuesForThisMethod = ((JMLEnsures) jmlMethodDefinition.getEnsures()).checkOnEntry(this, args);
-				historyValues.put(method, historyValuesForThisMethod);
-			}
-		}*/
 
 		return true;
 	}
-
-	/*private void checkInvariant() {
-		if (getModelEntity().getInvariant() != null) {
-			getModelEntity().getInvariant().check(this);
-		}
-	}*/
 
 	/**
 	 * Perform monitoring by triggering assertion checking in the exit of related {@link Method}, asserting this {@link Method} is to be
@@ -2661,50 +2646,17 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 	 */
 	private void checkOnMethodExit(Method method, Object[] args) {
 
-		// System.out.println("<-------- checkOnExit " + method);
-
-		for (EntityAddOn<I, ?> entityAddOn : getModelEntity().getEntityAddOns()) {
-			entityAddOn.checkOnMethodExit(method, this, args);
+		try {
+			Set<EntityAddOnInstance<I, ?, ?>> entityAddOnInstances = getModel().getEntityAddOnInstances(getModelEntity());
+			if (entityAddOnInstances != null) {
+				for (EntityAddOnInstance<I, ?, ?> entityAddOnInstance : entityAddOnInstances) {
+					entityAddOnInstance.checkOnMethodExit(method, this, args);
+				}
+			}
+		} finally {
+			assertionCheckingStack.pop();
 		}
 
-		/*checkInvariant();
-		
-		JMLMethodDefinition<? super I> jmlMethodDefinition = getModelEntity().getJMLMethodDefinition(method);
-		if (jmlMethodDefinition != null) {
-			ModelProperty<? super I> property = getModelEntity().getPropertyForMethod(method);
-			if (jmlMethodDefinition.getEnsures() != null) {
-				// System.out.println("Check post-condition " + jmlMethodDefinition.getEnsures().getExpression());
-				((JMLEnsures) jmlMethodDefinition.getEnsures()).checkOnExit(this, args, historyValues.get(method));
-			}
-		}*/
-
-		// checkedMethod = null;
-
-		assertionCheckingStack.pop();
-
-	}
-
-	/**
-	 * Retrieve run-time context for this object and supplied {@link EntityAddOn}
-	 * 
-	 * @param addOn
-	 *            related addOn
-	 * @return
-	 */
-	public Object getRuntimeContextForAddOn(EntityAddOn<I, ?> addOn) {
-		return runtimeContextForAddOns.get(addOn);
-	}
-
-	/**
-	 * Stores run-time context for this object and supplied {@link EntityAddOn}
-	 * 
-	 * @param runtimeContext
-	 *            the context to store
-	 * @param addOn
-	 *            related addOn
-	 */
-	public void storeRuntimeContextForAddOn(Object runtimeContext, EntityAddOn<I, ?> addOn) {
-		runtimeContextForAddOns.put(addOn, runtimeContext);
 	}
 
 }

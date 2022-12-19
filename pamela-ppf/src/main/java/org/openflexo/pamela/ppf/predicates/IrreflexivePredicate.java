@@ -42,10 +42,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.openflexo.pamela.annotations.Getter.Cardinality;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.ppf.PPFViolationException;
 import org.openflexo.pamela.ppf.PropertyPredicate;
+import org.openflexo.pamela.ppf.PropertyPredicateInstance;
 
 /**
  * "Irreflexive" predicate : (for all x in X, x not in f(x))
@@ -62,24 +64,36 @@ public class IrreflexivePredicate<I> extends PropertyPredicate<I> {
 	}
 
 	@Override
-	public void check(ProxyMethodHandler<? extends I> proxyMethodHandler) {
-		logger.info("Checking IrreflexivePredicate for " + getProperty() + " and object " + proxyMethodHandler.getObject());
-		Object value = proxyMethodHandler.invokeGetter(getProperty());
-		if (getProperty().getCardinality() == Cardinality.LIST) {
-			if (value != null) {
-				if (((List) value).contains(proxyMethodHandler.getObject())) {
-					throw new PPFViolationException(
-							"Property " + getProperty() + " is irreflexive and should not contain " + proxyMethodHandler.getObject(),
-							proxyMethodHandler);
+	public IrreflexivePredicateInstance makeInstance(PamelaModel model) {
+		return new IrreflexivePredicateInstance(model);
+	}
+
+	public class IrreflexivePredicateInstance extends PropertyPredicateInstance<I> {
+
+		public IrreflexivePredicateInstance(PamelaModel model) {
+			super(IrreflexivePredicate.this, model);
+		}
+
+		@Override
+		public void check(ProxyMethodHandler<? extends I> proxyMethodHandler) {
+			logger.info("Checking IrreflexivePredicate for " + getProperty() + " and object " + proxyMethodHandler.getObject());
+			Object value = proxyMethodHandler.invokeGetter(getProperty());
+			if (getProperty().getCardinality() == Cardinality.LIST) {
+				if (value != null) {
+					if (((List) value).contains(proxyMethodHandler.getObject())) {
+						throw new PPFViolationException(
+								"Property " + getProperty() + " is irreflexive and should not contain " + proxyMethodHandler.getObject(),
+								proxyMethodHandler);
+					}
 				}
 			}
-		}
-		else if (getProperty().getCardinality() == Cardinality.SINGLE) {
-			if (value != null) {
-				if (value == proxyMethodHandler.getObject()) {
-					throw new PPFViolationException(
-							"Property " + getProperty() + " is irreflexive and should not reference " + proxyMethodHandler.getObject(),
-							proxyMethodHandler);
+			else if (getProperty().getCardinality() == Cardinality.SINGLE) {
+				if (value != null) {
+					if (value == proxyMethodHandler.getObject()) {
+						throw new PPFViolationException(
+								"Property " + getProperty() + " is irreflexive and should not reference " + proxyMethodHandler.getObject(),
+								proxyMethodHandler);
+					}
 				}
 			}
 		}

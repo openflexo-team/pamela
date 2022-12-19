@@ -90,10 +90,8 @@ public class PamelaMetaModel {
 	private Map<String, ModelEntity<?>> modelEntitiesByXmlTag;
 	private final Map<ModelEntity<?>, Map<String, ModelPropertyXMLTag<?>>> modelPropertiesByXmlTag;
 	private final Class<?> baseClass;
-	// private final Set<ExecutionMonitor> executionMonitors;
 	private List<AbstractPatternFactory<?>> patternFactories = new ArrayList<>();
-	// private Map<Object, Set<PatternInstance<?>>> patternInstances = new HashMap<>();
-	// private Map<PatternDefinition, Set<PatternInstance<?>>> registeredPatternInstances = new HashMap<>();
+	private final List<EntityAddOn<?, ?>> entityAddOns = new ArrayList<>();
 
 	PamelaMetaModel(@Nonnull Class<?> baseClass, boolean isFinalModel) throws ModelDefinitionException {
 		this.baseClass = baseClass;
@@ -368,8 +366,18 @@ public class PamelaMetaModel {
 			EntityAddOn<?, AO> entityAddOn = addOn.makeAddOnForEntity(modelEntity);
 			if (entityAddOn != null) {
 				modelEntity.installEntityAddOn(entityAddOn, addOn);
+				entityAddOns.add(entityAddOn);
 			}
 		}
+	}
+
+	/**
+	 * Return all the {@link EntityAddOn} discovered in this {@link PamelaMetaModel}
+	 * 
+	 * @return
+	 */
+	public List<EntityAddOn<?, ?>> getEntityAddOns() {
+		return entityAddOns;
 	}
 
 	/**

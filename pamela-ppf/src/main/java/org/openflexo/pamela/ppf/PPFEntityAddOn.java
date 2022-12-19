@@ -41,24 +41,30 @@ package org.openflexo.pamela.ppf;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.openflexo.pamela.addon.EntityAddOn;
 import org.openflexo.pamela.annotations.Getter.Cardinality;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.ppf.annotations.Card;
+import org.openflexo.pamela.ppf.annotations.Injective;
 import org.openflexo.pamela.ppf.annotations.Irreflexive;
 import org.openflexo.pamela.ppf.annotations.NonEmpty;
 import org.openflexo.pamela.ppf.annotations.NonNull;
+import org.openflexo.pamela.ppf.annotations.NonOverlapping;
 import org.openflexo.pamela.ppf.predicates.CardPredicate;
+import org.openflexo.pamela.ppf.predicates.InjectivePredicate;
 import org.openflexo.pamela.ppf.predicates.IrreflexivePredicate;
 import org.openflexo.pamela.ppf.predicates.NonEmptyPredicate;
 import org.openflexo.pamela.ppf.predicates.NonNullPredicate;
+import org.openflexo.pamela.ppf.predicates.NonOverlappingPredicate;
 
 /**
  * Extends {@link ModelEntity} by providing required information and behaviour required for managing PPF in the context of a ModelEntity
@@ -88,6 +94,11 @@ public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 		discoverPredicates();
 	}
 
+	@Override
+	public PPFEntityAddOnInstance instantiate(PamelaModel model) {
+		return new PPFEntityAddOnInstance<>(this, model);
+	}
+
 	private void discoverPredicates() throws ModelDefinitionException {
 		for (Method m : getImplementedInterface().getDeclaredMethods()) {
 			discoverPredicates(m);
@@ -109,16 +120,42 @@ public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 			if (method.isAnnotationPresent(NonNull.class)) {
 				predicatesForProperty.add(new NonNullPredicate<>(modelProperty));
 			}
-			if (method.isAnnotationPresent(NonEmpty.class) && modelProperty.getCardinality() == Cardinality.LIST) {
-				predicatesForProperty.add(new NonEmptyPredicate<>(modelProperty));
+			if (method.isAnnotationPresent(NonEmpty.class)) {
+				if (modelProperty.getCardinality() == Cardinality.LIST) {
+					predicatesForProperty.add(new NonEmptyPredicate<>(modelProperty));
+				}
+				else {
+					throw new ModelDefinitionException("@NonEmpty is not applicable for single-cardinality property " + modelProperty);
+				}
 			}
-			if (method.isAnnotationPresent(Card.class) && modelProperty.getCardinality() == Cardinality.LIST) {
-				predicatesForProperty.add(new CardPredicate<>(modelProperty, method.getAnnotation(Card.class)));
+			if (method.isAnnotationPresent(Card.class)) {
+				if (modelProperty.getCardinality() == Cardinality.LIST) {
+					predicatesForProperty.add(new CardPredicate<>(modelProperty, method.getAnnotation(Card.class)));
+				}
+				else {
+					throw new ModelDefinitionException("@Card is not applicable for single-cardinality property " + modelProperty);
+				}
 			}
 			if (method.isAnnotationPresent(Irreflexive.class)) {
 				predicatesForProperty.add(new IrreflexivePredicate<>(modelProperty));
 			}
+			if (method.isAnnotationPresent(Injective.class)) {
+				predicatesForProperty.add(new InjectivePredicate<>(modelProperty));
+			}
+			if (method.isAnnotationPresent(NonOverlapping.class)) {
+				if (modelProperty.getCardinality() == Cardinality.LIST) {
+					predicatesForProperty.add(new NonOverlappingPredicate<>(modelProperty));
+				}
+				else {
+					throw new ModelDefinitionException(
+							"@NonOverlapping is not applicable for single-cardinality property " + modelProperty);
+				}
+			}
 		}
+	}
+
+	protected Map<ModelProperty<? super I>, List<PropertyPredicate<? super I>>> getPredicates() {
+		return predicates;
 	}
 
 	/**
@@ -129,7 +166,11 @@ public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 	 */
 	@Override
 	public boolean isMethodToBeIntercepted(Method method) {
-		return isMethodToBeMonitored(method);
+		ModelProperty<? super I> modelProperty = getModelEntity().getPropertyForMethod(method);
+		if (modelProperty != null) {
+			return predicates.get(modelProperty) != null;
+		}
+		return false;
 	}
 
 	/**
@@ -148,34 +189,15 @@ public class PPFEntityAddOn<I> extends EntityAddOn<I, PPFAddOn> {
 	}
 
 	@Override
-	public void checkOnMethodEntry(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args) throws PPFViolationException {
-		checkAllPredicates(proxyMethodHandler);
-	}
-
-	@Override
-	public void checkOnMethodExit(Method method, ProxyMethodHandler<I> proxyMethodHandler, Object[] args) throws PPFViolationException {
-		checkAllPredicates(proxyMethodHandler);
-	}
-
-	private void checkAllPredicates(ProxyMethodHandler<I> proxyMethodHandler) throws PPFViolationException {
+	public Set<ModelEntity<?>> getEntitiesToMonitor() {
+		Set<ModelEntity<?>> returned = new HashSet<>();
+		returned.add(getModelEntity());
 		for (ModelProperty<? super I> modelProperty : predicates.keySet()) {
-			checkPredicatesForProperty(modelProperty, proxyMethodHandler);
-		}
-	}
-
-	private void checkPredicatesForProperty(ModelProperty<? super I> modelProperty, ProxyMethodHandler<I> proxyMethodHandler)
-			throws PPFViolationException {
-		List<PropertyPredicate<? super I>> propertyPredicates = predicates.get(modelProperty);
-		if (propertyPredicates != null) {
-			for (PropertyPredicate<? super I> propertyPredicate : propertyPredicates) {
-				checkPredicate(propertyPredicate, proxyMethodHandler);
+			if (modelProperty.getAccessedEntity() != null) {
+				returned.add(modelProperty.getAccessedEntity());
 			}
 		}
-	}
-
-	private void checkPredicate(PropertyPredicate<? super I> propertyPredicate, ProxyMethodHandler<I> proxyMethodHandler)
-			throws PPFViolationException {
-		propertyPredicate.check(proxyMethodHandler);
+		return returned;
 	}
 
 }

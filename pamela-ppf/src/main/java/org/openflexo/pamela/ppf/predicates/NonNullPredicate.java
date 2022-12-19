@@ -40,10 +40,12 @@ package org.openflexo.pamela.ppf.predicates;
 
 import java.util.logging.Logger;
 
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.ppf.PPFViolationException;
 import org.openflexo.pamela.ppf.PropertyPredicate;
+import org.openflexo.pamela.ppf.PropertyPredicateInstance;
 
 /**
  * "Total" predicate : property value should not be null
@@ -60,12 +62,24 @@ public class NonNullPredicate<I> extends PropertyPredicate<I> {
 	}
 
 	@Override
-	public void check(ProxyMethodHandler<? extends I> proxyMethodHandler) {
-		logger.info("Checking NonNullPredicate for " + getProperty() + " and object " + proxyMethodHandler.getObject());
-		Object value = proxyMethodHandler.invokeGetter(getProperty());
-		if (value == null) {
-			throw new PPFViolationException("Property " + getProperty() + " not defined for " + proxyMethodHandler.getObject(),
-					proxyMethodHandler);
+	public NonNullPredicateInstance makeInstance(PamelaModel model) {
+		return new NonNullPredicateInstance(model);
+	}
+
+	public class NonNullPredicateInstance extends PropertyPredicateInstance<I> {
+
+		public NonNullPredicateInstance(PamelaModel model) {
+			super(NonNullPredicate.this, model);
+		}
+
+		@Override
+		public void check(ProxyMethodHandler<? extends I> proxyMethodHandler) {
+			logger.info("Checking NonNullPredicate for " + getProperty() + " and object " + proxyMethodHandler.getObject());
+			Object value = proxyMethodHandler.invokeGetter(getProperty());
+			if (value == null) {
+				throw new PPFViolationException("Property " + getProperty() + " not defined for " + proxyMethodHandler.getObject(),
+						proxyMethodHandler);
+			}
 		}
 	}
 }

@@ -41,10 +41,12 @@ package org.openflexo.pamela.ppf.predicates;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.ppf.PPFViolationException;
 import org.openflexo.pamela.ppf.PropertyPredicate;
+import org.openflexo.pamela.ppf.PropertyPredicateInstance;
 
 /**
  * "Total" predicate : property value should not be empty
@@ -61,23 +63,35 @@ public class NonEmptyPredicate<I> extends PropertyPredicate<I> {
 	}
 
 	@Override
-	public void check(ProxyMethodHandler<? extends I> proxyMethodHandler) throws PPFViolationException {
-		logger.info("Checking NonEmptyPredicate for " + getProperty() + " and object " + proxyMethodHandler.getObject());
-		Object value = proxyMethodHandler.invokeGetter(getProperty());
-		if (value == null) {
-			throw new PPFViolationException("Property " + getProperty() + " not defined for " + proxyMethodHandler.getObject(),
-					proxyMethodHandler);
+	public NonEmptyPredicateInstance makeInstance(PamelaModel model) {
+		return new NonEmptyPredicateInstance(model);
+	}
+
+	public class NonEmptyPredicateInstance extends PropertyPredicateInstance<I> {
+
+		public NonEmptyPredicateInstance(PamelaModel model) {
+			super(NonEmptyPredicate.this, model);
 		}
-		if (value instanceof List) {
-			if (((List) value).size() == 0) {
-				throw new PPFViolationException("Property " + getProperty() + " is empty for " + proxyMethodHandler.getObject(),
+
+		@Override
+		public void check(ProxyMethodHandler<? extends I> proxyMethodHandler) throws PPFViolationException {
+			logger.info("Checking NonEmptyPredicate for " + getProperty() + " and object " + proxyMethodHandler.getObject());
+			Object value = proxyMethodHandler.invokeGetter(getProperty());
+			if (value == null) {
+				throw new PPFViolationException("Property " + getProperty() + " not defined for " + proxyMethodHandler.getObject(),
 						proxyMethodHandler);
 			}
-		}
-		else {
-			throw new PPFViolationException(
-					"Unexpected property value " + value + " for " + getProperty() + " for " + proxyMethodHandler.getObject(),
-					proxyMethodHandler);
+			if (value instanceof List) {
+				if (((List) value).size() == 0) {
+					throw new PPFViolationException("Property " + getProperty() + " is empty for " + proxyMethodHandler.getObject(),
+							proxyMethodHandler);
+				}
+			}
+			else {
+				throw new PPFViolationException(
+						"Unexpected property value " + value + " for " + getProperty() + " for " + proxyMethodHandler.getObject(),
+						proxyMethodHandler);
+			}
 		}
 	}
 }
