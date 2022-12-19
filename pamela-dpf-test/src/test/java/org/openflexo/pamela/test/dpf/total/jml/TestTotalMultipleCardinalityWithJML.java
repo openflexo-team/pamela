@@ -35,13 +35,13 @@ public class TestTotalMultipleCardinalityWithJML {
 
 	private void performTest(MonitoringStrategy monitoringStrategy) throws ModelDefinitionException {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(X.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(XMultipleY.class));
 		ModelEntity<AbstractConcept> abstractConceptEntity = factory.getMetaModel().getModelEntity(AbstractConcept.class);
 		abstractConceptEntity.setMonitoringStrategy(monitoringStrategy);
 
-		X x1 = factory.newInstance(X.class, "x1");
-		X x2 = factory.newInstance(X.class, "x2");
-		X x3 = factory.newInstance(X.class, "x3");
+		XMultipleY x1 = factory.newInstance(XMultipleY.class, "x1");
+		XMultipleY x2 = factory.newInstance(XMultipleY.class, "x2");
+		XMultipleY x3 = factory.newInstance(XMultipleY.class, "x3");
 
 		Y y1 = factory.newInstance(Y.class, "y1");
 		Y y2 = factory.newInstance(Y.class, "y2");

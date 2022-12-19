@@ -33,7 +33,7 @@
  *
  */
 
-package org.openflexo.pamela.test.dpf.total.jml;
+package org.openflexo.pamela.test.dpf.nonoverlapping;
 
 import java.util.List;
 
@@ -41,32 +41,24 @@ import org.openflexo.pamela.MonitorableProxyObject;
 import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.Getter;
 import org.openflexo.pamela.annotations.Getter.Cardinality;
-import org.openflexo.pamela.jml.annotations.Invariant;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.annotations.Remover;
-import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.ppf.annotations.NonOverlapping;
 import org.openflexo.pamela.test.dpf.AbstractConcept;
 
 @ModelEntity
-@Invariant("singleY != null")
 public interface X extends AbstractConcept, MonitorableProxyObject {
 
-	static final String SINGLE_Y = "singleY";
-	static final String MULTIPLE_Y = "multipleY";
+	static final String Y = "y";
 
-	@Getter(SINGLE_Y)
-	Y getSingleY();
+	@Getter(value = Y, cardinality = Cardinality.LIST)
+	@NonOverlapping
+	public List<Y> getY();
 
-	@Setter(SINGLE_Y)
-	public void setSingleY(Y value);
+	@Adder(Y)
+	public void addToY(Y y);
 
-	@Getter(value = MULTIPLE_Y, cardinality = Cardinality.LIST)
-	public List<Y> getMultipleY();
-
-	@Adder(MULTIPLE_Y)
-	public void addToMultipleY(Y c);
-
-	@Remover(MULTIPLE_Y)
-	public void removeFromMultipleY(Y c);
+	@Remover(Y)
+	public void removeFromY(Y y);
 
 }

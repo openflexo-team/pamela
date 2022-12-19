@@ -35,24 +35,17 @@
 
 package org.openflexo.pamela.test.dpf.total;
 
-import java.util.List;
-
 import org.openflexo.pamela.MonitorableProxyObject;
-import org.openflexo.pamela.annotations.Adder;
 import org.openflexo.pamela.annotations.Getter;
-import org.openflexo.pamela.annotations.Getter.Cardinality;
-import org.openflexo.pamela.ppf.annotations.NonEmpty;
-import org.openflexo.pamela.ppf.annotations.NonNull;
 import org.openflexo.pamela.annotations.ModelEntity;
-import org.openflexo.pamela.annotations.Remover;
 import org.openflexo.pamela.annotations.Setter;
+import org.openflexo.pamela.ppf.annotations.NonNull;
 import org.openflexo.pamela.test.dpf.AbstractConcept;
 
 @ModelEntity
-public interface X extends AbstractConcept, MonitorableProxyObject {
+public interface XSingleY extends AbstractConcept, MonitorableProxyObject {
 
 	static final String SINGLE_Y = "singleY";
-	static final String MULTIPLE_Y = "multipleY";
 
 	@Getter(SINGLE_Y)
 	@NonNull
@@ -60,15 +53,5 @@ public interface X extends AbstractConcept, MonitorableProxyObject {
 
 	@Setter(SINGLE_Y)
 	public void setSingleY(Y value);
-
-	@Getter(value = MULTIPLE_Y, cardinality = Cardinality.LIST)
-	@NonEmpty
-	public List<Y> getMultipleY();
-
-	@Adder(MULTIPLE_Y)
-	public void addToMultipleY(Y c);
-
-	@Remover(MULTIPLE_Y)
-	public void removeFromMultipleY(Y c);
 
 }

@@ -35,16 +35,16 @@ public class TestTotalSingleCardinality {
 
 	private void performTest(MonitoringStrategy monitoringStrategy) throws ModelDefinitionException {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(X.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(XSingleY.class));
 		ModelEntity<AbstractConcept> abstractConceptEntity = factory.getMetaModel().getModelEntity(AbstractConcept.class);
 		abstractConceptEntity.setMonitoringStrategy(monitoringStrategy);
 
-		ModelEntity<X> xEntity = factory.getMetaModel().getModelEntity(X.class);
+		ModelEntity<XSingleY> xEntity = factory.getMetaModel().getModelEntity(XSingleY.class);
 		System.out.println("MonitoringStategy: " + xEntity.getMonitoringStrategy());
 
-		X x1 = factory.newInstance(X.class, "x1");
-		X x2 = factory.newInstance(X.class, "x2");
-		X x3 = factory.newInstance(X.class, "x3");
+		XSingleY x1 = factory.newInstance(XSingleY.class, "x1");
+		XSingleY x2 = factory.newInstance(XSingleY.class, "x2");
+		XSingleY x3 = factory.newInstance(XSingleY.class, "x3");
 
 		Y y1 = factory.newInstance(Y.class, "y1");
 		Y y2 = factory.newInstance(Y.class, "y2");
@@ -70,6 +70,8 @@ public class TestTotalSingleCardinality {
 		if (monitoringStrategy == MonitoringStrategy.CheckMonitoredMethodsOnly) {
 			Y y3 = factory.newInstance(Y.class, "y3");
 			x3.setSingleY(y3);
+			System.out.println("Bon");
+			System.out.println("y=" + x3.getSingleY());
 			x3.aMonitoredMethod();
 		}
 		else {

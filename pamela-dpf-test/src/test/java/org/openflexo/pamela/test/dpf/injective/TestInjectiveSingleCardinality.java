@@ -1,4 +1,4 @@
-package org.openflexo.pamela.test.dpf.total;
+package org.openflexo.pamela.test.dpf.injective;
 
 import static org.junit.Assert.fail;
 
@@ -11,7 +11,7 @@ import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.ppf.PPFViolationException;
 import org.openflexo.pamela.test.dpf.AbstractConcept;
 
-public class TestTotalMultipleCardinality {
+public class TestInjectiveSingleCardinality {
 
 	@Test
 	public void testCheckMonitoredMethodsOnly() throws ModelDefinitionException {
@@ -35,50 +35,81 @@ public class TestTotalMultipleCardinality {
 
 	private void performTest(MonitoringStrategy monitoringStrategy) throws ModelDefinitionException {
 
-		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(XMultipleY.class));
+		PamelaModelFactory factory = new PamelaModelFactory(PamelaMetaModelLibrary.retrieveMetaModel(XSingleY.class));
 		ModelEntity<AbstractConcept> abstractConceptEntity = factory.getMetaModel().getModelEntity(AbstractConcept.class);
 		abstractConceptEntity.setMonitoringStrategy(monitoringStrategy);
 
-		XMultipleY x1 = factory.newInstance(XMultipleY.class, "x1");
-		XMultipleY x2 = factory.newInstance(XMultipleY.class, "x2");
-		XMultipleY x3 = factory.newInstance(XMultipleY.class, "x3");
+		XSingleY x1 = factory.newInstance(XSingleY.class, "x1");
+		XSingleY x2 = factory.newInstance(XSingleY.class, "x2");
+		XSingleY x3 = factory.newInstance(XSingleY.class, "x3");
 
 		Y y1 = factory.newInstance(Y.class, "y1");
 		Y y2 = factory.newInstance(Y.class, "y2");
 
-		x1.addToMultipleY(y1);
-		x2.addToMultipleY(y1);
-		x2.addToMultipleY(y2);
-
-		System.out.println("x1=" + x1);
-		System.out.println("x2=" + x2);
-		System.out.println("x3=" + x3);
+		x1.setSingleY(y1);
+		x2.setSingleY(y1);
+		x3.setSingleY(y1);
 
 		x1.enableAssertionChecking();
 		x2.enableAssertionChecking();
 		x3.enableAssertionChecking();
 
 		try {
+			x1.aMonitoredMethod();
+			fail();
+		} catch (PPFViolationException e) {
+			// Invariant violation: same value y1 for x1 x2 and x3
+		}
+
+		try {
+			x2.aMonitoredMethod();
+			fail();
+		} catch (PPFViolationException e) {
+			// Invariant violation: same value y1 for x1 x2 and x3
+		}
+
+		try {
 			x3.aMonitoredMethod();
 			fail();
 		} catch (PPFViolationException e) {
-			// Invariant violation
+			// Invariant violation: same value y1 for x1 x2 and x3
 		}
 
 		if (monitoringStrategy == MonitoringStrategy.CheckMonitoredMethodsOnly) {
-			Y y3 = factory.newInstance(Y.class, "y3");
-			x3.addToMultipleY(y3);
+			x1.setSingleY(y2);
+			try {
+				x1.aMonitoredMethod();
+			} catch (PPFViolationException e) {
+				// Invariant violation: still same value (y1,y2) for x2 and x3
+			}
+			x3.setSingleY(null);
+			x1.aMonitoredMethod();
+			x2.aMonitoredMethod();
 			x3.aMonitoredMethod();
 		}
 		else {
-			// Call to x3.addToMultipleY(y3) will trigger property checking which will fail
+			// Call to x1.removeFromY(y1) will trigger property checking which will fail
 			try {
-				Y y3 = factory.newInstance(Y.class, "y3");
-				x3.addToMultipleY(y3);
-				x3.aMonitoredMethod();
+				x1.setSingleY(y2);
 			} catch (PPFViolationException e) {
 				// Invariant violation
 			}
+
+			x1.disableAssertionChecking();
+			x2.disableAssertionChecking();
+			x3.disableAssertionChecking();
+
+			x1.setSingleY(y2);
+			x3.setSingleY(null);
+
+			x1.enableAssertionChecking();
+			x2.enableAssertionChecking();
+			x3.enableAssertionChecking();
+
+			x1.aMonitoredMethod();
+			x2.aMonitoredMethod();
+			x3.aMonitoredMethod();
+
 		}
 
 	}
