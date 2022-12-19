@@ -38,7 +38,8 @@
  */
 package com.example.securingweb.patterns;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternDefinition;
 
@@ -47,16 +48,17 @@ import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternD
  */
 public class CustomAuthenticatorPatternDefinition extends AuthenticatorPatternDefinition {
 
-	public CustomAuthenticatorPatternDefinition(String identifier, ModelContext modelContext) {
-		super(identifier, modelContext);
+	public CustomAuthenticatorPatternDefinition(String identifier, PamelaMetaModel pamelaMetaModel) {
+		super(identifier, pamelaMetaModel);
 	}
 
 	@Override
-	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity) {
+	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model) {
 		// System.out.println("notifiedNewInstance " + newInstance);
 		if (modelEntity == subjectModelEntity) {
 			// We create a new PatternInstance for each new instance of subjectModelEntity
-			CustomAuthenticatorPatternInstance<?, I, ?, ?> newPatternInstance = new CustomAuthenticatorPatternInstance(this, newInstance);
+			CustomAuthenticatorPatternInstance<?, I, ?, ?> newPatternInstance = new CustomAuthenticatorPatternInstance(this, model,
+					newInstance);
 		}
 	}
 

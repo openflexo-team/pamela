@@ -42,6 +42,7 @@ package com.example.securingweb.patterns;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
+import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.patterns.PreconditionViolationException;
 import org.openflexo.pamela.patterns.PropertyViolationException;
 import org.openflexo.pamela.patterns.annotations.Requires;
@@ -63,8 +64,8 @@ public class CustomAuthenticatorPatternInstance<A, S, AI, PI> extends Authentica
 	LoadingCache<String, Integer> attemptsCache;
 	boolean isBlocked;
 
-	public CustomAuthenticatorPatternInstance(CustomAuthenticatorPatternDefinition patternDefinition, S subject) {
-		super(patternDefinition, subject);
+	public CustomAuthenticatorPatternInstance(CustomAuthenticatorPatternDefinition patternDefinition, PamelaModel model, S subject) {
+		super(patternDefinition, model, subject);
 		key = ((SessionInfo) subject).getIpAdress();
 		attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(3, TimeUnit.MINUTES).build(new CacheLoader<String, Integer>() {
 			@Override

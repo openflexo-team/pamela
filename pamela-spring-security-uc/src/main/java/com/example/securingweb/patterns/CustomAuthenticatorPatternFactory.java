@@ -39,7 +39,7 @@
 
 package com.example.securingweb.patterns;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternFactory;
 
 /**
@@ -47,8 +47,8 @@ import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternF
  */
 public class CustomAuthenticatorPatternFactory extends AuthenticatorPatternFactory {
 
-	public CustomAuthenticatorPatternFactory(ModelContext modelContext) {
-		super(modelContext);
+	public CustomAuthenticatorPatternFactory(PamelaMetaModel metaModel) {
+		super(metaModel);
 	}
 
 	@Override

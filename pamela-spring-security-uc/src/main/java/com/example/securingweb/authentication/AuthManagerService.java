@@ -1,8 +1,8 @@
 package com.example.securingweb.authentication;
 
-import org.openflexo.pamela.ModelContext;
+import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
-import org.openflexo.pamela.factory.ModelFactory;
+import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -10,13 +10,13 @@ public class AuthManagerService {
 
 	private CustomAuthenticationProvider authenticationProvider;
 
-	private ModelFactory factory;
+	private PamelaModelFactory factory;
 
 	public AuthManagerService() {
-		ModelContext context;
+		PamelaMetaModel pamelaMetaModel;
 		try {
-			context = new ModelContext(CustomAuthenticationProvider.class);
-			factory = new ModelFactory(context);
+			pamelaMetaModel = new PamelaMetaModel(CustomAuthenticationProvider.class);
+			factory = new PamelaModelFactory(pamelaMetaModel);
 		} catch (ModelDefinitionException e) {
 			e.printStackTrace();
 		}
