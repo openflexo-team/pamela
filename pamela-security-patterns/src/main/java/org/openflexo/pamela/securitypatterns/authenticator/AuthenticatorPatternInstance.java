@@ -112,7 +112,15 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	}
 
 	private A retrieveAuthenticator() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		return (A) getPatternDefinition().authenticatorGetterMethod.invoke(subject);
+		try {
+			return (A) getPatternDefinition().authenticatorGetterMethod.invoke(subject);
+		} catch (InvocationTargetException e) {
+			if (e.getTargetException() instanceof ModelExecutionException) {
+				throw (ModelExecutionException) e.getTargetException();
+			}
+			throw e;
+		}
+
 	}
 
 	private void checkAuthenticator() {
@@ -161,6 +169,11 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 				isAuthenticated = true;
 				authenticationSuceeded();
 			}
+		} catch (InvocationTargetException e) {
+			if (e.getTargetException() instanceof ModelExecutionException) {
+				throw (ModelExecutionException) e.getTargetException();
+			}
+			throw e;
 		} finally {
 			isAuthenticating = false;
 		}
@@ -174,15 +187,36 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	}
 
 	public AI retrieveAuthentificationInformation() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		return (AI) getPatternDefinition().authentificationInfoMethod.invoke(subject);
+		try {
+			return (AI) getPatternDefinition().authentificationInfoMethod.invoke(subject);
+		} catch (InvocationTargetException e) {
+			if (e.getTargetException() instanceof ModelExecutionException) {
+				throw (ModelExecutionException) e.getTargetException();
+			}
+			throw e;
+		}
 	}
 
 	public PI retrieveProofOfIdentity() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		return (PI) getPatternDefinition().proofOfIdentityGetterMethod.invoke(getSubject());
+		try {
+			return (PI) getPatternDefinition().proofOfIdentityGetterMethod.invoke(getSubject());
+		} catch (InvocationTargetException e) {
+			if (e.getTargetException() instanceof ModelExecutionException) {
+				throw (ModelExecutionException) e.getTargetException();
+			}
+			throw e;
+		}
 	}
 
 	public void setProofOfIdentity(PI proofOfIdentity) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		getPatternDefinition().proofOfIdentitySetterMethod.invoke(subject, proofOfIdentity);
+		try {
+			getPatternDefinition().proofOfIdentitySetterMethod.invoke(subject, proofOfIdentity);
+		} catch (InvocationTargetException e) {
+			if (e.getTargetException() instanceof ModelExecutionException) {
+				throw (ModelExecutionException) e.getTargetException();
+			}
+			throw e;
+		}
 	}
 
 	/**
@@ -205,7 +239,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	public ReturnWrapper processMethodBeforeInvoke(Object instance, Method method, Object[] args)
 			throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
 
-		//System.out.println("On utilise bien le processMethodBeforInvoke");
+		// System.out.println("On utilise bien le processMethodBeforInvoke");
 		if (instance != getSubject()) {
 			// We are only interested to the method calls on the subject
 			return new ReturnWrapper(true, null);
