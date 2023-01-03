@@ -1,6 +1,7 @@
 include 'pamela-core'
 include 'pamela-jml'
 include 'pamela-security-patterns'
+include 'pamela-security-patterns-test'
 include 'pamela-ppf'
 include 'pamela-dpf-test'
 //include 'pamela-perf-tests'
