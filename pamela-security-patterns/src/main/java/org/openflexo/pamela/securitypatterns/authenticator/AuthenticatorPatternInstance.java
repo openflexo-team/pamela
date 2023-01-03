@@ -77,6 +77,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 	private boolean isAuthenticating = false;
 	private boolean isChecking = false;
+	private boolean isCheckingAuthenticator = false;
 	private boolean isAuthenticated = false;
 
 	public AuthenticatorPatternInstance(AuthenticatorPatternDefinition patternDefinition, PamelaModel model, S subject)
@@ -103,7 +104,18 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 	public A getAuthenticator() {
 		if (authenticator == null) {
-			checkAuthenticator();
+			try {
+				checkAuthenticator();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return authenticator;
 	}
@@ -120,8 +132,11 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 	}
 
-	private void checkAuthenticator() {
-		isChecking = true;
+	private void checkAuthenticator() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		if (isCheckingAuthenticator) {
+			return;
+		}
+		isCheckingAuthenticator = true;
 		A retrievedAuthenticator;
 		try {
 			retrievedAuthenticator = retrieveAuthenticator();
@@ -129,10 +144,9 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 				authenticator = retrievedAuthenticator;
 				registerStakeHolder(authenticator, AuthenticatorPatternDefinition.AUTHENTICATOR_ROLE);
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		} finally {
+			isCheckingAuthenticator = false;
 		}
-		isChecking = false;
 	}
 
 	@Override
@@ -140,7 +154,18 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 		if (evt.getSource() == subject) {
 			// System.out.println("propertyChange from subject " + evt.getPropertyName() + "
 			// evt=" + evt);
-			checkAuthenticator();
+			try {
+				checkAuthenticator();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -251,7 +276,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 		if (PamelaUtils.methodIsEquivalentTo(method, getPatternDefinition().authenticateMethod)) {
 			if (isValid()) {
-				System.out.println("On passe PerformAuthentication normalement");
+				// System.out.println("On passe PerformAuthentication normalement");
 				performAuthentication();
 				return new ReturnWrapper(false, null);
 			}
