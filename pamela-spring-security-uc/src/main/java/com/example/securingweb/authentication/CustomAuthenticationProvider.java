@@ -1,11 +1,14 @@
 package com.example.securingweb.authentication;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.openflexo.pamela.annotations.ImplementationClass;
 import org.openflexo.pamela.annotations.Import;
 import org.openflexo.pamela.annotations.Imports;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.patterns.PropertyParadigmType;
+import org.openflexo.pamela.patterns.annotations.RaiseEventOnException;
 import org.openflexo.pamela.patterns.annotations.Requires;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticationInformation;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authenticator;
@@ -20,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.stereotype.Component;
+
+import com.example.securingweb.patterns.AuthFailedEvent;
 
 @Component
 @ModelEntity
@@ -36,9 +41,10 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 	@Override
 	@Requires(
 			patternID = SessionInfo.PATTERN_ID,
-			type = PropertyParadigmType.TemporalLogic,
-			property = "assert always auth_fail[*3] & time_limit<3min @ (auth_fail)"/*,
-																					exceptionWhenViolated = TooManyLoginAttemptsException.class*/)
+			// type = PropertyParadigmType.TemporalLogic,
+			// property = "assert always auth_fail[*3] & time_limit<3min @ (auth_fail)"
+			property = "patternInstance.checkAuthFailCount()"
+	/*,exceptionWhenViolated = TooManyLoginAttemptsException.class*/)
 	// @Requires(patternID = SessionInfo.PATTERN_ID, type = PropertyParadigmType.TemporalLogic, property = "assert always not(a)[*0:10];a")
 	// Another idea :
 	// event e1,e2,e3
@@ -49,84 +55,58 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 	// if (e2 == null) e2 <- e; else e2 <- e3;
 	// if (e3 == null) e3 <- e;
 	// }
+	@RaiseEventOnException(patternID = SessionInfo.PATTERN_ID, onException = AuthenticationException.class, generateEvent = AuthFailedEvent.class)
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException;
 
+	/**
+	 * This method retrieve proof of identity given supplied authentication information
+	 * 
+	 * @param userName
+	 * @return
+	 */
 	@RequestAuthentication(patternID = SessionInfo.PATTERN_ID)
-	int request(@AuthenticationInformation(patternID = SessionInfo.PATTERN_ID, paramID = USER_NAME) String userName);
+	UsernamePasswordAuthenticationToken request(
+			@AuthenticationInformation(patternID = SessionInfo.PATTERN_ID, paramID = USER_NAME) String userName);
 
 	abstract class CustomAuthenticationProviderImpl extends DaoAuthenticationProvider implements CustomAuthenticationProvider {
+
+		private Map<String, UsernamePasswordAuthenticationToken> tokens = new HashMap<>();
+
+		/**
+		 * Implementation is here trivial as we use map filled by {@link #authenticate(Authentication)} method
+		 */
+		@Override
+		public UsernamePasswordAuthenticationToken request(String userName) {
+			return tokens.get(userName);
+		}
 
 		@Override
 		public Authentication authenticate(Authentication authentication) throws AuthenticationException {
 
 			try {
-				System.out.println("On utilise bien le CustomAuthenticationProvider pour " + authentication);
-				Thread.dumpStack();
+				System.out.println("authenticate(Authentication) called for " + authentication);
 				UsernamePasswordAuthenticationToken returned = (UsernamePasswordAuthenticationToken) super.authenticate(authentication);
 				String name = authentication.getName();
-				String password = authentication.getCredentials().toString();
+				// String password = authentication.getCredentials().toString();
 				WebAuthenticationDetails details = (WebAuthenticationDetails) authentication.getDetails();
 				String userIp = details.getRemoteAddress();
-				Authentication authenticationIP = authentication;
-				SessionInfo.getCurrentSessionInfo().setUserName(name);
-				SessionInfo.getCurrentSessionInfo().setIpAdress(userIp);
-				System.out.println("Current session info: " + SessionInfo.getCurrentSessionInfo());
+				SessionInfo sessionInfo = SessionInfo.getCurrentSessionInfo();
+				sessionInfo.setUserName(name);
+				sessionInfo.setIpAdress(userIp);
+				tokens.put(name, returned);
+				System.out.println("Current session info: " + sessionInfo);
+				sessionInfo.authenticate();
+				// Ensure that we are now in authenticated context
+				sessionInfo.checkSecure();
 				return returned;
 			} catch (AuthenticationException e) {
 				throw e;
 			} catch (ModelExecutionException e) {
 				e.printStackTrace();
-				System.out.println("Oulala ca craint");
-				// return null;
-				throw new SessionAuthenticationException("Cannot open more than one session for a given user");
+				throw new SessionAuthenticationException("Exception during authentication: " + e.getMessage());
 			}
 
-			/*try {
-				System.out.println("On utilise bien le CustomAuthenticationProvider pour " + authentication);
-				Thread.dumpStack();
-			
-				String name = authentication.getName();
-				String password = authentication.getCredentials().toString();
-			
-				SessionInfo.getCurrentSessionInfo().setUserName(name);
-				System.out.println("Current session info: " + SessionInfo.getCurrentSessionInfo());
-			
-				if (shouldAuthenticateAgainstThirdPartySystem()) {
-			
-					// use the credentials
-					// and authenticate against the third-party system
-					return new UsernamePasswordAuthenticationToken(name, password, new ArrayList<>());
-				}
-				else {
-					return null;
-				}
-			} catch (ModelExecutionException e) {
-				e.printStackTrace();
-				System.out.println("Oulala ca craint");
-				// return null;
-				throw new SessionAuthenticationException("Cannot open more than one session for a given user");
-			}*/
 		}
-
-		/*private boolean shouldAuthenticateAgainstThirdPartySystem() {
-			return true;
-		}*/
-
-		/*@Override
-		public boolean supports(Class<?> authentication) {
-			return authentication.equals(UsernamePasswordAuthenticationToken.class);
-		}*/
-
-		/*
-		 * @Override public int request(String id) { if (this.check(id)) { return
-		 * this.generateFromAuthInfo(id); } return this.getDefaultToken(); }
-		 * 
-		 * private boolean check(String id) { for (String userID : this.getUsers()) { if
-		 * (userID.compareTo(id) == 0) return true; } return false; }
-		 * 
-		 * @Override public int generateFromAuthInfo(String id) { return id.hashCode();
-		 * }
-		 */
 
 	}
 

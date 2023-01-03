@@ -3,7 +3,7 @@
  * Copyright (c) 2013-2020, Openflexo
  * Copyright (c) 2011-2012, AgileBirds
  * 
- * This file is part of pamela-security-patterns, a component of the software infrastructure 
+ * This file is part of pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
  * 
  * 
@@ -36,32 +36,17 @@
  * or visit www.openflexo.org if you need additional information.
  * 
  */
+
 package com.example.securingweb.patterns;
 
-import org.openflexo.pamela.PamelaMetaModel;
-import org.openflexo.pamela.factory.PamelaModel;
-import org.openflexo.pamela.model.ModelEntity;
-import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternDefinition;
-
-import com.example.securingweb.authentication.SessionInfo;
+import org.openflexo.pamela.patterns.PatternInstanceEvent;
 
 /**
- * A specialization for {@link AuthenticatorPatternDefinition}
+ * An event raised when authentication failed
+ * 
+ * @author sylvain
+ *
  */
-public class CustomAuthenticatorPatternDefinition extends AuthenticatorPatternDefinition {
-
-	public CustomAuthenticatorPatternDefinition(String identifier, PamelaMetaModel pamelaMetaModel) {
-		super(identifier, pamelaMetaModel);
-	}
-
-	@Override
-	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model) {
-		// System.out.println("notifiedNewInstance " + newInstance);
-		if (modelEntity == subjectModelEntity) {
-			// We create a new PatternInstance for each new instance of subjectModelEntity
-			CustomAuthenticatorPatternInstance newPatternInstance = new CustomAuthenticatorPatternInstance(this, model,
-					(SessionInfo) newInstance);
-		}
-	}
+public class AuthFailedEvent extends PatternInstanceEvent {
 
 }

@@ -17,6 +17,7 @@ import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authentic
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticatorGetter;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticatorSubject;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.ProofOfIdentitySetter;
+import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequiresAuthentication;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -43,10 +44,10 @@ public interface SessionInfo {
 
 	@Setter(USER_NAME)
 	void setUserName(String val);
-	
+
 	@Setter(IP_ADRESS)
 	void setIpAdress(String val);
-	
+
 	@Getter(value = IP_ADRESS, ignoreType = true)
 	String getIpAdress();
 
@@ -65,11 +66,14 @@ public interface SessionInfo {
 	void setAuthenticationProvider(CustomAuthenticationProvider val);
 
 	@AuthenticateMethod(patternID = PATTERN_ID)
-	void authenticate() 
-		// expected : performAuthentication();
-	;
+	void authenticate();
 
-	void checkAuthentication();
+	/**
+	 * Ensure call-stack is executed in authenticated context relatively to this {@link SessionInfo}<br>
+	 * Because this method is annotated with @RequiresAuthentication, calling it MUST be performed in authenticated context
+	 */
+	@RequiresAuthentication
+	void checkSecure();
 
 	@Override
 	public String toString();
@@ -86,18 +90,18 @@ public interface SessionInfo {
 
 		@Override
 		public String toString() {
-			return "SessionInfo userName=" + getUserName() + "  SessionInfo IpAdress=" + getIpAdress() + "(created on " + created + ")";
+			return "SessionInfo userName=" + getUserName() + "  SessionInfo IpAdress=" + getIpAdress() + " IDProof=" + getIDProof()
+					+ " (created on " + created + ")";
 		}
 
 		@Override
-		public void checkAuthentication() {
-			System.out.println("checkAuthentication() !");
+		public void checkSecure() {
+			System.out.println("checkSecure() for " + this);
 		}
 
 		@Override
 		public String getIpAdress() {
-			return ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes())
-			           .getRequest().getRemoteAddr();
+			return ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest().getRemoteAddr();
 		}
 	}
 

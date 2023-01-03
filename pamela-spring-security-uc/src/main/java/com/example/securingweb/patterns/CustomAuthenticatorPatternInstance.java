@@ -48,7 +48,9 @@ import org.openflexo.pamela.patterns.PropertyViolationException;
 import org.openflexo.pamela.patterns.annotations.Requires;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternDefinition;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternInstance;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import com.example.securingweb.authentication.CustomAuthenticationProvider;
 import com.example.securingweb.authentication.SessionInfo;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -57,16 +59,18 @@ import com.google.common.cache.LoadingCache;
 /**
  * A specialization for {@link AuthenticatorPatternDefinition}
  */
-public class CustomAuthenticatorPatternInstance<A, S, AI, PI> extends AuthenticatorPatternInstance<A, S, AI, PI> {
+public class CustomAuthenticatorPatternInstance
+		extends AuthenticatorPatternInstance<CustomAuthenticationProvider, SessionInfo, String, UsernamePasswordAuthenticationToken> {
 
 	String key;
 	private final int MAX_ATTEMPT = 3;
 	LoadingCache<String, Integer> attemptsCache;
 	boolean isBlocked;
 
-	public CustomAuthenticatorPatternInstance(CustomAuthenticatorPatternDefinition patternDefinition, PamelaModel model, S subject) {
+	public CustomAuthenticatorPatternInstance(CustomAuthenticatorPatternDefinition patternDefinition, PamelaModel model,
+			SessionInfo subject) {
 		super(patternDefinition, model, subject);
-		key = ((SessionInfo) subject).getIpAdress();
+		key = subject.getIpAdress();
 		attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(3, TimeUnit.MINUTES).build(new CacheLoader<String, Integer>() {
 			@Override
 			public Integer load(String key) {
@@ -96,9 +100,9 @@ public class CustomAuthenticatorPatternInstance<A, S, AI, PI> extends Authentica
 				int attempts = 0;
 				attempts = attemptsCache.getUnchecked(key);
 				attempts++;
-				System.out.printf("La tentative num�ro " + attempts + " a �chou�\n");
+				System.out.printf("La tentative numero " + attempts + " a echouee\n");
 				attemptsCache.put(key, attempts);
-				System.out.println("L'authentification a �chou�, la valeur dans le cache augmente de 1 \n");
+				System.out.println("L'authentification a echoue, la valeur dans le cache augmente de 1 \n");
 			}
 
 		}
@@ -144,12 +148,14 @@ public class CustomAuthenticatorPatternInstance<A, S, AI, PI> extends Authentica
 
 	}
 
+	public void checkAuthFailCount() {
+		// Perform check that last 3 AuthFailEvent in current execution trace did not raised within allowed time limit
+	}
+
 	@Override
 	public void authenticationSuceeded() {
-		// TODO Auto-generated method stub
 		super.authenticationSuceeded();
 		attemptsCache.invalidate(key);
-		System.out.println("L'authentification a r�ussi, le cache est r�initialis� \n");
-
+		System.out.println("authenticationSuceeded() cache has ben resetted \n");
 	}
 }
