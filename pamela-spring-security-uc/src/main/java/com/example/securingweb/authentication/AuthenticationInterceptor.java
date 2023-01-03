@@ -18,7 +18,8 @@ public class AuthenticationInterceptor extends HandlerInterceptorAdapter {
 		request.setAttribute("startTime", startTime);*/
 
 		SessionInfo sessionInfo = (SessionInfo) request.getSession().getAttribute(SessionInfo.SESSION_INFO);
-		sessionInfo.checkAuthentication();
+		// A quoi ca sert ????
+		// sessionInfo.checkAuthentication();
 
 		return true;
 	}
