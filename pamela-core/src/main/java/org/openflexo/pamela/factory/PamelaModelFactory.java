@@ -958,7 +958,13 @@ public class PamelaModelFactory implements IObjectGraphFactory {
 			if (modelEntity.isSimplePamelaInstrumentation()) {
 				Class<?>[] paramTypesArray = new Class<?>[args.length];
 				for (int i = 0; i < args.length; i++) {
-					paramTypesArray[i] = args[i].getClass();
+					if (args[i] instanceof ProxyObject) {
+						ProxyMethodHandler pmHandler = (ProxyMethodHandler) ((ProxyObject) args[i]).getHandler();
+						paramTypesArray[i] = pmHandler.getModelEntity().getImplementedInterface();
+					}
+					else {
+						paramTypesArray[i] = args[i].getClass();
+					}
 				}
 				returned = (I) create(paramTypesArray, args, handler);
 				handler.setObject(returned);
