@@ -56,7 +56,7 @@ public abstract class PropertyViolationException extends Exception {
 	/**
 	 * @return The property paradigm in which this expression is expressed
 	 */
-	public abstract PropertyParadigmType getPropertyType();
+	// public abstract PropertyParadigmType getPropertyType();
 
 	/**
 	 * @return The property, serialized as text

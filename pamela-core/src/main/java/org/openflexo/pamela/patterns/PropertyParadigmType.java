@@ -45,6 +45,7 @@ package org.openflexo.pamela.patterns;
  * @author sylvain
  *
  */
+@Deprecated
 public enum PropertyParadigmType {
 	/**
 	 * Property is expressed as a java expression

@@ -46,7 +46,6 @@ import java.lang.annotation.Target;
 
 import org.openflexo.pamela.patterns.PatternDefinition;
 import org.openflexo.pamela.patterns.PostconditionViolationException;
-import org.openflexo.pamela.patterns.PropertyParadigmType;
 
 /**
  * Defines a property evaluated as a postcondition for a given method, in the context of a given {@link PatternDefinition}, and expressed in
@@ -67,7 +66,7 @@ public @interface Ensures {
 	/**
 	 * @return The property paradigm in which this expression is expressed
 	 */
-	PropertyParadigmType type();
+	// PropertyParadigmType type();
 
 	/**
 	 * @return The property, serialized as text

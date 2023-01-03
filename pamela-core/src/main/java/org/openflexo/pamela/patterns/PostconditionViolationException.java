@@ -66,10 +66,10 @@ public class PostconditionViolationException extends PropertyViolationException 
 		return postcondition.patternID();
 	}
 
-	@Override
+	/*@Override
 	public PropertyParadigmType getPropertyType() {
 		return postcondition.type();
-	}
+	}*/
 
 	@Override
 	public String getProperty() {

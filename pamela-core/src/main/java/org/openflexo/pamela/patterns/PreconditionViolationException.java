@@ -66,10 +66,10 @@ public class PreconditionViolationException extends PropertyViolationException {
 		return precondition.patternID();
 	}
 
-	@Override
+	/*@Override
 	public PropertyParadigmType getPropertyType() {
 		return precondition.type();
-	}
+	}*/
 
 	@Override
 	public String getProperty() {
