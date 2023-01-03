@@ -39,6 +39,7 @@
 
 package org.openflexo.pamela.factory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -193,7 +194,18 @@ public class PamelaModel {
 		// Iterate on all pattern factories declared in the metamodel, and notify creation of new instance
 		for (AbstractPatternFactory<?> patternFactory : getMetaModel().getPatternFactories()) {
 			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
-				patternDefinition.notifiedNewInstance(newInstance, modelEntity, this);
+				try {
+					patternDefinition.notifiedNewInstance(newInstance, modelEntity, this);
+				} catch (IllegalAccessException e) {
+					logger.warning("Un-handled exception: " + e);
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					logger.warning("Un-handled exception: " + e);
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					logger.warning("Un-handled exception: " + e);
+					e.printStackTrace();
+				}
 			}
 		}
 		if (getEditingContext() != null) {

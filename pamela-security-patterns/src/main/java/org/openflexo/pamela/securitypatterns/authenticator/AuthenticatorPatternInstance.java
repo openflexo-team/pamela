@@ -79,16 +79,13 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	private boolean isChecking = false;
 	private boolean isAuthenticated = false;
 
-	public AuthenticatorPatternInstance(AuthenticatorPatternDefinition patternDefinition, PamelaModel model, S subject) {
+	public AuthenticatorPatternInstance(AuthenticatorPatternDefinition patternDefinition, PamelaModel model, S subject)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		super(patternDefinition, model);
 		this.subject = subject;
 		registerStakeHolder(subject, AuthenticatorPatternDefinition.SUBJECT_ROLE);
-		try {
-			authInfo = retrieveAuthentificationInformation();
-			defaultIdProof = retrieveProofOfIdentity();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		authInfo = retrieveAuthentificationInformation();
+		defaultIdProof = retrieveProofOfIdentity();
 		if (subject instanceof HasPropertyChangeSupport) {
 			((HasPropertyChangeSupport) subject).getPropertyChangeSupport().addPropertyChangeListener(this);
 		}

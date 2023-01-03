@@ -39,6 +39,7 @@
 
 package org.openflexo.pamela.patterns;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -134,7 +135,8 @@ public abstract class PatternDefinition {
 		return returned;
 	}
 
-	public abstract <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model);
+	public abstract <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 
 	public void addToPreconditionsForMethod(Requires precondition, Method method) {
 		List<Requires> l = preconditions.get(method);

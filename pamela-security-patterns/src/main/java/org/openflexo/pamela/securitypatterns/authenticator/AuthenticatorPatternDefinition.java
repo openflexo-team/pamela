@@ -38,6 +38,7 @@
  */
 package org.openflexo.pamela.securitypatterns.authenticator;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 
@@ -106,7 +107,8 @@ public class AuthenticatorPatternDefinition extends PatternDefinition {
 	}
 
 	@Override
-	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model) {
+	public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model)
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		// System.out.println("notifiedNewInstance " + newInstance);
 		if (modelEntity == subjectModelEntity) {
 			// We create a new PatternInstance for each new instance of subjectModelEntity
