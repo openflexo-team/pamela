@@ -38,6 +38,8 @@
  */
 package com.example.securingweb.patterns;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.model.ModelEntity;
@@ -59,8 +61,19 @@ public class CustomAuthenticatorPatternDefinition extends AuthenticatorPatternDe
 		// System.out.println("notifiedNewInstance " + newInstance);
 		if (modelEntity == subjectModelEntity) {
 			// We create a new PatternInstance for each new instance of subjectModelEntity
-			CustomAuthenticatorPatternInstance newPatternInstance = new CustomAuthenticatorPatternInstance(this, model,
-					(SessionInfo) newInstance);
+			try {
+				CustomAuthenticatorPatternInstance newPatternInstance = new CustomAuthenticatorPatternInstance(this, model,
+						(SessionInfo) newInstance);
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 

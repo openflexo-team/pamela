@@ -39,6 +39,7 @@
 
 package com.example.securingweb.patterns;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
@@ -68,7 +69,7 @@ public class CustomAuthenticatorPatternInstance
 	boolean isBlocked;
 
 	public CustomAuthenticatorPatternInstance(CustomAuthenticatorPatternDefinition patternDefinition, PamelaModel model,
-			SessionInfo subject) {
+			SessionInfo subject) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		super(patternDefinition, model, subject);
 		key = subject.getIpAdress();
 		attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(3, TimeUnit.MINUTES).build(new CacheLoader<String, Integer>() {
