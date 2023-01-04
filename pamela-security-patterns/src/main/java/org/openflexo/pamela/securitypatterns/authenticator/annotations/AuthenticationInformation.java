@@ -69,4 +69,15 @@ public @interface AuthenticationInformation {
 	 *         {@link RequestAuthentication} parameter.
 	 */
 	String paramID();
+
+	/**
+	 * @return true if this AuthenticationInformation should be unique regarding to AuthenticationInformation unicity
+	 */
+	boolean isUniqueKey() default true;
+
+	/**
+	 * @return index of this AuthenticationInformation in the ordered list of all AuthenticationInformations
+	 * @return
+	 */
+	int index() default -1;
 }

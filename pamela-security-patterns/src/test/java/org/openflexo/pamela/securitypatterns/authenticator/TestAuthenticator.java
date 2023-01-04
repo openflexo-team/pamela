@@ -24,7 +24,7 @@ public class TestAuthenticator extends TestCase {
 		assertEquals(IAuthenticator.class.getMethod("request", String.class), patternDefinition.requestAuthentificationMethod);
 
 		assertEquals(Subject.class, patternDefinition.subjectModelEntity.getImplementedInterface());
-		assertEquals(Subject.class.getMethod("getAuthInfo"), patternDefinition.authentificationInfoMethod);
+		assertEquals(Subject.class.getMethod("getAuthInfo"), patternDefinition.authentificationInfoMethods.get(0));
 		assertEquals(Subject.class.getMethod("setIdProof", int.class), patternDefinition.proofOfIdentitySetterMethod);
 		assertEquals(Subject.class.getMethod("getManager"), patternDefinition.authenticatorGetterMethod);
 		assertEquals(Subject.class.getMethod("authenticate"), patternDefinition.authenticateMethod);

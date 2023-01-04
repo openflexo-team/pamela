@@ -40,8 +40,11 @@
 package org.openflexo.pamela.securitypatterns.authenticator;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.model.ModelEntity;
@@ -84,7 +87,19 @@ public class AuthenticatorPatternFactory extends AbstractPatternFactory<Authenti
 		}
 
 		super.discoverEntity(entity);
+
+		for (AuthenticatorPatternDefinition patternDefinition : getPatternDefinitions().values()) {
+			Collections.sort(patternDefinition.authentificationInfoMethods, new Comparator<Method>() {
+				@Override
+				public int compare(Method m1, Method m2) {
+					return authenticationInformationIndexes.get(m1) - authenticationInformationIndexes.get(m2);
+				}
+			});
+			System.out.println("On trie: " + patternDefinition.authentificationInfoMethods);
+		}
 	}
+
+	private Map<Method, Integer> authenticationInformationIndexes = new HashMap<>();
 
 	@Override
 	protected void discoverMethod(Method m) {
@@ -96,16 +111,25 @@ public class AuthenticatorPatternFactory extends AbstractPatternFactory<Authenti
 			AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(requestAuthenticationMethodAnnotation.patternID(),
 					true);
 			patternDefinition.requestAuthentificationMethod = m;
-			int i = 0;
+			// TODO: investigate on this
+			/*int i = 0;
 			for (AnnotatedType annotatedType : m.getAnnotatedParameterTypes()) {
-				System.out.println("i=" + i + " annotatedType = " + annotatedType);
-			}
+				System.out.println("i=" + i + " annotatedType = " + annotatedType + " pour " + m);
+				i++;
+				AuthenticationInformation annotation = annotatedType.getAnnotation(AuthenticationInformation.class);
+				System.out.println("annotation=" + annotation);
+				System.out.println("annotations=" + annotatedType.getAnnotations().length);
+			}*/
 
 		}
 		AuthenticationInformation authInfoAnnotation = m.getAnnotation(AuthenticationInformation.class);
 		if (authInfoAnnotation != null) {
 			AuthenticatorPatternDefinition patternDefinition = getPatternDefinition(authInfoAnnotation.patternID(), true);
-			patternDefinition.authentificationInfoMethod = m;
+			patternDefinition.authentificationInfoMethods.add(m);
+			if (authInfoAnnotation.isUniqueKey()) {
+				patternDefinition.authentificationInfoUniqueKeyMethods.add(m);
+			}
+			authenticationInformationIndexes.put(m, authInfoAnnotation.index());
 		}
 		ProofOfIdentitySetter proofOfIdentitySetterAnnotation = m.getAnnotation(ProofOfIdentitySetter.class);
 		if (proofOfIdentitySetterAnnotation != null) {

@@ -40,7 +40,9 @@ package org.openflexo.pamela.securitypatterns.authenticator;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
@@ -76,7 +78,8 @@ public class AuthenticatorPatternDefinition extends PatternDefinition {
 	public int authentificationInfoParameterIndex; // @AuthenticationInformation in parameter
 
 	public ModelEntity<?> subjectModelEntity; // @AuthenticatorSubject
-	public Method authentificationInfoMethod; // @AuthenticationInformation
+	public List<Method> authentificationInfoMethods = new ArrayList<>(); // @AuthenticationInformation
+	public List<Method> authentificationInfoUniqueKeyMethods = new ArrayList<>(); // @AuthenticationInformation
 	public Method proofOfIdentitySetterMethod; // @ProofOfIdentitySetter
 	public Method authenticatorGetterMethod; // @AuthenticatorGetter
 	public Method authenticateMethod; // @AuthenticateMethod
@@ -119,11 +122,15 @@ public class AuthenticatorPatternDefinition extends PatternDefinition {
 	@Override
 	public boolean isMethodInvolvedInPattern(Method method) {
 		if (PamelaUtils.methodIsEquivalentTo(method, requestAuthentificationMethod)
-				|| PamelaUtils.methodIsEquivalentTo(method, authentificationInfoMethod)
 				|| PamelaUtils.methodIsEquivalentTo(method, proofOfIdentitySetterMethod)
 				|| PamelaUtils.methodIsEquivalentTo(method, authenticatorGetterMethod)
 				|| PamelaUtils.methodIsEquivalentTo(method, authenticateMethod)) {
 			return true;
+		}
+		for (Method authentificationInfoMethod : authentificationInfoMethods) {
+			if (PamelaUtils.methodIsEquivalentTo(method, authentificationInfoMethod)) {
+				return true;
+			}
 		}
 		if (method.getAnnotation(RequiresAuthentication.class) != null) {
 			return true;
@@ -148,7 +155,8 @@ public class AuthenticatorPatternDefinition extends PatternDefinition {
 		sb.append("requestAuthentificationMethod=" + requestAuthentificationMethod + "\n");
 		sb.append("authentificationInfoParameterIndex=" + authentificationInfoParameterIndex + "\n");
 		sb.append("subjectModelEntity=" + subjectModelEntity + "\n");
-		sb.append("authentificationInfoMethod=" + authentificationInfoMethod + "\n");
+		sb.append("authentificationInfoMethods=" + authentificationInfoMethods + "\n");
+		sb.append("authentificationInfoUniqueKeyMethods=" + authentificationInfoUniqueKeyMethods + "\n");
 		sb.append("proofOfIdentitySetterMethod=" + proofOfIdentitySetterMethod + "\n");
 		sb.append("authenticatorGetterMethod=" + authenticatorGetterMethod + "\n");
 		sb.append("authenticateMethod=" + authenticateMethod + "\n");

@@ -43,6 +43,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.PamelaModel;
@@ -65,13 +67,22 @@ import org.openflexo.toolbox.HasPropertyChangeSupport;
  * </ul>
  *
  * @author Caine Silva, Sylvain Guerin
+ *
+ * @param <A>
+ *            type of Authenticator
+ * @param <S>
+ *            type of Subject
+ * @param <AI>
+ *            base type of authentication information (may be Object if auth infos are heterogeneous)
+ * @param <PI>
+ *            type of proof of identity
  */
 public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<AuthenticatorPatternDefinition>
 		implements PropertyChangeListener {
 
 	private final S subject;
 	private A authenticator;
-	private AI authInfo;
+	private List<AI> authInfos;
 	private PI proofOfIdentity;
 	private PI defaultIdProof;
 
@@ -85,7 +96,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 		super(patternDefinition, model);
 		this.subject = subject;
 		registerStakeHolder(subject, AuthenticatorPatternDefinition.SUBJECT_ROLE);
-		authInfo = retrieveAuthentificationInformation();
+		authInfos = retrieveAuthentificationInformations();
 		defaultIdProof = retrieveProofOfIdentity();
 		if (subject instanceof HasPropertyChangeSupport) {
 			((HasPropertyChangeSupport) subject).getPropertyChangeSupport().addPropertyChangeListener(this);
@@ -183,9 +194,10 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 
 		isAuthenticating = true;
 		try {
+			List<AI> authentificationInformations = retrieveAuthentificationInformations();
 			proofOfIdentity = (PI) getPatternDefinition().requestAuthentificationMethod.invoke(authenticator,
-					retrieveAuthentificationInformation());
-			System.out.println("proofOfIdentity=" + proofOfIdentity);
+					authentificationInformations.toArray(new Object[authentificationInformations.size()]));
+			//System.out.println("proofOfIdentity=" + proofOfIdentity);
 			setProofOfIdentity(proofOfIdentity);
 			if (proofOfIdentity != null) {
 				isAuthenticated = true;
@@ -208,15 +220,40 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 		return isAuthenticated;
 	}
 
-	public AI retrieveAuthentificationInformation() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public List<AI> retrieveAuthentificationInformations()
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		List<AI> returned = new ArrayList<>();
+
 		try {
-			return (AI) getPatternDefinition().authentificationInfoMethod.invoke(subject);
+			for (Method authentificationInfoMethod : getPatternDefinition().authentificationInfoMethods) {
+				AI authInfo = (AI) authentificationInfoMethod.invoke(subject);
+				returned.add(authInfo);
+			}
 		} catch (InvocationTargetException e) {
 			if (e.getTargetException() instanceof ModelExecutionException) {
 				throw (ModelExecutionException) e.getTargetException();
 			}
 			throw e;
 		}
+		return returned;
+	}
+
+	public List<AI> retrieveAuthentificationUniqueKeyInformations()
+			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		List<AI> returned = new ArrayList<>();
+
+		try {
+			for (Method authentificationInfoMethod : getPatternDefinition().authentificationInfoUniqueKeyMethods) {
+				AI authInfo = (AI) authentificationInfoMethod.invoke(subject);
+				returned.add(authInfo);
+			}
+		} catch (InvocationTargetException e) {
+			if (e.getTargetException() instanceof ModelExecutionException) {
+				throw (ModelExecutionException) e.getTargetException();
+			}
+			throw e;
+		}
+		return returned;
 	}
 
 	public PI retrieveProofOfIdentity() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -399,9 +436,9 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	 */
 	private void checkAuthInfoIsFinal() {
 		try {
-			AI currentAuthInfo = retrieveAuthentificationInformation();
-			if (authInfo != null && currentAuthInfo != authInfo) {
-				System.out.println("Was: " + authInfo + " is now " + currentAuthInfo);
+			List<AI> currentAuthInfos = retrieveAuthentificationInformations();
+			if (authInfos != null && !authInfos.equals(currentAuthInfos)) {
+				//System.out.println("Was: " + authInfos + " is now " + currentAuthInfos);
 				throw new ModelExecutionException(
 						"Subject Invariant Violation: Authentication Information has changed since initialization");
 			}
@@ -454,11 +491,11 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	 */
 	private void checkAuthInfoUniqueness() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
-		AI currentAuthInfo = retrieveAuthentificationInformation();
+		List<AI> currentAuthInfo = retrieveAuthentificationUniqueKeyInformations();
 		if (currentAuthInfo != null) {
 			for (PatternInstance<AuthenticatorPatternDefinition> pi : getModel().getPatternInstances(getPatternDefinition())) {
 				AuthenticatorPatternInstance otherInstance = (AuthenticatorPatternInstance) pi;
-				AI oppositeAuthInfo = (AI) otherInstance.retrieveAuthentificationInformation();
+				List<AI> oppositeAuthInfo = otherInstance.retrieveAuthentificationUniqueKeyInformations();
 				if (otherInstance != this) {
 					if (currentAuthInfo.equals(oppositeAuthInfo)) {
 						System.out.println("Tiens j'ai trouve des AuthInfo identiques");
