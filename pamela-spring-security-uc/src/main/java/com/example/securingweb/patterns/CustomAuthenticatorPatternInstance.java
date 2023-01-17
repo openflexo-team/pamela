@@ -40,22 +40,15 @@
 package com.example.securingweb.patterns;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 import org.openflexo.pamela.factory.PamelaModel;
-import org.openflexo.pamela.patterns.PreconditionViolationException;
-import org.openflexo.pamela.patterns.PropertyViolationException;
-import org.openflexo.pamela.patterns.annotations.Requires;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternDefinition;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternInstance;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import com.example.securingweb.authentication.CustomAuthenticationProvider;
 import com.example.securingweb.authentication.SessionInfo;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 /**
  * A specialization for {@link AuthenticatorPatternDefinition}
@@ -63,100 +56,34 @@ import com.google.common.cache.LoadingCache;
 public class CustomAuthenticatorPatternInstance
 		extends AuthenticatorPatternInstance<CustomAuthenticationProvider, SessionInfo, String, UsernamePasswordAuthenticationToken> {
 
-	String key;
-	private final int MAX_ATTEMPT = 3;
-	LoadingCache<String, Integer> attemptsCache;
-	boolean isBlocked;
+	public static long TIME_LIMIT = 180000; // 180s = 3 min
 
 	public CustomAuthenticatorPatternInstance(CustomAuthenticatorPatternDefinition patternDefinition, PamelaModel model,
 			SessionInfo subject) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		super(patternDefinition, model, subject);
-		key = subject.getIpAdress();
-		attemptsCache = CacheBuilder.newBuilder().expireAfterWrite(3, TimeUnit.MINUTES).build(new CacheLoader<String, Integer>() {
-			@Override
-			public Integer load(String key) {
-				return 0;
-			}
-
-		});
 	}
 
-	@Override
-	public void invokePrecondition(Requires precondition, Method method) throws PropertyViolationException {
-		super.invokePrecondition(precondition, method);
-
-		if (precondition.property().equals("assert always auth_fail[*3] & time_limit<3min @ (auth_fail)")) {
-			System.out.println("J'appelle la methode " + method + " pour " + method.getDeclaringClass());
-
-			Thread.dumpStack();
-
-			System.out.printf("LA CLE VAUT " + key + "\n");
-
-			if (attemptsCache.getUnchecked(key) >= MAX_ATTEMPT) {
-				isBlocked = true;
-				throw new PreconditionViolationException(precondition);
-			}
-
-			else {
-				int attempts = 0;
-				attempts = attemptsCache.getUnchecked(key);
-				attempts++;
-				System.out.printf("La tentative numero " + attempts + " a echouee\n");
-				attemptsCache.put(key, attempts);
-				System.out.println("L'authentification a echoue, la valeur dans le cache augmente de 1 \n");
-			}
-
+	public boolean checkRecentAuthFailCountLessThan3() {
+		System.out.println("checkRecentAuthFailCountLessThan3()");
+		long currentTime = System.currentTimeMillis();
+		List<AuthFailedEvent> events = getEvents(AuthFailedEvent.class);
+		// System.out.println("events:" + events);
+		if (events.size() >= 3 && (currentTime - events.get(events.size() - 3).getDate()) < TIME_LIMIT) {
+			// 3 attempts or more in TIME_LIMIT interval
+			return false;
 		}
-
-		/*		else if (precondition.property().equals("assert always not(a)[*0:10];a")) {
-					
-				    private final int MAX_ATTEMPT = 10;
-				    private LoadingCache<String, Integer> attemptsCache;
-		
-				    attemptsCache = CacheBuilder.newBuilder().
-				    expireAfterWrite(1, TimeUnit.DAYS).build(new CacheLoader<String, Integer>() {
-				            public Integer load(String key) {
-				                return 0;
-				            }
-				    
-				    });
-				        
-		
-				    public void loginSucceeded(String key) {
-				        attemptsCache.invalidate(key);
-				    }
-		
-				    public void loginFailed(String key) {
-				        int attempts = 0;
-				        try {
-				            attempts = attemptsCache.get(key);
-				        } catch (ExecutionException e) {
-				            attempts = 0;
-				        }
-				        attempts++;
-				        attemptsCache.put(key, attempts);
-				    }
-		
-				    public boolean isBlocked(String key) {
-				        try {
-				            return attemptsCache.get(key) >= MAX_ATTEMPT;
-				        } catch (ExecutionException e) {
-				            return false;
-				     }
-				  }
-					
-				}*/
-
+		return true;
 	}
 
-	public void checkAuthFailCount() {
-		// Perform check that last 3 AuthFailEvent in current execution trace did not raised within allowed time limit
+	public void generateAuthFailEvent() {
+		triggerEvent(new AuthFailedEvent());
+		checkRecentAuthFailCountLessThan3();
 	}
 
 	@Override
 	public void authenticationSuceeded() {
 		super.authenticationSuceeded();
-		attemptsCache.invalidate(key);
-		System.out.println("authenticationSuceeded() cache has ben resetted \n");
+		// We may reset AuthFailEvent...
 	}
+
 }

@@ -8,8 +8,9 @@ import org.openflexo.pamela.annotations.Import;
 import org.openflexo.pamela.annotations.Imports;
 import org.openflexo.pamela.annotations.ModelEntity;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
-import org.openflexo.pamela.patterns.annotations.RaiseEventOnException;
-import org.openflexo.pamela.patterns.annotations.Requires;
+import org.openflexo.pamela.patterns.annotations.Ensures;
+import org.openflexo.pamela.patterns.annotations.OnException;
+import org.openflexo.pamela.patterns.annotations.OnException.OnExceptionStategy;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticationInformation;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.Authenticator;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.RequestAuthentication;
@@ -24,8 +25,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 import org.springframework.stereotype.Component;
 
-import com.example.securingweb.patterns.AuthFailedEvent;
-
 @Component
 @ModelEntity
 @ImplementationClass(CustomAuthenticationProvider.CustomAuthenticationProviderImpl.class)
@@ -39,23 +38,12 @@ public interface CustomAuthenticationProvider extends AuthenticationProvider {
 	public void setUserDetailsService(UserDetailsService userDetailsService);
 
 	@Override
-	@Requires(
+	@OnException(
 			patternID = SessionInfo.PATTERN_ID,
-			// type = PropertyParadigmType.TemporalLogic,
-			// property = "assert always auth_fail[*3] & time_limit<3min @ (auth_fail)"
-			property = "patternInstance.checkAuthFailCount()"
-	/*,exceptionWhenViolated = TooManyLoginAttemptsException.class*/)
-	// @Requires(patternID = SessionInfo.PATTERN_ID, type = PropertyParadigmType.TemporalLogic, property = "assert always not(a)[*0:10];a")
-	// Another idea :
-	// event e1,e2,e3
-	// {
-	// event e = generateEvent();
-	// if (e1 != null) then assert (e.time - e1.time < 1h);
-	// if (e1 == null) e1 <- e; else e1 <- e2;
-	// if (e2 == null) e2 <- e; else e2 <- e3;
-	// if (e3 == null) e3 <- e;
-	// }
-	@RaiseEventOnException(patternID = SessionInfo.PATTERN_ID, onException = AuthenticationException.class, generateEvent = AuthFailedEvent.class)
+			onException = AuthenticationException.class,
+			perform = "patternInstance.generateAuthFailEvent()",
+			strategy = OnExceptionStategy.HandleAndRethrowException)
+	@Ensures(patternID = SessionInfo.PATTERN_ID, property = "patternInstance.checkRecentAuthFailCountLessThan3()")
 	public Authentication authenticate(Authentication authentication) throws AuthenticationException;
 
 	/**
