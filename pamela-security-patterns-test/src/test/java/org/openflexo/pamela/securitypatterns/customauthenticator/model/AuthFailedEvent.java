@@ -1,9 +1,9 @@
 /**
  * 
- * Copyright (c) 2013-2014, Openflexo
+ * Copyright (c) 2013-2020, Openflexo
  * Copyright (c) 2011-2012, AgileBirds
  * 
- * This file is part of Pamela-core, a component of the software infrastructure 
+ * This file is part of pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
  * 
  * 
@@ -37,48 +37,24 @@
  * 
  */
 
-package org.openflexo.pamela.patterns;
+package org.openflexo.pamela.securitypatterns.customauthenticator.model;
 
-import org.openflexo.pamela.patterns.annotations.Requires;
+import org.openflexo.pamela.patterns.PatternInstanceEvent;
 
 /**
- * Thrown when a property defined as precondition has been violated
+ * An event raised when authentication failed
  * 
  * @author sylvain
- * 
+ *
  */
-@SuppressWarnings("serial")
-public class PreconditionViolationException extends PropertyViolationException {
+public class AuthFailedEvent extends PatternInstanceEvent {
 
-	private Requires precondition;
-
-	public PreconditionViolationException(Requires precondition) {
+	public AuthFailedEvent() {
 		super();
-		this.precondition = precondition;
 	}
 
 	@Override
-	public String getMessage() {
-		return "assertion failed: " + precondition.property();
+	public String toString() {
+		return "AuthFailedEvent[" + getDate() + "]";
 	}
-
-	public Requires getPrecondition() {
-		return precondition;
-	}
-
-	@Override
-	public String getPatternID() {
-		return precondition.patternID();
-	}
-
-	/*@Override
-	public PropertyParadigmType getPropertyType() {
-		return precondition.type();
-	}*/
-
-	@Override
-	public String getProperty() {
-		return precondition.property();
-	}
-
 }

@@ -62,7 +62,7 @@ public class ModelExecutionException extends RuntimeException {
 	}
 
 	public ModelExecutionException(Throwable e) {
-		super("ModelExecutionException raised because of exception " + e.getClass().getSimpleName() + " message: " + e.getMessage());
+		super("ModelExecutionException raised because of exception " + e.getClass().getSimpleName() + " message: " + e.getMessage(), e);
 		e.printStackTrace();
 	}
 }

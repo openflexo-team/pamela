@@ -12,35 +12,49 @@ import org.openflexo.toolbox.PropertyChangedSupportDefaultImplementation;
 
 @ModelEntity
 @AuthenticatorSubject(patternID = Subject.PATTERN_ID)
-public class Subject extends PropertyChangedSupportDefaultImplementation {
-	public static final String PATTERN_ID = "patternID";
-	public static final String AUTH_INFO = "auth_info1";
-	public static final String MANAGER = "manager";
-	public static final String ID_PROOF = "id_proof";
+public abstract class Subject extends PropertyChangedSupportDefaultImplementation {
 
-	private String authInfo;
+	public static final String PATTERN_ID = "patternID";
+	public static final String LOGIN = "login";
+	public static final String PASSWORD = "password";
+
+	private String login;
+	private String password;
 	private int idProof = -1;
 	private CustomAuthenticator authenticator;
 	private boolean authenticatedMethodHasBeenSuccessfullyCalled = false;
 
-	public Subject(CustomAuthenticator authenticator, String id) {
+	public Subject(CustomAuthenticator authenticator, String login, String password) {
 		setAuthenticator(authenticator);
-		setAuthInfo(id);
+		setLogin(login);
+		setPassword(password);
 	}
 
-	public Subject(String id) {
-		setAuthInfo(id);
+	public Subject(String login, String password) {
+		setLogin(login);
+		setPassword(password);
 	}
 
-	@AuthenticationInformation(patternID = PATTERN_ID, paramID = CustomAuthenticator.ID)
-	public String getAuthInfo() {
-		return authInfo;
+	@AuthenticationInformation(patternID = PATTERN_ID, paramID = LOGIN, isUniqueKey = true, index = 0)
+	public String getLogin() {
+		return login;
 	}
 
-	public void setAuthInfo(String authInfo) {
-		String oldAuthInfo = this.authInfo;
-		this.authInfo = authInfo;
-		getPropertyChangeSupport().firePropertyChange("authInfo", oldAuthInfo, authInfo);
+	public void setLogin(String login) {
+		String oldLogin = this.login;
+		this.login = login;
+		getPropertyChangeSupport().firePropertyChange("login", oldLogin, login);
+	}
+
+	@AuthenticationInformation(patternID = PATTERN_ID, paramID = PASSWORD, isUniqueKey = false, index = 1)
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		String oldPassword = this.password;
+		this.password = password;
+		getPropertyChangeSupport().firePropertyChange("password", oldPassword, password);
 	}
 
 	@ProofOfIdentityGetter(patternID = PATTERN_ID)
@@ -65,9 +79,11 @@ public class Subject extends PropertyChangedSupportDefaultImplementation {
 	}
 
 	@AuthenticateMethod(patternID = PATTERN_ID)
-	public void authenticate() {
-		setIDProof(getAuthenticator().request(getAuthInfo()));
-	}
+	public abstract void authenticate();
+	// Implementation is not necessary !
+	// {
+	// setIDProof(getAuthenticator().request(getLogin(), getPassword()));
+	// }
 
 	@RequiresAuthentication
 	public void thisMethodRequiresToBeAuthenticated() {

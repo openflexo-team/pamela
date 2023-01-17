@@ -1,9 +1,9 @@
 /**
  * 
- * Copyright (c) 2013-2014, Openflexo
+ * Copyright (c) 2013-2020, Openflexo
  * Copyright (c) 2011-2012, AgileBirds
  * 
- * This file is part of Pamela-core, a component of the software infrastructure 
+ * This file is part of pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
  * 
  * 
@@ -39,46 +39,30 @@
 
 package org.openflexo.pamela.patterns;
 
+import java.lang.reflect.Method;
+
 import org.openflexo.pamela.patterns.annotations.Requires;
 
-/**
- * Thrown when a property defined as precondition has been violated
- * 
- * @author sylvain
- * 
- */
-@SuppressWarnings("serial")
-public class PreconditionViolationException extends PropertyViolationException {
+public class PatternPrecondition extends PatternAssertion {
 
-	private Requires precondition;
+	private final Requires annotation;
 
-	public PreconditionViolationException(Requires precondition) {
-		super();
-		this.precondition = precondition;
+	public PatternPrecondition(PatternDefinition patternDefinition, Method method, Requires annotation) {
+		super(patternDefinition, method, annotation.property());
+		this.annotation = annotation;
 	}
 
-	@Override
-	public String getMessage() {
-		return "assertion failed: " + precondition.property();
+	public Requires getAnnotation() {
+		return annotation;
 	}
 
-	public Requires getPrecondition() {
-		return precondition;
-	}
-
-	@Override
-	public String getPatternID() {
-		return precondition.patternID();
-	}
-
-	/*@Override
-	public PropertyParadigmType getPropertyType() {
-		return precondition.type();
-	}*/
-
-	@Override
-	public String getProperty() {
-		return precondition.property();
+	/**
+	 * Return exception class to throw if this property has been violated
+	 * 
+	 * @return
+	 */
+	public Class<? extends Exception> getExceptionWhenViolated() {
+		return annotation.exceptionWhenViolated();
 	}
 
 }

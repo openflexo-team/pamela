@@ -280,14 +280,104 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 
 	private class PreconditionReturnWrapper {
 		boolean keepGoing = true;
-		Object invoke = null;
-		Throwable thrownException;
+		Object returnValue = null;
 	}
 
-	private PreconditionReturnWrapper invokePatternInstancePreconditions(Object self, Method method,
-			Collection<PatternInstance<?>> patternInstances, Object[] args) throws PreconditionViolationException {
-		if (patternInstances != null) {
-			PreconditionReturnWrapper returned = new PreconditionReturnWrapper();
+	private boolean isInvokingPatternInstancePreconditions = false;
+	private boolean isInvokingPatternInstancePostconditions = false;
+
+	/**
+	 * Perform pre-invokation for {@link PatternInstance} (hooks before invoking some methods, allowing to check internal properties of
+	 * patterns)
+	 * 
+	 * @param self
+	 * @param method
+	 * @param patternInstances
+	 * @param args
+	 * @return
+	 */
+	private PreconditionReturnWrapper invokePatternInstancePreInvokation(Object self, Method method,
+			Collection<PatternInstance<?>> patternInstances, Object[] args) throws InvocationTargetException {
+		PreconditionReturnWrapper returned = new PreconditionReturnWrapper();
+		for (PatternInstance<?> patternInstance : patternInstances) {
+			try {
+				ReturnWrapper returnWrapper;
+				try {
+					returnWrapper = patternInstance.processMethodBeforeInvoke(self, method, args);
+					if (returnWrapper != null && !returnWrapper.mustContinue()) {
+						returned.keepGoing = false;
+						returned.returnValue = returnWrapper.getReturnValue();
+					}
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+					throw new InvocationTargetException(e);
+				} catch (NoSuchMethodException e) {
+					e.printStackTrace();
+					throw new InvocationTargetException(e);
+				}
+			} catch (InvocationTargetException e) {
+				e.getTargetException().printStackTrace();
+				for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
+					monitor.throwingException(self, method, args, e);
+				}
+				throw e;
+			}
+		}
+		return returned;
+	}
+
+	/**
+	 * Perform post-invokation for {@link PatternInstance} (hooks after invoking some methods, allowing to check internal properties of
+	 * patterns)
+	 * 
+	 * @param self
+	 * @param method
+	 * @param patternInstances
+	 * @param returnValue
+	 * @param args
+	 * @throws InvocationTargetException
+	 */
+	private void invokePatternInstancePostInvokation(Object self, Method method, Collection<PatternInstance<?>> patternInstances,
+			Object returnValue, Object[] args) throws InvocationTargetException {
+
+		for (PatternInstance<?> patternInstance : patternInstances) {
+			try {
+				patternInstance.processMethodAfterInvoke(self, method, returnValue, args);
+			} catch (InvocationTargetException e) {
+				e.getTargetException().printStackTrace();
+				for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
+					monitor.throwingException(self, method, args, e);
+				}
+				throw e;
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+				throw new InvocationTargetException(e);
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+				throw new InvocationTargetException(e);
+			}
+		}
+
+	}
+
+	/**
+	 * Invokation of @Requires annotations (preconditions for patterns)
+	 * 
+	 * @param method
+	 * @param patternInstances
+	 * @return
+	 * @throws PreconditionViolationException
+	 */
+	private void invokePatternInstancePreconditions(Method method, Collection<PatternInstance<?>> patternInstances)
+			throws PreconditionViolationException {
+
+		if (isInvokingPatternInstancePreconditions) {
+			return;
+		}
+
+		try {
+			isInvokingPatternInstancePreconditions = true;
+
 			for (PatternInstance<?> patternInstance : patternInstances) {
 				// TODO: Perf issue : implement a cache here
 				List<PatternPrecondition> preconditions = patternInstance.getPatternDefinition().getPreconditions(method);
@@ -313,82 +403,99 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 						}
 					}
 				}
-				try {
-					ReturnWrapper returnWrapper;
-					try {
-						returnWrapper = patternInstance.processMethodBeforeInvoke(self, method, args);
-						if (returnWrapper != null && !returnWrapper.mustContinue()) {
-							returned.keepGoing = false;
-							returned.invoke = returnWrapper.getReturnValue();
-						}
-					} catch (IllegalAccessException e) {
-						returned.thrownException = e;
-						e.printStackTrace();
-					} catch (NoSuchMethodException e) {
-						returned.thrownException = e;
-						e.printStackTrace();
-					}
-				} catch (InvocationTargetException e) {
-					e.getTargetException().printStackTrace();
-					for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
-						monitor.throwingException(self, method, args, e);
-					}
-					returned.thrownException = e.getTargetException();
-				}
 			}
-			return returned;
+
+		} finally {
+			isInvokingPatternInstancePreconditions = false;
 		}
-		return null;
+
 	}
 
-	private void invokePatternInstancePostconditions(Object self, Method method, Collection<PatternInstance<?>> patternInstances,
-			Object returnValue, Object[] args) throws PostconditionViolationException, Throwable {
+	/**
+	 * Invokation of @Ensures annotations (preconditions for patterns)
+	 * 
+	 * @param method
+	 * @param patternInstances
+	 * @return
+	 * @throws PreconditionViolationException
+	 */
+	private void invokePatternInstancePostconditions(Method method, Collection<PatternInstance<?>> patternInstances)
+			throws PostconditionViolationException {
 
-		for (PatternInstance<?> patternInstance : patternInstances) {
-			try {
-				patternInstance.processMethodAfterInvoke(self, method, returnValue, args);
-			} catch (InvocationTargetException e) {
-				e.getTargetException().printStackTrace();
-				for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
-					monitor.throwingException(self, method, args, e);
-				}
-				throw e.getTargetException();
-			}
-			// TODO: Perf issue : implement a cache here
-			List<PatternPostcondition> postconditions = patternInstance.getPatternDefinition().getPostconditions(method);
-			if (postconditions != null) {
-				System.out.println("Invoking postconditions for " + method + " in pattern instance : " + patternInstance);
-				for (PatternPostcondition postcondition : postconditions) {
-					try {
-						patternInstance.invokePostcondition(postcondition);
-					} catch (PropertyViolationException e) {
-						if (!postcondition.getExceptionWhenViolated().equals(PostconditionViolationException.class)) {
-							// A specific exception should be thrown
-							Constructor c = postcondition.getExceptionWhenViolated().getConstructor(String.class, Throwable.class);
-							PostconditionViolationException thrownException2 = (PostconditionViolationException) c
-									.newInstance("Violated property " + postcondition.getAssertionAsString(), e);
-							throw thrownException2;
-						}
-						else {
+		if (isInvokingPatternInstancePostconditions) {
+			return;
+		}
+
+		try {
+			isInvokingPatternInstancePostconditions = true;
+
+			for (PatternInstance<?> patternInstance : patternInstances) {
+				// TODO: Perf issue : implement a cache here
+				List<PatternPostcondition> postconditions = patternInstance.getPatternDefinition().getPostconditions(method);
+				if (postconditions != null) {
+					System.out.println("Invoking postconditions for " + method + " in pattern instance : " + patternInstance);
+					for (PatternPostcondition postcondition : postconditions) {
+						try {
+							patternInstance.invokePostcondition(postcondition);
+						} catch (PropertyViolationException e) {
+							if (!postcondition.getExceptionWhenViolated().equals(PostconditionViolationException.class)) {
+								// A specific exception should be thrown
+								Constructor c;
+								try {
+									c = postcondition.getExceptionWhenViolated().getConstructor(String.class, Throwable.class);
+									PostconditionViolationException thrownException2 = (PostconditionViolationException) c
+											.newInstance("Violated property " + postcondition.getAssertionAsString(), e);
+									throw thrownException2;
+								} catch (Exception e1) {
+									e1.printStackTrace();
+								}
+							}
 							throw e;
 						}
 					}
 				}
 			}
+
+		} finally {
+			isInvokingPatternInstancePostconditions = false;
 		}
 
 	}
 
+	/**
+	 * Implements the semantics for a method invocation
+	 * 
+	 * @param self
+	 *            the proxy instance.
+	 * @param thisMethod
+	 *            the overridden method declared in the super class or interface.
+	 * @param proceed
+	 *            the forwarder method for invoking the overridden method. It is null if the overridden method is abstract or declared in
+	 *            the interface.
+	 * @param args
+	 *            an array of objects containing the values of the arguments passed in the method invocation on the proxy instance. If a
+	 *            parameter type is a primitive type, the type of the array element is a wrapper class.
+	 * @return the resulting value of the method invocation.
+	 *
+	 * @throws Throwable
+	 *             if the method invocation fails.
+	 * 
+	 */
 	@Override
 	public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 		boolean assertionChecking = false;
 		boolean keepGoing = true;
-		Object invoke = null;
+		Object returnValue = null;
 
-		System.out.println("BEGIN invoke() de " + method);
+		// Exception raised by this current execution
+		Exception thrownException = null;
+		// The PatternExceptionHandler which has handled exception
+		PatternExceptionHandler exceptionHandler = null;
 
+		// Identify all PatternInstance this object is in relation
 		Set<PatternInstance<?>> patternInstances = getModelFactory().getModel().getPatternInstances(self);
 
+		// First distribute to all EntityAddOnInstance entering hook
 		if (enableAssertionChecking && getModelEntity().isMethodToBeMonitored(method)) {
 			if (!isPerformingAssertionChecking) {
 				try {
@@ -400,70 +507,34 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			}
 		}
 
+		// Process execution monitors while notifying method entering
 		for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
 			monitor.enteringMethod(self, method, args);
 		}
 
-		/*Set<PatternInstance<?>> patternInstances = getModelFactory().getModel().getPatternInstances(self);
 		if (patternInstances != null) {
-			for (PatternInstance<?> patternInstance : patternInstances) {
-				// TODO: Perf issue : implement a cache here
-				List<PatternPrecondition> preconditions = patternInstance.getPatternDefinition().getPreconditions(method);
-				if (preconditions != null) {
-					System.out.println("Invoking preconditions for " + method + " in pattern instance : " + patternInstance);
-					for (PatternPrecondition precondition : preconditions) {
-						try {
-							patternInstance.invokePrecondition(precondition);
-						} catch (PropertyViolationException e) {
-							if (!precondition.getExceptionWhenViolated().equals(PreconditionViolationException.class)) {
-								// A specific exception should be thrown
-								Constructor<? extends Exception> c = precondition.getExceptionWhenViolated().getConstructor(String.class,
-										Throwable.class);
-								Exception thrownException = c.newInstance("Violated property " + precondition.getAssertionAsString(), e);
-								throw thrownException;
-							}
-							else {
-								throw e;
-							}
-						}
-					}
-				}
-				try {
-					ReturnWrapper returnWrapper = patternInstance.processMethodBeforeInvoke(self, method, args);
-					if (returnWrapper != null && !returnWrapper.mustContinue()) {
-						keepGoing = false;
-						invoke = returnWrapper.getReturnValue();
-					}
-				} catch (InvocationTargetException e) {
-					e.getTargetException().printStackTrace();
-					for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
-						monitor.throwingException(self, method, args, e);
-					}
-					throw e.getTargetException();
-				}
+			try {
+				// Process all PreCondition of all pattern instances
+				invokePatternInstancePreconditions(method, patternInstances);
+			} catch (PreconditionViolationException e) {
+				thrownException = e;
 			}
-		}*/
-
-		if (patternInstances != null) {
-			PreconditionReturnWrapper preconditionReturnWrapper = invokePatternInstancePreconditions(self, method, patternInstances, args);
+			// Execute pre-invokation hook specific to pattern instance
+			PreconditionReturnWrapper preconditionReturnWrapper = invokePatternInstancePreInvokation(self, method, patternInstances, args);
 			keepGoing = preconditionReturnWrapper.keepGoing;
-			invoke = preconditionReturnWrapper.invoke;
+			returnValue = preconditionReturnWrapper.returnValue;
 		}
-
-		Exception thrownException = null;
-		PatternExceptionHandler exceptionHandler = null;
 
 		if (keepGoing) {
 			try {
-				invoke = _invoke(self, method, proceed, args);
+				// Process the method now
+				returnValue = _invoke(self, method, proceed, args);
 			} catch (Exception e) {
 				boolean exceptionWasHandled = false;
-				System.out.println("Zobi la mouche pour " + e);
 				if (patternInstances != null) {
 					for (PatternInstance<?> patternInstance : patternInstances) {
 						List<PatternExceptionHandler> exceptionHandlers = patternInstance.getPatternDefinition().getOnExceptions(method);
 						if (exceptionHandlers != null) {
-							System.out.println("On gere avec " + exceptionHandlers);
 							List<Class<?>> handledExceptions = new ArrayList<>();
 							for (PatternExceptionHandler handler : exceptionHandlers) {
 								if (e.getClass().isAssignableFrom(handler.getOnException())) {
@@ -479,14 +550,16 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 								}
 							}
 							if (exceptionHandler != null) {
-								System.out.println("Yes ca gere avec " + exceptionHandler);
+								// Found adequate ExceptionHandler, execute it
 								patternInstance.invokeExceptionHandler(exceptionHandler);
 								exceptionWasHandled = true;
 								switch (exceptionHandler.getStrategy()) {
 									case HandleAndContinue: {
+										// Exception was handled, no need to re-throw it
 										break;
 									}
 									case HandleAndRethrowException: {
+										// Exception was handled, but we need to re-throw it at the end of this method
 										thrownException = e;
 										break;
 									}
@@ -506,69 +579,29 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 				}
 
 			}
-			if (method.getReturnType().isPrimitive() && invoke == null) {
+			if (method.getReturnType().isPrimitive() && returnValue == null) {
 				// Avoids an NPE
-				invoke = Defaults.defaultValue(method.getReturnType());
+				returnValue = Defaults.defaultValue(method.getReturnType());
 			}
 		}
-
-		/*if (enableAssertionChecking && assertionChecking && patternInstances != null) {
-			if (!isPerformingAssertionChecking) {
-				try {
-					isPerformingAssertionChecking = true;
-					invokePatternInstancePostconditions(self, method, patternInstances, invoke, args);
-				} catch (Exception e) {
-					// Exception is not handled, re-throw it
-					thrownException = e;
-				} finally {
-					isPerformingAssertionChecking = false;
-				}
-			}
-		}*/
 
 		if (patternInstances != null) {
-			invokePatternInstancePostconditions(self, method, patternInstances, invoke, args);
-		}
-
-		/*if (patternInstances != null) {
-			for (PatternInstance<?> patternInstance : patternInstances) {
-				try {
-					patternInstance.processMethodAfterInvoke(self, method, invoke, args);
-				} catch (InvocationTargetException e) {
-					e.getTargetException().printStackTrace();
-					for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
-						monitor.throwingException(self, method, args, e);
-					}
-					throw e.getTargetException();
-				}
-				// TODO: Perf issue : implement a cache here
-				List<PatternPostcondition> postconditions = patternInstance.getPatternDefinition().getPostconditions(method);
-				if (postconditions != null) {
-					System.out.println("Invoking postconditions for " + method + " in pattern instance : " + patternInstance);
-					for (PatternPostcondition postcondition : postconditions) {
-						try {
-							patternInstance.invokePostcondition(postcondition);
-						} catch (PropertyViolationException e) {
-							if (!postcondition.getExceptionWhenViolated().equals(PostconditionViolationException.class)) {
-								// A specific exception should be thrown
-								Constructor<? extends Exception> c = postcondition.getExceptionWhenViolated().getConstructor(String.class,
-										Throwable.class);
-								Exception thrownException2 = c.newInstance("Violated property " + postcondition.getAssertionAsString(), e);
-								throw thrownException2;
-							}
-							else {
-								throw e;
-							}
-						}
-					}
-				}
+			// Execute post-invokation hook specific to pattern instance
+			invokePatternInstancePostInvokation(self, method, patternInstances, exceptionHandler, args);
+			try {
+				// Process all PostCondition of all pattern instances
+				invokePatternInstancePostconditions(method, patternInstances);
+			} catch (PostconditionViolationException e) {
+				thrownException = e;
 			}
-		}*/
-
-		for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
-			monitor.leavingMethod(self, method, args, invoke);
 		}
 
+		// Process execution monitors while notifying method exiting
+		for (ExecutionMonitor monitor : getModelFactory().getModel().getExecutionMonitors()) {
+			monitor.leavingMethod(self, method, args, returnValue);
+		}
+
+		// Finally distribute to all EntityAddOnInstance exiting hook
 		if (enableAssertionChecking && assertionChecking && getModelEntity().isMethodToBeMonitored(method)) {
 			if (!isPerformingAssertionChecking) {
 				try {
@@ -580,15 +613,24 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			}
 		}
 
-		System.out.println("END invoke() de " + method);
-
+		// At the end, if exception is to be thrown do it now
 		if (thrownException != null) {
 			throw thrownException;
 		}
 
-		return invoke;
+		return returnValue;
 	}
 
+	/**
+	 * Internally proceed method invocation
+	 * 
+	 * @param self
+	 * @param method
+	 * @param proceed
+	 * @param args
+	 * @return
+	 * @throws Throwable
+	 */
 	private Object _invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
 
 		// System.out.println("_invoke " + method);

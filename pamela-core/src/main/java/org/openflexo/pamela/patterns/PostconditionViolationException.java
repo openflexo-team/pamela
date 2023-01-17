@@ -57,6 +57,11 @@ public class PostconditionViolationException extends PropertyViolationException 
 		this.postcondition = postcondition;
 	}
 
+	@Override
+	public String getMessage() {
+		return "assertion failed: " + postcondition.property();
+	}
+
 	public Ensures getPostcondition() {
 		return postcondition;
 	}

@@ -63,6 +63,11 @@ public class SingleAccessPointPatternDefinition extends PatternDefinition {
 	}
 
 	@Override
+	public Class<? extends SingleAccessPointPatternInstance> getInstanceClass() {
+		return SingleAccessPointPatternInstance.class;
+	}
+
+	@Override
 	public boolean isMethodInvolvedInPattern(Method m) {
 		try {
 			this.systemEntity.getImplementedInterface().getMethod(m.getName(), m.getParameterTypes());

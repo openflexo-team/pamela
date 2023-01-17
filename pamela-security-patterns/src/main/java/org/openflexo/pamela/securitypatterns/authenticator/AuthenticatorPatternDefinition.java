@@ -91,6 +91,11 @@ public class AuthenticatorPatternDefinition extends PatternDefinition {
 	}
 
 	@Override
+	public Class<? extends AuthenticatorPatternInstance> getInstanceClass() {
+		return AuthenticatorPatternInstance.class;
+	}
+
+	@Override
 	public void finalizeDefinition() throws ModelDefinitionException {
 
 		if (proofOfIdentityGetterMethod == null) {

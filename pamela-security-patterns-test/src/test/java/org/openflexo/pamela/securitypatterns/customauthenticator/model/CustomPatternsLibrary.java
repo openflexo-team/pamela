@@ -1,9 +1,9 @@
 /**
  * 
- * Copyright (c) 2013-2014, Openflexo
+ * Copyright (c) 2013-2020, Openflexo
  * Copyright (c) 2011-2012, AgileBirds
  * 
- * This file is part of Pamela-core, a component of the software infrastructure 
+ * This file is part of pamela-security-patterns, a component of the software infrastructure 
  * developed at Openflexo.
  * 
  * 
@@ -37,48 +37,12 @@
  * 
  */
 
-package org.openflexo.pamela.patterns;
+package org.openflexo.pamela.securitypatterns.customauthenticator.model;
 
-import org.openflexo.pamela.patterns.annotations.Requires;
+import org.openflexo.pamela.patterns.DeclarePatterns;
+import org.openflexo.pamela.patterns.PatternLibrary;
 
-/**
- * Thrown when a property defined as precondition has been violated
- * 
- * @author sylvain
- * 
- */
-@SuppressWarnings("serial")
-public class PreconditionViolationException extends PropertyViolationException {
-
-	private Requires precondition;
-
-	public PreconditionViolationException(Requires precondition) {
-		super();
-		this.precondition = precondition;
-	}
-
-	@Override
-	public String getMessage() {
-		return "assertion failed: " + precondition.property();
-	}
-
-	public Requires getPrecondition() {
-		return precondition;
-	}
-
-	@Override
-	public String getPatternID() {
-		return precondition.patternID();
-	}
-
-	/*@Override
-	public PropertyParadigmType getPropertyType() {
-		return precondition.type();
-	}*/
-
-	@Override
-	public String getProperty() {
-		return precondition.property();
-	}
+@DeclarePatterns({ CustomAuthenticatorPatternFactory.class })
+public class CustomPatternsLibrary implements PatternLibrary {
 
 }

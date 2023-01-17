@@ -52,6 +52,8 @@ public class TestMultMN {
 		Y y2 = factory.newInstance(Y.class, "y2");
 		Y y3 = factory.newInstance(Y.class, "y3");
 
+		x1.enableAssertionChecking();
+
 		x1.addToY(y1);
 		x2.addToY(y1);
 		x2.addToY(y2);

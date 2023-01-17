@@ -325,20 +325,6 @@ public class PamelaMetaModel {
 		return returned.toString();
 	}
 
-	// Patterns
-
-	/*public void addExecutionMonitor(ExecutionMonitor m) {
-		this.executionMonitors.add(m);
-	}
-	
-	public Set<ExecutionMonitor> getExecutionMonitors() {
-		return this.executionMonitors;
-	}
-	
-	public boolean removeExecutionMonitor(ExecutionMonitor m) {
-		return this.executionMonitors.remove(m);
-	}*/
-
 	/**
 	 * Perform install all add-ons found in the class path
 	 * 
@@ -416,10 +402,6 @@ public class PamelaMetaModel {
 			}
 		}
 
-		for (Class<? extends AbstractPatternFactory<?>> f : factories) {
-			System.out.println("Registered pattern : " + f);
-		}
-
 		for (Class<? extends AbstractPatternFactory<?>> factoryClass : factories) {
 			// System.out.println("Analysing pattern: " + factoryClass);
 			try {
@@ -471,14 +453,6 @@ public class PamelaMetaModel {
 		return returned;
 	}
 
-	/*public <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model) {
-		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
-			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
-				patternDefinition.notifiedNewInstance(newInstance, modelEntity, model);
-			}
-		}
-	}*/
-
 	public boolean isMethodInvolvedInPattern(Method method) {
 		for (AbstractPatternFactory<?> patternFactory : patternFactories) {
 			for (PatternDefinition patternDefinition : patternFactory.getPatternDefinitions().values()) {
@@ -490,34 +464,5 @@ public class PamelaMetaModel {
 		return false;
 
 	}
-
-	/*public <P extends PatternDefinition> void registerPatternInstance(PatternInstance<P> patternInstance) {
-		P definition = patternInstance.getPatternDefinition();
-		Set<PatternInstance<?>> s = registeredPatternInstances.get(definition);
-		if (s == null) {
-			s = new HashSet<>();
-			registeredPatternInstances.put(definition, s);
-		}
-		System.out.println("Registering " + patternInstance);
-		s.add(patternInstance);
-	}
-	
-	public void registerStakeHolderForPatternInstance(Object stakeHolder, String role, PatternInstance<?> patternInstance) {
-		Set<PatternInstance<?>> s = patternInstances.get(stakeHolder);
-		if (s == null) {
-			s = new HashSet<>();
-			patternInstances.put(stakeHolder, s);
-		}
-		System.out.println("Registering " + stakeHolder + " as " + role + " for pattern instance " + patternInstance);
-		s.add(patternInstance);
-	}
-	
-	public Set<PatternInstance<?>> getPatternInstances(Object stakeholder) {
-		return patternInstances.get(stakeholder);
-	}
-	
-	public <P extends PatternDefinition> Set<PatternInstance<P>> getPatternInstances(P patternDefinition) {
-		return (Set) registeredPatternInstances.get(patternDefinition);
-	}*/
 
 }

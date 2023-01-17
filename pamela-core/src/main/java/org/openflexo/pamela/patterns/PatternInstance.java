@@ -41,11 +41,17 @@ package org.openflexo.pamela.patterns;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.openflexo.connie.BindingEvaluationContext;
+import org.openflexo.connie.BindingVariable;
+import org.openflexo.connie.exception.NullReferenceException;
+import org.openflexo.connie.exception.TypeMismatchException;
+import org.openflexo.connie.expr.ExpressionEvaluator;
+import org.openflexo.connie.java.expr.JavaExpressionEvaluator;
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.factory.PamelaModel;
-import org.openflexo.pamela.patterns.annotations.Ensures;
-import org.openflexo.pamela.patterns.annotations.Requires;
 
 /**
  * Abstract base class for an instance of a {@link PatternDefinition}<br>
@@ -55,10 +61,12 @@ import org.openflexo.pamela.patterns.annotations.Requires;
  * @param <P>
  *            Type of {@link PatternDefinition} this instance is an instance of
  */
-public abstract class PatternInstance<P extends PatternDefinition> {
+public abstract class PatternInstance<P extends PatternDefinition> implements BindingEvaluationContext {
 
 	private P patternDefinition;
 	private PamelaModel model;
+
+	private List<PatternInstanceEvent> events = new ArrayList<>();
 
 	public PatternInstance(P patternDefinition, PamelaModel model) {
 		this.patternDefinition = patternDefinition;
@@ -94,8 +102,30 @@ public abstract class PatternInstance<P extends PatternDefinition> {
 	 * @param precondition
 	 * @param method
 	 */
-	public void invokePrecondition(Requires precondition, Method method) throws PropertyViolationException {
-		System.out.println("Invoking precondition " + precondition.property());
+	public void invokePrecondition(PatternPrecondition precondition) throws PreconditionViolationException {
+		System.out.println("Invoking precondition " + precondition);
+
+		if (precondition.getAssertion().isValid()) {
+			try {
+				boolean assertResult = precondition.getAssertion().getBindingValue(this);
+				if (!assertResult) {
+					throw new PreconditionViolationException(precondition.getAnnotation());
+				}
+			} catch (TypeMismatchException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NullReferenceException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ReflectiveOperationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		else {
+			System.err.println("Cannot evaluate assertion: " + precondition.getAssertionAsString());
+		}
+
 	}
 
 	/**
@@ -104,7 +134,82 @@ public abstract class PatternInstance<P extends PatternDefinition> {
 	 * @param postcondition
 	 * @param method
 	 */
-	public void invokePostcondition(Ensures postcondition, Method method) throws PropertyViolationException {
-		System.out.println("Invoking postcondition " + postcondition.property());
+	public void invokePostcondition(PatternPostcondition postcondition) throws PostconditionViolationException {
+		System.out.println("Invoking postcondition " + postcondition);
+
+		if (postcondition.getAssertion().isValid()) {
+			try {
+				boolean assertResult = postcondition.getAssertion().getBindingValue(this);
+				if (!assertResult) {
+					throw new PostconditionViolationException(postcondition.getAnnotation());
+				}
+			} catch (TypeMismatchException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NullReferenceException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ReflectiveOperationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		else {
+			System.err.println("Cannot evaluate assertion: " + postcondition.getAssertionAsString());
+		}
+	}
+
+	public void invokeExceptionHandler(PatternExceptionHandler exceptionHandler) throws Throwable {
+		System.out.println("Invoking exceptionHandler " + exceptionHandler);
+
+		if (exceptionHandler.getExecutionStatement().isValid()) {
+			try {
+				exceptionHandler.getExecutionStatement().getBindingValue(this);
+			} catch (TypeMismatchException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NullReferenceException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ReflectiveOperationException e) {
+				e.printStackTrace();
+				throw e.getCause();
+			}
+		}
+		else {
+			System.err.println("Cannot execute statement: " + exceptionHandler.getExecutionStatementAsString() + " reason: "
+					+ exceptionHandler.getExecutionStatement().invalidBindingReason());
+		}
+	}
+
+	@Override
+	public ExpressionEvaluator getEvaluator() {
+		return new JavaExpressionEvaluator(this);
+	}
+
+	@Override
+	public Object getValue(BindingVariable bindingVariable) {
+		if (bindingVariable.getVariableName().equals(PatternAssertion.DEFAULT_VARIABLE_NAME)) {
+			return this;
+		}
+		return null;
+	}
+
+	public void triggerEvent(PatternInstanceEvent event) {
+		events.add(event);
+	}
+
+	public List<PatternInstanceEvent> getEvents() {
+		return events;
+	}
+
+	public <E extends PatternInstanceEvent> List<E> getEvents(Class<E> eventClass) {
+		List<E> returned = new ArrayList<>();
+		for (PatternInstanceEvent event : events) {
+			if (eventClass.isAssignableFrom(event.getClass())) {
+				returned.add((E) event);
+			}
+		}
+		return returned;
 	}
 }

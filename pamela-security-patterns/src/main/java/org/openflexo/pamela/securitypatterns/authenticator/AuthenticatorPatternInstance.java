@@ -96,7 +96,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 		super(patternDefinition, model);
 		this.subject = subject;
 		registerStakeHolder(subject, AuthenticatorPatternDefinition.SUBJECT_ROLE);
-		authInfos = retrieveAuthentificationInformations();
+		authInfos = retrieveAuthentificationUniqueKeyInformations();
 		defaultIdProof = retrieveProofOfIdentity();
 		if (subject instanceof HasPropertyChangeSupport) {
 			((HasPropertyChangeSupport) subject).getPropertyChangeSupport().addPropertyChangeListener(this);
@@ -197,7 +197,7 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 			List<AI> authentificationInformations = retrieveAuthentificationInformations();
 			proofOfIdentity = (PI) getPatternDefinition().requestAuthentificationMethod.invoke(authenticator,
 					authentificationInformations.toArray(new Object[authentificationInformations.size()]));
-			//System.out.println("proofOfIdentity=" + proofOfIdentity);
+			// System.out.println("proofOfIdentity=" + proofOfIdentity);
 			setProofOfIdentity(proofOfIdentity);
 			if (proofOfIdentity != null) {
 				isAuthenticated = true;
@@ -436,9 +436,9 @@ public class AuthenticatorPatternInstance<A, S, AI, PI> extends PatternInstance<
 	 */
 	private void checkAuthInfoIsFinal() {
 		try {
-			List<AI> currentAuthInfos = retrieveAuthentificationInformations();
+			List<AI> currentAuthInfos = retrieveAuthentificationUniqueKeyInformations();
 			if (authInfos != null && !authInfos.equals(currentAuthInfos)) {
-				//System.out.println("Was: " + authInfos + " is now " + currentAuthInfos);
+				// System.out.println("Was: " + authInfos + " is now " + currentAuthInfos);
 				throw new ModelExecutionException(
 						"Subject Invariant Violation: Authentication Information has changed since initialization");
 			}

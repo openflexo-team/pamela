@@ -1,13 +1,17 @@
 package org.openflexo.pamela.securitypatterns.customauthenticator;
 
+import static org.junit.Assert.assertNotEquals;
+
 import org.junit.Test;
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.PamelaMetaModelLibrary;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.PamelaModel;
 import org.openflexo.pamela.factory.PamelaModelFactory;
+import org.openflexo.pamela.patterns.PostconditionViolationException;
 import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternDefinition;
 import org.openflexo.pamela.securitypatterns.customauthenticator.model.CustomAuthenticator;
+import org.openflexo.pamela.securitypatterns.customauthenticator.model.CustomAuthenticatorPatternInstance;
 import org.openflexo.pamela.securitypatterns.customauthenticator.model.Subject;
 
 import junit.framework.TestCase;
@@ -22,10 +26,15 @@ public class TestCustomAuthenticator extends TestCase {
 		assertEquals(Subject.PATTERN_ID, patternDefinition.getIdentifier());
 
 		assertEquals(CustomAuthenticator.class, patternDefinition.authenticatorModelEntity.getImplementedInterface());
-		assertEquals(CustomAuthenticator.class.getMethod("request", String.class), patternDefinition.requestAuthentificationMethod);
+		assertEquals(CustomAuthenticator.class.getMethod("request", String.class, String.class),
+				patternDefinition.requestAuthentificationMethod);
 
 		assertEquals(Subject.class, patternDefinition.subjectModelEntity.getImplementedInterface());
-		assertEquals(Subject.class.getMethod("getAuthInfo"), patternDefinition.authentificationInfoMethod);
+		assertEquals(2, patternDefinition.authentificationInfoMethods.size());
+		assertTrue(patternDefinition.authentificationInfoMethods.contains(Subject.class.getMethod("getLogin")));
+		assertTrue(patternDefinition.authentificationInfoMethods.contains(Subject.class.getMethod("getPassword")));
+		assertEquals(1, patternDefinition.authentificationInfoUniqueKeyMethods.size());
+		assertEquals(Subject.class.getMethod("getLogin"), patternDefinition.authentificationInfoUniqueKeyMethods.get(0));
 		assertEquals(Subject.class.getMethod("setIDProof", int.class), patternDefinition.proofOfIdentitySetterMethod);
 		assertEquals(Subject.class.getMethod("getAuthenticator"), patternDefinition.authenticatorGetterMethod);
 		assertEquals(Subject.class.getMethod("authenticate"), patternDefinition.authenticateMethod);
@@ -37,11 +46,24 @@ public class TestCustomAuthenticator extends TestCase {
 		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
 		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
 		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, "id1");
+		Subject subject = factory.newInstance(Subject.class, "id1", "passwd1");
 		subject.setAuthenticator(authenticator);
-		authenticator.addUser(subject.getAuthInfo());
+		authenticator.addUser(subject.getLogin(), subject.getPassword());
 		subject.authenticate();
-		assertEquals(subject.getIDProof(), authenticator.generateFromAuthInfo(subject.getAuthInfo()));
+		assertEquals(subject.getIDProof(), authenticator.generateFromAuthInfo(subject.getLogin(), subject.getPassword()));
+		System.out.println("IDProof=" + subject.getIDProof());
+	}
+
+	@Test
+	public void testAuthenticateInvalid() throws Exception {
+		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
+		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
+		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
+		Subject subject = factory.newInstance(Subject.class, "id1", "passwd1");
+		subject.setAuthenticator(authenticator);
+		authenticator.addUser(subject.getLogin(), "anOtherPassword");
+		subject.authenticate();
+		assertNotEquals(subject.getIDProof(), authenticator.generateFromAuthInfo(subject.getLogin(), subject.getPassword()));
 		System.out.println("IDProof=" + subject.getIDProof());
 	}
 
@@ -50,13 +72,13 @@ public class TestCustomAuthenticator extends TestCase {
 		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
 		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
 		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, "id1");
+		Subject subject = factory.newInstance(Subject.class, "id1", "passwd1");
 		subject.setAuthenticator(authenticator);
-		authenticator.addUser(subject.getAuthInfo());
+		authenticator.addUser(subject.getLogin(), subject.getPassword());
 		// We haven't call the authenticate() method, but this method is tagged with "@RequiresAuthentication", thus this call the
 		// authenticate() method
 		subject.thisMethodRequiresToBeAuthenticated();
-		assertEquals(subject.getIDProof(), authenticator.generateFromAuthInfo(subject.getAuthInfo()));
+		assertEquals(subject.getIDProof(), authenticator.generateFromAuthInfo(subject.getLogin(), subject.getPassword()));
 	}
 
 	@Test
@@ -64,7 +86,7 @@ public class TestCustomAuthenticator extends TestCase {
 		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
 		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
 		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, "id");
+		Subject subject = factory.newInstance(Subject.class, "id", "passwd");
 		subject.setAuthenticator(authenticator);
 		subject.authenticate();
 		assertEquals(subject.getIDProof(), authenticator.getDefaultToken());
@@ -77,7 +99,7 @@ public class TestCustomAuthenticator extends TestCase {
 		PamelaModel model = factory.getModel();
 		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
 		assertNull(model.getPatternInstances(authenticator));
-		Subject subject = factory.newInstance(Subject.class, "id");
+		Subject subject = factory.newInstance(Subject.class, "id", "passwd");
 		assertNull(model.getPatternInstances(authenticator));
 		assertEquals(1, model.getPatternInstances(subject).size());
 		subject.setAuthenticator(authenticator);
@@ -91,10 +113,10 @@ public class TestCustomAuthenticator extends TestCase {
 		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
 		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
 		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, authenticator, "id");
-		Subject subject2 = factory.newInstance(Subject.class, authenticator, "id2");
+		Subject subject = factory.newInstance(Subject.class, authenticator, "id", "passwd");
+		Subject subject2 = factory.newInstance(Subject.class, authenticator, "id2", "passwd2");
 		try {
-			Subject subject3 = factory.newInstance(Subject.class, authenticator, "id");
+			Subject subject3 = factory.newInstance(Subject.class, authenticator, "id", "passwd");
 			fail();
 		} catch (ModelExecutionException e) {
 			System.out.println("Donc " + e.getMessage());
@@ -111,7 +133,7 @@ public class TestCustomAuthenticator extends TestCase {
 		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
 		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
 		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, authenticator, "id");
+		Subject subject = factory.newInstance(Subject.class, authenticator, "id", "passwd");
 		subject.setAuthenticator(authenticator);
 		try {
 			subject.setAuthenticator(factory.newInstance(CustomAuthenticator.class));
@@ -129,10 +151,10 @@ public class TestCustomAuthenticator extends TestCase {
 		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
 		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
 		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, authenticator, "id");
-		subject.setAuthInfo("id");
+		Subject subject = factory.newInstance(Subject.class, authenticator, "id", "passwd");
+		subject.setLogin("id");
 		try {
-			subject.setAuthInfo(null);
+			subject.setLogin(null);
 			fail();
 		} catch (ModelExecutionException e) {
 			e.printStackTrace();
@@ -147,7 +169,7 @@ public class TestCustomAuthenticator extends TestCase {
 		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
 		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
 		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, authenticator, "id");
+		Subject subject = factory.newInstance(Subject.class, authenticator, "id", "passwd");
 		subject.setIDProof(-1);
 		subject.authenticate();
 		subject.setIDProof(subject.getIDProof());
@@ -167,11 +189,11 @@ public class TestCustomAuthenticator extends TestCase {
 		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
 		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
 		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, authenticator, "id");
+		Subject subject = factory.newInstance(Subject.class, authenticator, "id", "passwd");
 		subject.authenticate();
 		assertEquals(subject.getIDProof(), authenticator.getDefaultToken());
-		authenticator.addUser(subject.getAuthInfo());
-		subject.getAuthInfo();
+		authenticator.addUser(subject.getLogin(), subject.getPassword());
+		subject.getLogin();
 		subject.authenticate();
 	}
 
@@ -180,10 +202,51 @@ public class TestCustomAuthenticator extends TestCase {
 		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
 		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
 		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
-		Subject subject = factory.newInstance(Subject.class, "id");
+		Subject subject = factory.newInstance(Subject.class, "id", "passwd");
 		subject.setAuthenticator(authenticator);
 		// TODO: write a test
 		authenticator.aMethodGuardedWithAPrecondition();
+	}
+
+	@Test
+	public void testMultipleInvalidAuthentication() throws Exception {
+		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class, CustomAuthenticator.class);
+		PamelaModelFactory factory = new PamelaModelFactory(metaModel);
+		CustomAuthenticator authenticator = factory.newInstance(CustomAuthenticator.class);
+		Subject subject = factory.newInstance(Subject.class, "id1", "passwd1");
+		subject.setAuthenticator(authenticator);
+		authenticator.addUser(subject.getLogin(), "anOtherPassword");
+		subject.authenticate();
+		subject.authenticate();
+		try {
+			subject.authenticate();
+			fail("This request should raise a ModelExecutionException(PostconditionViolationException)");
+		} catch (ModelExecutionException e) {
+			if (e.getCause() instanceof PostconditionViolationException) {
+				// Success
+			}
+			else {
+				e.printStackTrace();
+				fail("This request should raise a PostconditionViolationException, not a " + e);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("This request should raise a ModelExecutionException, not a " + e.getCause().getClass());
+		}
+
+		// We wait
+		Thread.sleep(CustomAuthenticatorPatternInstance.TIME_LIMIT + 100);
+		// This should be still possible, but password still invalid
+		subject.authenticate();
+		System.out.println("IDProof=" + subject.getIDProof());
+		assertNotEquals(subject.getIDProof(), authenticator.generateFromAuthInfo(subject.getLogin(), subject.getPassword()));
+
+		// Set right password and re-authenticate
+		subject.setPassword("anOtherPassword");
+		subject.authenticate();
+		System.out.println("IDProof=" + subject.getIDProof());
+		assertEquals(subject.getIDProof(), authenticator.generateFromAuthInfo(subject.getLogin(), subject.getPassword()));
+
 	}
 
 }

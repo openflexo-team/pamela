@@ -37,48 +37,19 @@
  * 
  */
 
-package org.openflexo.pamela.patterns;
-
-import org.openflexo.pamela.patterns.annotations.Requires;
+package org.openflexo.pamela.securitypatterns.customauthenticator.model;
 
 /**
- * Thrown when a property defined as precondition has been violated
+ * Thrown when login/password is invalid
  * 
  * @author sylvain
  * 
  */
 @SuppressWarnings("serial")
-public class PreconditionViolationException extends PropertyViolationException {
+public class InvalidPasswordException extends Exception {
 
-	private Requires precondition;
-
-	public PreconditionViolationException(Requires precondition) {
-		super();
-		this.precondition = precondition;
-	}
-
-	@Override
-	public String getMessage() {
-		return "assertion failed: " + precondition.property();
-	}
-
-	public Requires getPrecondition() {
-		return precondition;
-	}
-
-	@Override
-	public String getPatternID() {
-		return precondition.patternID();
-	}
-
-	/*@Override
-	public PropertyParadigmType getPropertyType() {
-		return precondition.type();
-	}*/
-
-	@Override
-	public String getProperty() {
-		return precondition.property();
+	public InvalidPasswordException(String msg) {
+		super(msg);
 	}
 
 }

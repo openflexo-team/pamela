@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.openflexo.connie.java.JavaBindingFactory;
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.factory.PamelaModel;
@@ -53,6 +54,7 @@ import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.factory.PamelaUtils;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.annotations.Ensures;
+import org.openflexo.pamela.patterns.annotations.OnException;
 import org.openflexo.pamela.patterns.annotations.Requires;
 
 /**
@@ -77,14 +79,19 @@ public abstract class PatternDefinition {
 	private final String identifier; // identifier as found in annotations
 	private final PamelaMetaModel pamelaMetaModel;
 
-	private final Map<Method, List<Requires>> preconditions;
-	private final Map<Method, List<Ensures>> postconditions;
+	private final Map<Method, List<PatternPrecondition>> preconditions;
+	private final Map<Method, List<PatternPostcondition>> postconditions;
+	private final Map<Method, List<PatternExceptionHandler>> onExceptions;
+
+	private JavaBindingFactory bindingFactory;
 
 	public PatternDefinition(String identifier, PamelaMetaModel pamelaMetaModel) {
 		this.identifier = identifier;
 		this.pamelaMetaModel = pamelaMetaModel;
 		preconditions = new HashMap<>();
 		postconditions = new HashMap<>();
+		onExceptions = new HashMap<>();
+		bindingFactory = new JavaBindingFactory();
 	}
 
 	public String getIdentifier() {
@@ -94,6 +101,12 @@ public abstract class PatternDefinition {
 	public PamelaMetaModel getMetaModel() {
 		return pamelaMetaModel;
 	}
+
+	public JavaBindingFactory getBindingFactory() {
+		return bindingFactory;
+	}
+
+	public abstract Class<? extends PatternInstance> getInstanceClass();
 
 	public abstract void finalizeDefinition() throws ModelDefinitionException;
 
@@ -111,8 +124,8 @@ public abstract class PatternDefinition {
 		return false;
 	}
 
-	public List<Requires> getPreconditions(Method method) {
-		List<Requires> returned = preconditions.get(method);
+	public List<PatternPrecondition> getPreconditions(Method method) {
+		List<PatternPrecondition> returned = preconditions.get(method);
 		if (returned == null) {
 			for (Method m : preconditions.keySet()) {
 				if (PamelaUtils.methodIsEquivalentTo(method, m)) {
@@ -123,8 +136,8 @@ public abstract class PatternDefinition {
 		return returned;
 	}
 
-	public List<Ensures> getPostconditions(Method method) {
-		List<Ensures> returned = postconditions.get(method);
+	public List<PatternPostcondition> getPostconditions(Method method) {
+		List<PatternPostcondition> returned = postconditions.get(method);
 		if (returned == null) {
 			for (Method m : postconditions.keySet()) {
 				if (PamelaUtils.methodIsEquivalentTo(method, m)) {
@@ -135,25 +148,52 @@ public abstract class PatternDefinition {
 		return returned;
 	}
 
+	public List<PatternExceptionHandler> getOnExceptions(Method method) {
+		List<PatternExceptionHandler> returned = onExceptions.get(method);
+		if (returned == null) {
+			for (Method m : onExceptions.keySet()) {
+				if (PamelaUtils.methodIsEquivalentTo(method, m)) {
+					return onExceptions.get(m);
+				}
+			}
+		}
+		return returned;
+	}
+
 	public abstract <I> void notifiedNewInstance(I newInstance, ModelEntity<I> modelEntity, PamelaModel model)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 
-	public void addToPreconditionsForMethod(Requires precondition, Method method) {
-		List<Requires> l = preconditions.get(method);
+	public PatternPrecondition addToPreconditionsForMethod(Requires requiresAnnotation, Method method) {
+		List<PatternPrecondition> l = preconditions.get(method);
 		if (l == null) {
 			l = new ArrayList<>();
 			preconditions.put(method, l);
 		}
-		l.add(precondition);
+		PatternPrecondition newPrecondition = new PatternPrecondition(this, method, requiresAnnotation);
+		l.add(newPrecondition);
+		return newPrecondition;
 	}
 
-	public void addToPostconditionsForMethod(Ensures postcondition, Method method) {
-		List<Ensures> l = postconditions.get(method);
+	public PatternPostcondition addToPostconditionsForMethod(Ensures ensuresAnnotation, Method method) {
+		List<PatternPostcondition> l = postconditions.get(method);
 		if (l == null) {
 			l = new ArrayList<>();
 			postconditions.put(method, l);
 		}
-		l.add(postcondition);
+		PatternPostcondition newPostcondition = new PatternPostcondition(this, method, ensuresAnnotation);
+		l.add(newPostcondition);
+		return newPostcondition;
+	}
+
+	public PatternExceptionHandler addToOnExceptionForMethod(OnException onExceptionAnnotation, Method method) {
+		List<PatternExceptionHandler> l = onExceptions.get(method);
+		if (l == null) {
+			l = new ArrayList<>();
+			onExceptions.put(method, l);
+		}
+		PatternExceptionHandler newOnException = new PatternExceptionHandler(this, method, onExceptionAnnotation);
+		l.add(newOnException);
+		return newOnException;
 	}
 
 }

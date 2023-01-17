@@ -47,4 +47,13 @@ package org.openflexo.pamela.patterns;
  */
 public abstract class PatternInstanceEvent {
 
+	private long date;
+
+	public PatternInstanceEvent() {
+		date = System.currentTimeMillis();
+	}
+
+	public long getDate() {
+		return date;
+	}
 }

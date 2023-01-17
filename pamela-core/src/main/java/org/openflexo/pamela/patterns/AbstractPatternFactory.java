@@ -48,6 +48,7 @@ import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.annotations.Ensures;
+import org.openflexo.pamela.patterns.annotations.OnException;
 import org.openflexo.pamela.patterns.annotations.Requires;
 
 /**
@@ -109,6 +110,13 @@ public abstract class AbstractPatternFactory<P extends PatternDefinition> {
 			PatternDefinition patternDefinition = getPatternDefinition(ensuresAnnotation.patternID(), false);
 			if (patternDefinition != null) {
 				patternDefinition.addToPostconditionsForMethod(ensuresAnnotation, m);
+			}
+		}
+		OnException onExceptionAnnotation = m.getAnnotation(OnException.class);
+		if (onExceptionAnnotation != null) {
+			PatternDefinition patternDefinition = getPatternDefinition(onExceptionAnnotation.patternID(), false);
+			if (patternDefinition != null) {
+				patternDefinition.addToOnExceptionForMethod(onExceptionAnnotation, m);
 			}
 		}
 	}

@@ -28,6 +28,11 @@ public class OwnerPatternDefinition extends PatternDefinition {
 	}
 
 	@Override
+	public Class<? extends OwnerPatternInstance> getInstanceClass() {
+		return OwnerPatternInstance.class;
+	}
+
+	@Override
 	public void finalizeDefinition() throws ModelDefinitionException {
 		if (ownerGetter == null) {
 			this.isValid = false;

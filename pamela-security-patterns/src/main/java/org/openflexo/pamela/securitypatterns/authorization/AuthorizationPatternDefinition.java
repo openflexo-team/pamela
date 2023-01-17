@@ -103,6 +103,11 @@ public class AuthorizationPatternDefinition extends PatternDefinition {
 	}
 
 	@Override
+	public Class<? extends AuthorizationPatternInstance> getInstanceClass() {
+		return AuthorizationPatternInstance.class;
+	}
+
+	@Override
 	public void finalizeDefinition() throws ModelDefinitionException {
 		for (SubjectAccessMethodWrapper wrapper : this.subjectAccessMethods.values()) {
 			if (!this.resourceAccessMethods.containsKey(wrapper.getMethodID())) { // Check if access methods are coherent between subjects

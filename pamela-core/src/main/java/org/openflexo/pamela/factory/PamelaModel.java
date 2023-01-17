@@ -146,7 +146,7 @@ public class PamelaModel {
 			s = new HashSet<>();
 			registeredPatternInstances.put(definition, s);
 		}
-		System.out.println("Registering " + patternInstance);
+		// System.out.println("Registering " + patternInstance);
 		s.add(patternInstance);
 	}
 
@@ -156,7 +156,7 @@ public class PamelaModel {
 			s = new HashSet<>();
 			patternInstances.put(stakeHolder, s);
 		}
-		System.out.println("Registering " + stakeHolder + " as " + role + " for pattern instance " + patternInstance);
+		// System.out.println("Registering " + stakeHolder + " as " + role + " for pattern instance " + patternInstance);
 		s.add(patternInstance);
 	}
 

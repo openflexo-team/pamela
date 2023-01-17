@@ -95,7 +95,6 @@ public class AuthenticatorPatternFactory extends AbstractPatternFactory<Authenti
 					return authenticationInformationIndexes.get(m1) - authenticationInformationIndexes.get(m2);
 				}
 			});
-			System.out.println("On trie: " + patternDefinition.authentificationInfoMethods);
 		}
 	}
 

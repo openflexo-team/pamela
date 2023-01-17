@@ -37,48 +37,66 @@
  * 
  */
 
-package org.openflexo.pamela.patterns;
+package org.openflexo.pamela.patterns.annotations;
 
-import org.openflexo.pamela.patterns.annotations.Requires;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.openflexo.pamela.patterns.PatternInstance;
 
 /**
- * Thrown when a property defined as precondition has been violated
+ * A hook triggered when an Exception is thrown while executing method
  * 
  * @author sylvain
- * 
+ *
  */
-@SuppressWarnings("serial")
-public class PreconditionViolationException extends PropertyViolationException {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(value = ElementType.METHOD)
+public @interface OnException {
 
-	private Requires precondition;
+	/**
+	 * @return The unique identifier of the associated {@link PatternInstance}
+	 */
+	String patternID();
 
-	public PreconditionViolationException(Requires precondition) {
-		super();
-		this.precondition = precondition;
-	}
+	/**
+	 * Return listened exception class
+	 * 
+	 * @return
+	 */
+	Class<? extends Exception> onException();
 
-	@Override
-	public String getMessage() {
-		return "assertion failed: " + precondition.property();
-	}
+	/**
+	 * @return expression to be performed, as a String
+	 */
+	String perform();
 
-	public Requires getPrecondition() {
-		return precondition;
-	}
+	/**
+	 * @return semantics to apply when exception is caught
+	 */
+	OnExceptionStategy strategy() default OnExceptionStategy.HandleAndContinue;
 
-	@Override
-	public String getPatternID() {
-		return precondition.patternID();
-	}
-
-	/*@Override
-	public PropertyParadigmType getPropertyType() {
-		return precondition.type();
-	}*/
-
-	@Override
-	public String getProperty() {
-		return precondition.property();
+	/**
+	 * The semantics to apply when exception is caught
+	 * 
+	 * @author sylvain
+	 *
+	 */
+	public enum OnExceptionStategy {
+		/**
+		 * Perform exception handler, and silently continue execution
+		 */
+		HandleAndContinue,
+		/**
+		 * Perform exception handler, and re-throw exception
+		 */
+		HandleAndRethrowException// ,
+		/**
+		 * Perform exception handler, and immediately return
+		 */
+		// HandleAndReturn
 	}
 
 }

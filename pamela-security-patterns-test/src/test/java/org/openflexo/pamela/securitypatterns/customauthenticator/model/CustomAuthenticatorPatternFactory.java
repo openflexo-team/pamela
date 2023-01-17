@@ -1,9 +1,9 @@
 /**
  * 
- * Copyright (c) 2013-2014, Openflexo
+ * Copyright (c) 2013-2020, Openflexo
  * Copyright (c) 2011-2012, AgileBirds
  * 
- * This file is part of Pamela-core, a component of the software infrastructure 
+ * This file is part of pamela-security-patterns, a component of the software infrastructure 
  * developed at Openflexo.
  * 
  * 
@@ -37,48 +37,28 @@
  * 
  */
 
-package org.openflexo.pamela.patterns;
+package org.openflexo.pamela.securitypatterns.customauthenticator.model;
 
-import org.openflexo.pamela.patterns.annotations.Requires;
+import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.securitypatterns.authenticator.AuthenticatorPatternFactory;
 
 /**
- * Thrown when a property defined as precondition has been violated
- * 
- * @author sylvain
- * 
+ * A specialization for {@link AuthenticatorPatternFactory}
  */
-@SuppressWarnings("serial")
-public class PreconditionViolationException extends PropertyViolationException {
+public class CustomAuthenticatorPatternFactory extends AuthenticatorPatternFactory {
 
-	private Requires precondition;
-
-	public PreconditionViolationException(Requires precondition) {
-		super();
-		this.precondition = precondition;
+	public CustomAuthenticatorPatternFactory(PamelaMetaModel metaModel) {
+		super(metaModel);
 	}
 
 	@Override
-	public String getMessage() {
-		return "assertion failed: " + precondition.property();
-	}
-
-	public Requires getPrecondition() {
-		return precondition;
+	protected Class<CustomAuthenticatorPatternDefinition> getPatternDefinitionClass() {
+		return CustomAuthenticatorPatternDefinition.class;
 	}
 
 	@Override
-	public String getPatternID() {
-		return precondition.patternID();
-	}
-
-	/*@Override
-	public PropertyParadigmType getPropertyType() {
-		return precondition.type();
-	}*/
-
-	@Override
-	public String getProperty() {
-		return precondition.property();
+	protected CustomAuthenticatorPatternDefinition getPatternDefinition(String patternId, boolean createWhenNonExistant) {
+		return (CustomAuthenticatorPatternDefinition) super.getPatternDefinition(patternId, createWhenNonExistant);
 	}
 
 }

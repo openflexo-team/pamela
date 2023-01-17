@@ -1,9 +1,9 @@
 /**
  * 
- * Copyright (c) 2013-2014, Openflexo
+ * Copyright (c) 2013-2020, Openflexo
  * Copyright (c) 2011-2012, AgileBirds
  * 
- * This file is part of Pamela-core, a component of the software infrastructure 
+ * This file is part of pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
  * 
  * 
@@ -39,46 +39,48 @@
 
 package org.openflexo.pamela.patterns;
 
-import org.openflexo.pamela.patterns.annotations.Requires;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
-/**
- * Thrown when a property defined as precondition has been violated
- * 
- * @author sylvain
- * 
- */
-@SuppressWarnings("serial")
-public class PreconditionViolationException extends PropertyViolationException {
+import org.openflexo.pamela.patterns.annotations.OnException;
+import org.openflexo.pamela.patterns.annotations.OnException.OnExceptionStategy;
 
-	private Requires precondition;
+public class PatternExceptionHandler extends PatternStatement<Object> {
 
-	public PreconditionViolationException(Requires precondition) {
-		super();
-		this.precondition = precondition;
+	private final OnException annotation;
+
+	public PatternExceptionHandler(PatternDefinition patternDefinition, Method method, OnException annotation) {
+		super(patternDefinition, method, annotation.perform());
+		this.annotation = annotation;
 	}
 
 	@Override
-	public String getMessage() {
-		return "assertion failed: " + precondition.property();
+	public Type getExpectedType() {
+		return Object.class;
 	}
 
-	public Requires getPrecondition() {
-		return precondition;
+	public OnException getAnnotation() {
+		return annotation;
+	}
+
+	/**
+	 * Return exception triggering this statement
+	 * 
+	 * @return
+	 */
+	public Class<? extends Exception> getOnException() {
+		return annotation.onException();
+	}
+
+	/**
+	 * @return semantics to apply when exception is caught
+	 */
+	public OnExceptionStategy getStrategy() {
+		return annotation.strategy();
 	}
 
 	@Override
-	public String getPatternID() {
-		return precondition.patternID();
+	public String toString() {
+		return "PatternExceptionHandler " + getOnException().getSimpleName() + "->" + getExecutionStatementAsString();
 	}
-
-	/*@Override
-	public PropertyParadigmType getPropertyType() {
-		return precondition.type();
-	}*/
-
-	@Override
-	public String getProperty() {
-		return precondition.property();
-	}
-
 }

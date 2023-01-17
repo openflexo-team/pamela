@@ -1,9 +1,9 @@
 /**
  * 
- * Copyright (c) 2013-2014, Openflexo
+ * Copyright (c) 2013-2020, Openflexo
  * Copyright (c) 2011-2012, AgileBirds
  * 
- * This file is part of Pamela-core, a component of the software infrastructure 
+ * This file is part of pamela-core, a component of the software infrastructure 
  * developed at Openflexo.
  * 
  * 
@@ -37,43 +37,32 @@
  * 
  */
 
-package org.openflexo.pamela.patterns.annotations;
+package org.openflexo.pamela.patterns;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.reflect.Method;
 
-import org.openflexo.pamela.patterns.PatternInstance;
-import org.openflexo.pamela.patterns.PatternInstanceEvent;
+import org.openflexo.pamela.patterns.annotations.Ensures;
 
-/**
- * Defines a behaviour generating a new event and pushing it in the execution trace of associated {@link PatternInstance}
- * 
- * @author sylvain
- *
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(value = ElementType.METHOD)
-public @interface RaiseEventOnException {
+public class PatternPostcondition extends PatternAssertion {
 
-	/**
-	 * @return The unique identifier of the associated {@link PatternInstance}
-	 */
-	String patternID();
+	private final Ensures annotation;
+
+	public PatternPostcondition(PatternDefinition patternDefinition, Method method, Ensures annotation) {
+		super(patternDefinition, method, annotation.property());
+		this.annotation = annotation;
+	}
+
+	public Ensures getAnnotation() {
+		return annotation;
+	}
 
 	/**
-	 * Return listened exception class
+	 * Return exception class to throw if this property has been violated
 	 * 
 	 * @return
 	 */
-	Class<? extends Exception> onException();
-
-	/**
-	 * Return class of event beeing created and added to the execution trace of associated {@link PatternInstance}
-	 * 
-	 * @return
-	 */
-	Class<? extends PatternInstanceEvent> generateEvent();
+	public Class<? extends Exception> getExceptionWhenViolated() {
+		return annotation.exceptionWhenViolated();
+	}
 
 }
