@@ -63,6 +63,7 @@ public class CustomAuthenticatorPatternInstance
 		super(patternDefinition, model, subject);
 	}
 
+	// Perform check that last 3 AuthFailEvent in current execution trace were not raised within allowed time limit
 	public boolean checkRecentAuthFailCountLessThan3() {
 		System.out.println("checkRecentAuthFailCountLessThan3()");
 		long currentTime = System.currentTimeMillis();
