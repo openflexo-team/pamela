@@ -17,4 +17,4 @@ PAMELA approach has been tested and validated on some java-based industrial proj
 - Contract programming with assertions checking at runtime
 - Dynamic code weaving at runtime (aspect programming without compilation)
 
-Official website, documentation and installation available here : [https://pamela.openflexo.org](https://pamela.openflexo.org)
+Official website, documentation and installation available here : [https://www.openflexo.org/pamela](https://www.openflexo.org/pamela)
