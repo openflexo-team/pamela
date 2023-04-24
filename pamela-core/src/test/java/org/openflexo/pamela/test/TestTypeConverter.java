@@ -8,7 +8,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openflexo.connie.type.ParameterizedTypeImpl;
-import org.openflexo.connie.type.WildcardTypeImpl;
+import org.openflexo.connie.type.WildcardTypeImpl.DefaultWildcardType;
 import org.openflexo.pamela.converter.TypeConverter;
 
 public class TestTypeConverter extends AbstractPAMELATest {
@@ -58,18 +58,18 @@ public class TestTypeConverter extends AbstractPAMELATest {
 	}
 
 	public void test5() throws Exception {
-		assertEquals(WildcardTypeImpl.makeUpperBoundWilcard(Object.class),
+		assertEquals(DefaultWildcardType.makeUpperBoundWilcard(Object.class),
 				typeConverter.convertFromString("? extends java.lang.Object", null));
 	}
 
 	public void test6() throws Exception {
-		assertEquals(new WildcardTypeImpl(), typeConverter.convertFromString("?", null));
+		assertEquals(new DefaultWildcardType(), typeConverter.convertFromString("?", null));
 	}
 
 	public void test7() throws Exception {
 		assertEquals(
-				new ParameterizedTypeImpl(Map.class, WildcardTypeImpl.makeUpperBoundWilcard(Object.class),
-						WildcardTypeImpl.makeUpperBoundWilcard(new ParameterizedTypeImpl(List.class, new WildcardTypeImpl()))),
+				new ParameterizedTypeImpl(Map.class, DefaultWildcardType.makeUpperBoundWilcard(Object.class),
+						DefaultWildcardType.makeUpperBoundWilcard(new ParameterizedTypeImpl(List.class, new DefaultWildcardType()))),
 				typeConverter.convertFromString("java.util.Map<? extends java.lang.Object, ? extends java.util.List<?>>", null));
 	}
 
