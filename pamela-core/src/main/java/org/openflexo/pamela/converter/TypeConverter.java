@@ -49,7 +49,7 @@ import org.openflexo.connie.type.CustomType;
 import org.openflexo.connie.type.CustomTypeFactory;
 import org.openflexo.connie.type.ParameterizedTypeImpl;
 import org.openflexo.connie.type.TypeUtils;
-import org.openflexo.connie.type.WildcardTypeImpl;
+import org.openflexo.connie.type.WildcardTypeImpl.DefaultWildcardType;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
@@ -80,7 +80,7 @@ public class TypeConverter extends Converter<Type> {
 		}
 
 		if (value.equals("?")) {
-			return new WildcardTypeImpl();
+			return new DefaultWildcardType();
 		}
 
 		if (value.startsWith("? extends ")) {
@@ -91,7 +91,7 @@ public class TypeConverter extends Converter<Type> {
 				String typeAsString = upperBoundsListAsString.get(i);
 				upperBounds[i] = convertFromString(typeAsString, factory);
 			}
-			return new WildcardTypeImpl(upperBounds, new Type[0]);
+			return new DefaultWildcardType(upperBounds, new Type[0]);
 		}
 
 		if (value.indexOf("<") > -1) {
@@ -116,7 +116,7 @@ public class TypeConverter extends Converter<Type> {
 							parameters[i] = convertFromString(typeAsString, factory);
 						} catch (InvalidDataException typeNotFound) {
 							// In this case, we don't try to retrieve the type
-							parameters[i] = new WildcardTypeImpl();
+							parameters[i] = new DefaultWildcardType();
 						}
 					}
 					return new ParameterizedTypeImpl(customTypeClass, parameters);
