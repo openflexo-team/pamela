@@ -2799,6 +2799,10 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 
 	private boolean enableAssertionChecking = false;
 
+	public boolean isAssertionCheckingEnabled() {
+		return enableAssertionChecking;
+	}
+
 	private void invokeEnableAssertionChecking() {
 		this.enableAssertionChecking = true;
 	}

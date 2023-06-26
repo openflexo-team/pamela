@@ -46,6 +46,7 @@ import java.util.Map;
 
 import org.openflexo.connie.type.TypeUtils;
 import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.annotations.Ensures;
 import org.openflexo.pamela.patterns.annotations.OnException;
@@ -67,6 +68,10 @@ public abstract class AbstractPatternFactory<P extends PatternDefinition> {
 	public AbstractPatternFactory(PamelaMetaModel pamelaMetaModel) {
 		patternDefinitions = new HashMap<>();
 		this.pamelaMetaModel = pamelaMetaModel;
+	}
+
+	public PamelaMetaModel getPamelaMetaModel() {
+		return pamelaMetaModel;
 	}
 
 	protected Class<? extends P> getPatternDefinitionClass() {
@@ -91,13 +96,13 @@ public abstract class AbstractPatternFactory<P extends PatternDefinition> {
 		return patternDefinitions;
 	}
 
-	public void discoverEntity(ModelEntity<?> entity) {
+	public void discoverEntity(ModelEntity<?> entity) throws ModelDefinitionException {
 		for (Method m : entity.getImplementedInterface().getMethods()) {
 			discoverMethod(m);
 		}
 	}
 
-	protected void discoverMethod(Method m) {
+	protected void discoverMethod(Method m) throws ModelDefinitionException {
 		Requires requiresAnnotation = m.getAnnotation(Requires.class);
 		if (requiresAnnotation != null) {
 			PatternDefinition patternDefinition = getPatternDefinition(requiresAnnotation.patternID(), false);

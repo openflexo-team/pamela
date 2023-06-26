@@ -52,6 +52,10 @@ import org.openflexo.connie.expr.ExpressionEvaluator;
 import org.openflexo.connie.java.expr.JavaExpressionEvaluator;
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.factory.PamelaModel;
+import org.openflexo.pamela.factory.ProxyMethodHandler;
+import org.openflexo.pamela.model.ModelEntity;
+
+import javassist.util.proxy.ProxyObject;
 
 /**
  * Abstract base class for an instance of a {@link PatternDefinition}<br>
@@ -84,6 +88,52 @@ public abstract class PatternInstance<P extends PatternDefinition> implements Bi
 
 	public PamelaModel getModel() {
 		return model;
+	}
+
+	/**
+	 * If o is managed by PAMELA (is an instance of a PAMELA-maanged entity), return enabled-assertion checking flag (otherwise return
+	 * false)
+	 * 
+	 * @param o
+	 * @return
+	 */
+	public boolean isAssertionCheckingEnabled(Object o) {
+		if (o instanceof ProxyObject) {
+			ProxyMethodHandler<?> h = (ProxyMethodHandler) (((ProxyObject) o).getHandler());
+			return h.isAssertionCheckingEnabled();
+		}
+		return false;
+	}
+
+	/**
+	 * Return {@link ModelEntity} of supplied instance, when managed by PAMELA
+	 * 
+	 * @param <I>
+	 * @param o
+	 * @return
+	 */
+	public <I> ModelEntity<I> getModelEntity(I o) {
+
+		ProxyMethodHandler<I> handler = getProxyMethodHandler(o);
+
+		if (handler != null) {
+			return handler.getModelEntity();
+		}
+		return null;
+	}
+
+	/**
+	 * Return ProxyMethodHandler of supplied instance, when managed by PAMELA
+	 * 
+	 * @param <I>
+	 * @param o
+	 * @return
+	 */
+	public <I> ProxyMethodHandler<I> getProxyMethodHandler(I o) {
+		if (o instanceof ProxyObject) {
+			return (ProxyMethodHandler<I>) (((ProxyObject) o).getHandler());
+		}
+		return null;
 	}
 
 	protected void registerStakeHolder(Object stakeHolder, String role) {

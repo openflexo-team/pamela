@@ -465,4 +465,15 @@ public class PamelaMetaModel {
 
 	}
 
+	public ModelEntity<?> getEntityForGetter(Method method) {
+		for (ModelEntity<?> modelEntity : modelEntities.values()) {
+			for (ModelProperty<?> modelProperty : modelEntity.declaredModelProperties.values()) {
+				if (modelProperty.getGetterMethod().equals(method)) {
+					return modelEntity;
+				}
+			}
+		}
+		return null;
+	}
+
 }
