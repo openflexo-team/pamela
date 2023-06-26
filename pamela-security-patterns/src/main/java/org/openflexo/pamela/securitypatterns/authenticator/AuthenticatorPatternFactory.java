@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.securitypatterns.authenticator.annotations.AuthenticateMethod;
@@ -70,7 +71,7 @@ public class AuthenticatorPatternFactory extends AbstractPatternFactory<Authenti
 	}
 
 	@Override
-	public void discoverEntity(ModelEntity<?> entity) {
+	public void discoverEntity(ModelEntity<?> entity) throws ModelDefinitionException {
 		for (Annotation a : entity.getImplementedInterface().getAnnotations()) {
 			if (a instanceof AuthenticatorSubject) {
 				AuthenticatorSubject subjectAnnotation = (AuthenticatorSubject) a;
@@ -101,7 +102,7 @@ public class AuthenticatorPatternFactory extends AbstractPatternFactory<Authenti
 	private Map<Method, Integer> authenticationInformationIndexes = new HashMap<>();
 
 	@Override
-	protected void discoverMethod(Method m) {
+	protected void discoverMethod(Method m) throws ModelDefinitionException {
 
 		super.discoverMethod(m);
 

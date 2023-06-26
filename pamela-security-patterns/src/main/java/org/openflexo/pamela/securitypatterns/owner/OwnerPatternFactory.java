@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.securitypatterns.owner.annotations.OwnedObject;
@@ -17,7 +18,7 @@ public class OwnerPatternFactory extends AbstractPatternFactory<OwnerPatternDefi
 	}
 
 	@Override
-	public void discoverEntity(ModelEntity entity) {
+	public void discoverEntity(ModelEntity entity) throws ModelDefinitionException {
 		for (Annotation a : entity.getImplementedInterface().getAnnotations()) {
 			if (a instanceof OwnedObject) {
 				OwnerPatternDefinition patternDefinition = getPatternDefinition(((OwnedObject) a).patternID(), true);

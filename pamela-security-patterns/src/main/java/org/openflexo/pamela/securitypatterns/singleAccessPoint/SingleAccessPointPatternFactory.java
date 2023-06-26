@@ -3,6 +3,7 @@ package org.openflexo.pamela.securitypatterns.singleAccessPoint;
 import java.lang.annotation.Annotation;
 
 import org.openflexo.pamela.PamelaMetaModel;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.patterns.AbstractPatternFactory;
 import org.openflexo.pamela.securitypatterns.singleAccessPoint.annotations.SingleAccessPointClient;
@@ -10,12 +11,12 @@ import org.openflexo.pamela.securitypatterns.singleAccessPoint.annotations.Singl
 
 public class SingleAccessPointPatternFactory extends AbstractPatternFactory<SingleAccessPointPatternDefinition> {
 
-    public SingleAccessPointPatternFactory(PamelaMetaModel pamelaMetaModel) {
-        super(pamelaMetaModel);
-    }
+	public SingleAccessPointPatternFactory(PamelaMetaModel pamelaMetaModel) {
+		super(pamelaMetaModel);
+	}
 
 	@Override
-	public void discoverEntity(ModelEntity<?> entity) {
+	public void discoverEntity(ModelEntity<?> entity) throws ModelDefinitionException {
 		for (Annotation a : entity.getImplementedInterface().getAnnotations()) {
 			if (a instanceof SingleAccessPointSystem) {
 				SingleAccessPointPatternDefinition patternDefinition = this.getPatternDefinition(((SingleAccessPointSystem) a).patternID(),
