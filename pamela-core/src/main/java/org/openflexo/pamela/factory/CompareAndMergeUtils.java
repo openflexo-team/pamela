@@ -82,7 +82,7 @@ public class CompareAndMergeUtils {
 		BiMap<Object, Object> mappedObjects = HashBiMap.create();
 		boolean returned = updateWith(source, obj, mappedObjects);
 		// At the end of processing, perform a new pass to set external references
-		updateReferences(source,mappedObjects);
+		updateReferences(source, mappedObjects);
 		return returned;
 	}
 
@@ -196,8 +196,10 @@ public class CompareAndMergeUtils {
 						break;
 					case LIST:
 						Map<Object, Integer> reindex = new LinkedHashMap<>();
-						List<Object> values = new ArrayList<>((List<Object>) source.invokeGetter(p));// invokeGetterForListCardinality(p);
-						List<Object> oppositeValues = new ArrayList<>((List<Object>) oppositeObjectHandler.invokeGetter(p)); // invokeGetterForListCardinality(p);
+						List<Object> vList = (List<Object>) source.invokeGetter(p);
+						List<Object> values = vList != null ? new ArrayList<>(vList) : new ArrayList<>();// invokeGetterForListCardinality(p);
+						List<Object> oList = (List<Object>) oppositeObjectHandler.invokeGetter(p);
+						List<Object> oppositeValues = oList != null ? new ArrayList<>(oList) : new ArrayList<>(); // invokeGetterForListCardinality(p);
 						ListMatching matching = match(source, values, oppositeValues);
 						if (DEBUG) {
 							System.out.println(
@@ -259,7 +261,7 @@ public class CompareAndMergeUtils {
 			}
 
 		}
-		
+
 		if (DEBUG) {
 			System.out.println("<<<<<<< DONE updateWith " + source.getObject() + " with " + obj);
 			System.out.println("Mapped objects:");
@@ -342,21 +344,24 @@ public class CompareAndMergeUtils {
 
 					case LIST:
 						List<Object> values = (List<Object>) objectHandler.invokeGetter(p);
-						for (Object value : new ArrayList<>(values)) {
-							if (mappedObjects.inverse().get(value) != null) {
-								Object referenceObject = mappedObjects.inverse().get(value);
-								// We replace this value with the right reference object at right index
-								int initialIndex = values.indexOf(value);
-								objectHandler.invokeRemover(p, value);
-								objectHandler.invokeAdder(p, referenceObject);
-								objectHandler.invokeReindexer(p, referenceObject, initialIndex);
-								// System.out.println(
-								// "Replaced " + value + " by " + referenceObject + " at index " + initialIndex);
-							}
-							else {
-								if (value instanceof AccessibleProxyObject) {
-									// Do it recursively
-									updateReferences(objectHandler.getModelFactory().getHandler(value), mappedObjects, processedObjects);
+						if (values != null) {
+							for (Object value : new ArrayList<>(values)) {
+								if (mappedObjects.inverse().get(value) != null) {
+									Object referenceObject = mappedObjects.inverse().get(value);
+									// We replace this value with the right reference object at right index
+									int initialIndex = values.indexOf(value);
+									objectHandler.invokeRemover(p, value);
+									objectHandler.invokeAdder(p, referenceObject);
+									objectHandler.invokeReindexer(p, referenceObject, initialIndex);
+									// System.out.println(
+									// "Replaced " + value + " by " + referenceObject + " at index " + initialIndex);
+								}
+								else {
+									if (value instanceof AccessibleProxyObject) {
+										// Do it recursively
+										updateReferences(objectHandler.getModelFactory().getHandler(value), mappedObjects,
+												processedObjects);
+									}
 								}
 							}
 						}
@@ -661,9 +666,11 @@ public class CompareAndMergeUtils {
 						}
 
 						boolean allVisited = true;
-						for (Object v : values) {
-							if (!visitedObjects.containsKey(v)) {
-								allVisited = false;
+						if (values != null) {
+							for (Object v : values) {
+								if (!visitedObjects.containsKey(v)) {
+									allVisited = false;
+								}
 							}
 						}
 						if (allVisited) {
