@@ -90,6 +90,9 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 		// return internalValue;
 	}
 
+	// Indicates the 'null' object
+	private static Object NULL_OBJECT = new Object();
+
 	@Override
 	public void set(T aValue) throws ModelDefinitionException {
 		/*if ((aValue == null && get() != null) || (aValue != null && !aValue.equals(get()))) {
@@ -101,7 +104,8 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 			}
 		}*/
 
-		if (getHandler().getScheduledSets().get(getProperty()) == aValue) {
+		if ((aValue != null && getHandler().getScheduledSets().get(getProperty()) == aValue)
+				|| (aValue == null && getHandler().getScheduledSets().get(getProperty()) == NULL_OBJECT)) {
 			// This set was already scheduled (we are entering in an infinite loop): break NOW
 			return;
 		}
@@ -123,7 +127,7 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 			// System.out.println("Change for " + oldValue + " to " + value);
 			boolean hasInverse = getProperty().hasExplicitInverseProperty();
 
-			getHandler().getScheduledSets().put(getProperty(), aValue);
+			getHandler().getScheduledSets().put(getProperty(), aValue != null ? aValue : NULL_OBJECT);
 
 			// First handle inverse property for oldValue
 			if (hasInverse && oldValue != null) {
@@ -231,6 +235,7 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 
 	}
 
+	@Override
 	public void update(T aValue) throws ModelDefinitionException {
 		set(aValue);
 	}
