@@ -1708,7 +1708,13 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 		if (oldValue instanceof AccessibleProxyObject && newValue instanceof AccessibleProxyObject) {
 			ProxyMethodHandler<Object> handler = getModelFactory().getHandler(oldValue);
-			return handler.equalsObject(newValue, seen, considerProperty);
+			if (handler != null) {
+				return handler.equalsObject(newValue, seen, considerProperty);
+			}
+			else {
+				System.err.println("Unexpected object without ProxyMethodHandler : " + oldValue);
+				return false;
+			}
 		}
 		if (oldValue instanceof List && newValue instanceof List) {
 			List<Object> l1 = (List<Object>) oldValue;
