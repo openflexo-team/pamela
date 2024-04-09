@@ -2,7 +2,7 @@ dependencies {
   api flexoUtils()
   api connieJava()
   api group: 'org.jdom', name: 'jdom2', version: '2.0.6.1'
-  api group: 'org.javassist', name: 'javassist', version: '3.22.0-GA'
+  api group: 'org.javassist', name: 'javassist', version: '3.30.2-GA'
  // Lots of test errors when using 3.30.2
  // Error when using 3.23 (see below)
 
