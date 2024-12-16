@@ -46,7 +46,6 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.openflexo.IObjectGraphFactory;
 import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.PamelaMetaModel;
 import org.openflexo.pamela.PamelaMetaModelLibrary;
@@ -80,13 +78,13 @@ import javassist.util.proxy.ProxyObject;
  * 
  * This class should be considered stateless, regarding to the state of handled instances.<br>
  * 
- * Note that a {@link PamelaModelFactory} might refer to an {@link EditingContext}. When so, new instances are automatically registered in this
- * {@link EditingContext}.
+ * Note that a {@link PamelaModelFactory} might refer to an {@link EditingContext}. When so, new instances are automatically registered in
+ * this {@link EditingContext}.
  * 
  * @author sylvain
  * 
  */
-public class PamelaModelFactory implements IObjectGraphFactory {
+public class PamelaModelFactory {
 
 	private Class<?> defaultModelClass = Object.class;
 	private Class<? extends List> listImplementationClass = Vector.class;
@@ -816,7 +814,6 @@ public class PamelaModelFactory implements IObjectGraphFactory {
 		serializer.serializeDocument(object, os, resetModifiedStatus);
 	}
 
-	@Override
 	public Object deserialize(InputStream is) throws Exception {
 		return deserialize(is, DeserializationPolicy.PERMISSIVE);
 	}
@@ -826,7 +823,6 @@ public class PamelaModelFactory implements IObjectGraphFactory {
 		return deserializer.deserializeDocument(is);
 	}
 
-	@Override
 	public Object deserialize(String input) throws Exception {
 		return deserialize(input, DeserializationPolicy.PERMISSIVE);
 	}
@@ -882,57 +878,6 @@ public class PamelaModelFactory implements IObjectGraphFactory {
 	 */
 	public void setEditingContext(EditingContext editingContext) {
 		this.editingContext = editingContext;
-	}
-
-	/* @Override */
-	@Override
-	public final Type getTypeForObject(String typeURI, Object container, String objectName) {
-		return (Type) getModelContext().getModelEntity(typeURI);
-	}
-
-	@Override
-	public void setContext(Object objectGraph) {
-
-	}
-
-	@Override
-	public void resetContext() {
-
-	}
-
-	@Override
-	public void addToRootNodes(Object anObject) {
-
-	}
-
-	@Override
-	public void setContextProperty(String propertyName, Object value) {
-
-	}
-
-	@Override
-	public Object getInstanceOf(Type aType, String name) {
-		return null;
-	}
-
-	@Override
-	public boolean objectHasAttributeNamed(Object object, String attrName) {
-		return false;
-	}
-
-	@Override
-	public void addAttributeValueForObject(Object object, String attrName, Object value) {
-
-	}
-
-	@Override
-	public void addChildToObject(Object child, Object container) {
-
-	}
-
-	@Override
-	public Type getAttributeType(Object currentContainer, String localName) {
-		return null;
 	}
 
 	/**
