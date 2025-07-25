@@ -1,4 +1,4 @@
-tasks.register('buildWebsite') {
+/*tasks.register('buildWebsite') {
     doLast {
         exec {
             println '\n ### Build Started ### \n'
@@ -61,7 +61,7 @@ tasks.register('buildWebsite') {
             commandLine 'rm', '-rf', 'pamela'
         }
     }
-}
+}*/
 
 buildscript {
     repositories {
