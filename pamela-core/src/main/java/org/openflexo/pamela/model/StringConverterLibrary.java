@@ -76,6 +76,7 @@ public class StringConverterLibrary {
 		unmodifiableConverters = Collections.unmodifiableMap(converters);
 		addConverter(new BooleanConverter());
 		addConverter(new IntegerConverter());
+		addConverter(new ByteConverter());
 		addConverter(new ShortConverter());
 		addConverter(new LongConverter());
 		addConverter(new FloatConverter());
@@ -191,7 +192,8 @@ public class StringConverterLibrary {
 							Number returned = Double.parseDouble(value);
 							// System.out.println("Build a double: "+value);
 							return returned;
-						} catch (NumberFormatException e4) {}
+						} catch (NumberFormatException e4) {
+						}
 					}
 				}
 			}
@@ -247,6 +249,29 @@ public class StringConverterLibrary {
 
 		@Override
 		public String convertToString(Short value) {
+			return value.toString();
+		}
+
+	}
+
+	/**
+	 * Class defining how to convert Byte from/to String
+	 * 
+	 * @author sguerin
+	 */
+	private static class ByteConverter extends Converter<Byte> {
+
+		private ByteConverter() {
+			super(Byte.class);
+		}
+
+		@Override
+		public Byte convertFromString(String value, PamelaModelFactory factory) {
+			return Byte.valueOf(value);
+		}
+
+		@Override
+		public String convertToString(Byte value) {
 			return value.toString();
 		}
 
@@ -359,13 +384,18 @@ public class StringConverterLibrary {
 	 * 
 	 * @author sguerin
 	 */
-	private static class DateConverter extends Converter<Date> {
+	public static class DateConverter extends Converter<Date> {
 
 		/** Specify date format */
 		protected String _dateFormat = new SimpleDateFormat().toPattern();
 
 		private DateConverter() {
 			super(Date.class);
+		}
+
+		public DateConverter(String dateFormat) {
+			this();
+			_dateFormat = dateFormat;
 		}
 
 		@Override
@@ -386,12 +416,21 @@ public class StringConverterLibrary {
 			StringTokenizer st = new StringTokenizer(value, ",");
 			String dateFormat = _dateFormat;
 			String dateAsString = null;
+
+			// We may have the concatenation of date format and date serialization (comma separated)
+			// OR a pure date serialization
+
 			if (st.hasMoreTokens()) {
 				dateFormat = st.nextToken();
+				dateAsString = dateFormat;
 			}
 			if (st.hasMoreTokens()) {
 				dateAsString = st.nextToken();
 			}
+			else {
+				dateFormat = _dateFormat;
+			}
+
 			if (dateAsString != null) {
 				try {
 					returned = new SimpleDateFormat(dateFormat).parse(dateAsString);

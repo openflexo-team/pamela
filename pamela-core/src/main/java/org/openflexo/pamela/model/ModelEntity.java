@@ -1177,20 +1177,22 @@ public class ModelEntity<I> {
 	public List<Method> getNotOverridenMethods() {
 		List<Method> returned = new ArrayList<>();
 		for (Method m1 : getImplementedInterface().getMethods()) {
-			boolean isOverriden = false;
-			// Method overridingMethod = null;
-			for (Method m2 : getImplementedInterface().getMethods()) {
-				if (!m1.equals(m2) && PamelaUtils.methodOverrides(m2, m1, getImplementedInterface())) {
-					isOverriden = true;
-					// overridingMethod = m2;
-				}
+			if (!Modifier.isStatic(m1.getModifiers())) /* Do not check static methods */ {
+				boolean isOverriden = false;
+				// Method overridingMethod = null;
+				for (Method m2 : getImplementedInterface().getMethods()) {
+					if (!m1.equals(m2) && PamelaUtils.methodOverrides(m2, m1, getImplementedInterface())) {
+						isOverriden = true;
+						// overridingMethod = m2;
+					}
 
+				}
+				if (!isOverriden) {
+					returned.add(m1);
+				} /*else {
+					System.out.println("Dismiss " + m1 + " because overriden by " + overridingMethod);
+					}*/
 			}
-			if (!isOverriden) {
-				returned.add(m1);
-			} /*else {
-				System.out.println("Dismiss " + m1 + " because overriden by " + overridingMethod);
-				}*/
 		}
 		return returned;
 	}

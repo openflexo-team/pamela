@@ -18,3 +18,4 @@ build/
 **/out/
 /bugs.txt
 /infer-out/
+.java-version

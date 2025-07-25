@@ -169,7 +169,7 @@ public class TestAuthenticator extends TestCase {
 
 	@Test
 	public void testCoucou() throws Exception {
-		PamelaMetaModel context = PamelaMetaModelLibrary.getModelContext(Subject.class);
+		PamelaMetaModel context = PamelaMetaModelLibrary.retrieveMetaModel(Subject.class);
 		PamelaModelFactory factory = new PamelaModelFactory(context);
 		IAuthenticator manager = factory.newInstance(IAuthenticator.class);
 		Subject subject = factory.newInstance(Subject.class, "id");
