@@ -122,6 +122,7 @@ import org.openflexo.pamela.undo.DeleteCommand;
 import org.openflexo.pamela.undo.RemoveCommand;
 import org.openflexo.pamela.undo.SetCommand;
 import org.openflexo.pamela.undo.UndoManager;
+import org.openflexo.pamela.sync.SyncEditingContext;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
 import com.google.common.base.Defaults;
@@ -1064,6 +1065,11 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			getUndoManager().addEdit(new DeleteCommand<>(getObject(), getModelEntity(), getModelFactory()));
 		}
 
+		// Broadcast delete operation to other replicas
+		if (trackAtomicEdit) {
+			broadcastDeleteOperation();
+		}
+
 		deleted = true;
 		deleting = false;
 
@@ -1419,6 +1425,11 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			}
 		}
 		propertyImplementation.set(value);
+		
+		// Broadcast sync operation if connected
+		if (trackAtomicEdit && oldValue != value) {
+			broadcastSetOperation(property, oldValue, value);
+		}
 	}
 
 	private <T> void internallyInvokeUpdater(ModelProperty<? super I> property, SettablePropertyImplementation<I, T> propertyImplementation,
@@ -1439,6 +1450,11 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
 		}
 		propertyImplementation.addTo(value, index);
+		
+		// Broadcast sync operation if connected
+		if (trackAtomicEdit) {
+			broadcastAddOperation(property, value, index);
+		}
 	}
 
 	private <T> void internallyInvokeRemover(ModelProperty<? super I> property, MultiplePropertyImplementation<I, T> propertyImplementation,
@@ -1448,6 +1464,11 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, value, getModelFactory()));
 		}
 		propertyImplementation.removeFrom(value);
+		
+		// Broadcast sync operation if connected
+		if (trackAtomicEdit) {
+			broadcastRemoveOperation(property, value);
+		}
 	}
 
 	private <T> void internallyInvokeReindexer(ModelProperty<? super I> property,
@@ -2635,6 +2656,81 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 
 		assertionCheckingStack.pop();
 
+	}
+
+	// ========================================================================
+	// Synchronization support methods for collaborative editing via RabbitMQ
+	// ========================================================================
+
+	/**
+	 * Get the SyncEditingContext if available
+	 * 
+	 * @return SyncEditingContext or null if not in sync mode
+	 */
+	private SyncEditingContext getSyncEditingContext() {
+		EditingContext ctx = getEditingContext();
+		if (ctx instanceof SyncEditingContext) {
+			return (SyncEditingContext) ctx;
+		}
+		return null;
+	}
+
+	/**
+	 * Check if we should broadcast operations (not applying remote operations)
+	 */
+	private boolean shouldBroadcast() {
+		SyncEditingContext syncCtx = getSyncEditingContext();
+		return syncCtx != null && !syncCtx.isApplyingRemoteOperation();
+	}
+
+	/**
+	 * Broadcast a SET operation to other replicas
+	 */
+	private void broadcastSetOperation(ModelProperty<? super I> property, Object oldValue, Object newValue) {
+		SyncEditingContext syncCtx = getSyncEditingContext();
+		if (syncCtx != null && !syncCtx.isApplyingRemoteOperation()) {
+			syncCtx.broadcastSet(getObject(), property, oldValue, newValue);
+		}
+	}
+
+	/**
+	 * Broadcast an ADD operation to other replicas
+	 */
+	private void broadcastAddOperation(ModelProperty<? super I> property, Object addedValue, int index) {
+		SyncEditingContext syncCtx = getSyncEditingContext();
+		if (syncCtx != null && !syncCtx.isApplyingRemoteOperation()) {
+			syncCtx.broadcastAdd(getObject(), property, addedValue, index);
+		}
+	}
+
+	/**
+	 * Broadcast a REMOVE operation to other replicas
+	 */
+	private void broadcastRemoveOperation(ModelProperty<? super I> property, Object removedValue) {
+		SyncEditingContext syncCtx = getSyncEditingContext();
+		if (syncCtx != null && !syncCtx.isApplyingRemoteOperation()) {
+			syncCtx.broadcastRemove(getObject(), property, removedValue);
+		}
+	}
+
+	/**
+	 * Broadcast a DELETE operation to other replicas
+	 */
+	public void broadcastDeleteOperation() {
+		SyncEditingContext syncCtx = getSyncEditingContext();
+		if (syncCtx != null && !syncCtx.isApplyingRemoteOperation()) {
+			syncCtx.broadcastDelete(getObject());
+		}
+	}
+
+	/**
+	 * Broadcast a CREATE operation to other replicas
+	 */
+	public void broadcastCreateOperation() {
+		SyncEditingContext syncCtx = getSyncEditingContext();
+		if (syncCtx != null && !syncCtx.isApplyingRemoteOperation()) {
+			syncCtx.broadcastCreate(getObject(), getModelEntity().getImplementedInterface().getName());
+		}
 	}
 
 }

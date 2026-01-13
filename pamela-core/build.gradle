@@ -6,6 +6,11 @@ dependencies {
  // Lots of test errors when using 3.30.2
  // Error when using 3.23 (see below)
 
+  // RabbitMQ for collaborative synchronization
+  api group: 'com.rabbitmq', name: 'amqp-client', version: '5.20.0'
+  
+  // Jackson for JSON serialization of sync operations
+  api group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.16.0'
 }
 // /Users/fdagnat/git/pamela/pamela-core/src/main/java/org/openflexo/pamela/factory/ModelFactory.java:399: error: incompatible types: Class<CAP#1> cannot be converted to Class<? extends I>
 //                        return proxyFactory.getSuperclass();
