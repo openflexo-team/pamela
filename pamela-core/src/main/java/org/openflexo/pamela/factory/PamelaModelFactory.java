@@ -66,6 +66,7 @@ import org.openflexo.pamela.model.ModelInitializer;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.pamela.model.StringConverterLibrary.Converter;
 import org.openflexo.pamela.undo.CreateCommand;
+import org.openflexo.pamela.sync.SyncEditingContext;
 import org.openflexo.pamela.xml.XMLSaxDeserializer;
 import org.openflexo.pamela.xml.XMLSerializer;
 
@@ -451,6 +452,16 @@ public class PamelaModelFactory {
 				if (getEditingContext().getUndoManager() != null) {
 					getEditingContext().getUndoManager().addEdit(new CreateCommand<>(returned, proxyFactory.getModelEntity(), this));
 				}
+				// Broadcast CREATE operation for collaborative sync
+				if (getEditingContext() instanceof SyncEditingContext) {
+					SyncEditingContext syncContext = (SyncEditingContext) getEditingContext();
+					if (!syncContext.isApplyingRemoteOperation()) {
+						ProxyMethodHandler<?> handler = getHandler(returned);
+						if (handler != null) {
+							handler.broadcastCreateOperation();
+						}
+					}
+				}
 			}
 			// this.getModelContext().getPatternContext().leavingConstructor();
 			getModelContext().notifiedNewInstance(returned, getModelEntityForInstance(returned));
@@ -490,6 +501,16 @@ public class PamelaModelFactory {
 			if (getEditingContext() != null) {
 				if (getEditingContext().getUndoManager() != null) {
 					getEditingContext().getUndoManager().addEdit(new CreateCommand<>(returned, proxyFactory.getModelEntity(), this));
+				}
+				// Broadcast CREATE operation for collaborative sync
+				if (getEditingContext() instanceof SyncEditingContext) {
+					SyncEditingContext syncContext = (SyncEditingContext) getEditingContext();
+					if (!syncContext.isApplyingRemoteOperation()) {
+						ProxyMethodHandler<?> handler = getHandler(returned);
+						if (handler != null) {
+							handler.broadcastCreateOperation();
+						}
+					}
 				}
 			}
 			return returned;
