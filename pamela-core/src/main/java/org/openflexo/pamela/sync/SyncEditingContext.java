@@ -346,22 +346,16 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 
 		applyingRemoteOperation.set(true);
 		try {
-			switch (operation.getOperationType()) {
-				case SET:
-					applyRemoteSet(operation);
-					break;
-				case ADD:
-					applyRemoteAdd(operation);
-					break;
-				case REMOVE:
-					applyRemoteRemove(operation);
-					break;
+			switch (operation.getOperationType()) {			
 				case CREATE:
 					applyRemoteCreate(operation);
 					break;
 				case DELETE:
 					applyRemoteDelete(operation);
 					break;
+				case SET: case ADD: case REMOVE:
+					applyRemoteModification(operation);
+					break;				
 				default:
 					logger.warning("Unknown operation type: " + operation.getOperationType());
 			}
@@ -859,18 +853,12 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 
 	// Private methods for applying remote operations
 
-	private void applyRemoteSet(SyncOperation operation) {
+	private void applyRemoteModification(SyncOperation operation){
 		Object target = identityManager.getObject(operation.getObjectId());
-		if (target == null) {
-			// Object doesn't exist yet - try to create it first
-			// This can happen if SET arrives before CREATE due to message ordering
-			target = ensureRemoteObjectExists(operation.getObjectId(), operation.getEntityType());
-			if (target == null) {
-				logger.warning("Target object not found for SET: " + operation.getObjectId());
-				return;
-			}
-		}
-
+		if (target == null) 
+			// Object doesn't exist yet - try to create it first (might happen because of reordering operations)			
+			target = ensureRemoteObjectExists(operation.getObjectId(), operation.getEntityType());			
+		
 		try {
 			ProxyMethodHandler<?> handler = modelFactory.getHandler(target);
 			if (handler != null) {
@@ -881,75 +869,27 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 							property.getType(),
 							this
 					);
-					handler.invokeSetter(operation.getPropertyIdentifier(), newValue);
+					switch(operation.getOperationType()){
+						case SET:
+						handler.invokeSetter(operation.getPropertyIdentifier(), newValue); 
+						break; 
+						case ADD: 	
+						handler.invokeAdder(operation.getPropertyIdentifier(), newValue);
+						break; 
+						case REMOVE: 
+						handler.invokeRemover(operation.getPropertyIdentifier(), newValue); 
+						break; 
+						default: 
+						break; 
+					}					
 				}
 			}
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to apply remote SET", e);
+			logger.log(Level.SEVERE, "Failed to apply" + operation.getOperationType(), e);
 		}
 	}
 
-	private void applyRemoteAdd(SyncOperation operation) {
-		logger.info("Applying remote ADD: objectId=" + operation.getObjectId() 
-				+ " property=" + operation.getPropertyIdentifier() 
-				+ " value=" + operation.getNewValueSerialized());
-		
-		Object target = identityManager.getObject(operation.getObjectId());
-		if (target == null) {
-			// Object doesn't exist yet - try to create it first
-			target = ensureRemoteObjectExists(operation.getObjectId(), operation.getEntityType());
-			if (target == null) {
-				logger.warning("Target object not found for ADD: " + operation.getObjectId());
-				return;
-			}
-		}
-
-		try {
-			ProxyMethodHandler<?> handler = modelFactory.getHandler(target);
-			if (handler != null) {
-				ModelProperty<?> property = handler.getModelEntity().getModelProperty(operation.getPropertyIdentifier());
-				if (property != null) {
-					Object value = valueSerializer.deserialize(
-							operation.getNewValueSerialized(),
-							property.getType(),
-							this
-					);
-					logger.info("Deserialized value for ADD: " + value + " (type=" + (value != null ? value.getClass().getName() : "null") + ")");
-					// Use property identifier string
-					handler.invokeAdder(operation.getPropertyIdentifier(), value);
-					logger.info("Successfully added to collection");
-				}
-			}
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to apply remote ADD", e);
-		}
-	}
-
-	private void applyRemoteRemove(SyncOperation operation) {
-		Object target = identityManager.getObject(operation.getObjectId());
-		if (target == null) {
-			logger.warning("Target object not found for REMOVE: " + operation.getObjectId());
-			return;
-		}
-
-		try {
-			ProxyMethodHandler<?> handler = modelFactory.getHandler(target);
-			if (handler != null) {
-				ModelProperty<?> property = handler.getModelEntity().getModelProperty(operation.getPropertyIdentifier());
-				if (property != null) {
-					Object value = valueSerializer.deserialize(
-							operation.getOldValueSerialized(),
-							property.getType(),
-							this
-					);
-					handler.invokeRemover(operation.getPropertyIdentifier(), value);
-				}
-			}
-		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to apply remote REMOVE", e);
-		}
-	}
-
+	
 	private void applyRemoteCreate(SyncOperation operation) {
 		// Check if object already exists
 		if (identityManager.hasObject(operation.getObjectId())) {
@@ -1003,6 +943,7 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Failed to apply remote DELETE", e);
 		}
+	
 	}
 
 	/**
@@ -1013,13 +954,7 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 	 * @param entityType the entity class name
 	 * @return the object, or null if creation failed
 	 */
-	private Object ensureRemoteObjectExists(String objectId, String entityType) {
-		// Check again if it exists now
-		Object existing = identityManager.getObject(objectId);
-		if (existing != null) {
-			return existing;
-		}
-
+	private Object ensureRemoteObjectExists(String objectId, String entityType) {					
 		if (entityType == null) {
 			logger.warning("Cannot create object without entityType for ID: " + objectId);
 			return null;
