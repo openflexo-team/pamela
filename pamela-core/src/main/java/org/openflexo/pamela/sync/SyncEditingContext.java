@@ -446,6 +446,23 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 	}
 
 	/**
+	 * Creates and configures an UndoManager for this sync editing context.
+	 * The UndoManager is configured with the local replica ID to filter out remote edits.
+	 */
+	@Override
+	public org.openflexo.pamela.undo.UndoManager createUndoManager() {
+		org.openflexo.pamela.undo.UndoManager undoManager = super.createUndoManager();
+
+		// Configure the UndoManager with the local replica ID
+		// This ensures it only tracks edits from the local replica
+		if (syncManager != null) {
+			undoManager.setLocalReplicaId(syncManager.getReplicaId());
+		}
+
+		return undoManager;
+	}
+
+	/**
 	 * Request state from other replicas.
 	 * Call this when a new client joins to get the current state.
 	 */
