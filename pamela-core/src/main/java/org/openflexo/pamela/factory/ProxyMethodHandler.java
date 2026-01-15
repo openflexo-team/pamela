@@ -239,7 +239,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		EditingContext context = getModelFactory().getEditingContext();
 		if (context instanceof org.openflexo.pamela.sync.SyncEditingContext) {
 			org.openflexo.pamela.sync.SyncEditingContext syncContext = (org.openflexo.pamela.sync.SyncEditingContext) context;
-			return syncContext.getReplicaId();
+			return syncContext.getCurrentOperationReplicaId();
 		}
 		return null;
 	}

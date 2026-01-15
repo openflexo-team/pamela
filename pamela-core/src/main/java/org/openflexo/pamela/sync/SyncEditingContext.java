@@ -43,7 +43,11 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 
 	// Flag to prevent recursive sync when applying remote operations
 	private final ThreadLocal<Boolean> applyingRemoteOperation = ThreadLocal.withInitial(() -> false);
-	
+
+	// Stores the replicaId of the remote operation currently being applied
+	// Used by ProxyMethodHandler.getCurrentReplicaId() to tag AtomicEdits with the correct replicaId
+	private final ThreadLocal<String> currentRemoteReplicaId = new ThreadLocal<>();
+
 	// Buffer for operations during object creation (ensures CREATE is sent before SETs)
 	// Key: objectId, Value: list of buffered operations
 	private final Map<String, List<SyncOperation>> pendingOperations = new ConcurrentHashMap<>();
@@ -136,6 +140,20 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 	 */
 	public boolean isApplyingRemoteOperation() {
 		return applyingRemoteOperation.get();
+	}
+
+	/**
+	 * Get the replicaId of the operation currently being processed.
+	 * If applying a remote operation, returns the remote replica's ID.
+	 * Otherwise, returns the local replica's ID.
+	 * This is used by ProxyMethodHandler to tag AtomicEdits with the correct replicaId.
+	 */
+	public String getCurrentOperationReplicaId() {
+		String remoteId = currentRemoteReplicaId.get();
+		if (remoteId != null) {
+			return remoteId;
+		}
+		return getReplicaId();
 	}
 
 	/**
@@ -345,8 +363,9 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 		}
 
 		applyingRemoteOperation.set(true);
+		currentRemoteReplicaId.set(operation.getReplicaId());
 		try {
-			switch (operation.getOperationType()) {			
+			switch (operation.getOperationType()) {
 				case CREATE:
 					applyRemoteCreate(operation);
 					break;
@@ -355,7 +374,7 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 					break;
 				case SET: case ADD: case REMOVE:
 					applyRemoteModification(operation);
-					break;				
+					break;
 				default:
 					logger.warning("Unknown operation type: " + operation.getOperationType());
 			}
@@ -363,6 +382,7 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 			logger.log(Level.SEVERE, "Failed to apply remote operation: " + operation, e);
 		} finally {
 			applyingRemoteOperation.set(false);
+			currentRemoteReplicaId.remove();
 		}
 	}
 
@@ -405,14 +425,18 @@ public class SyncEditingContext extends EditingContextImpl implements SyncOperat
 	@Override
 	public void onStateReceived(String stateSnapshot, String fromReplicaId) {
 		logger.info("State received from replica: " + fromReplicaId);
-		
+
 		// Mark state as received to prevent duplicate requests
 		stateReceived = true;
-		
+
+		// Set the remote replicaId so AtomicEdits are tagged correctly
+		currentRemoteReplicaId.set(fromReplicaId);
 		try {
 			restoreFromSnapshot(stateSnapshot);
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Failed to restore from snapshot", e);
+		} finally {
+			currentRemoteReplicaId.remove();
 		}
 	}
 
