@@ -56,10 +56,12 @@ public abstract class AtomicEdit<I> implements UndoableEdit {
 
 	private PamelaModelFactory pamelaModelFactory;
 	private ModelEntity<I> modelEntity;
+	private String replicaId;
 
-	public AtomicEdit(ModelEntity<I> modelEntity, PamelaModelFactory pamelaModelFactory) {
+	public AtomicEdit(ModelEntity<I> modelEntity, PamelaModelFactory pamelaModelFactory, String replicaId) {
 		this.modelEntity = modelEntity;
 		this.pamelaModelFactory = pamelaModelFactory;
+		this.replicaId = replicaId;
 	}
 
 	public PamelaModelFactory getModelFactory() {
@@ -68,6 +70,10 @@ public abstract class AtomicEdit<I> implements UndoableEdit {
 
 	public ModelEntity<I> getModelEntity() {
 		return modelEntity;
+	}
+
+	public String getReplicaId() {
+		return replicaId;
 	}
 
 	public abstract I getObject();
@@ -88,6 +94,7 @@ public abstract class AtomicEdit<I> implements UndoableEdit {
 	public void die() {
 		modelEntity = null;
 		pamelaModelFactory = null;
+		replicaId = null;
 	}
 
 	@Override

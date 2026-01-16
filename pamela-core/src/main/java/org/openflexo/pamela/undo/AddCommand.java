@@ -62,8 +62,8 @@ public class AddCommand<I> extends AtomicEdit<I> {
 	private final int index;
 
 	public AddCommand(I updatedObject, ModelEntity<I> modelEntity, ModelProperty<? super I> modelProperty, Object addedValue,
-			PamelaModelFactory pamelaModelFactory) {
-		super(modelEntity, pamelaModelFactory);
+			PamelaModelFactory pamelaModelFactory, String replicaId) {
+		super(modelEntity, pamelaModelFactory, replicaId);
 		this.updatedObject = updatedObject;
 		this.modelProperty = modelProperty;
 		this.addedValue = addedValue;
@@ -71,8 +71,8 @@ public class AddCommand<I> extends AtomicEdit<I> {
 	}
 
 	public AddCommand(I updatedObject, ModelEntity<I> modelEntity, ModelProperty<? super I> modelProperty, Object addedValue, int index,
-			PamelaModelFactory pamelaModelFactory) {
-		super(modelEntity, pamelaModelFactory);
+			PamelaModelFactory pamelaModelFactory, String replicaId) {
+		super(modelEntity, pamelaModelFactory, replicaId);
 		this.updatedObject = updatedObject;
 		this.modelProperty = modelProperty;
 		this.addedValue = addedValue;

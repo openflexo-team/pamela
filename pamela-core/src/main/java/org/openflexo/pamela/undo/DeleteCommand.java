@@ -57,8 +57,8 @@ public class DeleteCommand<I> extends AtomicEdit<I> {
 
 	private I deletedObject;
 
-	public DeleteCommand(I deletedObject, ModelEntity<I> modelEntity, PamelaModelFactory pamelaModelFactory) {
-		super(modelEntity, pamelaModelFactory);
+	public DeleteCommand(I deletedObject, ModelEntity<I> modelEntity, PamelaModelFactory pamelaModelFactory, String replicaId) {
+		super(modelEntity, pamelaModelFactory, replicaId);
 		this.deletedObject = deletedObject;
 	}
 

@@ -149,20 +149,20 @@ public class DelegateImplementation<I> extends ProxyFactory implements MethodHan
 				if (getUndoManager() != null) {
 					if (oldValue != args[0]) {
 						getUndoManager()
-								.addEdit(new SetCommand<>(masterObject, getModelEntity(), property, oldValue, args[0], getModelFactory()));
+								.addEdit(new SetCommand<>(masterObject, getModelEntity(), property, oldValue, args[0], getModelFactory(), getCurrentReplicaId()));
 					}
 				}
 			}
 			if (PamelaUtils.methodIsEquivalentTo(method, property.getAdderMethod())) {
 				// System.out.println("DETECTS ADD with " + proceed + " instead of " + method);
 				if (getUndoManager() != null) {
-					getUndoManager().addEdit(new AddCommand<>(masterObject, getModelEntity(), property, args[0], getModelFactory()));
+					getUndoManager().addEdit(new AddCommand<>(masterObject, getModelEntity(), property, args[0], getModelFactory(), getCurrentReplicaId()));
 				}
 			}
 			if (PamelaUtils.methodIsEquivalentTo(method, property.getRemoverMethod())) {
 				// System.out.println("DETECTS REMOVE with " + proceed + " instead of " + method);
 				if (getUndoManager() != null) {
-					getUndoManager().addEdit(new RemoveCommand<>(masterObject, getModelEntity(), property, args[0], getModelFactory()));
+					getUndoManager().addEdit(new RemoveCommand<>(masterObject, getModelEntity(), property, args[0], getModelFactory(), getCurrentReplicaId()));
 				}
 			}
 		}
@@ -245,6 +245,19 @@ public class DelegateImplementation<I> extends ProxyFactory implements MethodHan
 	public UndoManager getUndoManager() {
 		if (getEditingContext() != null) {
 			return getEditingContext().getUndoManager();
+		}
+		return null;
+	}
+
+	/**
+	 * Get the current replica ID from the SyncEditingContext.
+	 * Returns null if not in a sync context or if no SyncManager is configured.
+	 */
+	private String getCurrentReplicaId() {
+		EditingContext context = getModelFactory().getEditingContext();
+		if (context instanceof org.openflexo.pamela.sync.SyncEditingContext) {
+			org.openflexo.pamela.sync.SyncEditingContext syncContext = (org.openflexo.pamela.sync.SyncEditingContext) context;
+			return syncContext.getReplicaId();
 		}
 		return null;
 	}

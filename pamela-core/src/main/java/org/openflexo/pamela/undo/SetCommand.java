@@ -63,8 +63,8 @@ public class SetCommand<I> extends AtomicEdit<I> {
 	private ModelProperty<? super I> modelProperty;
 
 	public SetCommand(I updatedObject, ModelEntity<I> modelEntity, ModelProperty<? super I> modelProperty, Object oldValue,
-			Object newValue, PamelaModelFactory pamelaModelFactory) {
-		super(modelEntity, pamelaModelFactory);
+			Object newValue, PamelaModelFactory pamelaModelFactory, String replicaId) {
+		super(modelEntity, pamelaModelFactory, replicaId);
 		this.updatedObject = updatedObject;
 		this.modelProperty = modelProperty;
 		this.oldValue = oldValue;
