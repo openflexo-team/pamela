@@ -101,8 +101,20 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 
 	private boolean enabled = true;
 
+	private String localReplicaId = null;
+
 	public UndoManager() {
 		pcSupport = new PropertyChangeSupport(this);
+	}
+
+	/**
+	 * Set the local replica ID for filtering undo/redo operations.
+	 * Only edits from this replica will be added to the undo stack.
+	 *
+	 * @param replicaId the local replica ID
+	 */
+	public void setLocalReplicaId(String replicaId) {
+		this.localReplicaId = replicaId;
 	}
 
 	private static final String ANTICIPATED_RECORDING = "AnticipatedRecording";
@@ -336,6 +348,15 @@ public class UndoManager extends javax.swing.undo.UndoManager implements HasProp
 		}
 
 		if (anEdit instanceof AtomicEdit) {
+			AtomicEdit<?> atomicEdit = (AtomicEdit<?>) anEdit;
+
+			// Filter out edits from remote replicas
+			String editReplicaId = atomicEdit.getReplicaId();
+			if (editReplicaId != null && localReplicaId != null && !editReplicaId.equals(localReplicaId)) {
+				logger.fine("Ignoring edit from remote replica: " + editReplicaId + " (local: " + localReplicaId + ")");
+				anEdit.die();
+				return false;
+			}
 
 			// If UNDO is in progress, ignore it
 			if (undoInProgress) {

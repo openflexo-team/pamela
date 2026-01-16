@@ -61,8 +61,8 @@ public class RemoveCommand<I> extends AtomicEdit<I> {
 	private ModelProperty<? super I> modelProperty;
 
 	public RemoveCommand(I updatedObject, ModelEntity<I> modelEntity, ModelProperty<? super I> modelProperty, Object removedValue,
-			PamelaModelFactory pamelaModelFactory) {
-		super(modelEntity, pamelaModelFactory);
+			PamelaModelFactory pamelaModelFactory, String replicaId) {
+		super(modelEntity, pamelaModelFactory, replicaId);
 		this.updatedObject = updatedObject;
 		this.modelProperty = modelProperty;
 		this.removedValue = removedValue;

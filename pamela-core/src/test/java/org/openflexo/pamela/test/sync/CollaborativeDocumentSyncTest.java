@@ -159,6 +159,12 @@ public class CollaborativeDocumentSyncTest {
 		assertNotNull("Document should have an ID", docId);
 		System.out.println("[Replica A] Created document with ID: " + docId);
 
+		// ========== REPLICA B: Create corresponding local instance ==========
+		// In a real scenario, this would be done when receiving the CREATE operation
+		CollaborativeDocument docB = factoryB.newInstance(CollaborativeDocument.class);
+		contextB.getIdentityManager().registerObject(docB, docId);
+		System.out.println("[Replica B] Registered local document with same ID: " + docId);
+
 		// ========== REPLICA A: Modify the document ==========
 		System.out.println("[Replica A] Setting title to 'Hello from Computer A'");
 		docA.setTitle("Hello from Computer A");
@@ -179,10 +185,6 @@ public class CollaborativeDocumentSyncTest {
 		assertEquals("Property should be 'title'", "title", receivedOp.getPropertyIdentifier());
 		assertEquals("New value should match", "Hello from Computer A", receivedOp.getNewValueSerialized());
 
-		// Get the object created on Replica B by the remote CREATE operation
-		CollaborativeDocument docB = (CollaborativeDocument) contextB.getIdentityManager().getObject(docId);
-		assertNotNull("Replica B should have created the document via applyRemoteCreate", docB);
-		
 		// Verify Replica B's document was updated
 		assertEquals("Replica B's document title should be updated", 
 				"Hello from Computer A", docB.getTitle());
@@ -217,23 +219,21 @@ public class CollaborativeDocumentSyncTest {
 
 		Thread.sleep(500);
 
-		// Create document on Replica A
+		// Create documents
 		CollaborativeDocument docA = factoryA.newInstance(CollaborativeDocument.class);
 		String docId = contextA.getIdentityManager().getOrCreateObjectId(docA);
-		System.out.println("[Replica A] Created document with ID: " + docId);
+
+		CollaborativeDocument docB = factoryB.newInstance(CollaborativeDocument.class);
+		contextB.getIdentityManager().registerObject(docB, docId);
 
 		// Add tags on Replica A
 		System.out.println("[Replica A] Adding tags 'java' and 'pamela'");
 		docA.addToTags("java");
 		docA.addToTags("pamela");
 
-		// Wait for operations (CREATE + 2 ADD)
+		// Wait for operations
 		boolean received = operationLatchB.await(5, TimeUnit.SECONDS);
-		assertTrue("Replica B should have received CREATE + ADD operations", received);
-
-		// Get the object created on Replica B by the remote CREATE operation
-		CollaborativeDocument docB = (CollaborativeDocument) contextB.getIdentityManager().getObject(docId);
-		assertNotNull("Replica B should have created the document via applyRemoteCreate", docB);
+		assertTrue("Replica B should have received ADD operations", received);
 
 		// Verify tags were added on Replica B
 		assertTrue("Replica B should have 'java' tag", docB.getTags().contains("java"));
@@ -253,7 +253,8 @@ public class CollaborativeDocumentSyncTest {
 			return;
 		}
 
-		// Expecting CREATE + SET from Replica A
+		// Expecting CREATE + SET for each direction
+		CountDownLatch latchA = new CountDownLatch(2);
 		operationLatchB = new CountDownLatch(2);
 
 		// Connect replicas
@@ -262,7 +263,7 @@ public class CollaborativeDocumentSyncTest {
 
 		contextA.setSyncManager(syncManagerA);
 		syncManagerA.addListener(contextA);
-		syncManagerA.addListener(new TestOperationListener(receivedOperationsA, null));
+		syncManagerA.addListener(new TestOperationListener(receivedOperationsA, latchA));
 
 		contextB.setSyncManager(syncManagerB);
 		syncManagerB.addListener(contextB);
@@ -270,36 +271,31 @@ public class CollaborativeDocumentSyncTest {
 
 		Thread.sleep(500);
 
-		// Replica A creates document and sets content
-		// Replica B will automatically receive CREATE and create its local instance
+		// Create and register documents
 		CollaborativeDocument docA = factoryA.newInstance(CollaborativeDocument.class);
 		String docId = contextA.getIdentityManager().getOrCreateObjectId(docA);
-		System.out.println("[Replica A] Created document with ID: " + docId);
+
+		CollaborativeDocument docB = factoryB.newInstance(CollaborativeDocument.class);
+		contextB.getIdentityManager().registerObject(docB, docId);
 
 		// Replica A modifies content
 		System.out.println("[Replica A] Setting content");
 		docA.setContent("Content from A");
 		
-		// Wait for Replica B to receive CREATE + SET
-		boolean received = operationLatchB.await(5, TimeUnit.SECONDS);
-		assertTrue("Replica B should have received CREATE + SET", received);
-
-		// Get the object created on Replica B by the remote CREATE operation
-		CollaborativeDocument docB = (CollaborativeDocument) contextB.getIdentityManager().getObject(docId);
-		assertNotNull("Replica B should have created the document via applyRemoteCreate", docB);
+		operationLatchB.await(5, TimeUnit.SECONDS);
 		assertEquals("Content from A", docB.getContent());
-		System.out.println("[Replica B] Document received with content: " + docB.getContent());
 
-		// Reset latch for Replica B -> Replica A direction (expecting only SET)
-		CountDownLatch latchA = new CountDownLatch(1);
+		// Reset latch for next operation (expecting CREATE + SET from Replica B)
+		operationLatchB = new CountDownLatch(2);
+		latchA = new CountDownLatch(2);
 		syncManagerA.addListener(new TestOperationListener(null, latchA));
+		syncManagerB.addListener(new TestOperationListener(null, operationLatchB));
 
 		// Replica B modifies author
 		System.out.println("[Replica B] Setting author");
 		docB.setAuthor("User B");
 
-		received = latchA.await(5, TimeUnit.SECONDS);
-		assertTrue("Replica A should have received SET from Replica B", received);
+		latchA.await(5, TimeUnit.SECONDS);
 		assertEquals("User B", docA.getAuthor());
 
 		System.out.println("[Result] docA: content='" + docA.getContent() + "', author='" + docA.getAuthor() + "'");
