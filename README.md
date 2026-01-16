@@ -18,3 +18,16 @@ PAMELA approach has been tested and validated on some java-based industrial proj
 - Dynamic code weaving at runtime (aspect programming without compilation)
 
 Official website, documentation and installation available here : [https://www.openflexo.org/pamela](https://www.openflexo.org/pamela)
+
+## Lunch Sync Feature
+
+Build the projet with gradle:
+
+```bash
+.\gradlew.bat clean :pamela-core:build :book:classes -x test --console=plain
+```
+Then run the Book example with the following command:
+
+```bash
+.\gradlew.bat :book:runDemo --console=plain
+```

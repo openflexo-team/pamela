@@ -57,8 +57,8 @@ public class CreateCommand<I> extends AtomicEdit<I> {
 
 	private I createdObject;
 
-	public CreateCommand(I createdObject, ModelEntity<I> modelEntity, PamelaModelFactory pamelaModelFactory) {
-		super(modelEntity, pamelaModelFactory);
+	public CreateCommand(I createdObject, ModelEntity<I> modelEntity, PamelaModelFactory pamelaModelFactory, String replicaId) {
+		super(modelEntity, pamelaModelFactory, replicaId);
 		this.createdObject = createdObject;
 	}
 
