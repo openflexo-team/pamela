@@ -1083,6 +1083,11 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			broadcastDeleteOperation();
 		}
 
+		// Broadcast delete operation to other replicas
+		if (trackAtomicEdit) {
+			broadcastDeleteOperation();
+		}
+
 		deleted = true;
 		deleting = false;
 

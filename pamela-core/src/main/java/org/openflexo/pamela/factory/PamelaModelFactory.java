@@ -462,6 +462,16 @@ public class PamelaModelFactory {
 						}
 					}
 				}
+				// Broadcast CREATE operation for collaborative sync
+				if (getEditingContext() instanceof SyncEditingContext) {
+					SyncEditingContext syncContext = (SyncEditingContext) getEditingContext();
+					if (!syncContext.isApplyingRemoteOperation()) {
+						ProxyMethodHandler<?> handler = getHandler(returned);
+						if (handler != null) {
+							handler.broadcastCreateOperation();
+						}
+					}
+				}
 			}
 			// this.getModelContext().getPatternContext().leavingConstructor();
 			getModelContext().notifiedNewInstance(returned, getModelEntityForInstance(returned));
@@ -501,6 +511,16 @@ public class PamelaModelFactory {
 			if (getEditingContext() != null) {
 				if (getEditingContext().getUndoManager() != null) {
 					getEditingContext().getUndoManager().addEdit(new CreateCommand<>(returned, proxyFactory.getModelEntity(), this, getCurrentReplicaId()));
+				}
+				// Broadcast CREATE operation for collaborative sync
+				if (getEditingContext() instanceof SyncEditingContext) {
+					SyncEditingContext syncContext = (SyncEditingContext) getEditingContext();
+					if (!syncContext.isApplyingRemoteOperation()) {
+						ProxyMethodHandler<?> handler = getHandler(returned);
+						if (handler != null) {
+							handler.broadcastCreateOperation();
+						}
+					}
 				}
 				// Broadcast CREATE operation for collaborative sync
 				if (getEditingContext() instanceof SyncEditingContext) {
