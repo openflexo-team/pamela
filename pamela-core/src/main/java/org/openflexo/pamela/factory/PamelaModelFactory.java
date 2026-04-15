@@ -88,7 +88,7 @@ import javassist.util.proxy.ProxyObject;
  * @author sylvain
  * 
  */
-public class PamelaModelFactory {
+public class PamelaModelFactory implements IPamelaModelFactory {
 
 	private Class<?> defaultModelClass = Object.class;
 	private Class<? extends List> listImplementationClass = Vector.class;
