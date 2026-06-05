@@ -20,3 +20,6 @@ build/
 /bugs.txt
 /infer-out/
 .java-version
+**/.DS_Store
+**/.claude
+
