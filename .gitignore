@@ -1,25 +1,70 @@
-*.class
+# =====================================================================
+#  OpenFlexo - common .gitignore
+#
+#  This block is identical in every OpenFlexo repository: do not edit
+#  it locally. The reference copy is openflexo-buildplugin/common.gitignore;
+#  change it there, then copy it into every repository, keeping each
+#  repository's LOCAL section.
+#  Rules that concern one repository only go in the LOCAL section at
+#  the bottom of this file. Module-level .gitignore files are only for
+#  rules that are genuinely local to that module.
+#
+#  Deliberately NOT ignored here:
+#   - *.jar, *.zip, *.log, gradle.properties: legitimately tracked in
+#     several repositories (Gradle wrapper, EMF metamodels, JDBC
+#     drivers, packaging tools, test resources).
+# =====================================================================
 
-# Package Files #
+# --- Gradle ----------------------------------------------------------
+.gradle/
+build/
 
-*.war
-/.idea/
-*.ear
+# --- Maven (legacy output; Maven is not the build) -------------------
+target/
+
+# --- Eclipse / Buildship (regenerated on import) ---------------------
 .classpath
 .project
-.settings
-/.pmd
-/.gitignore
-/.DS_Store
-/basic.xml
-.gradle
-target/
-build/
-*.iml
-**/out/
-/bugs.txt
-/infer-out/
-.java-version
-**/.DS_Store
-**/.claude
+.settings/
+bin/
 
+# --- IntelliJ IDEA ---------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# --- JVM and tooling -------------------------------------------------
+*.class
+hs_err_pid*.log
+*.hprof
+.java-version
+infer-out/
+jreadline.log
+
+# --- Openflexo runtime -----------------------------------------------
+# Resource-manager metadata file written next to each resource
+.metadata
+# Backup copies written on save (Foo.fml~, Bar.xlsx~, pom.xml~, ...)
+*~
+
+# --- Editors and OS --------------------------------------------------
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- LaTeX build artifacts -------------------------------------------
+*.aux
+*.bcf
+*.fdb_latexmk
+*.fls
+*.idx
+*.run.xml
+*.synctex.gz
+*.thm
+*.toc
+
+# =====================================================================
+#  LOCAL - rules specific to this repository (below this line only)
+# =====================================================================
