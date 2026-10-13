@@ -6,6 +6,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -62,6 +68,47 @@ public class TestRelativePathResourceConverter {
 		Resource read = converter.convertFromString(serialized, null);
 		assertNotNull(read);
 		assertEquals(jarResource.getURI(), read.getURI());
+	}
+
+	/**
+	 * The container resources of a diagram: its own directory, on disk, and the one of its diagram specification, in a jar. A resource of
+	 * that jar is addressed from the second one, and asking the first one for a distance it cannot measure is not worth a warning.
+	 */
+	@Test
+	public void testContainersOfDifferentKinds() {
+		Resource jarResource = ResourceLocator.locateResource("org/jdom2/Document.class");
+		Resource jarContainer = ResourceLocator.locateResource(JAR_RESOURCE).getContainer();
+		assertNotNull(jarResource);
+		assertNotNull(jarContainer);
+
+		List<String> warnings = new ArrayList<>();
+		Handler handler = new Handler() {
+			@Override
+			public void publish(LogRecord record) {
+				if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
+					warnings.add(record.getMessage());
+				}
+			}
+
+			@Override
+			public void flush() {
+			}
+
+			@Override
+			public void close() {
+			}
+		};
+		Logger.getLogger("").addHandler(handler);
+		try {
+			RelativePathResourceConverter converter = new RelativePathResourceConverter(directoryResource);
+			converter.setAlternativeContainerResource(jarContainer);
+			String serialized = converter.convertToString(jarResource);
+			assertEquals("Document.class", serialized);
+			assertEquals(jarResource.getURI(), converter.convertFromString(serialized, null).getURI());
+		} finally {
+			Logger.getLogger("").removeHandler(handler);
+		}
+		assertTrue("Unexpected warnings: " + warnings, warnings.isEmpty());
 	}
 
 	@Test

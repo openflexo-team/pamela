@@ -156,6 +156,18 @@ public class RelativePathResourceConverter extends Converter<Resource> {
 	}
 
 	/**
+	 * Distance between a container resource and the resource to address. A container of the file system cannot address a resource of a
+	 * jar, nor the other way round (the container resources of a diagram are the one of the diagram, on disk, and the one of its diagram
+	 * specification, which may be in a jar): it is then as far as possible, without asking it to measure what it cannot.
+	 */
+	private static int distance(Resource container, Resource value) {
+		if (isInJar(container) != isInJar(value)) {
+			return Integer.MAX_VALUE;
+		}
+		return container.distance(value);
+	}
+
+	/**
 	 * Return the path of supplied resource in the classpath, when it is a resource of the classpath and this path locates it
 	 */
 	private static String getClasspathPath(Resource value) {
@@ -199,8 +211,8 @@ public class RelativePathResourceConverter extends Converter<Resource> {
 		}
 		else {
 			if (alternativeContainerResource != null) {
-				int d1 = containerResource.distance(value);
-				int d2 = alternativeContainerResource.distance(value);
+				int d1 = distance(containerResource, value);
+				int d2 = distance(alternativeContainerResource, value);
 				if (d1 < d2) {
 					// System.out.println("Du coup on retourne " + containerResource.computeRelativePath(value));
 					return containerResource.computeRelativePath(value);
