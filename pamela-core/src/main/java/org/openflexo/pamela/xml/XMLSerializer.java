@@ -65,6 +65,7 @@ import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.exceptions.RestrictiveSerializationException;
 import org.openflexo.pamela.factory.PamelaModelFactory;
 import org.openflexo.pamela.factory.PamelaConstants;
+import org.openflexo.pamela.factory.PamelaProxies;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.factory.SerializationPolicy;
 import org.openflexo.pamela.factory.StringEncoder;
@@ -72,7 +73,6 @@ import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.toolbox.StringUtils;
 
-import javassist.util.proxy.ProxyObject;
 
 /**
  * XML serializer implementation
@@ -170,8 +170,8 @@ public class XMLSerializer {
 	private <I> Element serializeElement(Object object, XMLElement context, boolean resetModifiedStatus)
 			throws IllegalArgumentException, IllegalAccessException, InvocationTargetException, ModelDefinitionException {
 		Element returned;
-		if (object instanceof ProxyObject) {
-			ProxyMethodHandler<I> handler = (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
+		ProxyMethodHandler<I> handler = PamelaProxies.handlerOf(object);
+		if (handler != null) {
 			ModelEntity<I> modelEntity = handler.getModelEntity();
 			Class<I> implementedInterface = modelEntity.getImplementedInterface();
 			boolean serializeModelEntityName = false;

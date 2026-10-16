@@ -7,11 +7,11 @@ import org.openflexo.pamela.DeletableProxyObject;
 import org.openflexo.pamela.exceptions.InvalidDataException;
 import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.exceptions.ModelExecutionException;
+import org.openflexo.pamela.factory.PamelaProxies;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
-import javassist.util.proxy.ProxyObject;
 
 /**
  * Default implementation of a property with SINGLE cardinality
@@ -53,11 +53,11 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 				value = handler.invokeGetter(token);
 				if (value != null) {
 					if (st.hasMoreTokens()) {
-						if (!(value instanceof ProxyObject)) {
+						handler = PamelaProxies.handlerOf(value);
+						if (handler == null) {
 							throw new ModelExecutionException("Cannot invoke " + st.nextToken() + " on object of type "
 									+ value.getClass().getName() + " (caused by returned value: " + returnedValue + ")");
 						}
-						handler = (ProxyMethodHandler<?>) ((ProxyObject) value).getHandler();
 					}
 				}
 				else {

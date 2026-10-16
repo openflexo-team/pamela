@@ -1,0 +1,63 @@
+# pamela — Backlog
+
+Features and evolutions to develop in pamela, near to long term. Known bugs go to `KNOWN_DEFECTS.md`
+(identifiers `PAMELA-D-<n>`), not here.
+
+Identifiers are stable and never reused: `PAMELA-F-<n>`. Reference them from commits and from other entries.
+
+Status legend: `TODO` · `IN PROGRESS` · `BLOCKED` · `DONE` · `DEFERRED`.
+
+---
+
+### PAMELA-F-1 — Replace javassist by Byte Buddy (pamela 2.0)  ·  `IN PROGRESS`
+
+**Problem.** Every PAMELA instance is a javassist proxy (`PAMELAProxyFactory extends ProxyFactory`,
+`DelegateImplementation extends ProxyFactory`, `ProxyMethodHandler implements MethodHandler`). javassist is
+maintained at a slow pace and the ecosystem left it (Hibernate 6 and Mockito moved to Byte Buddy). On Java 11+
+it defines proxies with `MethodHandles.privateLookupIn(neighbor).defineClass`, the neighbor being in the
+package of the proxy's super class; when that super class is `Object` (no implementation class) javassist
+renames the proxy into `javassist.util.proxy.*` and takes `this.getClass()` — `PAMELAProxyFactory`, outside that
+package — as neighbor, which fails. The PAMELA-30 work-around generates, with `ClassPool`, an empty subclass in
+the interface's package. Bypassing it makes 29 of the 74 pamela-core tests fail, all on that `Object` case
+(checked 2026-10-16). The work-around is not thread-safe, swallows its errors, may collide on simple names,
+keeps every class loader alive and leaks its synthetic class (PAMELA-D-3). The time bombs on the JDK side are
+in javassist itself (`AccessController`/`SecurityManager`, deprecated for removal; reflective
+`ClassLoader.defineClass` and `sun.misc.Unsafe` fallbacks).
+
+**Decisions (2026-10-16).**
+- Byte Buddy (`net.bytebuddy:byte-buddy` 1.18.x, Apache 2.0, available on openflexo-deps) replaces javassist.
+- pamela becomes 2.0: removing `javassist.util.proxy.ProxyObject` from the API breaks diana and openflexo-server
+  binary compatibility.
+- Short coexistence of both backends, chosen by a system property `pamela.proxy.backend`, to run the same suites
+  (pamela, openflexo-core, diana, formod) and formod-app in both modes; then javassist is removed.
+- Proxy classes are named `<Iface>$$Pamela$<n>`.
+
+**Steps.**
+1. *Decoupling, javassist kept.* `PamelaProxies.isProxy(Object)` / `handlerOf(Object)` replace every
+   `instanceof ProxyObject` / `getHandler()` cast (pamela-core, diana `DrawingImpl`, openflexo-server
+   `JsonSerializer`, tests); `PamelaMethodHandler` (`invoke(self, method, proceed, args)`) is implemented by
+   `ProxyMethodHandler` and `DelegateImplementation`; javassist becomes an `implementation` dependency, so that
+   any remaining leak fails to compile; PAMELA-D-3 fixed.
+2. *Byte Buddy backend* behind an internal `ProxyBackend`: `subclass(superClass).implement(iface, PamelaProxy)`,
+   a handler field, `MethodDelegation` to one dispatcher taking `@This @Origin @SuperMethod(nullIfImpossible = true)
+   @AllArguments` (same contract as `MethodHandler`; a null handler during construction calls the super method,
+   as javassist's default handler does); `TypeCache` keyed by (super class, interface, set of filtered
+   signatures); loaded with `ClassLoadingStrategy.UsingLookup` on a neighbor chosen explicitly: the super class
+   if its loader sees the interface, the interface otherwise. No intermediate class.
+3. *Switch and removal* once both modes are equivalent.
+
+**Progress.** Step 1 done (2026-10-16), not committed: `PamelaProxies`, `PamelaMethodHandler` and the
+package-private `JavassistProxyBackend` (the only holder of the javassist adapter); `PAMELAProxyFactory` and
+`DelegateImplementation` hold a javassist `ProxyFactory` instead of extending it; javassist is an
+`implementation` dependency; diana `DrawingImpl`, openflexo-server `JsonSerializer` and the pamela-editor test
+use `PamelaProxies`. The whole openflexo-dev composite compiles; pamela-core 75/75, pamela-security-patterns
+44/44, flexo-foundation-test 540/545 (5 skipped), fml-cli-test 99/99, pamela-editor-core 179/179, http-server
+138/138. The version is still 1.6.1.
+
+**To prove with a prototype before step 2.** `UsingLookup` with a neighbor in a child class loader;
+`@SuperMethod` invocable without `setAccessible` on the caller side; the `Method` given by `@Origin` carries the
+interface's annotations (`ProxyMethodHandler` reads `@Initializer` from it).
+
+**Acceptance.** pamela-core and pamela-security-patterns green in both modes; openflexo-core, diana and formod
+test suites unchanged through the openflexo-dev composite; formod-app runs; instantiation and invocation
+timings (`pamela-perf-tests`) not worse; no `javassist` reference left in the workspace except Hibernate's own.

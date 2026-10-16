@@ -46,7 +46,6 @@ import org.openflexo.pamela.exceptions.ModelDefinitionException;
 import org.openflexo.pamela.model.ModelProperty;
 import org.openflexo.toolbox.HasPropertyChangeSupport;
 
-import javassist.util.proxy.ProxyObject;
 
 /**
  * Handles property change notifications and serialization/modification state for a PAMELA object.<br>
@@ -132,9 +131,9 @@ public class NotificationHandler<I> implements PropertyChangeListener {
 								.getModelProperty(handler.getModelEntity().getModify().forward());
 						if (modelProperty != null) {
 							Object forward = handler.invokeGetter(modelProperty);
-							if (forward instanceof ProxyObject) {
-								((ProxyMethodHandler<?>) ((ProxyObject) forward).getHandler()).getNotificationHandler()
-										.setModifiedPublic(modified);
+							ProxyMethodHandler<?> forwardHandler = PamelaProxies.handlerOf(forward);
+							if (forwardHandler != null) {
+								forwardHandler.getNotificationHandler().setModifiedPublic(modified);
 							}
 						}
 					}

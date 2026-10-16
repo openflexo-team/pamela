@@ -1,7 +1,7 @@
 package org.openflexo.pamela.test.tests1;
 
-import javassist.util.proxy.ProxyObject;
 
+import org.openflexo.pamela.factory.PamelaProxies;
 import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 
@@ -14,8 +14,8 @@ public abstract class FlexoModelObjectImpl implements TestModelObject {
 
 	@Override
 	public String toString() {
-		if (this instanceof ProxyObject) {
-			ProxyMethodHandler handler = (ProxyMethodHandler) ((ProxyObject) this).getHandler();
+		ProxyMethodHandler<?> handler = PamelaProxies.handlerOf(this);
+		if (handler != null) {
 			ModelEntity factory = handler.getModelEntity();
 			return factory.getImplementedInterface().getSimpleName() + "(id=" + getFlexoID() + "," + getName() + ")";
 		}

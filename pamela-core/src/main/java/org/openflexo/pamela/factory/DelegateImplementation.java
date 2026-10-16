@@ -50,7 +50,6 @@ import org.openflexo.pamela.undo.RemoveCommand;
 import org.openflexo.pamela.undo.SetCommand;
 import org.openflexo.pamela.undo.UndoManager;
 
-import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 
 /**
@@ -64,7 +63,7 @@ import javassist.util.proxy.ProxyFactory;
  * 
  * @param <I>
  */
-public class DelegateImplementation<I> extends ProxyFactory implements MethodHandler {
+public class DelegateImplementation<I> implements PamelaMethodHandler {
 
 	private final I delegateObject;
 	private final Class<I> delegateImplementationClass;
@@ -88,12 +87,13 @@ public class DelegateImplementation<I> extends ProxyFactory implements MethodHan
 			IllegalAccessException, InvocationTargetException {
 		this.masterMethodHandler = masterMethodHandler;
 		this.delegateImplementationClass = delegateImplementationClass;
-		setSuperclass(delegateImplementationClass);
 		this.implementedMethods = implementedMethods;
+		ProxyFactory proxyFactory = new ProxyFactory();
+		proxyFactory.setSuperclass(delegateImplementationClass);
 		Class<?>[] interfaces = { getModelEntity().getImplementedInterface() };
-		setInterfaces(interfaces);
+		proxyFactory.setInterfaces(interfaces);
 
-		delegateObject = (I) create(new Class<?>[0], new Object[0], this);
+		delegateObject = (I) JavassistProxyBackend.create(proxyFactory, new Class<?>[0], new Object[0], this);
 
 		// System.out.println("Created " + delegateObject + " for " + delegateImplementationClass);
 	}

@@ -75,7 +75,6 @@ import javassist.CtClass;
 import javassist.NotFoundException;
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.ProxyFactory;
-import javassist.util.proxy.ProxyObject;
 
 /**
  * The {@link PamelaModelFactory} is responsible for creating new instances of PAMELA entities.<br>
@@ -109,15 +108,19 @@ public class PamelaModelFactory implements IPamelaModelFactory {
 		return proxyFactories;
 	}
 
-	public class PAMELAProxyFactory<I> extends ProxyFactory {
+	public class PAMELAProxyFactory<I> {
 		private final ModelEntity<I> modelEntity;
+		private final ProxyFactory javassistFactory = new ProxyFactory();
+		// The declared implementation class
+		private Class<?> superclass;
+		// Tells if the super class of the generated proxy class (which may differ from the declared one, see newInstance()) is computed
+		private boolean proxySuperclassResolved = false;
 		private boolean locked = false;
 		private boolean overridingSuperClass = false;
 
 		public PAMELAProxyFactory(ModelEntity<I> aModelEntity, PamelaMetaModel context) throws ModelDefinitionException {
-			super();
 			this.modelEntity = aModelEntity;
-			setFilter(new MethodFilter() {
+			javassistFactory.setFilter(new MethodFilter() {
 				@Override
 				public boolean isHandled(Method method) {
 
@@ -158,17 +161,32 @@ public class PamelaModelFactory implements IPamelaModelFactory {
 			if (implementingClass == null && modelEntity.isSimplePamelaInstrumentation()) {
 				// Special case for a Pamela entity defined for a basic Java class
 				implementingClass = modelEntity.getImplementedInterface();
-				super.setSuperclass(modelEntity.getImplementedInterface());
+				setDeclaredSuperclass(modelEntity.getImplementedInterface());
 			}
 			else {
 				if (implementingClass == null) {
 					implementingClass = defaultModelClass;
 				}
-				super.setSuperclass(implementingClass);
+				setDeclaredSuperclass(implementingClass);
 				Class<?>[] interfaces = { modelEntity.getImplementedInterface() };
-				setInterfaces(interfaces);
+				javassistFactory.setInterfaces(interfaces);
 			}
 
+		}
+
+		private void setDeclaredSuperclass(Class<?> clazz) {
+			superclass = clazz;
+			javassistFactory.setSuperclass(clazz);
+			proxySuperclassResolved = false;
+		}
+
+		/**
+		 * Return the declared implementation class of the entity
+		 *
+		 * @return
+		 */
+		public Class<?> getSuperclass() {
+			return superclass;
 		}
 
 		public Class<?> getOverridingSuperClass() {
@@ -180,8 +198,7 @@ public class PamelaModelFactory implements IPamelaModelFactory {
 			}
 		}
 
-		@Override
-		public void setSuperclass(Class clazz) {
+		public void setSuperclass(Class<?> clazz) {
 			if (getSuperclass() != clazz) {
 				if (locked) {
 					throw new IllegalStateException(
@@ -189,17 +206,8 @@ public class PamelaModelFactory implements IPamelaModelFactory {
 				}
 			}
 			overridingSuperClass = true;
-			super.setSuperclass(clazz);
+			setDeclaredSuperclass(clazz);
 			locked = true;
-		}
-
-		/**
-		 * Internally used to set a proxy base implementation class in the right package
-		 * 
-		 * @param clazz
-		 */
-		private void setProxySuperClass(Class clazz) {
-			super.setSuperclass(clazz);
 		}
 
 		public PamelaModelFactory getModelFactory() {
@@ -301,7 +309,7 @@ public class PamelaModelFactory implements IPamelaModelFactory {
 				for (int i = 0; i < args.length; i++) {
 					paramTypesArray[i] = args[i].getClass();
 				}
-				returned = (I) create(paramTypesArray, args, handler);
+				returned = (I) JavassistProxyBackend.create(javassistFactory, paramTypesArray, args, handler);
 				handler.setObject(returned);
 			}
 			else {
@@ -311,12 +319,15 @@ public class PamelaModelFactory implements IPamelaModelFactory {
 				// implemented interface, it fails
 				// The workaround is to generate (or reuse) on the fly a proxy super classes (in
 				// the right package !)
-				if (!modelEntity.getImplementedInterface().getPackage().equals(getSuperclass().getPackage())) {
-					Class<?> implementationClass = retrieveProxyImplementationClass(modelEntity.getImplementedInterface(), getSuperclass());
-					setProxySuperClass(implementationClass);
+				// The declared implementation class is kept (getSuperclass()): only the generated proxy class extends the generated one
+				if (!proxySuperclassResolved) {
+					if (!modelEntity.getImplementedInterface().getPackage().equals(superclass.getPackage())) {
+						javassistFactory.setSuperclass(retrieveProxyImplementationClass(modelEntity.getImplementedInterface(), superclass));
+					}
+					proxySuperclassResolved = true;
 				}
 
-				returned = (I) create(new Class<?>[0], new Object[0], handler);
+				returned = (I) JavassistProxyBackend.create(javassistFactory, new Class<?>[0], new Object[0], handler);
 				handler.setObject(returned);
 				if (args.length > 0 || modelEntity.hasInitializers()) {
 					Class<?>[] types = new Class<?>[args.length];
@@ -379,35 +390,37 @@ public class PamelaModelFactory implements IPamelaModelFactory {
 
 			String packageName = implementedInterface.getPackageName();
 
-			Map<Class, Class> map = implementationProxyClasses.get(superClass);
-			if (map == null) {
-				map = new HashMap<>();
-				implementationProxyClasses.put(superClass, map);
-			}
+			synchronized (implementationProxyClasses) {
+				Map<Class, Class> map = implementationProxyClasses.get(superClass);
+				if (map == null) {
+					map = new HashMap<>();
+					implementationProxyClasses.put(superClass, map);
+				}
 
-			Class returned = map.get(implementedInterface);
-			if (returned == null) {
-				ClassPool pool = ClassPool.getDefault();
-				CtClass ctClass = pool.makeClass(
-						packageName + "." + superClass.getSimpleName() + "_" + implementedInterface.getSimpleName() + "_" + "Proxy");
-				try {
-					ctClass.setSuperclass(pool.get(superClass.getName()));
-				} catch (CannotCompileException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (NotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				Class returned = map.get(implementedInterface);
+				if (returned == null) {
+					ClassPool pool = ClassPool.getDefault();
+					CtClass ctClass = pool.makeClass(
+							packageName + "." + superClass.getSimpleName() + "_" + implementedInterface.getSimpleName() + "_" + "Proxy");
+					try {
+						ctClass.setSuperclass(pool.get(superClass.getName()));
+					} catch (CannotCompileException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (NotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					try {
+						returned = ctClass.toClass(implementedInterface);
+					} catch (CannotCompileException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					map.put(implementedInterface, returned);
 				}
-				try {
-					returned = ctClass.toClass(implementedInterface);
-				} catch (CannotCompileException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				map.put(implementedInterface, returned);
+				return returned;
 			}
-			return returned;
 		}
 
 	}
@@ -613,7 +626,7 @@ public class PamelaModelFactory implements IPamelaModelFactory {
 	}
 
 	public boolean isProxyObject(Object object) {
-		return object instanceof ProxyObject;
+		return PamelaProxies.isProxy(object);
 	}
 
 	public <I> ModelEntity<I> getModelEntityForInstance(I object) {
@@ -625,19 +638,7 @@ public class PamelaModelFactory implements IPamelaModelFactory {
 	}
 
 	public <I> ProxyMethodHandler<I> getHandler(I object) {
-		if (object instanceof ProxyObject) {
-
-			// Vincent: Check this, handler can be of DelegateImplementation
-			// Type( in the case of Edition actions containers)
-			// ???
-			/*if(((ProxyObject) object).getHandler() instanceof DelegateImplementation){
-				return ((DelegateImplementation<I>) ((ProxyObject) object).getHandler()).getMasterMethodHandler();
-			}*/
-			if (((ProxyObject) object).getHandler() instanceof ProxyMethodHandler) {
-				return (ProxyMethodHandler<I>) ((ProxyObject) object).getHandler();
-			}
-		}
-		return null;
+		return PamelaProxies.handlerOf(object);
 	}
 
 	public <I> ModelEntity<I> importClass(Class<I> klass) throws ModelDefinitionException {

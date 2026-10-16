@@ -105,8 +105,6 @@ import org.openflexo.pamela.undo.UndoManager;
 
 import com.google.common.base.Defaults;
 
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyObject;
 
 /**
  * Invocation handler in the core of PAMELA: main class for PAMELA interpreter<br>
@@ -127,7 +125,7 @@ import javassist.util.proxy.ProxyObject;
  * @param <I>
  *            type of object this invocation handler manages
  */
-public class ProxyMethodHandler<I> extends IProxyMethodHandler implements MethodHandler, PropertyChangeListener {
+public class ProxyMethodHandler<I> extends IProxyMethodHandler implements PamelaMethodHandler, PropertyChangeListener {
 
 	/**
 	 * Object this invocation handler manages
@@ -1308,7 +1306,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 		}
 		else {
 			throw new ModelDefinitionException(
-					"Found object of type " + o.getClass().getName() + " but is not an instanceof ProxyObject:\n" + o);
+					"Found object of type " + o.getClass().getName() + " but is not a PAMELA instance:\n" + o);
 		}
 	}
 
@@ -1335,12 +1333,12 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Method
 			Object obj = propertyImplementations.get(var).get();
 			String s = null;
 			if (obj != null) {
-				if (!(obj instanceof ProxyObject)) {
+				ProxyMethodHandler<?> objHandler = PamelaProxies.handlerOf(obj);
+				if (objHandler == null) {
 					s = indent(obj.toString(), var.length() + 1);
 				}
 				else {
-					s = ((ProxyMethodHandler) ((ProxyObject) obj).getHandler()).getModelEntity().getImplementedInterface()
-							.getSimpleName();
+					s = objHandler.getModelEntity().getImplementedInterface().getSimpleName();
 				}
 			}
 			sb.append(var).append("=").append(s).append('\n');
