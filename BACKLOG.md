@@ -61,3 +61,28 @@ interface's annotations (`ProxyMethodHandler` reads `@Initializer` from it).
 **Acceptance.** pamela-core and pamela-security-patterns green in both modes; openflexo-core, diana and formod
 test suites unchanged through the openflexo-dev composite; formod-app runs; instantiation and invocation
 timings (`pamela-perf-tests`) not worse; no `javassist` reference left in the workspace except Hibernate's own.
+
+### PAMELA-F-2 — Merge the 2022-2023 add-on / DPF work of branch `2.0-addon-2023`  ·  `DEFERRED`
+
+**Where.** Branch **`2.0-addon-2023`** on `origin` (tip `acc9d94`, 2023-06-26, "Implemented XOrAssociation"; forked
+from `1.6.1` at `9a27fd2`, 2023-04-24). It was the former `2.0` branch, renamed on 2026-10-16 when `2.0` was
+restarted from `1.6.1` for PAMELA-F-1. 38 commits (34 without merges), 171 files, about +10,000 / -1,900 lines.
+
+**Content.**
+- PamelaAddOn mechanism in pamela-core (`org.openflexo.pamela.addon`: `EntityAddOn`, `EntityAddOnInstance`),
+  `PamelaModel`, `PatternInstanceEvent`, pre/post-condition checking of pattern instances, `MonitoringStrategy`
+  set programmatically, improved `InvocationTargetException` / `ModelExecutionException` handling.
+- JML moved out of pamela-core into its own module `pamela-jml`.
+- `pamela-ppf`: DPF-style predicates as annotations (`@Injective`, `@NonOverlapping`, irreflexive, total, XOr
+  association, m..n multiplicities); tests in `pamela-dpf-test`.
+- Security patterns reworked (`pamela-security-patterns-test`, multiple authentication information, Spring
+  security use case fixed).
+
+**State (checked 2026-10-16).** Does not compile against today's dependencies: `PamelaModelFactory` still
+implements `IObjectGraphFactory`, abandoned on `1.6.1` in `aa01ed9` (2024-12). Tests not run. A trial merge into
+`2.0` gives 3 textual conflicts (`.gitignore`, `PamelaModelFactory`, `ProxyMethodHandler`), but the real risk is
+semantic: `ProxyMethodHandler` was split into specialized handlers on `1.6.1` (2026-04) and is the class
+PAMELA-F-1 rewires.
+
+**When.** After PAMELA-F-1 (the proxy layer must be settled first). Moving JML to its own module changes the API
+(package `org.openflexo.pamela.jml`): check openflexo consumers.
