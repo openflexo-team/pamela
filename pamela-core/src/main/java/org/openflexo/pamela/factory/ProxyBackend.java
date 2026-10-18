@@ -47,7 +47,7 @@ import java.util.logging.Logger;
  * Generation of the proxy classes of PAMELA by a bytecode library.<br>
  * 
  * Two backends coexist while javassist is being replaced by Byte Buddy (PAMELA-F-1); the system property {@value #PROPERTY} chooses
- * one for the whole JVM: {@code bytebuddy} or {@code javassist} (the default).
+ * one for the whole JVM: {@code bytebuddy} (the default) or {@code javassist}.
  * 
  * @author sylvain
  * 
@@ -92,7 +92,7 @@ interface ProxyBackend {
 		private static final Logger logger = Logger.getLogger(ProxyBackend.class.getPackage().getName());
 
 		private static ProxyBackend select() {
-			String name = System.getProperty(PROPERTY, "javassist");
+			String name = System.getProperty(PROPERTY, "bytebuddy");
 			ProxyBackend returned;
 			switch (name) {
 				case "bytebuddy":

@@ -110,6 +110,15 @@ Byte Buddy (1.18.15) is an `implementation` dependency next to javassist.
   (+31), all green. formod not run: `:formod:b-ta-parser:processResources` uses the SableCC output without a task
   dependency, a Gradle configuration error unrelated to PAMELA. Still to do before step 3: formod-app run by hand
   with `-Dpamela.proxy.backend=bytebuddy` (2026-10-18, on a JDK 17: tested interactively by the user, no difference seen).
+- *Jenkins (2026-10-18).* baae664 pushed; `pamela-2.0` #3 and its cascade, 107 builds in 24 min (default backend
+  still javassist, Byte Buddy now in the POM): 94 SUCCESS, 12 UNSTABLE in the four jobs already unstable (docx 5
+  failures, owl 1, xslx 3, ui-3.0-ui-test 6, against 4-5, 1, 3, 9 before), 1 FAILURE (`openflexo-csv-3.0` #10: "Gradle
+  build daemon disappeared unexpectedly", no test run; #11 of the same cascade green, 117 + 18).
+**Step 3, first part (2026-10-18), not committed.** `bytebuddy` is the default backend (`ProxyBackend.Selection`);
+`-Dpamela.proxy.backend=javassist` brings javassist back. Without the property: pamela-core 95/95, security-patterns
+44/44; in the composite, the same 12 suites as above with the same counts, plus formod b-ta-test 146/146 and
+formod-test 32/32 (runnable again since its b-ta-parser build fix); with javassist forced, pamela unchanged.
+
 - *Performance (2026-10-18).* `pamela-perf-tests` is not a benchmark but a generator of plain/PAMELA model sources
   (to compile and run separately); the benchmark is `pamela-core` `PerformanceTest.main()` (not a JUnit test), run
   three times per backend on the test class path. Building 97,656 objects 9 times: 1250-1300 ms with javassist vs
