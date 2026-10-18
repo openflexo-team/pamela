@@ -52,7 +52,18 @@ package-private `JavassistProxyBackend` (the only holder of the javassist adapte
 `implementation` dependency; diana `DrawingImpl`, openflexo-server `JsonSerializer` and the pamela-editor test
 use `PamelaProxies`. The whole openflexo-dev composite compiles; pamela-core 75/75, pamela-security-patterns
 44/44, flexo-foundation-test 540/545 (5 skipped), fml-cli-test 99/99, pamela-editor-core 179/179, http-server
-138/138. The version is still 1.6.1.
+138/138. Committed on branch `2.0` (d2eebb6), version `2.0` (bfb5eaf). Jenkins job `pamela-2.0` (view `3.0`,
+upstream `openflexo-utils-1.7`, no downstream yet) built #1 green on 2026-10-16: 75/75 and 44/44, `pamela-core`
+and `pamela-security-patterns` `2.0-SNAPSHOT` published, javassist in `runtime` scope in the POM.
+
+**Switch of the 3.0 line (2026-10-16).** `buildconfig` 3.0 sets `pamelaVersion = "2.0"` (openflexo-buildplugin
+cb20204); diana (d5d9a8f4) and openflexo-server (b9619e6) use `PamelaProxies`. Jenkins: `gina-2.4` and
+`openflexo-core-3.0` are triggered by `pamela-2.0` instead of `pamela-1.6.1` (configurations backed up first).
+The cascade started from `openflexo-buildplugin-3.0` ran 111 builds in 37 min: 99 SUCCESS, 12 UNSTABLE in four
+jobs already unstable before with the same failures (docx, owl, xslx, ui-3.0-ui-test). The published POMs of
+gina and openflexo-core now depend on `pamela-core:2.0-SNAPSHOT`. `openflexo-server-3.0` has no upstream
+trigger and was not rebuilt. pamela-editor still uses `buildconfig` 2.99 (pamela 1.6): its test change is not
+committed.
 
 **To prove with a prototype before step 2.** `UsingLookup` with a neighbor in a child class loader;
 `@SuperMethod` invocable without `setAccessible` on the caller side; the `Method` given by `@Origin` carries the
