@@ -6,7 +6,7 @@ sidebar_position: 8
 
 ### 1. Class cannot access its superinterface ?
 
-If you encounter an Exception like the following:
+With PAMELA 1.x, which generates its proxies with javassist, if you encounter an Exception like the following:
 ```
 Exception in thread "main" java.lang.RuntimeException: by java.lang.IllegalAccessError: class org.javassist.tmp.java.lang.Object_$$_jvst41b_0 cannot access its superinterface MyClass
 ```

@@ -15,8 +15,8 @@ You just need to bring Pamela artifacts in your environment.
 
 - The Pamela artifacts (official releases) are published in the following maven repository [https://maven.openflexo.org/artifactory/openflexo-release](https://maven.openflexo.org/artifactory/openflexo-release)
 - The Pamela artifacts (snapshot releases) are published in the following maven repository [https://maven.openflexo.org/artifactory/openflexo-deps](https://maven.openflexo.org/artifactory/openflexo-deps)
-- 1.5 is the last stable version
-- 1.6.1(-SNAPSHOT) is the current development version (default)
+- 1.6 is the last release, the version used by Openflexo 2.99 (Java 8)
+- 2.0(-SNAPSHOT) is the current development version (default), the version used by Openflexo 3.0 (Java 17 or later)
 
 **Prerequisite**
 
@@ -47,17 +47,17 @@ maven {
 Add also the dependency to the `pamela-core` artifact (Java 8 required):
 
 ```groovy
-implementation group: 'org.openflexo', name: 'pamela-core', version: '1.5'
+implementation group: 'org.openflexo', name: 'pamela-core', version: '1.6'
 ```
 
-or to use a SNAPSHOT version (Java 11 or later required):
+or to use a SNAPSHOT version (Java 17 or later required):
 
 ```groovy
-implementation group: 'org.openflexo', name: 'pamela-core', version: '1.6.1-SNAPSHOT'
+implementation group: 'org.openflexo', name: 'pamela-core', version: '2.0-SNAPSHOT'
 ```
 
 **Important notice : **
-Note that Java 8 (1.8) is required for 1.5 last stable version but Java 11 is required from 1.6.1 version.
+Note that Java 8 (1.8) is required for the 1.6 release but Java 17 or later is required from version 2.0.
 
 #### 1.2. Use PAMELA with Maven
 
@@ -91,22 +91,22 @@ Add also the dependency to the `pamela-core` artifact (Java 8 required):
 <dependency>
   <groupId>org.openflexo</groupId>
   <artifactId>pamela-core</artifactId>
-  <version>1.5</version>
+  <version>1.6</version>
 </dependency>
 ```
 
-or to use a SNAPSHOT version (Java 11 or later required)
+or to use a SNAPSHOT version (Java 17 or later required)
 
 ```xml
 <dependency>
   <groupId>org.openflexo</groupId>
   <artifactId>pamela-core</artifactId>
-  <version>1.6.1-SNAPSHOT</version>
+  <version>2.0-SNAPSHOT</version>
 </dependency>
 ```
 
 **Important notice : **
-Note that Java 8 (1.8) is required for 1.5 last stable version but Java 11 is required from 1.6.1 version.
+Note that Java 8 (1.8) is required for the 1.6 release but Java 17 or later is required from version 2.0.
 
 #### 1.3. Test PAMELA by building your first model
 
@@ -151,7 +151,7 @@ In order to get the most up to date code you can clone and build Pamela yourself
 **Prerequisite**
 
 - [git](https://git-scm.com).
-- [Java](http://www.oracle.com/technetwork/java/index.html) JDK 8
+- [Java](http://www.oracle.com/technetwork/java/index.html) JDK 17 or later (JDK 8 for the 1.6 branch)
 
 **Checkout sources**
 
@@ -162,6 +162,8 @@ Clone PAMELA in your environment:
 ```
 git clone git@github.com:openflexo-team/pamela.git
 ```
+
+The development version is on the `2.0` branch.
 
 #### 2.2 Run tests
 

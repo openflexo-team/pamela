@@ -59,10 +59,10 @@ Generic design patterns API, used in the context of aspect programming is expose
 
 The package `org.openflexo.pamela.factory` contains PAMELA interpreter implementation. The core of this interpreter is implemented in the class `ProxyMethodHandler`.
 
-From a technical point of view, PAMELA implementation uses *javassist* reflection library, providing `MethodHandler` mechanism, which is a way to override the Java dynamic binding. Invoking a method on an object which is part of a PAMELA model, causes the real implementation to be called when existing (more precisely dispatch code execution between all provided implementations), or the required interpretation according to underlying model to be executed. This provides also an extension point allowing to instrument the code, which is used for other features such as undo/redo stack management, and assertion checking at run-time (support for Design by Contract, aka JML).
+From a technical point of view, PAMELA generates at run time, for each entity, a proxy class that extends the implementation class and implements the entity interface, and forwards the intercepted methods to a handler, which is a way to override the Java dynamic binding. Since PAMELA 2.0 the proxy classes are generated with the *Byte Buddy* library; PAMELA 1.x used *javassist* and its `MethodHandler` mechanism, still available in 2.0 with the system property `-Dpamela.proxy.backend=javassist`. Invoking a method on an object which is part of a PAMELA model, causes the real implementation to be called when existing (more precisely dispatch code execution between all provided implementations), or the required interpretation according to underlying model to be executed. This provides also an extension point allowing to instrument the code, which is used for other features such as undo/redo stack management, and assertion checking at run-time (support for Design by Contract, aka JML).
 
 [//]: # (@Sylvain, déjà lu la fin du paragraphe précédent)
 
-The PAMELA framework is 100% pure Java (> 1.5), compilable by a standard Java compiler and
+The PAMELA framework is 100% pure Java (Java 17 or later for PAMELA 2.0, Java 8 for 1.6), compilable by a standard Java compiler and
 executable in a standard Java Virtual Machine.
 
