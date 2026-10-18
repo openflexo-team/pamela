@@ -58,7 +58,7 @@ public final class PamelaProxies {
 	 * @return
 	 */
 	public static boolean isProxy(Object object) {
-		return object instanceof PamelaProxy || JavassistProxyBackend.isProxy(object);
+		return object instanceof PamelaProxy;
 	}
 
 	/**
@@ -86,7 +86,7 @@ public final class PamelaProxies {
 		if (object instanceof PamelaProxy) {
 			return ((PamelaProxy) object).pamela$getHandler();
 		}
-		return JavassistProxyBackend.handlerOf(object);
+		return null;
 	}
 
 }

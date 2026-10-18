@@ -2,8 +2,6 @@ dependencies {
   api flexoUtils()
   api connieJava()
   api group: 'org.jdom', name: 'jdom2', version: '2.0.6.1'
-  // Implementation detail, not part of the API: use PamelaProxies, never javassist types (PAMELA-F-1)
-  implementation group: 'org.javassist', name: 'javassist', version: '3.30.2-GA'
-  // Implementation detail, not part of the API, replacing javassist (PAMELA-F-1)
+  // Generates the proxies (PAMELA-F-1); an implementation detail, not part of the API: use PamelaProxies
   implementation group: 'net.bytebuddy', name: 'byte-buddy', version: '1.18.15'
 }

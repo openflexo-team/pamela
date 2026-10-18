@@ -69,7 +69,7 @@ import net.bytebuddy.implementation.MethodDelegation;
  * Generation of PAMELA proxies with Byte Buddy (PAMELA-F-1).<br>
  * 
  * A proxy class extends the implementation class, implements the entity interface and {@link PamelaProxy}, and forwards every handled
- * method to the {@link PamelaMethodHandler} held in a field, with the contract of javassist (self, method, proceed, args). It is defined
+ * method to the {@link PamelaMethodHandler} held in a field, with the contract of the javassist proxies of PAMELA 1.x (self, method, proceed, args). It is defined
  * through a {@link java.lang.invoke.MethodHandles.Lookup} in the package and the class loader of a "neighbor": the implementation class
  * when its loader sees the interfaces, the entity interface otherwise (always when there is no implementation class), so that no
  * intermediate class is needed whatever the packages and the class loaders of the two.
@@ -138,7 +138,7 @@ final class ByteBuddyProxyBackend implements ProxyBackend {
 	/**
 	 * The methods to intercept, by JVM signature (name and descriptor), each with the declaration given to the handler.<br>
 	 * 
-	 * Same choices as javassist, which PAMELA relies on (for instance {@link org.openflexo.pamela.model.ModelEntity#getInitializers(Method)}
+	 * Same choices as javassist in PAMELA 1.x, which PAMELA relies on (for instance {@link org.openflexo.pamela.model.ModelEntity#getInitializers(Method)}
 	 * looks up the exact declaration), in two steps:
 	 * <ul>
 	 * <li>which methods: the interfaces are scanned first, super interfaces before sub interfaces, then the super class hierarchy; the last

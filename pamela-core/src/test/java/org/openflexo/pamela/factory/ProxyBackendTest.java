@@ -14,7 +14,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,43 +25,28 @@ import java.util.concurrent.Future;
 import java.util.function.Predicate;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 import org.openflexo.pamela.annotations.Initializer;
 import org.openflexo.pamela.test.containment.TestContainerA;
 import org.openflexo.pamela.test.proxybackend.base.BaseObject;
 import org.openflexo.pamela.test.proxybackend.model.Item;
 import org.openflexo.pamela.test.proxybackend.model.ItemImpl;
 import org.openflexo.pamela.test.proxybackend.model.impl.OtherItemImpl;
-import org.openflexo.pamela.test.tests1.ActivityNode;
 import org.openflexo.pamela.test.tests1.FlexoProcess;
 import org.openflexo.pamela.test.tests1.FlexoProcessImpl;
 
 import com.google.common.base.Defaults;
 
 /**
- * Tests the generation of PAMELA proxies by each {@link ProxyBackend} (PAMELA-F-1): packages and class loaders of the interface and the
- * implementation, super calls, construction, exceptions, cache, and the parity of the Byte Buddy backend with javassist on the method
- * declaration given to the handler.
+ * Tests the generation of PAMELA proxies by the {@link ProxyBackend} (PAMELA-F-1): packages and class loaders of the interface and the
+ * implementation, super calls, construction, exceptions, cache, and the method declaration given to the handler.
  */
-@RunWith(Parameterized.class)
 public class ProxyBackendTest {
-
-	@Parameters(name = "{0}")
-	public static Collection<Object[]> backends() {
-		return Arrays.asList(new Object[][] { { "bytebuddy", new ByteBuddyProxyBackend() }, { "javassist", new JavassistProxyBackend() } });
-	}
 
 	private static final String CHILD_PACKAGE = "org.openflexo.pamela.test.proxybackend.child.";
 
 	private static final Predicate<Method> ALL = m -> true;
 
-	private final ProxyBackend backend;
-
-	public ProxyBackendTest(String name, ProxyBackend backend) {
-		this.backend = backend;
-	}
+	private final ProxyBackend backend = new ByteBuddyProxyBackend();
 
 	/**
 	 * A handler storing properties and calling the super implementation when there is one
@@ -180,12 +164,6 @@ public class ProxyBackendTest {
 		ChildFirstLoader child = new ChildFirstLoader(getClass().getClassLoader());
 		Class<?> childImpl = child.loadClass(CHILD_PACKAGE + "ChildItemImpl");
 		Item item = (Item) newProxy(childImpl, Item.class, new StoringHandler());
-		if (backend instanceof JavassistProxyBackend) {
-			// PAMELA-D-4: the intermediate class of the javassist work-around extends the copy of the implementation class found by name
-			// in the default ClassPool, not the one of the child loader
-			assertTrue(!childImpl.isAssignableFrom(item.getClass()));
-			return;
-		}
 		assertTrue(childImpl.isAssignableFrom(item.getClass()));
 		item.setName("foo");
 		assertEquals("Item foo", item.describe());
@@ -243,7 +221,7 @@ public class ProxyBackendTest {
 	}
 
 	// ---------------------------------------------------------------------------------------------------------------
-	// Parity with javassist: the declaration given to the handler, for every method
+	// The declaration given to the handler
 	// ---------------------------------------------------------------------------------------------------------------
 
 	/**
@@ -254,7 +232,6 @@ public class ProxyBackendTest {
 		String[] current = new String[1];
 		Thread testThread = Thread.currentThread();
 		PamelaMethodHandler handler = (self, method, proceed, args) -> {
-			// javassist also intercepts finalize(), called by the garbage collector on another thread
 			if (Thread.currentThread() != testThread) {
 				return null;
 			}
@@ -264,8 +241,7 @@ public class ProxyBackendTest {
 		Object proxy = backend.getProxyClass(superclass, new Class<?>[] { iface }, ALL).newInstance(new Class<?>[0], new Object[0], handler);
 		for (Method m : proxy.getClass().getMethods()) {
 			if (m.getDeclaringClass() == Object.class || Modifier.isStatic(m.getModifiers()) || m.getName().startsWith("pamela$")
-					|| m.getName().contains("$accessor$") || m.getName().startsWith("_d") || m.getName().equals("getHandler")
-					|| m.getName().equals("setHandler")) {
+					|| m.getName().contains("$accessor$")) {
 				continue;
 			}
 			current[0] = m.getName() + Arrays.toString(m.getParameterTypes()) + ":" + m.getReturnType().getSimpleName();
@@ -282,28 +258,28 @@ public class ProxyBackendTest {
 		return given;
 	}
 
+	/**
+	 * PAMELA relies on the exact declaration given to the handler ({@link org.openflexo.pamela.model.ModelEntity#getInitializers(Method)}
+	 * looks it up). These are the choices javassist made in PAMELA 1.x, which the Byte Buddy backend was checked to give for every method of
+	 * six entities before javassist was removed (2026-10-18): the declaration found first in the super class hierarchy from its root, a
+	 * generic method seen through its erased declaration.
+	 */
 	@Test
-	public void testSameDeclarationsAsJavassist() throws Exception {
-		if (backend instanceof JavassistProxyBackend) {
-			return;
-		}
-		Class<?>[][] cases = { { FlexoProcessImpl.class, FlexoProcess.class }, { Object.class, ActivityNode.class },
-				{ Object.class, TestContainerA.class }, { ItemImpl.class, Item.class }, { OtherItemImpl.class, Item.class },
-				{ Object.class, Item.class } };
-		for (Class<?>[] c : cases) {
-			Map<String, String> expected = givenDeclarations(new JavassistProxyBackend(), c[0], c[1]);
-			Map<String, String> actual = givenDeclarations(backend, c[0], c[1]);
-			assertTrue("nothing tested for " + Arrays.toString(c), expected.size() > 3);
-			Map<String, String> common = new TreeMap<>(actual);
-			common.keySet().retainAll(expected.keySet());
-			assertEquals("declarations given to the handler for " + Arrays.toString(c), expected, common);
-			// Byte Buddy also declares the signatures of a generic interface resolved with its type arguments
-			// (setEmbedded(TestEmbeddedA) for TestContainer<TestEmbeddedA>): they give the declaration of the erased method
-			for (Map.Entry<String, String> e : actual.entrySet()) {
-				if (!expected.containsKey(e.getKey())) {
-					assertTrue(e.getKey() + " gives " + e.getValue(), expected.containsValue(e.getValue()));
-				}
-			}
-		}
+	public void testDeclarationsGivenToTheHandler() throws Exception {
+		// init(String) is redeclared by FlexoProcess, but TestModelObject, an interface of the implementation class, declares it first
+		assertEquals("TestModelObject.init[class java.lang.String]",
+				givenDeclarations(backend, FlexoProcessImpl.class, FlexoProcess.class).get("init[class java.lang.String]:TestModelObject"));
+		// Generic setter of TestContainer<T>, with T = TestEmbeddedA in TestContainerA
+		Map<String, String> container = givenDeclarations(backend, Object.class, TestContainerA.class);
+		assertEquals("TestContainer.setEmbedded[interface org.openflexo.pamela.test.containment.TestEmbedded]",
+				container.get("setEmbedded[interface org.openflexo.pamela.test.containment.TestEmbedded]:void"));
+		// Declared only by the interface, with its @Initializer
+		Map<String, String> item = givenDeclarations(backend, ItemImpl.class, Item.class);
+		assertEquals("Item.init[class java.lang.String]", item.get("init[class java.lang.String]:Item"));
+		// Redeclared abstract by the implementation class, without the annotation of the interface
+		assertEquals("ItemImpl.initRedeclared[class java.lang.String]", item.get("initRedeclared[class java.lang.String]:Item"));
+		// Also true for a class of the interface's own hierarchy, implemented in another package
+		assertEquals("Item.init[class java.lang.String]",
+				givenDeclarations(backend, OtherItemImpl.class, Item.class).get("init[class java.lang.String]:Item"));
 	}
 }

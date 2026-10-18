@@ -70,7 +70,7 @@ public final class PamelaProxyDispatcher {
 	public Object intercept(@This Object self, @SuperMethod(nullIfImpossible = true) Method proceed, @AllArguments Object[] args,
 			@FieldValue(HANDLER_FIELD) PamelaMethodHandler handler) throws Throwable {
 		if (handler == null) {
-			// The constructor is running: same rule as the default handler of javassist
+			// The constructor is running: same rule as the default handler of javassist in PAMELA 1.x
 			if (proceed == null) {
 				throw new IllegalStateException(method + " invoked by a constructor, before the PAMELA handler is installed");
 			}

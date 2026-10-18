@@ -9,7 +9,7 @@ Status legend: `TODO` · `IN PROGRESS` · `BLOCKED` · `DONE` · `DEFERRED`.
 
 ---
 
-### PAMELA-F-1 — Replace javassist by Byte Buddy (pamela 2.0)  ·  `IN PROGRESS`
+### PAMELA-F-1 — Replace javassist by Byte Buddy (pamela 2.0)  ·  `DONE`
 
 **Problem.** Every PAMELA instance is a javassist proxy (`PAMELAProxyFactory extends ProxyFactory`,
 `DelegateImplementation extends ProxyFactory`, `ProxyMethodHandler implements MethodHandler`). javassist is
@@ -118,6 +118,10 @@ Byte Buddy (1.18.15) is an `implementation` dependency next to javassist.
 `-Dpamela.proxy.backend=javassist` brings javassist back. Without the property: pamela-core 95/95, security-patterns
 44/44; in the composite, the same 12 suites as above with the same counts, plus formod b-ta-test 146/146 and
 formod-test 32/32 (runnable again since its b-ta-parser build fix); with javassist forced, pamela unchanged.
+Pushed as 02e23db; `pamela-2.0` #4 and its cascade (2026-10-18): 108 builds in 29 min, 96 SUCCESS, 12 UNSTABLE in the
+same four jobs with the same failures as the previous cascade (docx 5, owl 1, xslx 3, ui-3.0-ui-test 6), no
+FAILURE. The test logs of `pamela-2.0` and `openflexo-csv-3.0` show `PAMELA proxy backend: bytebuddy`.
+`openflexo-server-3.0` has no upstream trigger and was not rebuilt.
 
 - *Performance (2026-10-18).* `pamela-perf-tests` is not a benchmark but a generator of plain/PAMELA model sources
   (to compile and run separately); the benchmark is `pamela-core` `PerformanceTest.main()` (not a JUnit test), run
@@ -127,6 +131,28 @@ formod-test 32/32 (runnable again since its b-ta-parser build fix); with javassi
   `HandlerAdapter` added per instance in step 1. Note: the "regular classes" column of that benchmark is PAMELA too
   (`testModel` runs both with a `PamelaModelFactory`), so it compares two list implementations, not PAMELA with plain
   Java.
+
+**Step 3, second part: javassist removed (2026-10-18).** `JavassistProxyBackend`, the PAMELA-30 work-around
+(`ClassPool`, intermediate `<Impl>_<Iface>_Proxy` classes) and the javassist dependency are gone; `ByteBuddyProxyBackend`
+is the only backend. `pamela.proxy.backend` is ignored, with a warning when it names anything but `bytebuddy`.
+`ProxyBackendTest` runs on Byte Buddy alone; the parity with javassist, checked method by method before the removal,
+is kept as fixed expectations (`testDeclarationsGivenToTheHandler`). pamela-core 85/85, pamela-security-patterns 44/44;
+no javassist left in the runtime class path of pamela-core. javassist remains in the workspace only for Hibernate
+5.2 (openflexo-jdbc), which generates its own proxies with it: without pamela imposing 3.30.2, Hibernate fell back
+to the 3.20 it declares, which fails on Java 17 (`InaccessibleObjectException` on `ClassLoader.defineClass`,
+`BasicTest.testCreateData`), so `jdbc-ta` now declares javassist 3.30.2-GA itself; it is also an ignored package
+name in connie's and gina's `LoadedClassesInfo`. In the openflexo-dev composite, without javassist in pamela: the
+14 downstream suites give the same counts as before (jdbc-ta-test 34 + 31 skipped once `jdbc-ta` pins javassist).
+
+**Going back if Byte Buddy causes a problem.** The removal of the code is one commit on the `2.0` branch, titled
+"Remove javassist, Byte Buddy only backend (PAMELA-F-1)", committed apart from this documentation so that
+it can be reverted alone. Reverting it (`git revert <that commit>`) restores
+`JavassistProxyBackend`, the javassist dependency and the choice by `-Dpamela.proxy.backend=javassist`, with Byte
+Buddy still the default: a JVM, a test run or an application can then be switched back without rebuilding the
+consumers (the API, `PamelaProxies`, is the same in both). Then build `pamela-2.0` on Jenkins, which republishes
+`pamela-core:2.0-SNAPSHOT` and starts the 3.0 cascade. To compare both backends on a case, run it twice with
+`JAVA_TOOL_OPTIONS=-Dpamela.proxy.backend=javassist` and without (test JVMs, Gradle `run` tasks and the composite
+pick it up).
 
 **Acceptance.** pamela-core and pamela-security-patterns green in both modes; openflexo-core, diana and formod
 test suites unchanged through the openflexo-dev composite; formod-app runs; instantiation and invocation
