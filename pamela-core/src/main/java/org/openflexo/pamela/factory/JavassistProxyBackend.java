@@ -40,32 +40,100 @@ package org.openflexo.pamela.factory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Predicate;
 
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.NotFoundException;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 import javassist.util.proxy.ProxyObject;
 
 /**
- * Generation of PAMELA proxies with javassist.<br>
- * 
- * This class, {@link PamelaModelFactory} and {@link DelegateImplementation} are the only ones referring to javassist, which is to be
- * replaced (PAMELA-F-1).
+ * Generation of PAMELA proxies with javassist, to be removed with PAMELA-F-1.
  * 
  * @author sylvain
  * 
  */
-final class JavassistProxyBackend {
+final class JavassistProxyBackend implements ProxyBackend {
 
-	private JavassistProxyBackend() {
+	// Stores on-the-fly generated classes to proxy the targeted implementation
+	// class, but in the right package
+	private static final Map<Class<?>, Map<Class<?>, Class<?>>> implementationProxyClasses = new HashMap<>();
+
+	@Override
+	public String getName() {
+		return "javassist";
+	}
+
+	@Override
+	public ProxyClass getProxyClass(Class<?> superclass, Class<?>[] interfaces, Predicate<Method> filter) {
+		ProxyFactory proxyFactory = new ProxyFactory();
+		Class<?> proxySuperclass = superclass;
+		// Java 11 security issue
+		// If the base implementation class is not in the same package than the
+		// implemented interface, it fails
+		// The workaround is to generate (or reuse) on the fly a proxy super classes (in
+		// the right package !)
+		if (interfaces.length > 0 && !interfaces[0].getPackage().equals(superclass.getPackage())) {
+			proxySuperclass = retrieveProxyImplementationClass(interfaces[0], superclass);
+		}
+		proxyFactory.setSuperclass(proxySuperclass);
+		if (interfaces.length > 0) {
+			proxyFactory.setInterfaces(interfaces);
+		}
+		if (filter != null) {
+			proxyFactory.setFilter(filter::test);
+		}
+		return (paramTypes, args, handler) -> proxyFactory.create(paramTypes, args, new HandlerAdapter(handler));
 	}
 
 	/**
-	 * Instantiate the proxy class built by supplied factory, and install supplied handler on the new instance
+	 * Generate (return when already existant) a base implementation class proxying the declared base implementation class, but in the
+	 * right package (the same as the implemented interface)
+	 * 
+	 * @param implementedInterface
+	 * @param superClass
+	 * @return
 	 */
-	static Object create(ProxyFactory proxyFactory, Class<?>[] paramTypes, Object[] args, PamelaMethodHandler handler)
-			throws NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException,
-			InvocationTargetException {
-		return proxyFactory.create(paramTypes, args, new HandlerAdapter(handler));
+	private static Class<?> retrieveProxyImplementationClass(Class<?> implementedInterface, Class<?> superClass) {
+
+		String packageName = implementedInterface.getPackageName();
+
+		synchronized (implementationProxyClasses) {
+			Map<Class<?>, Class<?>> map = implementationProxyClasses.get(superClass);
+			if (map == null) {
+				map = new HashMap<>();
+				implementationProxyClasses.put(superClass, map);
+			}
+
+			Class<?> returned = map.get(implementedInterface);
+			if (returned == null) {
+				ClassPool pool = ClassPool.getDefault();
+				CtClass ctClass = pool
+						.makeClass(packageName + "." + superClass.getSimpleName() + "_" + implementedInterface.getSimpleName() + "_" + "Proxy");
+				try {
+					ctClass.setSuperclass(pool.get(superClass.getName()));
+				} catch (CannotCompileException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (NotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					returned = ctClass.toClass(implementedInterface);
+				} catch (CannotCompileException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				map.put(implementedInterface, returned);
+			}
+			return returned;
+		}
 	}
 
 	static boolean isProxy(Object object) {

@@ -58,7 +58,7 @@ public final class PamelaProxies {
 	 * @return
 	 */
 	public static boolean isProxy(Object object) {
-		return JavassistProxyBackend.isProxy(object);
+		return object instanceof PamelaProxy || JavassistProxyBackend.isProxy(object);
 	}
 
 	/**
@@ -69,11 +69,24 @@ public final class PamelaProxies {
 	 */
 	@SuppressWarnings("unchecked")
 	public static <I> ProxyMethodHandler<I> handlerOf(Object object) {
-		PamelaMethodHandler handler = JavassistProxyBackend.handlerOf(object);
+		PamelaMethodHandler handler = methodHandlerOf(object);
 		if (handler instanceof ProxyMethodHandler) {
 			return (ProxyMethodHandler<I>) handler;
 		}
 		return null;
+	}
+
+	/**
+	 * Return the {@link PamelaMethodHandler} of supplied proxy, whatever the backend that generated it
+	 * 
+	 * @param object
+	 * @return the handler, or null when supplied object is not a PAMELA proxy
+	 */
+	static PamelaMethodHandler methodHandlerOf(Object object) {
+		if (object instanceof PamelaProxy) {
+			return ((PamelaProxy) object).pamela$getHandler();
+		}
+		return JavassistProxyBackend.handlerOf(object);
 	}
 
 }

@@ -65,9 +65,59 @@ gina and openflexo-core now depend on `pamela-core:2.0-SNAPSHOT`. `openflexo-ser
 trigger and was not rebuilt. pamela-editor still uses `buildconfig` 2.99 (pamela 1.6): its test change is not
 committed.
 
-**To prove with a prototype before step 2.** `UsingLookup` with a neighbor in a child class loader;
-`@SuperMethod` invocable without `setAccessible` on the caller side; the `Method` given by `@Origin` carries the
-interface's annotations (`ProxyMethodHandler` reads `@Initializer` from it).
+**Prototype (2026-10-18), not committed.** `pamela-core/src/test/java/org/openflexo/pamela/prototype/bytebuddy/`
+(`PrototypeProxyGenerator`, `ByteBuddyPrototypeTest`, 12 tests green; Byte Buddy 1.18.15 as a test dependency),
+each point compared with javassist on the same handler:
+- *Packages and class loaders.* `ClassLoadingStrategy.UsingLookup` on the neighbor (super class if its loader
+  sees the interface, the interface otherwise) works in the five cases: implementation in the interface's
+  package, no implementation (`Object`), implementation in another package, interface in a child-first loader
+  with the implementation in the parent, implementation in the child with the interface in the parent. No
+  intermediate class: the proxy's super class is the declared implementation class.
+- *`proceed`.* `@SuperMethod(nullIfImpossible = true)` gives a `public final` accessor (`describe$accessor$…`),
+  invocable from another package without `setAccessible`; `null` for an abstract method, as with javassist.
+- *`@Origin`.* Same `Method` as javassist in both cases tested: the interface's declaration (with its
+  `@Initializer`) when only the interface declares it; the implementation class's declaration (without the
+  annotation) when that class re-declares the method abstract — a pre-existing limit, identical in both.
+- *Semantics.* A handled method called by the constructor runs the super method (handler not installed yet);
+  checked exceptions go through; `TypeCache` gives one class per (super class, interface, handled signatures),
+  also under 8 concurrent threads.
+- *Rough cost* (one run, JIT noise): 10,000,000 calls of a concrete intercepted method about 55 ms with
+  Byte Buddy vs 75-95 ms with javassist; 100,000 instantiations of an already generated class 4-5 ms vs 28-49 ms.
+
+**Step 2 (2026-10-18), not committed.** `ProxyBackend` (package-private, `pamela.proxy.backend` read once per JVM,
+`javassist` by default, the backend logged at first use) with two implementations: `JavassistProxyBackend` (the
+former code, PAMELA-30 work-around included) and `ByteBuddyProxyBackend` (`PamelaProxy` interface, a handler field,
+one `PamelaProxyDispatcher` per intercepted method, `TypeCache`, `UsingLookup` on the neighbor). `PAMELAProxyFactory`
+and `DelegateImplementation` only see `ProxyBackend`; javassist is referenced by `JavassistProxyBackend` alone.
+Byte Buddy (1.18.15) is an `implementation` dependency next to javassist.
+- *What the handler receives.* `@Origin` was not enough: PAMELA relies on the exact declaration javassist gives
+  (`ModelEntity.getInitializers(Method)` looks it up; `PamelaCoreTests1` failed on `init` redeclared in
+  `FlexoProcess`). javassist chooses in two steps, reproduced by `ByteBuddyProxyBackend.handledMethods`: which
+  methods (interfaces first, then the super class hierarchy, last declaration wins, filter applied to it), and which
+  declaration the handler gets (`RuntimeSupport.findSuperClassMethod`: super class hierarchy from its root, each class
+  before its interfaces, then the proxy's interfaces). A generic method is matched by its erased signature
+  (`TestContainer<T>.setEmbedded(T)`, `ContainmentTest`).
+- *Differences kept.* `finalize()` is never intercepted (javassist intercepts it without filter, for
+  `DelegateImplementation`); a proxy of a generic interface also declares the resolved signatures as bridges
+  (`setEmbedded(TestEmbeddedA)`), which give the handler the erased declaration.
+- *Tests.* `ProxyBackendTest`, run on both backends (10 cases each): packages and class loaders (javassist fails
+  the implementation in a child loader, PAMELA-D-4), proceed, constructor, checked exceptions, concurrent
+  generation, and the parity of the declarations given to the handler, method by method, on six entities.
+  pamela-core 95/95 and pamela-security-patterns 44/44 in both modes (`JAVA_TOOL_OPTIONS=-Dpamela.proxy.backend=…`).
+- *Downstream, openflexo-dev composite, both modes (2026-10-18).* Identical results: gina-core 25, gina-swing 5,
+  diana-core-test 14, diana-swing 21, flexo-foundation-test 540 (+5 skipped), fml-cli-test 99, pamela-editor-core
+  179, http-server 138, integration-tests 37, multi-process-challenge 13, xlsx-ta-test 34 (+4), jdbc-ta-test 34
+  (+31), all green. formod not run: `:formod:b-ta-parser:processResources` uses the SableCC output without a task
+  dependency, a Gradle configuration error unrelated to PAMELA. Still to do before step 3: formod-app run by hand
+  with `-Dpamela.proxy.backend=bytebuddy` (2026-10-18, on a JDK 17: tested interactively by the user, no difference seen).
+- *Performance (2026-10-18).* `pamela-perf-tests` is not a benchmark but a generator of plain/PAMELA model sources
+  (to compile and run separately); the benchmark is `pamela-core` `PerformanceTest.main()` (not a JUnit test), run
+  three times per backend on the test class path. Building 97,656 objects 9 times: 1250-1300 ms with javassist vs
+  908-1000 ms with Byte Buddy (`ArrayList` lists), 1416-1594 vs 1151-1283 ms (`Vector`); heap growth 1023-1050 vs
+  711-722 MB. Dumb and manipulation scenarios equal (120-155 ms). The javassist figures include the
+  `HandlerAdapter` added per instance in step 1. Note: the "regular classes" column of that benchmark is PAMELA too
+  (`testModel` runs both with a `PamelaModelFactory`), so it compares two list implementations, not PAMELA with plain
+  Java.
 
 **Acceptance.** pamela-core and pamela-security-patterns green in both modes; openflexo-core, diana and formod
 test suites unchanged through the openflexo-dev composite; formod-app runs; instantiation and invocation

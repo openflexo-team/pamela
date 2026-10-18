@@ -50,8 +50,6 @@ import org.openflexo.pamela.undo.RemoveCommand;
 import org.openflexo.pamela.undo.SetCommand;
 import org.openflexo.pamela.undo.UndoManager;
 
-import javassist.util.proxy.ProxyFactory;
-
 /**
  * Represents a partial delegate implementation, associated to a master {@link ProxyMethodHandler}<br>
  * 
@@ -88,12 +86,9 @@ public class DelegateImplementation<I> implements PamelaMethodHandler {
 		this.masterMethodHandler = masterMethodHandler;
 		this.delegateImplementationClass = delegateImplementationClass;
 		this.implementedMethods = implementedMethods;
-		ProxyFactory proxyFactory = new ProxyFactory();
-		proxyFactory.setSuperclass(delegateImplementationClass);
 		Class<?>[] interfaces = { getModelEntity().getImplementedInterface() };
-		proxyFactory.setInterfaces(interfaces);
-
-		delegateObject = (I) JavassistProxyBackend.create(proxyFactory, new Class<?>[0], new Object[0], this);
+		delegateObject = (I) ProxyBackend.SELECTED.getProxyClass(delegateImplementationClass, interfaces, null).newInstance(new Class<?>[0],
+				new Object[0], this);
 
 		// System.out.println("Created " + delegateObject + " for " + delegateImplementationClass);
 	}

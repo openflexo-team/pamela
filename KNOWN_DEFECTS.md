@@ -31,3 +31,11 @@ Status legend: `TODO` · `IN PROGRESS` · `BLOCKED` · `DONE` · `DEFERRED`.
 **Consequences.** `XMLSerializer` writes `getOverridingSuperClass().getName()` as the `p:class` attribute, so an entity serialized with its model entity name (an entity not known to the factory's context) and an overridden implementation would carry the synthetic name, which does not exist in a fresh JVM. Not reproduced through serialization. Disappears with the Byte Buddy backend (PAMELA-F-1), which needs no intermediate class.
 
 **Fixed (2026-10-16).** `PAMELAProxyFactory` no longer extends javassist's `ProxyFactory`: it keeps the declared implementing class itself and gives the intermediate class only to the javassist factory it holds, once per factory instead of at each instantiation. The generation of the intermediate class is now synchronized. `ImplementingClassTest` passes; pamela-core 75/75.
+
+### PAMELA-D-4 — With javassist, an implementation class loaded by a child class loader is replaced by another copy  ·  `DEFERRED`
+
+**Symptom.** An entity whose implementation class is loaded by a child class loader (child-first, as the jar class loader of a technology adapter), in another package than its interface, gets a proxy that does not extend that implementation class but another copy of it, loaded by the loader of the interface.
+
+**Verified.** `ProxyBackendTest.testImplementationInAChildClassLoader[javassist]` (2026-10-18): `ChildItemImpl`, defined by a `ChildFirstLoader`, implementing `Item` of the parent loader. The intermediate class of the PAMELA-30 work-around is built from the name of the implementation class, resolved by `ClassPool.getDefault()` on the system class path, and defined next to the interface: its super class is whatever class of that name the interface's loader finds. When none is found, `NotFoundException` is printed and the intermediate class extends `Object`. Not observed in an application.
+
+**Fix.** None for the javassist backend, which is to be removed (PAMELA-F-1): the Byte Buddy backend defines the proxy next to the implementation class when its loader sees the interface, and passes the same test.

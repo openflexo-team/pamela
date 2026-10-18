@@ -1,0 +1,111 @@
+/**
+ * 
+ * Copyright (c) 2026, Openflexo
+ * 
+ * This file is part of Pamela-core, a component of the software infrastructure 
+ * developed at Openflexo.
+ * 
+ * 
+ * Openflexo is dual-licensed under the European Union Public License (EUPL, either 
+ * version 1.1 of the License, or any later version ), which is available at 
+ * https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+ * and the GNU General Public License (GPL, either version 3 of the License, or any 
+ * later version), which is available at http://www.gnu.org/licenses/gpl.html .
+ * 
+ * You can redistribute it and/or modify under the terms of either of these licenses
+ * 
+ * If you choose to redistribute it and/or modify under the terms of the GNU GPL, you
+ * must include the following additional permission.
+ *
+ *          Additional permission under GNU GPL version 3 section 7
+ *
+ *          If you modify this Program, or any covered work, by linking or 
+ *          combining it with software containing parts covered by the terms 
+ *          of EPL 1.0, the licensors of this Program grant you additional permission
+ *          to convey the resulting work. * 
+ * 
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY 
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+ * PARTICULAR PURPOSE. 
+ *
+ * See http://www.openflexo.org/license.html for details.
+ * 
+ * 
+ * Please contact Openflexo (openflexo-contacts@openflexo.org)
+ * or visit www.openflexo.org if you need additional information.
+ * 
+ */
+
+package org.openflexo.pamela.factory;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.function.Predicate;
+import java.util.logging.Logger;
+
+/**
+ * Generation of the proxy classes of PAMELA by a bytecode library.<br>
+ * 
+ * Two backends coexist while javassist is being replaced by Byte Buddy (PAMELA-F-1); the system property {@value #PROPERTY} chooses
+ * one for the whole JVM: {@code bytebuddy} or {@code javassist} (the default).
+ * 
+ * @author sylvain
+ * 
+ */
+interface ProxyBackend {
+
+	public static final String PROPERTY = "pamela.proxy.backend";
+
+	/**
+	 * The backend used by this JVM
+	 */
+	public static final ProxyBackend SELECTED = Selection.select();
+
+	/**
+	 * A generated proxy class, ready to be instantiated
+	 */
+	interface ProxyClass {
+
+		/**
+		 * Instantiate the proxy class with the constructor matching exactly supplied parameter types, then install supplied handler (a
+		 * method intercepted while the constructor runs invokes the super implementation)
+		 */
+		public Object newInstance(Class<?>[] paramTypes, Object[] args, PamelaMethodHandler handler) throws NoSuchMethodException,
+				IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException;
+	}
+
+	public String getName();
+
+	/**
+	 * Return the proxy class extending supplied super class and implementing supplied interfaces
+	 * 
+	 * @param superclass
+	 *            the implementation class, Object when there is none
+	 * @param interfaces
+	 *            the implemented interfaces, possibly none
+	 * @param filter
+	 *            the methods to intercept, null for every method that can be overridden
+	 */
+	public ProxyClass getProxyClass(Class<?> superclass, Class<?>[] interfaces, Predicate<Method> filter);
+
+	class Selection {
+		private static final Logger logger = Logger.getLogger(ProxyBackend.class.getPackage().getName());
+
+		private static ProxyBackend select() {
+			String name = System.getProperty(PROPERTY, "javassist");
+			ProxyBackend returned;
+			switch (name) {
+				case "bytebuddy":
+					returned = new ByteBuddyProxyBackend();
+					break;
+				case "javassist":
+					returned = new JavassistProxyBackend();
+					break;
+				default:
+					throw new IllegalStateException("Unknown PAMELA proxy backend '" + name + "' (" + PROPERTY + "): bytebuddy or javassist");
+			}
+			logger.info("PAMELA proxy backend: " + returned.getName());
+			return returned;
+		}
+	}
+}
