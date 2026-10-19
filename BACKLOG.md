@@ -144,9 +144,19 @@ to the 3.20 it declares, which fails on Java 17 (`InaccessibleObjectException` o
 name in connie's and gina's `LoadedClassesInfo`. In the openflexo-dev composite, without javassist in pamela: the
 14 downstream suites give the same counts as before (jdbc-ta-test 34 + 31 skipped once `jdbc-ta` pins javassist).
 
-**Going back if Byte Buddy causes a problem.** The removal of the code is one commit on the `2.0` branch, titled
-"Remove javassist, Byte Buddy only backend (PAMELA-F-1)", committed apart from this documentation so that
-it can be reverted alone. Reverting it (`git revert <that commit>`) restores
+Pushed as 7b4c311 (with openflexo-jdbc 870e09b); `pamela-2.0` #5 and its cascade (2026-10-19): 107 builds in
+39 min, 93 SUCCESS, 12 UNSTABLE, 2 FAILURE. The published POM of `pamela-core:2.0-SNAPSHOT` depends on byte-buddy
+and no longer on javassist; `openflexo-jdbc-3.0` #49 green (34 + 31 skipped, 25). The four usual jobs are UNSTABLE
+with the same failures (docx 5, owl 1, xslx 3, ui-3.0-ui-test 6). New, not caused by PAMELA: `free-modelling-editor-3.0`
+#124 and `openflexo-docx-3.0` #50 FAILURE on "Gradle build daemon disappeared unexpectedly" (no test run; the
+same cascade then built free-modelling-editor #125-#127 green, 33 + 45, and docx #48-#49 with its usual 5 failures);
+`gina-2.4-ui-test` #17 UNSTABLE on the Swing test `FIBListWidgetTest.test6PerfomSomeTestsWithSelection`, a class that
+already failed on 2026-10-16 (#13, another method) and that passes 3 times out of 3 locally without javassist.
+
+**Going back if Byte Buddy causes a problem.** The removal is commit 7b4c311 on the `2.0` branch ("Remove
+javassist, Byte Buddy only backend (PAMELA-F-1)"). It also carries the documentation of the removal (this entry,
+PAMELA-D-3 and PAMELA-D-4): `git revert 7b4c311` undoes both, so after the revert set this entry back to
+`IN PROGRESS` and record why. The revert restores
 `JavassistProxyBackend`, the javassist dependency and the choice by `-Dpamela.proxy.backend=javassist`, with Byte
 Buddy still the default: a JVM, a test run or an application can then be switched back without rebuilding the
 consumers (the API, `PamelaProxies`, is the same in both). Then build `pamela-2.0` on Jenkins, which republishes
