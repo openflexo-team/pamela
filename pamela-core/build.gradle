@@ -1,4 +1,5 @@
 dependencies {
+  implementation guava() // used directly; no longer provided by connie-core
   compileOnly jsr305() // javax.annotation.Nonnull / Nullable
   api flexoUtils()
   api connieJava()
