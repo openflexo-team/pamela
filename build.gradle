@@ -65,18 +65,18 @@
 
 buildscript {
     repositories {
-        maven { url uri('https://maven.openflexo.org/artifactory/openflexo-deps/') }
+        maven { url = uri('https://maven.openflexo.org/artifactory/openflexo-deps/') }
     }
     
     dependencies {
-        classpath group: 'org.openflexo', name: 'buildplugin', version: '0.4'
-        classpath group: 'org.openflexo', name: 'buildconfig', version: '3.0'
+        classpath 'org.openflexo:buildplugin:0.4'
+        classpath 'org.openflexo:buildconfig:3.0'
     }
 }
 
 subprojects {
 	repositories {
-        maven { url "https://maven.openflexo.org/artifactory/openflexo-deps/" }
+        maven { url = "https://maven.openflexo.org/artifactory/openflexo-deps/" }
     }
 }
 
