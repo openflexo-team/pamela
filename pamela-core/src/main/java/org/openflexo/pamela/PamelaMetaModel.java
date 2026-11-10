@@ -116,13 +116,9 @@ public class PamelaMetaModel {
 		modelPropertiesByXmlTag = new HashMap<>();
 		for (PamelaMetaModel metaModel : metaModels) {
 			for (Entry<String, ModelEntity<?>> e : metaModel.modelEntitiesByXmlTag.entrySet()) {
-				ModelEntity<?> entity = modelEntitiesByXmlTag.put(e.getKey(), e.getValue());
 				// TODO: handle properly namespaces. Different namespaces allows to have identical tags
 				// See also importModelEntity(Class<T>)
-				if (entity != null && !entity.getImplementedInterface().equals(e.getValue().getImplementedInterface())) {
-					throw new ModelDefinitionException(
-							entity + " and " + e.getValue() + " declare the same XML tag but not the same implemented interface");
-				}
+				registerXMLTag(e.getKey(), e.getValue());
 			}
 			modelEntities.putAll(metaModel.modelEntities);
 		}
@@ -159,26 +155,39 @@ public class PamelaMetaModel {
 		this(baseClass, Arrays.asList(metaModels));
 	}
 
+	/**
+	 * Register the entity under an XML tag. Only the entities with an XML mapping (their own or an inherited
+	 * {@link org.openflexo.pamela.annotations.XMLElement}) must have distinct tags: an entity without one is never serialized in XML
+	 * (PAMELA-F-3), so the tag derived from its simple name may clash with another one; a mapped entity then takes precedence, and
+	 * between two unmapped ones the first is kept.
+	 */
+	private void registerXMLTag(String tag, ModelEntity<?> modelEntity) throws ModelDefinitionException {
+		ModelEntity<?> existing = modelEntitiesByXmlTag.get(tag);
+		if (existing == null || existing.getImplementedInterface().equals(modelEntity.getImplementedInterface())) {
+			modelEntitiesByXmlTag.put(tag, modelEntity);
+			return;
+		}
+		boolean mapped = modelEntity.getXMLElement() != null;
+		boolean existingMapped = existing.getXMLElement() != null;
+		if (mapped && existingMapped) {
+			throw new ModelDefinitionException("Two entities define the same XMLTag '" + tag + "'. Implemented interfaces: "
+					+ modelEntity.getImplementedInterface().getName() + " " + existing.getImplementedInterface().getName());
+		}
+		if (mapped) {
+			modelEntitiesByXmlTag.put(tag, modelEntity);
+		}
+	}
+
 	private void appendEntity(ModelEntity<?> modelEntity, Set<ModelEntity<?>> visited) throws ModelDefinitionException {
 		visited.add(modelEntity);
 		modelEntities.put(modelEntity.getImplementedInterface(), modelEntity);
-		ModelEntity<?> put = modelEntitiesByXmlTag.put(modelEntity.getXMLTag(), modelEntity);
-		if (put != null && put != modelEntity) {
-			throw new ModelDefinitionException(
-					"Two entities define the same XMLTag '" + modelEntity.getXMLTag() + "'. Implemented interfaces: "
-							+ modelEntity.getImplementedInterface().getName() + " " + put.getImplementedInterface().getName());
-		}
+		registerXMLTag(modelEntity.getXMLTag(), modelEntity);
 		if (!modelEntity.isAbstract()) {
 			if (modelEntity.getXMLElement() != null && StringUtils.isNotEmpty(modelEntity.getXMLElement().deprecatedXMLTags())) {
 				StringTokenizer st = new StringTokenizer(modelEntity.getXMLElement().deprecatedXMLTags(), ",");
 				while (st.hasMoreTokens()) {
 					String deprecatedTag = st.nextToken();
-					ModelEntity<?> put2 = modelEntitiesByXmlTag.put(deprecatedTag, modelEntity);
-					if (put2 != null && put2 != modelEntity) {
-						throw new ModelDefinitionException(
-								"Two entities define the same XMLTag '" + deprecatedTag + "'. Implemented interfaces: "
-										+ modelEntity.getImplementedInterface().getName() + " " + put2.getImplementedInterface().getName());
-					}
+					registerXMLTag(deprecatedTag, modelEntity);
 				}
 			}
 		}

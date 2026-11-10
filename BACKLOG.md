@@ -257,6 +257,12 @@ default, then remove `isXMLSerializable()` and the switch.
 switch (`PERSISTENCE_RULE`, `pamela.persistenceRule`, `PAMELA_PERSISTENCE_RULE`), `isPersistentByRule()` and `isXMLSerializable()`
 are removed. The `ignoreType` consistency check tests the XML mapping directly. Left: CORE-F-8 phase 6.
 
+**XML tags of unmapped entities (2026-11-10, for CORE-F-8 phase 6).** `PamelaMetaModel` refused two entities with the same XML tag,
+and the tag of an entity without `@XMLElement` falls back on its simple name: removing the annotations from the FML definitions would
+make same-named definitions clash. Only XML-mapped entities (own or inherited `@XMLElement`) must now have distinct tags; a mapped
+entity takes precedence over an unmapped one, and between two unmapped ones the first is kept. Tested by
+`TestPersistenceRule.testUnmappedEntitiesMayShareTheirSimpleName`.
+
 **Measured before deciding (2026-11-10, openflexo-core `BACKLOG.md`, CORE-F-8).** With the rule on and nothing marked, 28 suites:
 docx 25, xlsx 17, jdbc 12, flexo-foundation-test 5, xml 2 failures; about 3100 properties of 933 entities are neither derived nor
 XML-mapped, the ones actually set being mostly runtime links (resources' `serviceManager` / `factory` / `resourceCenter`, IO delegates'

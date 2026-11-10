@@ -41,6 +41,7 @@ package org.openflexo.pamela.test.persistence;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -130,5 +131,12 @@ public class TestPersistenceRule {
 		} catch (ModelDefinitionException e) {
 			assertTrue(e.getMessage(), e.getMessage().contains("transient"));
 		}
+	}
+
+	@Test
+	public void testUnmappedEntitiesMayShareTheirSimpleName() throws ModelDefinitionException {
+		PamelaMetaModel metaModel = PamelaMetaModelLibrary.retrieveMetaModel(TwinHolder.class);
+		assertNotNull(metaModel.getModelEntity(org.openflexo.pamela.test.persistence.a.Twin.class));
+		assertNotNull(metaModel.getModelEntity(org.openflexo.pamela.test.persistence.b.Twin.class));
 	}
 }
