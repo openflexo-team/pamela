@@ -192,3 +192,39 @@ PAMELA-F-1 rewires.
 
 **When.** After PAMELA-F-1 (the proxy layer must be settled first). Moving JML to its own module changes the API
 (package `org.openflexo.pamela.jml`): check openflexo consumers.
+
+### PAMELA-F-3 — A property is persistent when it is neither derived nor transient, not when it carries an XML annotation  ·  `IN PROGRESS`
+
+**Problem.** `ModelProperty.isSerializable()` answered "the property carries `@XMLAttribute` / `@XMLElement`", and that decided
+two things having nothing to do with XML: whether setting the property marks its object modified, and whether `updateWith()` matches
+objects on it (`CompareAndMergeUtils.getDistance`). A model that is not saved in XML (the textual FML definitions of openflexo-core
+CORE-F-8, the TA models rebuilt from a native file) could not say which of its properties are state; the XML annotations mixed the
+"what" (is this state?) with the "how" (attribute or element, tag, context).
+
+**Decisions (2026-11-10, with the user).**
+- A property is persistent when it is neither derived nor transient, for every PAMELA model. The single side of an inverse pair is
+  already derived (`isDerivedRelativeToInverseProperty`), so no inverse criterion is needed. XML annotations keep only the mapping role,
+  used by the XML serializer of the models still saved in XML.
+- Transient is an attribute of `@Getter`: `@Getter(..., isTransient = true)`, not a separate annotation (`java.beans.Transient` and
+  `jakarta.persistence.Transient` already exist). A transient property: is not persistent, does not mark its object modified, is
+  ignored for equality and by `updateWith()`, is not cloned (unless a `@CloningStrategy` says otherwise), and cannot carry an XML
+  mapping (`ModelDefinitionException`).
+- Rollout behind a switch so that every commit stays green: `ModelProperty.PERSISTENCE_RULE` (system property
+  `pamela.persistenceRule` or environment variable `PAMELA_PERSISTENCE_RULE`), false by default (the former XML criterion). The
+  transient properties are marked repository by repository, verified with the switch on; then the default flips and the XML
+  criterion is deleted.
+- `setIsModified` climbing `getResourceData()` through a parent not set yet (models built by a converter): fixed in each
+  `getResourceData` that fails, not by a generic guard.
+
+**Done (step 1, 2026-11-10).** `Getter.isTransient()`; `ModelProperty.isPersistent()` (the switch), `isPersistentByRule()`,
+`isTransient()`; transient excluded from `isRelevantForEqualityComputation()`, cloning strategy `IGNORE` by default, XML mapping
+refused; the `ignoreType` consistency check bound to the XML mapping; the former `isSerializable()` call sites use `isPersistent()`.
+`TestPersistenceRule` (6 tests, green in both modes). Fixed on the way: PAMELA-D-5.
+
+**Measured before deciding (2026-11-10, openflexo-core `BACKLOG.md`, CORE-F-8).** With the rule on and nothing marked, 28 suites:
+docx 25, xlsx 17, jdbc 12, flexo-foundation-test 5, xml 2 failures; about 3100 properties of 933 entities are neither derived nor
+XML-mapped, the ones actually set being mostly runtime links (resources' `serviceManager` / `factory` / `resourceCenter`, IO delegates'
+`flexo_resource`, native handles of TA models, GINA's `controllerClass` / `fibLibrary` / `parent`).
+
+**Acceptance.** Every suite of the workspace green with the switch on; the default flipped; `isXMLSerializable()` and the switch
+removed; XML annotations removed from the textual FML definitions (CORE-F-8 phase 6).

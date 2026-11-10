@@ -122,7 +122,7 @@ public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropert
 						throw new ModelExecutionException("Invalid cardinality: " + inverseProperty.getCardinality());
 				}
 			}
-			if (getProperty().isSerializable()) {
+			if (getProperty().isPersistent()) {
 				getHandler().invokeSetModified(true);
 			}
 		}
@@ -160,7 +160,7 @@ public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropert
 						throw new ModelExecutionException("Invalid cardinality: " + inverseProperty.getCardinality());
 				}
 			}
-			if (getProperty().isSerializable()) {
+			if (getProperty().isPersistent()) {
 				getHandler().invokeSetModified(true);
 			}
 		}
@@ -187,7 +187,7 @@ public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropert
 					list.add(index, value);
 				}
 				firePropertyChange(getProperty().getPropertyIdentifier(), oldIndex, index);
-				if (getProperty().isSerializable()) {
+				if (getProperty().isPersistent()) {
 					getHandler().invokeSetModified(true);
 				}
 			}

@@ -61,11 +61,22 @@ public class ModelEntityLibrary {
 	public static synchronized <I> ModelEntity<I> importEntity(Class<I> implementedInterface) throws ModelDefinitionException {
 		ModelEntity<I> modelEntity = (ModelEntity<I>) entities.get(implementedInterface);
 		if (modelEntity == null) {
-			modelEntity = get(implementedInterface, true);
-			for (ModelEntity<?> e : newEntities) {
-				e.mergeProperties();
+			try {
+				modelEntity = get(implementedInterface, true);
+				for (ModelEntity<?> e : newEntities) {
+					e.mergeProperties();
+				}
+			} catch (ModelDefinitionException | RuntimeException e) {
+				// Forget the entities of this import: left in the library, a half-built entity would be merged again (and fail again)
+				// by every later import (PAMELA-D-5)
+				for (ModelEntity<?> newEntity : newEntities) {
+					entities.remove(newEntity.getImplementedInterface());
+				}
+				entities.remove(implementedInterface);
+				throw e;
+			} finally {
+				newEntities.clear();
 			}
-			newEntities.clear();
 		}
 		return modelEntity;
 	}

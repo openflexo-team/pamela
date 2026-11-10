@@ -437,7 +437,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Pamela
 						getUndoManager().addEdit(
 								new SetCommand<>(getObject(), getModelEntity(), property, oldValue, args[0], getModelFactory()));
 					}
-					if (property.isSerializable()) {
+					if (property.isPersistent()) {
 						callSetModifiedAtTheEnd = true;
 					}
 				}
@@ -445,7 +445,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Pamela
 					if (getUndoManager() != null) {
 						getUndoManager().addEdit(new AddCommand<>(getObject(), getModelEntity(), property, args[0], getModelFactory()));
 					}
-					if (property.isSerializable()) {
+					if (property.isPersistent()) {
 						callSetModifiedAtTheEnd = true;
 					}
 				}
@@ -453,7 +453,7 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Pamela
 					if (getUndoManager() != null) {
 						getUndoManager().addEdit(new RemoveCommand<>(getObject(), getModelEntity(), property, args[0], getModelFactory()));
 					}
-					if (property.isSerializable()) {
+					if (property.isPersistent()) {
 						callSetModifiedAtTheEnd = true;
 					}
 				}

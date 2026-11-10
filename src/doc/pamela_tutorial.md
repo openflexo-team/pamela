@@ -80,6 +80,12 @@ Le paramètre inverse indique une relation inverse entre l'attribut actuel et l'
 
 Le flag `isDerived` indique à Pamela que l'attribut peut être déduit d'autres informations contenues dans les modèles. Cela a notamment comme effet d'éviter des StackOverflowException lorsque l'on utilise `updateWith` sur un modèle qui a comme attribut un modèle Pamela si les deux modèles ont une relation inverse. Sans le flag `isDerived`, Pamela essaiera de recalculer le modèle parent, puis le modèle enfant, puis le modèle parent etc.
 
+```
+@Getter(value = CACHE, isTransient = true)
+```
+
+Le flag `isTransient` indique que l'attribut ne fait pas partie de l'état du modèle : un cache, un lien vers le contexte d'exécution, un objet reconstruit à la demande. Un attribut transient n'est pas persistant : le modifier ne marque pas l'objet comme modifié, il est ignoré par la comparaison (`equalsObject`) et par `updateWith`, il n'est pas cloné, et il ne peut pas porter d'annotation XML. Un attribut est persistant lorsqu'il n'est ni dérivé (`isDerived`) ni transient, indépendamment de la façon dont le modèle est sauvé (PAMELA-F-3 ; pendant la transition, cette règle est activée par la propriété système `pamela.persistenceRule=true`, sinon un attribut est persistant lorsqu'il porte une annotation XML).
+
 # Sérialisation et désérialisation XML
 
 Il est possible de sérialiser un modèle afin de générer un fichier XML décrivant ledit modèle. Pour qu'un modèle soit sérialisable, il faut ajouter l'annotation `@XMLElement` à l'interface du modèle ainsi qu'à chaque attribut que l'on souhaite modéliser. Exemple :

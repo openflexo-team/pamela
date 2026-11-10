@@ -620,7 +620,7 @@ public class CompareAndMergeUtils {
 		while (properties.hasNext()) {
 			ModelProperty p = properties.next();
 
-			if (p.isSerializable()) {
+			if (p.isPersistent()) {
 
 				double propertyPonderation = 1.0;
 

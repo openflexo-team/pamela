@@ -43,3 +43,16 @@ Since 2026-10-18 the intermediate class itself is gone with javassist (PAMELA-F-
 **Fix.** None for the javassist backend, which is to be removed (PAMELA-F-1): the Byte Buddy backend defines the proxy next to the implementation class when its loader sees the interface, and passes the same test.
 
 **Closed (2026-10-18).** javassist and its work-around were removed from PAMELA 2.0 (PAMELA-F-1); `ProxyBackendTest.testImplementationInAChildClassLoader` passes. The defect comes back if the removal commit is reverted.
+
+### PAMELA-D-5 — A model entity that fails to import breaks every later import  ·  `DONE`
+
+**Symptom.** Once a `ModelDefinitionException` was raised while importing an entity (an inconsistent property, a primitive without
+default value), every later `PamelaMetaModelLibrary.retrieveMetaModel` of unrelated entities failed with that same exception, in the
+same JVM.
+
+**Cause.** `ModelEntityLibrary.importEntity` registers the new entities, then merges their properties; an exception left them in the
+library and in `newEntities`, never cleared, so the next import merged the broken entity again.
+
+**Fixed (2026-11-10).** On failure the entities of that import are removed from the library, and `newEntities` is always cleared.
+Shown by `TestPersistenceRule.testTransientCannotCarryAnXMLMapping` (an invalid entity on purpose): before the fix, 9 other tests of
+pamela-core failed after it.

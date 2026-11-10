@@ -352,7 +352,12 @@ public class ModelProperty<I> {
 			}
 		}
 
-		if (isSerializable() && ignoreType()) {
+		if (isTransient() && (getXMLAttribute() != null || getXMLElement() != null)) {
+			throw new ModelDefinitionException("Inconsistent property '" + propertyIdentifier + " for " + getModelEntity()
+					+ "'. A transient property cannot carry an XML mapping (annotation XMLAttribute or XMLElement).");
+		}
+
+		if (isXMLSerializable() && ignoreType()) {
 			throw new ModelDefinitionException("Inconsistent property '" + propertyIdentifier + " for " + getModelEntity()
 					+ "'. It cannot be serializable (annotation XMLAttribute or XMLElement) and ignored. "
 					+ "If it is string convertable, mark it with the attribute 'stringConvertable'.");
@@ -724,6 +729,7 @@ public class ModelProperty<I> {
 			boolean allowsMultipleOccurences;
 			boolean isDerived;
 			boolean ignoreForEquality;
+			boolean isTransient;
 
 			if (getGetter() != null) {
 				cardinality = getGetter().cardinality();
@@ -749,6 +755,7 @@ public class ModelProperty<I> {
 				allowsMultipleOccurences = property.getGetter().allowsMultipleOccurences();
 				isDerived = property.getGetter().isDerived();
 				ignoreForEquality = property.getGetter().ignoreForEquality();
+				isTransient = property.getGetter().isTransient();
 			}
 			else {
 				stringConvertable = getGetter().isStringConvertable();
@@ -756,9 +763,10 @@ public class ModelProperty<I> {
 				allowsMultipleOccurences = getGetter().allowsMultipleOccurences();
 				isDerived = getGetter().isDerived();
 				ignoreForEquality = getGetter().ignoreForEquality();
+				isTransient = getGetter().isTransient();
 			}
 			getter = new Getter.GetterImpl(propertyIdentifier, cardinality, inverse, defaultValue, stringConvertable, ignoreType,
-					allowsMultipleOccurences, isDerived, ignoreForEquality);
+					allowsMultipleOccurences, isDerived, ignoreForEquality, isTransient);
 		}
 		if (rulingProperty != null && rulingProperty.getSetter() != null) {
 			setter = rulingProperty.getSetter();
@@ -1223,8 +1231,40 @@ public class ModelProperty<I> {
 		return false;
 	}
 
-	public boolean isSerializable() {
+	/**
+	 * Selects how {@link #isPersistent()} is computed, until every PAMELA model marks its transient properties (PAMELA-F-3): when false
+	 * (the default), a property is persistent when it carries an XML mapping; when true, when it is neither derived nor transient. Set
+	 * with the system property <code>pamela.persistenceRule=true</code> or the environment variable
+	 * <code>PAMELA_PERSISTENCE_RULE=true</code>.
+	 */
+	public static final boolean PERSISTENCE_RULE = Boolean.parseBoolean(System.getProperty("pamela.persistenceRule"))
+			|| Boolean.parseBoolean(System.getenv("PAMELA_PERSISTENCE_RULE"));
+
+	/**
+	 * Tells whether this property is part of the state of the model: setting it marks its object modified, and updateWith() matches
+	 * objects on it. A property is persistent when it is neither derived nor transient ({@link Getter#isTransient()}), whatever the way
+	 * the model is saved; see {@link #PERSISTENCE_RULE} for the transition.
+	 */
+	public boolean isPersistent() {
+		return PERSISTENCE_RULE ? isPersistentByRule() : isXMLSerializable();
+	}
+
+	/**
+	 * What {@link #isPersistent()} answers once {@link #PERSISTENCE_RULE} is the default: neither derived nor transient
+	 */
+	public boolean isPersistentByRule() {
+		return getGetter() != null && !isDerived() && !isTransient();
+	}
+
+	/**
+	 * The former criterion of {@link #isPersistent()}: the property carries an XML mapping
+	 */
+	private boolean isXMLSerializable() {
 		return !isDerived() && getXMLAttribute() != null || getXMLElement() != null;
+	}
+
+	public boolean isTransient() {
+		return getGetter() != null && getGetter().isTransient();
 	}
 
 	public boolean isRelevantForEqualityComputation() {
@@ -1233,11 +1273,14 @@ public class ModelProperty<I> {
 		}
 		return isSerializable();*/
 
-		return /*getEmbedded() != null ||*/ !isDerived() && !ignoreForEquality();
+		return /*getEmbedded() != null ||*/ !isDerived() && !ignoreForEquality() && !isTransient();
 	}
 
 	public StrategyType getCloningStrategy() {
 		if (cloningStrategy == null) {
+			if (isTransient()) {
+				return StrategyType.IGNORE;
+			}
 			if (ModelEntityLibrary.has(getType())) {
 				return StrategyType.REFERENCE;
 			}

@@ -227,7 +227,7 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 				}
 			}
 
-			if (getProperty().isSerializable()) {
+			if (getProperty().isPersistent()) {
 				getHandler().invokeSetModified(true);
 			}
 
