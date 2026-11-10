@@ -221,6 +221,42 @@ CORE-F-8, the TA models rebuilt from a native file) could not say which of its p
 refused; the `ignoreType` consistency check bound to the XML mapping; the former `isSerializable()` call sites use `isPersistent()`.
 `TestPersistenceRule` (6 tests, green in both modes). Fixed on the way: PAMELA-D-5.
 
+**Step 2, first pass (2026-11-10): the 28 suites green with the switch on.** The 61 failures measured had four causes:
+- `getResourceData()` throwing a NullPointerException on an object built before being attached to its parent (`ExcelCell`,
+  `ExcelCellRange`, `JDBCLine`, `JDBCValue`, `JDBCTable`, `JDBCColumn`, `XMLEnumValue`): made null-safe. The `XMLEnumValue` one
+  silently stopped the loading of an XSD halfway.
+- Runtime links marked transient: `ResourceData.flexoResource`, `FMLLocalizedDictionary.dictionary`,
+  `VirtualModelInstance.virtualModelInstances` (each one a resource of its own), `FlexoDocObject.document` (kept by a clone through
+  `@CloningStrategy(REFERENCE)`), the element pointers of `TextSelection` (their identifiers stay persistent).
+- `FMLObject.metaData` had no `@Reindexer` (needed by `updateWith()` once the list is persistent).
+- A document fragment marked its document modified. Its bounds could NOT be made transient: a transient is ignored for equality, and
+  every fragment of a document then became "equal" to every other (the wrong template fragment was generated). The bounds stay
+  persistent; a fragment, a view over its document, no longer propagates its modified status (`setIsModified()` overridden).
+
+Lesson for the rest of the marking: a pointer that identifies its object is not transient, even when it is a runtime link. Left for
+step 2: the runtime links no test fails on (resources' `serviceManager` / `factory` / `resourceCenter` / `technologyContextManager`,
+IO delegates, GINA, DIANA), then the default flip.
+
+**Step 2, second pass (2026-11-10): the runtime links no test failed on.** Marked transient: the resources' `serviceManager`,
+`resourceCenter`, `factory`, `technologyAdapter`, `technologyContextManager`; the IO delegates' `flexo_resource` and `inJarResource`;
+`FlexoResourceCenterService.resourceCenters`; GINA's `controllerClass` (resolved from `controllerClassName`), `customTypeManager`,
+`fibLibrary`, `parent`; DIANA's mouse click / drag controls and the layout manager's `factory`. Those a clone needs keep
+`@CloningStrategy(REFERENCE)` (the former behaviour). The 28 suites stay green with the switch on and off. Not covered by a test:
+`DuplicateVirtualModel` (the duplicated units now get fresh pretty-print delegates, rebuilt when saved).
+
+Left persistent on purpose:
+- `FMLPrettyPrintable.prettyPrintDelegate` and `FMLObject.FMLPropertyValues`: `updateWith()` carries them from a re-parsed text to
+  the edited object (marking the delegate lost the text positions, 3 failures).
+- The native handles of the converter-built models (`ExcelCell.cell`, `DocXTextRun.r`, `DocXParagraph.p`, the pptx shapes): set
+  while converting (cleared after loading) or by a real edit, and taking them out of equality risks the fragment trap.
+
+Lessons: a property is not transient when it identifies its object (equality) or when `updateWith()` must carry it. Next: flip the
+default, then remove `isXMLSerializable()` and the switch.
+
+**Step 3 (2026-11-10): the rule is the only one.** `isPersistent()` answers "neither derived nor transient" unconditionally; the
+switch (`PERSISTENCE_RULE`, `pamela.persistenceRule`, `PAMELA_PERSISTENCE_RULE`), `isPersistentByRule()` and `isXMLSerializable()`
+are removed. The `ignoreType` consistency check tests the XML mapping directly. Left: CORE-F-8 phase 6.
+
 **Measured before deciding (2026-11-10, openflexo-core `BACKLOG.md`, CORE-F-8).** With the rule on and nothing marked, 28 suites:
 docx 25, xlsx 17, jdbc 12, flexo-foundation-test 5, xml 2 failures; about 3100 properties of 933 entities are neither derived nor
 XML-mapped, the ones actually set being mostly runtime links (resources' `serviceManager` / `factory` / `resourceCenter`, IO delegates'

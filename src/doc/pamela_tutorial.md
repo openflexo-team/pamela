@@ -84,7 +84,7 @@ Le flag `isDerived` indique à Pamela que l'attribut peut être déduit d'autres
 @Getter(value = CACHE, isTransient = true)
 ```
 
-Le flag `isTransient` indique que l'attribut ne fait pas partie de l'état du modèle : un cache, un lien vers le contexte d'exécution, un objet reconstruit à la demande. Un attribut transient n'est pas persistant : le modifier ne marque pas l'objet comme modifié, il est ignoré par la comparaison (`equalsObject`) et par `updateWith`, il n'est pas cloné, et il ne peut pas porter d'annotation XML. Un attribut est persistant lorsqu'il n'est ni dérivé (`isDerived`) ni transient, indépendamment de la façon dont le modèle est sauvé (PAMELA-F-3 ; pendant la transition, cette règle est activée par la propriété système `pamela.persistenceRule=true`, sinon un attribut est persistant lorsqu'il porte une annotation XML).
+Le flag `isTransient` indique que l'attribut ne fait pas partie de l'état du modèle : un cache, un lien vers le contexte d'exécution, un objet reconstruit à la demande. Un attribut transient n'est pas persistant : le modifier ne marque pas l'objet comme modifié, il est ignoré par la comparaison (`equalsObject`) et par `updateWith`, il n'est pas cloné, et il ne peut pas porter d'annotation XML. Un attribut est persistant lorsqu'il n'est ni dérivé (`isDerived`) ni transient, indépendamment de la façon dont le modèle est sauvé (PAMELA-F-3) ; les annotations XML ne décrivent que la façon de sérialiser un modèle sauvé en XML.
 
 # Sérialisation et désérialisation XML
 

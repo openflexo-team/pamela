@@ -55,8 +55,7 @@ import org.openflexo.pamela.model.ModelProperty;
 
 /**
  * The persistence rule of PAMELA-F-3: a property is persistent when it is neither derived nor transient, whatever the way the model is
- * saved. Until {@link ModelProperty#PERSISTENCE_RULE} becomes the default, {@link ModelProperty#isPersistent()} still answers the former
- * XML criterion; the assertions that depend on the mode say so.
+ * saved.
  */
 public class TestPersistenceRule {
 
@@ -72,20 +71,12 @@ public class TestPersistenceRule {
 
 	@Test
 	public void testRule() throws ModelDefinitionException {
-		assertTrue(property(Document.NAME).isPersistentByRule());
-		assertTrue(property(Document.NOTE).isPersistentByRule());
-		assertFalse(property(Document.CACHE).isPersistentByRule());
-		assertFalse(property(Document.LENGTH).isPersistentByRule());
-		assertTrue(property(Document.CACHE).isTransient());
-		assertFalse(property(Document.NOTE).isTransient());
-	}
-
-	@Test
-	public void testIsPersistentFollowsTheMode() throws ModelDefinitionException {
 		assertTrue(property(Document.NAME).isPersistent());
-		assertEquals(ModelProperty.PERSISTENCE_RULE, property(Document.NOTE).isPersistent());
+		assertTrue(property(Document.NOTE).isPersistent());
 		assertFalse(property(Document.CACHE).isPersistent());
 		assertFalse(property(Document.LENGTH).isPersistent());
+		assertTrue(property(Document.CACHE).isTransient());
+		assertFalse(property(Document.NOTE).isTransient());
 	}
 
 	@Test
@@ -96,7 +87,7 @@ public class TestPersistenceRule {
 		assertFalse("Setting a transient property marks the object modified", document.isModified());
 
 		document.setNote("a note");
-		assertEquals("Setting a persistent property without XML mapping", ModelProperty.PERSISTENCE_RULE, document.isModified());
+		assertTrue("Setting a persistent property without XML mapping does not mark the object modified", document.isModified());
 
 		document.setModified(false);
 		document.setName("doc");
