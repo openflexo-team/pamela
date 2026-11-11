@@ -257,6 +257,10 @@ default, then remove `isXMLSerializable()` and the switch.
 switch (`PERSISTENCE_RULE`, `pamela.persistenceRule`, `PAMELA_PERSISTENCE_RULE`), `isPersistentByRule()` and `isXMLSerializable()`
 are removed. The `ignoreType` consistency check tests the XML mapping directly. Left: CORE-F-8 phase 6.
 
+**Found later (2026-11-11).** `DSLSlot.getResourceData()` (dsl-ta, outside the 28 suites) threw the same
+NullPointerException while the parser builds a component's slots, before the slot is attached: every DSL document failed to load.
+Made null-safe like the others.
+
 **XML tags of unmapped entities (2026-11-10, for CORE-F-8 phase 6).** `PamelaMetaModel` refused two entities with the same XML tag,
 and the tag of an entity without `@XMLElement` falls back on its simple name: removing the annotations from the FML definitions would
 make same-named definitions clash. Only XML-mapped entities (own or inherited `@XMLElement`) must now have distinct tags; a mapped
