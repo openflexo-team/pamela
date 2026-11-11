@@ -728,7 +728,6 @@ public class ModelProperty<I> {
 			boolean ignoreType;
 			boolean allowsMultipleOccurences;
 			boolean isDerived;
-			boolean ignoreForEquality;
 			boolean isTransient;
 
 			if (getGetter() != null) {
@@ -754,7 +753,6 @@ public class ModelProperty<I> {
 				ignoreType = property.getGetter().ignoreType();
 				allowsMultipleOccurences = property.getGetter().allowsMultipleOccurences();
 				isDerived = property.getGetter().isDerived();
-				ignoreForEquality = property.getGetter().ignoreForEquality();
 				isTransient = property.getGetter().isTransient();
 			}
 			else {
@@ -762,11 +760,10 @@ public class ModelProperty<I> {
 				ignoreType = getGetter().ignoreType();
 				allowsMultipleOccurences = getGetter().allowsMultipleOccurences();
 				isDerived = getGetter().isDerived();
-				ignoreForEquality = getGetter().ignoreForEquality();
 				isTransient = getGetter().isTransient();
 			}
 			getter = new Getter.GetterImpl(propertyIdentifier, cardinality, inverse, defaultValue, stringConvertable, ignoreType,
-					allowsMultipleOccurences, isDerived, ignoreForEquality, isTransient);
+					allowsMultipleOccurences, isDerived, isTransient);
 		}
 		if (rulingProperty != null && rulingProperty.getSetter() != null) {
 			setter = rulingProperty.getSetter();
@@ -1221,16 +1218,6 @@ public class ModelProperty<I> {
 		return false;
 	}
 
-	public boolean ignoreForEquality() {
-
-		// When explicitely marked as derived, return true
-		if (getGetter() != null && getGetter().ignoreForEquality()) {
-			return true;
-		}
-
-		return false;
-	}
-
 	/**
 	 * Tells whether this property is part of the state of the model: setting it marks its object modified, and updateWith() matches
 	 * objects on it. A property is persistent when it is neither derived nor transient ({@link Getter#isTransient()}), whatever the way
@@ -1245,12 +1232,7 @@ public class ModelProperty<I> {
 	}
 
 	public boolean isRelevantForEqualityComputation() {
-		/*if (!isDerived() && (getXMLAttribute() == null || getXMLAttribute().ignoreForEquality())) {
-			return false;
-		}
-		return isSerializable();*/
-
-		return /*getEmbedded() != null ||*/ !isDerived() && !ignoreForEquality() && !isTransient();
+		return !isDerived() && !isTransient();
 	}
 
 	public StrategyType getCloningStrategy() {

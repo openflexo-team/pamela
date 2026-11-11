@@ -193,7 +193,7 @@ PAMELA-F-1 rewires.
 **When.** After PAMELA-F-1 (the proxy layer must be settled first). Moving JML to its own module changes the API
 (package `org.openflexo.pamela.jml`): check openflexo consumers.
 
-### PAMELA-F-3 — A property is persistent when it is neither derived nor transient, not when it carries an XML annotation  ·  `IN PROGRESS`
+### PAMELA-F-3 — A property is persistent when it is neither derived nor transient, not when it carries an XML annotation  ·  `DONE`
 
 **Problem.** `ModelProperty.isSerializable()` answered "the property carries `@XMLAttribute` / `@XMLElement`", and that decided
 two things having nothing to do with XML: whether setting the property marks its object modified, and whether `updateWith()` matches
@@ -274,3 +274,26 @@ XML-mapped, the ones actually set being mostly runtime links (resources' `servic
 
 **Acceptance.** Every suite of the workspace green with the switch on; the default flipped; `isXMLSerializable()` and the switch
 removed; XML annotations removed from the textual FML definitions (CORE-F-8 phase 6).
+
+**Done (2026-11-11).** CORE-F-8 phase 6 removed the XML annotations from the FML definitions of openflexo-core and of every
+technology adapter; every criterion above is met.
+
+### PAMELA-F-4 — Remove `@Getter(ignoreForEquality)`  ·  `DONE`
+
+**Problem.** `ignoreForEquality` took a property out of `equalsObject()`, which is not only a test helper: the setter uses it to tell
+a real change, `updateWith()` to skip a sub-object it finds unchanged and to compute distances, and a few lookups use it. It was mostly
+a device for the XML → FML migration tests, and it hid real data: measured (2026-11-11), with the pretty-print delegate set aside, two
+parsed units differing only by the type of a `for` iterator, or only by the `extends` of a concept, were "equal". `updateWith()` still
+carried those changes only because each parse builds its own pretty-print delegate.
+
+**Done (2026-11-11), decided with the user.** The attribute is removed from `Getter` and `ModelProperty`
+(`isRelevantForEqualityComputation()` = neither derived nor transient), and from pamela-editor (model property and inspector). Its
+30 uses are removed: the XML-migration leftovers of openflexo-core (the `declaredType` of `GetProperty`, `AbstractIterationAction` and
+`DeclarationAction` with their `@FMLMigration`, `FMLObject.metaData`, the parents of `FlexoConcept`, the `receiver`s, the `container`
+bindings of `FlexoBehaviourArgument` and `FinalizeMatching`, `relativePath`, `parentVirtualModelType`, the instance name and title of
+`AbstractAddVirtualModelInstance` and `CreationSchemePathElement`), the redundant ones on a property that already has an inverse
+(`FMLMetaData.owner`, `MetaDataKeyValue.owningMetaData`, GINA's `FIBLocalizedEntry.dictionary`), the layout of pamela-editor's
+diagram views, and `FlexoObject.flexoID` / `userIdentifier`. A caller that wants a structural comparison ignoring some properties
+passes a filter to `equalsObject(obj, filter)`: the round-trip tests of formod's b-ta (B components re-parsed from their
+pretty-print) now also leave out `flexoID` and `userIdentifier`, which each parse assigns anew (50 failures without it). The 28 usual
+suites give the same results, and so do the 15 other adapter test modules (CAPELLA-D-1 apart).

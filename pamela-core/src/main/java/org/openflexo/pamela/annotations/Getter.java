@@ -138,15 +138,6 @@ public @interface Getter {
 	boolean isDerived() default false;
 
 	/**
-	 * Indicates that the underlying property is derived: no need to test it for equality comparison
-	 * 
-	 * The default value is <code>false</code>
-	 * 
-	 * @return true if underlying property is derived
-	 */
-	boolean ignoreForEquality() default false;
-
-	/**
 	 * Indicates that the underlying property is not part of the state of the model: a cache, a link to the runtime context, a helper
 	 * rebuilt on demand. A transient property is not persistent, does not mark its object modified when it changes, is ignored for
 	 * equality comparison and by updateWith(), and is not cloned. It cannot carry an XML mapping ({@link XMLAttribute} /
@@ -167,11 +158,10 @@ public @interface Getter {
 		private final boolean ignoreType;
 		private final boolean allowsMultipleOccurences;
 		private final boolean isDerived;
-		private final boolean ignoreForEquality;
 		private final boolean isTransient;
 
 		public GetterImpl(String value, Cardinality cardinality, String inverse, String defaultValue, boolean stringConvertable,
-				boolean ignoreType, boolean allowsMultipleOccurences, boolean isDerived, boolean ignoreForEquality, boolean isTransient) {
+				boolean ignoreType, boolean allowsMultipleOccurences, boolean isDerived, boolean isTransient) {
 			this.value = value;
 			this.cardinality = cardinality;
 			this.inverse = inverse;
@@ -180,7 +170,6 @@ public @interface Getter {
 			this.ignoreType = ignoreType;
 			this.allowsMultipleOccurences = allowsMultipleOccurences;
 			this.isDerived = isDerived;
-			this.ignoreForEquality = ignoreForEquality;
 			this.isTransient = isTransient;
 		}
 
@@ -227,11 +216,6 @@ public @interface Getter {
 		@Override
 		public boolean isDerived() {
 			return isDerived;
-		}
-
-		@Override
-		public boolean ignoreForEquality() {
-			return ignoreForEquality;
 		}
 
 		@Override
