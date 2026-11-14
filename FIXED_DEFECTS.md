@@ -47,3 +47,14 @@ library and in `newEntities`, never cleared, so the next import merged the broke
 **Fixed (2026-11-10).** On failure the entities of that import are removed from the library, and `newEntities` is always cleared.
 Shown by `TestPersistenceRule.testTransientCannotCarryAnXMLMapping` (an invalid entity on purpose): before the fix, 9 other tests of
 pamela-core failed after it.
+
+### PAMELA-D-6 — `ModelExecutionException` loses the cause it wraps, and prints its stack  ·  `DONE`
+
+**Symptom (read, audit of `CORE-F-11`, openflexo-core, 2026-11-13).** `ModelExecutionException(Throwable)` (and the
+`InvocationTargetException` constructor, which delegates to it) builds a message from the class name and the message of the cause, but
+does not pass the cause to `RuntimeException`: `getCause()` is null and the original stack is lost to every caller. It and
+`ModelExecutionException(String, Throwable)` also call `e.printStackTrace()`, so the failure is printed on stderr where it is created, before
+anyone decides how to report it.
+
+**Fixed (2026-11-14, `CORE-F-11` phase 2).** Every constructor passes the cause to `RuntimeException`, and none prints the stack. Test:
+`TestModelExecutionException` (pamela-core).

@@ -15,13 +15,3 @@ Fixed defects are moved to [`FIXED_DEFECTS.md`](./FIXED_DEFECTS.md) once their s
 **Symptom.** `[PLEASE TRACK ME] : UndoManager exception: already recording <Unidentified recording> | <name of an action>` (`UndoManager.startRecording`), 3 times when a Formose project is opened and many more while it is used (creating an element, instantiating a methodology, dropping a shape), always with the name of the action that was recording (`Create element`, `Gives formose nature`, `CreateFunctionalGoal`…).
 
 **Read.** The message is the authors' own marker (`[PLEASE TRACK ME]`) in `UndoManager.startRecording`: a second edition starts while one is recording, as when an action runs an embedded action. Whether the second edition is lost or merged, and whether undo then undoes the right thing, was not examined.
-
-### PAMELA-D-6 — `ModelExecutionException` loses the cause it wraps, and prints its stack  ·  `TODO`
-
-**Symptom (read, audit of `CORE-F-11`, openflexo-core, 2026-11-13).** `ModelExecutionException(Throwable)` (and the
-`InvocationTargetException` constructor, which delegates to it) builds a message from the class name and the message of the cause, but
-does not pass the cause to `RuntimeException`: `getCause()` is null and the original stack is lost to every caller. It and
-`ModelExecutionException(String, Throwable)` also call `e.printStackTrace()`, so the failure is printed on stderr where it is created, before
-anyone decides how to report it.
-
-**Fix proposed.** Pass the cause to `super(message, e)` in every constructor and remove the `printStackTrace` calls.
