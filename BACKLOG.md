@@ -11,6 +11,8 @@ Status legend: `TODO` · `IN PROGRESS` · `BLOCKED` · `DONE` · `DEFERRED`.
 
 ### PAMELA-F-1 — Replace javassist by Byte Buddy (pamela 2.0)  ·  `DONE`
 
+**GitHub:** [openflexo-team/pamela#12](https://github.com/openflexo-team/pamela/issues/12)
+
 **Problem.** Every PAMELA instance is a javassist proxy (`PAMELAProxyFactory extends ProxyFactory`,
 `DelegateImplementation extends ProxyFactory`, `ProxyMethodHandler implements MethodHandler`). javassist is
 maintained at a slow pace and the ecosystem left it (Hibernate 6 and Mockito moved to Byte Buddy). On Java 11+
@@ -170,6 +172,8 @@ timings (`pamela-perf-tests`) not worse; no `javassist` reference left in the wo
 
 ### PAMELA-F-2 — Merge the 2022-2023 add-on / DPF work of branch `2.0-addon-2023`  ·  `DEFERRED`
 
+**GitHub:** [openflexo-team/pamela#13](https://github.com/openflexo-team/pamela/issues/13)
+
 **Where.** Branch **`2.0-addon-2023`** on `origin` (tip `acc9d94`, 2023-06-26, "Implemented XOrAssociation"; forked
 from `1.6.1` at `9a27fd2`, 2023-04-24). It was the former `2.0` branch, renamed on 2026-10-16 when `2.0` was
 restarted from `1.6.1` for PAMELA-F-1. 38 commits (34 without merges), 171 files, about +10,000 / -1,900 lines.
@@ -194,6 +198,8 @@ PAMELA-F-1 rewires.
 (package `org.openflexo.pamela.jml`): check openflexo consumers.
 
 ### PAMELA-F-3 — A property is persistent when it is neither derived nor transient, not when it carries an XML annotation  ·  `DONE`
+
+**GitHub:** [openflexo-team/pamela#14](https://github.com/openflexo-team/pamela/issues/14)
 
 **Problem.** `ModelProperty.isSerializable()` answered "the property carries `@XMLAttribute` / `@XMLElement`", and that decided
 two things having nothing to do with XML: whether setting the property marks its object modified, and whether `updateWith()` matches
@@ -279,6 +285,8 @@ removed; XML annotations removed from the textual FML definitions (CORE-F-8 phas
 technology adapter; every criterion above is met.
 
 ### PAMELA-F-4 — Remove `@Getter(ignoreForEquality)`  ·  `DONE`
+
+**GitHub:** [openflexo-team/pamela#15](https://github.com/openflexo-team/pamela/issues/15)
 
 **Problem.** `ignoreForEquality` took a property out of `equalsObject()`, which is not only a test helper: the setter uses it to tell
 a real change, `updateWith()` to skip a sub-object it finds unchanged and to compute distances, and a few lookups use it. It was mostly

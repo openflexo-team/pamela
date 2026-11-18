@@ -7,6 +7,8 @@ with what was verified, the cause and the fix. Identifiers are those of `KNOWN_D
 
 ### PAMELA-D-2 — "Could not compute distance from a File for a non-file resource" is logged for a resource the converter addresses correctly  ·  `DONE`
 
+**GitHub:** [openflexo-team/pamela#7](https://github.com/openflexo-team/pamela/issues/7)
+
 **Symptom.** 62 warnings at the start of formod-app, on the AWT thread: `Could not compute distance from a File for a non-file resource: …formod-rc-2.99-SNAPSHOT.jar!/DomainModel/Icons/Variable.png` (38) and `Enumeration.png` (24). Every one comes from `RelativePathResourceConverter.computeRelativePath`, the only caller of `Resource.distance`.
 
 **Verified.** A diagram has two container resources: its own directory, on disk (set by `DiagramFactory`), and the one of its diagram specification, in a jar (`DiagramResourceImpl.setMetaModelResource`). To serialize a resource of that jar the converter asks both for a distance and keeps the nearest. The one on disk cannot measure a resource of a jar: `FileResourceImpl.distance` warns and answers 1000, so the container of the jar was chosen, rightly. Only the warning was wrong (and the symmetrical `JarResourceImpl` / `InJarResourceImpl` one).
@@ -14,6 +16,8 @@ with what was verified, the cause and the fix. Identifiers are those of `KNOWN_D
 **Fixed (2026-10-13).** The converter no longer asks a container of the file system for the distance to a resource of a jar, nor the other way round: that distance is `Integer.MAX_VALUE`. `TestRelativePathResourceConverter.testContainersOfDifferentKinds` fails without the fix. Confirmed on a formod-app start with a Formose project opened and a domain diagram displayed (2026-10-13): 62 -> 0 `Could not compute distance` (the same project load, 32 `TestsFlexo` lines in the log, gave 62 before the fix). The start measured just before did not open any project, hence no conversion at all.
 
 ### PAMELA-D-3 — The synthetic `<Impl>_<Iface>_Proxy` class replaces the declared implementing class  ·  `DONE`
+
+**GitHub:** [openflexo-team/pamela#8](https://github.com/openflexo-team/pamela/issues/8)
 
 **Symptom.** When an entity's implementing class is not in the package of its interface, `getImplementingClassForInterface`, `ProxyMethodHandler.getSuperClass()` and `getOverridingSuperClass()` answer a generated class `<ifacePkg>.<Impl>_<Iface>_Proxy` instead of the declared one, as soon as one instance was created.
 
@@ -27,6 +31,8 @@ Since 2026-10-18 the intermediate class itself is gone with javassist (PAMELA-F-
 
 ### PAMELA-D-4 — With javassist, an implementation class loaded by a child class loader is replaced by another copy  ·  `DONE`
 
+**GitHub:** [openflexo-team/pamela#9](https://github.com/openflexo-team/pamela/issues/9)
+
 **Symptom.** An entity whose implementation class is loaded by a child class loader (child-first, as the jar class loader of a technology adapter), in another package than its interface, gets a proxy that does not extend that implementation class but another copy of it, loaded by the loader of the interface.
 
 **Verified.** `ProxyBackendTest.testImplementationInAChildClassLoader[javassist]` (2026-10-18): `ChildItemImpl`, defined by a `ChildFirstLoader`, implementing `Item` of the parent loader. The intermediate class of the PAMELA-30 work-around is built from the name of the implementation class, resolved by `ClassPool.getDefault()` on the system class path, and defined next to the interface: its super class is whatever class of that name the interface's loader finds. When none is found, `NotFoundException` is printed and the intermediate class extends `Object`. Not observed in an application.
@@ -36,6 +42,8 @@ Since 2026-10-18 the intermediate class itself is gone with javassist (PAMELA-F-
 **Closed (2026-10-18).** javassist and its work-around were removed from PAMELA 2.0 (PAMELA-F-1); `ProxyBackendTest.testImplementationInAChildClassLoader` passes. The defect comes back if the removal commit is reverted.
 
 ### PAMELA-D-5 — A model entity that fails to import breaks every later import  ·  `DONE`
+
+**GitHub:** [openflexo-team/pamela#10](https://github.com/openflexo-team/pamela/issues/10)
 
 **Symptom.** Once a `ModelDefinitionException` was raised while importing an entity (an inconsistent property, a primitive without
 default value), every later `PamelaMetaModelLibrary.retrieveMetaModel` of unrelated entities failed with that same exception, in the
@@ -49,6 +57,8 @@ Shown by `TestPersistenceRule.testTransientCannotCarryAnXMLMapping` (an invalid 
 pamela-core failed after it.
 
 ### PAMELA-D-6 — `ModelExecutionException` loses the cause it wraps, and prints its stack  ·  `DONE`
+
+**GitHub:** [openflexo-team/pamela#11](https://github.com/openflexo-team/pamela/issues/11)
 
 **Symptom (read, audit of `CORE-F-11`, openflexo-core, 2026-11-13).** `ModelExecutionException(Throwable)` (and the
 `InvocationTargetException` constructor, which delegates to it) builds a message from the class name and the message of the cause, but
