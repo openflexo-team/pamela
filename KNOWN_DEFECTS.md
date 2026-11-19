@@ -18,40 +18,6 @@ Fixed defects are moved to [`FIXED_DEFECTS.md`](./FIXED_DEFECTS.md) once their s
 
 **Read.** The message is the authors' own marker (`[PLEASE TRACK ME]`) in `UndoManager.startRecording`: a second edition starts while one is recording, as when an action runs an embedded action. Whether the second edition is lost or merged, and whether undo then undoes the right thing, was not examined.
 
-### PAMELA-D-7 — TypeConverter does not read back the type void, so a concept with a void behaviour cannot be cloned or copied  ·  `TODO`
-
-**GitHub:** [openflexo-team/pamela#16](https://github.com/openflexo-team/pamela/issues/16)
-
-**Symptom (reproduced 2026-11-19, branch 2.0).** Copying a FlexoConcept in the FML editor of Openflexo 3.0 does nothing. The console
-shows `NullPointerException: … CopyAction.getClipboard() is null`, and `Openflexo.err.log` holds the real failure:
-
-```
-ModelExecutionException … InvalidDataException message: Supplied value represents a type not found: void
-	at org.openflexo.pamela.factory.CloningHandler.finalizeClone(CloningHandler.java:296)
-Caused by: org.openflexo.pamela.exceptions.InvalidDataException: Supplied value represents a type not found: void
-	at org.openflexo.pamela.converter.TypeConverter.convertFromString(TypeConverter.java:181)
-	at org.openflexo.pamela.factory.StringEncoder.fromString(StringEncoder.java:96)
-	at org.openflexo.pamela.factory.CloningHandler.finalizeClone(CloningHandler.java:293)
-```
-
-Any concept that declares a behaviour returning `void` fails to clone, so copy and paste fails for most concepts.
-
-**Cause.** `TypeConverter.convertFromString` maps the primitive names `boolean`, `byte`, `int`, `long`, `short`, `float`, `double`
-and `char` to their `TYPE`, but not `void`. It then calls `Class.forName("void")`, which throws. Cloning re-reads a string-convertible
-`Type` property from its text, so a return type of `void` (`Void.TYPE`) cannot be cloned.
-
-**How to reproduce.** In openflexo-core, `KnownDefectsCloneVoidBehaviourTest` (fml-parser), run with `OPENFLEXO_KNOWN_DEFECTS=1`. It
-clones a concept declaring `public void doIt() { }`. At the PAMELA level: `new TypeConverter(Map.of()).convertFromString("void", null)`
-throws instead of returning `Void.TYPE`.
-
-**Where to start.** `pamela-core/src/main/java/org/openflexo/pamela/converter/TypeConverter.java`, `convertFromString`: add the case
-`"void"` → `Void.TYPE`. Check that `convertToString(Void.TYPE)` gives `void`, and add a unit test of the round trip for every primitive
-type.
-
-**Acceptance.** The clone of a concept with a `void` behaviour succeeds and keeps the return type. The known-defect test passes.
-
-**Workaround.** None for copy: create the concept again by hand.
-
 ### PAMELA-D-8 — Undoing a deletion leaves the restored objects deleted and their lists in reverse order  ·  `TODO`
 
 **GitHub:** [openflexo-team/pamela#17](https://github.com/openflexo-team/pamela/issues/17)

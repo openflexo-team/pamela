@@ -66,6 +66,19 @@ public class TestTypeConverter extends AbstractPAMELATest {
 		assertEquals(new DefaultWildcardType(), typeConverter.convertFromString("?", null));
 	}
 
+	/**
+	 * PAMELA-D-7: every primitive type, and void, survives a round trip through its text
+	 */
+	public void testPrimitiveTypesRoundTrip() throws Exception {
+		Class<?>[] primitives = { Boolean.TYPE, Byte.TYPE, Integer.TYPE, Long.TYPE, Short.TYPE, Float.TYPE, Double.TYPE, Character.TYPE,
+				Void.TYPE };
+		for (Class<?> primitive : primitives) {
+			String text = typeConverter.convertToString(primitive);
+			assertEquals(primitive.getName(), text);
+			assertSame(primitive, typeConverter.convertFromString(text, null));
+		}
+	}
+
 	public void test7() throws Exception {
 		assertEquals(
 				new ParameterizedTypeImpl(Map.class, DefaultWildcardType.makeUpperBoundWilcard(Object.class),

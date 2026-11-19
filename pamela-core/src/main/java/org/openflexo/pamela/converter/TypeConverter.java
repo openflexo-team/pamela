@@ -169,6 +169,9 @@ public class TypeConverter extends Converter<Type> {
 				else if (value.equals("char")) {
 					return Character.TYPE;
 				}
+				else if (value.equals("void")) {
+					return Void.TYPE;
+				}
 				else if (value.equals("String")) {
 					return String.class;
 				}

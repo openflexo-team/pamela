@@ -68,3 +68,13 @@ anyone decides how to report it.
 
 **Fixed (2026-11-14, `CORE-F-11` phase 2).** Every constructor passes the cause to `RuntimeException`, and none prints the stack. Test:
 `TestModelExecutionException` (pamela-core).
+
+### PAMELA-D-7 — TypeConverter does not read back the type void, so a concept with a void behaviour cannot be cloned or copied  ·  `DONE`
+
+**GitHub:** [openflexo-team/pamela#16](https://github.com/openflexo-team/pamela/issues/16)
+
+**Symptom (reproduced 2026-11-19, branch 2.0).** Copying a FlexoConcept in the FML editor of Openflexo 3.0 did nothing: `CopyAction.getClipboard()` was null, and `Openflexo.err.log` held `InvalidDataException: Supplied value represents a type not found: void` (`TypeConverter.convertFromString`, called from `CloningHandler.finalizeClone`). Any concept declaring a behaviour returning `void` failed to clone.
+
+**Cause.** `TypeConverter.convertFromString` mapped the primitive names `boolean`, `byte`, `int`, `long`, `short`, `float`, `double` and `char` to their `TYPE`, but not `void`: it fell through to `Class.forName("void")`, which throws. Cloning re-reads a string-convertible `Type` property from its text.
+
+**Fixed (2026-11-19).** `convertFromString` maps `void` to `Void.TYPE` (`convertToString(Void.TYPE)` already gave `void`). `TestTypeConverter.testPrimitiveTypesRoundTrip` checks the round trip of every primitive type and `void`; `TestTypeConverter` 8/8. The openflexo-core test `KnownDefectsCloneVoidBehaviourTest` (fml-parser) was not run: it needs the openflexo-dev composite.
