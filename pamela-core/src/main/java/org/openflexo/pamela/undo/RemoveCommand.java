@@ -38,12 +38,21 @@
 
 package org.openflexo.pamela.undo;
 
+import java.util.List;
+
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
+import org.openflexo.pamela.annotations.Getter.Cardinality;
+import org.openflexo.pamela.exceptions.ModelDefinitionException;
+import org.openflexo.pamela.exceptions.ModelExecutionException;
 import org.openflexo.pamela.factory.PamelaModelFactory;
+import org.openflexo.pamela.factory.ProxyMethodHandler;
 import org.openflexo.pamela.model.ModelEntity;
 import org.openflexo.pamela.model.ModelProperty;
+import org.openflexo.pamela.model.property.MultiplePropertyImplementation;
+import org.openflexo.pamela.model.property.PropertyImplementation;
+import org.openflexo.pamela.model.property.ReindexableListPropertyImplementation;
 
 /**
  * This command corresponds to the REMOVING of an object.<br>
@@ -59,6 +68,8 @@ public class RemoveCommand<I> extends AtomicEdit<I> {
 	private I updatedObject;
 	private Object removedValue;
 	private ModelProperty<? super I> modelProperty;
+	/** Index of the removed value in its list when it was removed (-1 if unknown or not a list): the undo puts it back there */
+	private int index = -1;
 
 	public RemoveCommand(I updatedObject, ModelEntity<I> modelEntity, ModelProperty<? super I> modelProperty, Object removedValue,
 			PamelaModelFactory pamelaModelFactory) {
@@ -66,6 +77,28 @@ public class RemoveCommand<I> extends AtomicEdit<I> {
 		this.updatedObject = updatedObject;
 		this.modelProperty = modelProperty;
 		this.removedValue = removedValue;
+		this.index = indexOfValue(pamelaModelFactory, updatedObject, modelProperty, removedValue);
+	}
+
+	private static <I> int indexOfValue(PamelaModelFactory factory, I object, ModelProperty<? super I> property, Object value) {
+		if (property == null || property.getCardinality() != Cardinality.LIST) {
+			return -1;
+		}
+		ProxyMethodHandler<I> handler = factory.getHandler(object);
+		if (handler == null) {
+			return -1;
+		}
+		// Read the list stored by PAMELA itself, not through the getter: a getter may be overridden, derived or resolve lazily
+		PropertyImplementation<? super I, ?> impl = handler.getPropertyImplementation(property);
+		if (impl instanceof MultiplePropertyImplementation) {
+			try {
+				Object values = ((MultiplePropertyImplementation<?, ?>) impl).get();
+				return values instanceof List ? ((List<?>) values).indexOf(value) : -1;
+			} catch (ModelDefinitionException e) {
+				return -1;
+			}
+		}
+		return -1;
 	}
 
 	@Override
@@ -83,7 +116,23 @@ public class RemoveCommand<I> extends AtomicEdit<I> {
 
 	@Override
 	public void undo() throws CannotUndoException {
-		getModelFactory().getHandler(updatedObject).invokeAdder(modelProperty, removedValue);
+		ProxyMethodHandler<I> handler = getModelFactory().getHandler(updatedObject);
+		handler.invokeAdder(modelProperty, removedValue);
+		if (index > -1) {
+			// The adder appends: put the value back where it was (PAMELA-D-8)
+			PropertyImplementation<? super I, ?> impl = handler.getPropertyImplementation(modelProperty);
+			if (impl instanceof ReindexableListPropertyImplementation && impl instanceof MultiplePropertyImplementation) {
+				try {
+					List<?> values = (List<?>) ((MultiplePropertyImplementation<?, ?>) impl).get();
+					if (values != null && values.contains(removedValue)) {
+						((ReindexableListPropertyImplementation<I, Object>) impl).reindex(removedValue,
+								Math.min(index, values.size() - 1));
+					}
+				} catch (ModelDefinitionException e) {
+					throw new ModelExecutionException(e);
+				}
+			}
+		}
 	}
 
 	@Override

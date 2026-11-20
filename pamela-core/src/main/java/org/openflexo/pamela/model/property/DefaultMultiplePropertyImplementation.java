@@ -169,10 +169,7 @@ public class DefaultMultiplePropertyImplementation<I, T> extends AbstractPropert
 	@Override
 	public void reindex(T value, int index) throws ModelDefinitionException {
 
-		if (getProperty().getReindexer() == null) {
-			throw new ModelExecutionException("Reindexer is not defined for property " + getProperty());
-		}
-		// List<T> list = (List<T>) getHandler().invokeGetter(getProperty());
+		// No check on the reindexer method: moving a value inside the list is also what an undo of a removal needs (PAMELA-D-8)
 		List<T> list = internalValues;
 
 		int oldIndex = list.indexOf(value);

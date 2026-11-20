@@ -656,7 +656,9 @@ public class ProxyMethodHandler<I> extends IProxyMethodHandler implements Pamela
 			return DELETED;
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, PERFORM_SUPER_DELETER)) {
-			return internallyInvokeDeleter(false);
+			// An implementation that overrides delete() reaches the deletion only through here: it is the one to record it,
+			// otherwise there is nothing to undo (PAMELA-D-8)
+			return internallyInvokeDeleter(true);
 		}
 		else if (PamelaUtils.methodIsEquivalentTo(method, DELETE_OBJECT)) {
 			return internallyInvokeDeleter(true, args);

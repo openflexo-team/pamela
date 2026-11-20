@@ -201,7 +201,7 @@ public class ObjectLifecycleHandler<I> {
 		deleted = false;
 		undeleting = false;
 		handler.getNotificationHandler().fireUndeleted();
-		return deleted;
+		return true;
 	}
 
 	/**
