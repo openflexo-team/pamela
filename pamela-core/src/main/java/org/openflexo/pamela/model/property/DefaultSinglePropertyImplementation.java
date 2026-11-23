@@ -110,7 +110,22 @@ public class DefaultSinglePropertyImplementation<I, T> extends AbstractPropertyI
 			return;
 		}
 
-		getHandler().getScheduledSets().remove(getProperty());
+		// The entry of an enclosing set() of this property (an inverse property calling back): restored when this one ends, so that
+		// no entry outlives the set() that scheduled it. A stale entry made any later identical set() look like a loop (PAMELA-D-9).
+		Object enclosingScheduledSet = getHandler().getScheduledSets().remove(getProperty());
+		try {
+			doSet(aValue);
+		} finally {
+			if (enclosingScheduledSet != null) {
+				getHandler().getScheduledSets().put(getProperty(), enclosingScheduledSet);
+			}
+			else {
+				getHandler().getScheduledSets().remove(getProperty());
+			}
+		}
+	}
+
+	private void doSet(T aValue) throws ModelDefinitionException {
 
 		// System.out.println("Object " + getModelEntity().getImplementedInterface().getSimpleName() + " set "
 		// + property.getPropertyIdentifier() + " with " + value);

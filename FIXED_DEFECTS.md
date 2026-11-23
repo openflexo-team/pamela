@@ -109,3 +109,34 @@ action and through the FML editor's re-parse.
 (`reindex` of a list no longer requires a `@Reindexer` method); `ObjectLifecycleHandler.undelete` returns `true`. Tests: `TestUndoDelete` (pamela-core, undo and redo of the deletion of a tree of
 embedded objects; pamela-core 95/95) and `TestUndoDeleteConcept` (openflexo-core, fml-parser; fml-parser, flexo-foundation-test and
 fml-cli-test green). The symptom seen in the application (a concept printed twice) was not re-checked in the running FML editor.
+
+### PAMELA-D-9 — After a move, detaching an object no longer resets its single inverse property  ·  `DONE`
+
+**GitHub:** [openflexo-team/pamela#18](https://github.com/openflexo-team/pamela/issues/18)
+
+**Symptom (found 2026-11-20, review of CORE-F-19 phase 3b; proven 2026-11-22).** After an object has moved to another parent through
+the adder of that parent (a single property whose inverse is a list, such as `FlexoConcept.container` ↔ `contents`), detaching it no
+longer resets the single property: `parent.removeFromChildren(child)` removes the child from the list but leaves `child.getParent()` on
+the parent, `child.setParent(null)` does nothing at all, and deleting the child leaves it in the list of its parent. A move through the
+setter is not affected.
+
+**Verified** by `TestReparentThenDetach` (pamela-core, fixture `undodelete.TreeNode`): its three tests of a move through the adder fail
+without the fix. In openflexo-core, `FlexoConcept.setContainer` goes through the same path; a concept moved with it could not be
+removed from its container (`TestConceptContainment.aMovedConceptCanBeRemovedAndDeleted`, CORE-F-19). `FlexoConcept.delete()` removes
+the concept from its container explicitly, so deleting a moved concept was not affected.
+
+**How to reproduce.**
+```java
+a.addToChildren(c);
+b.addToChildren(c);   // moves c: a.children = [], b.children = [c]
+c.setParent(null);    // ignored: c.getParent() is still b, and b.children = [c]
+```
+
+**Cause.** `DefaultSinglePropertyImplementation.set` guards against loops with `ProxyMethodHandler.getScheduledSets()`: it records
+the value being set, and an identical set() met while that entry is there returns at once. The entry was removed only at the start
+of the next set() of the property, never at the end of the one that put it. During a move, the remover of the old parent calls back
+`set(null)` on the child: that nested call removed the entry of the enclosing set() and left its own (`NULL_OBJECT`), which outlived
+both calls. Every later `set(null)` of that property was then taken for a loop.
+
+**Fix.** `set()` keeps the entry of an enclosing set() of the same property and restores it when it ends (`try`/`finally`), so that no
+entry outlives the set() that scheduled it. The loop guard inside a set() is unchanged.
