@@ -57,20 +57,25 @@ import java.util.function.Predicate;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.TypeCache;
+import net.bytebuddy.description.annotation.AnnotationDescription;
 import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.method.ParameterDescription;
+import net.bytebuddy.description.modifier.Ownership;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.DynamicType;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.dynamic.scaffold.subclass.ConstructorStrategy;
 import net.bytebuddy.implementation.FieldAccessor;
+import net.bytebuddy.implementation.LoadedTypeInitializer;
 import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.implementation.bind.annotation.TargetMethodAnnotationDrivenBinder.ParameterBinder;
 
 /**
  * Generation of PAMELA proxies with Byte Buddy (PAMELA-F-1).<br>
  * 
  * A proxy class extends the implementation class, implements the entity interface and {@link PamelaProxy}, and forwards every handled
- * method to the {@link PamelaMethodHandler} held in a field, with the contract of the javassist proxies of PAMELA 1.x (self, method, proceed, args). It is defined
- * through a {@link java.lang.invoke.MethodHandles.Lookup} in the package and the class loader of a "neighbor": the implementation class
+ * method, through the static {@link PamelaProxyDispatcher}, to the {@link PamelaMethodHandler} held in a field, with the contract of the
+ * javassist proxies of PAMELA 1.x (self, method, proceed, args). It is defined through a {@link java.lang.invoke.MethodHandles.Lookup} in the package and the class loader of a "neighbor": the implementation class
  * when its loader sees the interfaces, the entity interface otherwise (always when there is no implementation class), so that no
  * intermediate class is needed whatever the packages and the class loaders of the two.
  * 
@@ -236,18 +241,78 @@ final class ByteBuddyProxyBackend implements ProxyBackend {
 		DynamicType.Builder<?> builder = new ByteBuddy().subclass(superclass, ConstructorStrategy.Default.IMITATE_SUPER_CLASS_OPENING)
 				.name(name).implement(implemented).defineField(HANDLER_FIELD, PamelaMethodHandler.class, Visibility.PRIVATE)
 				.method(isDeclaredBy(PamelaProxy.class)).intercept(FieldAccessor.ofField(HANDLER_FIELD));
-		// One interception per method, each giving the handler the declaration javassist would give. A method of the proxy may be seen
-		// either with its own signature or, when it implements a generic declaration, with the erased signature of that declaration.
+		// One interception for all the handled methods (PAMELA-F-5): a single matcher, and a single delegation to the static dispatcher,
+		// which receives the index, in the static array of the proxy class, of the declaration javassist would give to the handler. One
+		// matcher and one delegation (with its own field) per method, each tested against every method of the proxy, made the generation
+		// quadratic in the number of methods.
+		Map<String, Integer> indexes = new HashMap<>();
+		Method[] methods = new Method[handled.size()];
 		for (Map.Entry<String, Method> e : handled.entrySet()) {
-			String k = e.getKey();
-			builder = builder
-					.method(md -> !md.getDeclaringType().represents(PamelaProxy.class) && (k.equals(key(md)) || k.equals(key(md.asDefined()))))
-					.intercept(MethodDelegation.to(new PamelaProxyDispatcher(e.getValue()), PamelaProxyDispatcher.class));
+			methods[indexes.size()] = e.getValue();
+			indexes.put(e.getKey(), indexes.size());
 		}
+		builder = builder.defineField(PamelaProxyDispatcher.METHODS_FIELD, Method[].class, Visibility.PRIVATE, Ownership.STATIC)
+				.initializer(new LoadedTypeInitializer.ForStaticField(PamelaProxyDispatcher.METHODS_FIELD, methods))
+				.method(md -> !md.getDeclaringType().represents(PamelaProxy.class) && handledKey(handled, md) != null)
+				.intercept(MethodDelegation.withDefaultConfiguration().withBinders(new MethodIndexBinder(handled, indexes))
+						.to(PamelaProxyDispatcher.class));
 		return builder.make()
 				.load(neighbor.getClassLoader(),
 						ClassLoadingStrategy.UsingLookup.of(MethodHandles.privateLookupIn(neighbor, MethodHandles.lookup())))
 				.getLoaded();
+	}
+
+	/**
+	 * The key in supplied handled methods of the method of the proxy described by md, null when it is not handled.<br>
+	 * 
+	 * A method of the proxy may be seen either with its own signature or, when it implements a generic declaration, with the erased
+	 * signature of that declaration. When both are handled, the greater key is returned: the choice made before PAMELA-F-5, when there
+	 * was one interception per method in key order and Byte Buddy applied the one registered last.
+	 */
+	private static String handledKey(Map<String, Method> handled, MethodDescription md) {
+		String own = key(md);
+		if (!handled.containsKey(own)) {
+			own = null;
+		}
+		MethodDescription.InDefinedShape defined = md.asDefined();
+		String erased = defined == md ? null : key(defined);
+		if (erased != null && !handled.containsKey(erased)) {
+			erased = null;
+		}
+		if (own == null) {
+			return erased;
+		}
+		return erased != null && erased.compareTo(own) > 0 ? erased : own;
+	}
+
+	/**
+	 * Binds the parameter {@link PamelaProxyDispatcher.MethodIndex} of the dispatcher to the index of the intercepted method in the static
+	 * array of the proxy class
+	 */
+	private static final class MethodIndexBinder extends ParameterBinder.ForFixedValue<PamelaProxyDispatcher.MethodIndex> {
+
+		private final Map<String, Method> handled;
+		private final Map<String, Integer> indexes;
+
+		private MethodIndexBinder(Map<String, Method> handled, Map<String, Integer> indexes) {
+			this.handled = handled;
+			this.indexes = indexes;
+		}
+
+		@Override
+		public Class<PamelaProxyDispatcher.MethodIndex> getHandledType() {
+			return PamelaProxyDispatcher.MethodIndex.class;
+		}
+
+		@Override
+		protected Object bind(AnnotationDescription.Loadable<PamelaProxyDispatcher.MethodIndex> annotation, MethodDescription source,
+				ParameterDescription target) {
+			String k = handledKey(handled, source);
+			if (k == null) {
+				throw new IllegalStateException("Not a handled method: " + source);
+			}
+			return indexes.get(k);
+		}
 	}
 
 	private static final class ByteBuddyProxyClass implements ProxyClass {

@@ -305,3 +305,30 @@ diagram views, and `FlexoObject.flexoID` / `userIdentifier`. A caller that wants
 passes a filter to `equalsObject(obj, filter)`: the round-trip tests of formod's b-ta (B components re-parsed from their
 pretty-print) now also leave out `flexoID` and `userIdentifier`, which each parse assigns anew (50 failures without it). The 28 usual
 suites give the same results, and so do the 15 other adapter test modules (CAPELLA-D-1 apart).
+
+### PAMELA-F-5 — Generate the proxy classes in linear time  ·  `DONE`
+
+**GitHub:** not created yet.
+
+**Problem.** `ByteBuddyProxyBackend.generate` registered one `.method(matcher).intercept(MethodDelegation.to(dispatcher))` per handled
+method. Byte Buddy tests every method of the proxy against every registered matcher, and each matcher built the JVM signature strings
+of the method (`key(md)`, `key(md.asDefined())`); each delegation also added a field `delegate$...`, located by name among all the
+others for every method. Building a proxy class was thus quadratic in its methods: measured with JFR on 2026-11-27 (x86_64 JDK under
+Rosetta), about 60 % of the first parsing of a FML unit in a session, up to about 2 s at the first opening of a FML unit (UI-F-2,
+openflexo-ui).
+
+**Done (2026-11-28).** One matcher and one delegation for all the handled methods. The declarations given to the handler are kept in a
+static array of the proxy class (`pamela$methods`), and every intercepted method calls the static `PamelaProxyDispatcher.intercept`
+with its index in that array, bound as a constant by a parameter binder (`@MethodIndex`). The index is found by JVM signature
+(name + descriptor), with the same choice as before when a method of the proxy is seen both with its own signature and with the
+erased signature of a generic declaration. Measured on the arm64 JDK 17:
+
+| | before | after |
+|---|---|---|
+| synthetic interface, 100 / 400 / 1600 methods | 14 / 83 / 705 ms | 6 / 20 / 67 ms |
+| the 221 `@ModelEntity` of flexo-foundation (36,377 methods), first / warm run | 5.5 s / 3.9 s | 2.7 s / 1.3 s |
+
+What is left is the normal class writing of Byte Buddy (`handledMethods` is about 10 % of it). The declarations given to the handler
+were compared, method by method, for these 221 entities (the 36,756 public methods of their proxies, bridges included) and for the
+test entities of pamela-core (2,474): identical. `ProxyBackendTest.testOneDelegationForAllTheMethods` checks that the proxy class no longer carries a field per
+method.

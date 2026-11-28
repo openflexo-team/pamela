@@ -38,6 +38,10 @@
 
 package org.openflexo.pamela.factory;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
@@ -47,8 +51,9 @@ import net.bytebuddy.implementation.bind.annotation.SuperMethod;
 import net.bytebuddy.implementation.bind.annotation.This;
 
 /**
- * The entry point of a method intercepted by a proxy of the Byte Buddy backend ({@link ByteBuddyProxyBackend}): one instance per
- * intercepted method, holding the declaration given to the handler.<br>
+ * The entry point of a method intercepted by a proxy of the Byte Buddy backend ({@link ByteBuddyProxyBackend}). The declarations given to
+ * the handler are held by a static array of each proxy class, and every intercepted method calls {@link #intercept} with its index in that
+ * array (PAMELA-F-5).<br>
  * 
  * Internal to PAMELA, public only because it is called from the generated classes, which live in the packages of the entities.
  * 
@@ -59,16 +64,25 @@ public final class PamelaProxyDispatcher {
 
 	static final String HANDLER_FIELD = "pamela$handler";
 
-	// The method given to the handler
-	private final Method method;
+	// The static array of a proxy class holding the declarations given to the handler
+	static final String METHODS_FIELD = "pamela$methods";
 
-	PamelaProxyDispatcher(Method method) {
-		this.method = method;
+	/**
+	 * The parameter receiving the index of the intercepted method in the static array {@link #METHODS_FIELD} of its proxy class
+	 */
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.PARAMETER)
+	@interface MethodIndex {
+	}
+
+	private PamelaProxyDispatcher() {
 	}
 
 	@RuntimeType
-	public Object intercept(@This Object self, @SuperMethod(nullIfImpossible = true) Method proceed, @AllArguments Object[] args,
-			@FieldValue(HANDLER_FIELD) PamelaMethodHandler handler) throws Throwable {
+	public static Object intercept(@MethodIndex int index, @FieldValue(METHODS_FIELD) Method[] methods, @This Object self,
+			@SuperMethod(nullIfImpossible = true) Method proceed, @AllArguments Object[] args, @FieldValue(HANDLER_FIELD) PamelaMethodHandler handler)
+			throws Throwable {
+		Method method = methods[index];
 		if (handler == null) {
 			// The constructor is running: same rule as the default handler of javassist in PAMELA 1.x
 			if (proceed == null) {

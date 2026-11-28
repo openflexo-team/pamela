@@ -220,6 +220,23 @@ public class ProxyBackendTest {
 		}
 	}
 
+	/**
+	 * PAMELA-F-5: all the handled methods go through one delegation, so that the generation is linear in the number of methods. A
+	 * delegation per method gave the proxy class a field per method, located by name among all the others at each method.
+	 */
+	@Test
+	public void testOneDelegationForAllTheMethods() throws Exception {
+		Class<?> proxyClass = newProxy(FlexoProcessImpl.class, FlexoProcess.class, new StoringHandler()).getClass();
+		List<String> fields = new ArrayList<>();
+		for (java.lang.reflect.Field f : proxyClass.getDeclaredFields()) {
+			// Byte Buddy also caches, in a field cachedValue$..., the super method of each method that has one (@SuperMethod)
+			if (!f.getName().startsWith("cachedValue$")) {
+				fields.add(f.getName());
+			}
+		}
+		assertEquals(Arrays.asList(PamelaProxyDispatcher.HANDLER_FIELD, PamelaProxyDispatcher.METHODS_FIELD), fields.stream().sorted().toList());
+	}
+
 	// ---------------------------------------------------------------------------------------------------------------
 	// The declaration given to the handler
 	// ---------------------------------------------------------------------------------------------------------------
