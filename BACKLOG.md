@@ -308,7 +308,7 @@ suites give the same results, and so do the 15 other adapter test modules (CAPEL
 
 ### PAMELA-F-5 — Generate the proxy classes in linear time  ·  `DONE`
 
-**GitHub:** not created yet.
+**GitHub:** [openflexo-team/pamela#19](https://github.com/openflexo-team/pamela/issues/19)
 
 **Problem.** `ByteBuddyProxyBackend.generate` registered one `.method(matcher).intercept(MethodDelegation.to(dispatcher))` per handled
 method. Byte Buddy tests every method of the proxy against every registered matcher, and each matcher built the JVM signature strings
@@ -330,5 +330,5 @@ erased signature of a generic declaration. Measured on the arm64 JDK 17:
 
 What is left is the normal class writing of Byte Buddy (`handledMethods` is about 10 % of it). The declarations given to the handler
 were compared, method by method, for these 221 entities (the 36,756 public methods of their proxies, bridges included) and for the
-test entities of pamela-core (2,474): identical. `ProxyBackendTest.testOneDelegationForAllTheMethods` checks that the proxy class no longer carries a field per
-method.
+test entities of pamela-core (2,474): identical. `ProxyBackendTest.testOneDelegationForAllTheMethods` checks that the proxy class
+no longer carries a field per method.
